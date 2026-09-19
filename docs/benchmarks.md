@@ -34,3 +34,7 @@ Do not benchmark OneLondon's shared remote server. Its network latency and share
 The preparation run uses Snowstorm Lite 2.7.0, pinned to image digest `sha256:ff167ec28682ac47c5829c528354bbcd15cfd0aafb6d3d118d3945c8a35f1390`. It imports the verified UK Monolith with two CPUs, a 6 GiB container cap and a 4 GiB Java maximum heap. It listens only on `127.0.0.1:18080`.
 
 Any initial HTTP timings are smoke measurements. They precede a Rust implementation and cannot establish a speedup. Keep their status and results in `baseline-status.md` after the import attempt finishes.
+
+## Basic ECL milestone
+
+The [basic ECL comparison](basic-ecl.md#recorded-outcome) now measures the Rust parser and evaluator. It records 18 complete Snowstorm Lite matches and four wildcard disagreements, with independent RF2 checks for the broad cases. Its small sample counts and different transports make it a correctness and measurement experiment, not the controlled performance study described above. Full Snowstorm, equal-output HTTP comparisons, independent repeated batches and concurrency measurements remain open.

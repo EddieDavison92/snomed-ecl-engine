@@ -1,0 +1,2180 @@
+{
+  "version": "2.3",
+  "reference_commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",
+  "complete": false,
+  "status_meaning": "Development coverage only. Production coverage does not prove semantic conformance. Partial includes untested lexical edges and alternatives. Every pending rule remains required.",
+  "grammars": [
+    {
+      "file": "abnf-brief.txt",
+      "sha256_utf8_lf": "7482e079e10d95aac94e139a9a8d5708e51165f282ef5e5fdf6b91c55c6b5df6",
+      "productions": [
+        {
+          "production": "expressionConstraint",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "refinedExpressionConstraint",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "compoundExpressionConstraint",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "conjunctionExpressionConstraint",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "disjunctionExpressionConstraint",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "exclusionExpressionConstraint",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "dottedExpressionConstraint",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dottedExpressionAttribute",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "subExpressionConstraint",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "eclFocusConcept",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "dot",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetOperator",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberOf",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetContainingAny",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetFieldNameSet",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetFieldName",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclConceptReference",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "eclConceptReferenceSet",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conceptId",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "term",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "altIdentifier",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "altIdentifierSchemeAlias",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "altIdentifierCodeWithinQuotes",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "altIdentifierCodeWithoutQuotes",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wildCard",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "constraintOperator",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "descendantOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "descendantOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "childOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "childOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "ancestorOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "ancestorOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "parentOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "parentOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "top",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "bottom",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conjunction",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "disjunction",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "exclusion",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "eclRefinement",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conjunctionRefinementSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "disjunctionRefinementSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "subRefinement",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conjunctionAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "disjunctionAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "subAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttributeGroup",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttribute",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "cardinality",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "minValue",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "to",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "maxValue",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "many",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "reverseFlag",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttributeName",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "expressionComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "numericComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "timeComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "stringComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "booleanComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "idComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionFilterConstraint",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionIdFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionIdKeyword",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionId",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionIdSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "termFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "termKeyword",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typedSearchTerm",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typedSearchTermSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "concreteStringSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "concreteString",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "concreteStringCharacters",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wild",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "matchKeyword",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "matchSearchTerm",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "matchSearchTermSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wildSearchTerm",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wildSearchTermSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "languageFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "language",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "languageCode",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "languageCodeSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeIdFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeId",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeTokenFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "type",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeToken",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeTokenSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "synonym",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "fullySpecifiedName",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definition",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectIdFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectId",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectAliasFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialect",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectAlias",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectAliasSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectIdSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilitySet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilityConceptReferenceSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilityTokenSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilityToken",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptable",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "preferred",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conceptFilterConstraint",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conceptFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusIdFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusIdKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusTokenFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusToken",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusTokenSet",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "primitiveToken",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definedToken",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "moduleFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "moduleIdKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "effectiveTimeFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "effectiveTimeKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "timeValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "timeValueSet",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "year",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "month",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "day",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeTrueValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeFalseValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberFilterConstraint",
+          "area": "member_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberFilter",
+          "area": "member_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberFieldFilter",
+          "area": "member_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historySupplement",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyKeyword",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyProfileSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyMinimumSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyModerateSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyMaximumSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historySubset",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "numericValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "stringValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "integerValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "decimalValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "booleanValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "true",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "false",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonNegativeIntegerValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "sctId",
+          "area": "lexical",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "ws",
+          "area": "lexical",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "mws",
+          "area": "lexical",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "comment",
+          "area": "lexical",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "nonStarChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "starWithNonFSlash",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonFSlash",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "SP",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "HTAB",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "CR",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "LF",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "QM",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "BS",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "star",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "digit",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "zero",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "digitNonZero",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonwsNonPipe",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "anyNonEscapedChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "escapedChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "escapedWildChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonwsNonEscapedChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "alpha",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dash",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-2",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-3",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-4",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-tail",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        }
+      ]
+    },
+    {
+      "file": "abnf-long.txt",
+      "sha256_utf8_lf": "600a0c4c85b638a3195fffd34b6d11b6f5ff8abe67d8257f42f9ad1d70a739bd",
+      "productions": [
+        {
+          "production": "expressionConstraint",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "refinedExpressionConstraint",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "compoundExpressionConstraint",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "conjunctionExpressionConstraint",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "disjunctionExpressionConstraint",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "exclusionExpressionConstraint",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "dottedExpressionConstraint",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dottedExpressionAttribute",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "subExpressionConstraint",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "eclFocusConcept",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "dot",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetOperator",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberOf",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetContainingAny",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetFieldNameSet",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "refsetFieldName",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclConceptReference",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "eclConceptReferenceSet",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conceptId",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "term",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "altIdentifier",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "altIdentifierSchemeAlias",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "altIdentifierCodeWithinQuotes",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "altIdentifierCodeWithoutQuotes",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wildCard",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "constraintOperator",
+          "area": "expressions",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "descendantOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "descendantOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "childOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "childOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "ancestorOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "ancestorOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "parentOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "parentOrSelfOf",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "top",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "bottom",
+          "area": "expressions",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conjunction",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "disjunction",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "exclusion",
+          "area": "expressions",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "eclRefinement",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conjunctionRefinementSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "disjunctionRefinementSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "subRefinement",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conjunctionAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "disjunctionAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "subAttributeSet",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttributeGroup",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttribute",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "cardinality",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "minValue",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "to",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "maxValue",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "many",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "reverseFlag",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "eclAttributeName",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "expressionComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "numericComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "timeComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "stringComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "booleanComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "idComparisonOperator",
+          "area": "refinements",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionFilterConstraint",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionIdFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionIdKeyword",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionId",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "descriptionIdSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "termFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "termKeyword",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typedSearchTerm",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typedSearchTermSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "concreteStringSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "concreteString",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "concreteStringCharacters",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wild",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "matchKeyword",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "matchSearchTerm",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "matchSearchTermSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wildSearchTerm",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "wildSearchTermSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "languageFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "language",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "languageCode",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "languageCodeSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeIdFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeId",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeTokenFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "type",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeToken",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "typeTokenSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "synonym",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "fullySpecifiedName",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definition",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectIdFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectId",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectAliasFilter",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialect",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectAlias",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectAliasSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dialectIdSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilitySet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilityConceptReferenceSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilityTokenSet",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptabilityToken",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "acceptable",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "preferred",
+          "area": "description_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conceptFilterConstraint",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "conceptFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusIdFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusIdKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusTokenFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusToken",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definitionStatusTokenSet",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "primitiveToken",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "definedToken",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "moduleFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "moduleIdKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "effectiveTimeFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "effectiveTimeKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "timeValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "timeValueSet",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "year",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "month",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "day",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeFilter",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeKeyword",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeTrueValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "activeFalseValue",
+          "area": "concept_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberFilterConstraint",
+          "area": "member_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberFilter",
+          "area": "member_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "memberFieldFilter",
+          "area": "member_filters",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historySupplement",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyKeyword",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyProfileSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyMinimumSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyModerateSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historyMaximumSuffix",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "historySubset",
+          "area": "history",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "numericValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "stringValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "integerValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "decimalValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "booleanValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "true",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "false",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonNegativeIntegerValue",
+          "area": "value_syntax",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "sctId",
+          "area": "lexical",
+          "status": "implemented",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "ws",
+          "area": "lexical",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "mws",
+          "area": "lexical",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "comment",
+          "area": "lexical",
+          "status": "partial",
+          "evidence": "tests/basic_ecl.rs"
+        },
+        {
+          "production": "nonStarChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "starWithNonFSlash",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonFSlash",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "SP",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "HTAB",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "CR",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "LF",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "QM",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "BS",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "star",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "digit",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "zero",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "digitNonZero",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonwsNonPipe",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "anyNonEscapedChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "escapedChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "escapedWildChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "nonwsNonEscapedChar",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "alpha",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "dash",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-2",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-3",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-4",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        },
+        {
+          "production": "UTF8-tail",
+          "area": "lexical",
+          "status": "pending",
+          "evidence": null
+        }
+      ]
+    }
+  ]
+}

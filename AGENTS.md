@@ -2,7 +2,7 @@
 
 - Keep this personal repository private until the owner changes that decision.
 - Use plain British English and Conventional Commits. Work on a `feat/`, `fix/` or `docs/` branch.
-- Read `docs/plan.md` before implementation. The current prototype imports a compact store and evaluates hierarchy operators. It has no ECL parser or refinement evaluator yet.
+- Read `docs/plan.md` before implementation. The current prototype imports a compact store and evaluates basic ECL. Refinements and extended ECL remain pending; track them in `docs/conformance.md` and `validation/ecl-conformance.json`.
 - Keep RF2 archives, extracted terminology, generated indexes, credentials and reference checkouts out of Git. `data/`, `.local/` and `references/` are ignored.
 - Retrieve TRUD credentials at runtime through 1Password. TRUD embeds credentials in URLs: never log or save its raw API response.
 - Pin the RF2 archive checksum, edition URI, reference commits and benchmark image digest.

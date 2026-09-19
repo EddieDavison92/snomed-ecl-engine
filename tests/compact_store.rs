@@ -234,3 +234,76 @@ fn hierarchy_matches_slow_edge_scan_on_generated_dag() {
         }
     }
 }
+
+#[test]
+fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
+    use std::process::{Command, Stdio};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let binary = env!("CARGO_BIN_EXE_snomed-rust-ecl-engine");
+    let invalid = Command::new(binary)
+        .arg("expand")
+        .arg(&destination)
+        .arg("* OR (^ 1000001)")
+        .output()
+        .unwrap();
+    assert!(!invalid.status.success());
+    assert!(invalid.stdout.is_empty());
+    let display = Command::new(binary)
+        .arg("expand")
+        .arg(&destination)
+        .arg(ROOT.to_string())
+        .arg("--display")
+        .output()
+        .unwrap();
+    assert!(display.status.success());
+    let row: serde_json::Value = serde_json::from_slice(&display.stdout).unwrap();
+    assert_eq!(row["code"], ROOT.to_string());
+    assert!(row["display"].is_string());
+    fs::rename(
+        destination.join("display.bin"),
+        destination.join("display.saved"),
+    )
+    .unwrap();
+    let mut process = Command::new(binary)
+        .arg("batch")
+        .arg(&destination)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    {
+        let mut input = process.stdin.take().unwrap();
+        writeln!(input, "{{\"ecl\":\"* OR (^ 1000001)\"}}").unwrap();
+        writeln!(input, "{{\"ecl\":\"<< 1000001\"}}").unwrap();
+        writeln!(
+            input,
+            "{{\"ecl\":\"1000001 MINUS 1000001\",\"count_only\":true}}"
+        )
+        .unwrap();
+    }
+    let output = process.wait_with_output().unwrap();
+    assert!(output.status.success());
+    let rows: Vec<serde_json::Value> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(rows.len(), 3);
+    assert_eq!(rows[0]["error"], "Unsupported");
+    assert!(rows[0].get("codes").is_none());
+    assert_eq!(
+        rows[1]["codes"],
+        serde_json::json!([
+            ROOT.to_string(),
+            LEFT.to_string(),
+            RIGHT.to_string(),
+            LEAF.to_string()
+        ])
+    );
+    assert_eq!(rows[2]["total"], 0);
+    assert!(rows[2].get("codes").is_none());
+}

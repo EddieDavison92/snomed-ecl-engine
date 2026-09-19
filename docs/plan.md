@@ -86,4 +86,4 @@ Evaluate `snomed-rust` RF2 types and parsing as a possible dependency after a fo
 
 Use `sct`, Hermes and Snowstorm to study implementation choices and test cases. Keep the engine's code original until any code reuse and licence choice are deliberate. No open-source licence has been chosen for this private project.
 
-Stage 1 is in progress. The [compact store prototype](compact-store.md) implements numeric adjacency arrays, grouped relationship storage and separate display lookup. Bitmap comparisons and a full module dependency resolver remain open. The next experiment compares traversal with compressed hierarchy sets before basic ECL parsing and set evaluation.
+The [compact store prototype](compact-store.md) implements numeric adjacency arrays, grouped relationship storage and separate display lookup. The [basic ECL milestone](basic-ecl.md) adds parsing, sorted-vector evaluation and release-matched comparisons. Bitmap experiments and a full module dependency resolver remain open. Next, implement membership and refinements against the [full conformance checklist](conformance.md), then use those workloads to guide further compression.

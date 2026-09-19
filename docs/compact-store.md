@@ -2,7 +2,7 @@
 
 The prototype keeps expansion data in `core.bin` and selected English displays in `display.bin`. Numeric queries open only the core and manifest. With `--display`, the CLI resolves the code set first, then fetches labels by concept ordinal.
 
-This is the first storage experiment. It has no ECL parser, general set evaluator or attribute refinement evaluator yet. The `hierarchy` command exposes the eight hierarchy variants directly for validation.
+This document records the first storage experiment. The later [basic ECL milestone](basic-ecl.md) adds a parser and set evaluator. Attribute refinements remain pending. The original `hierarchy` command still exposes the eight hierarchy variants directly for validation.
 
 The finished engine must implement full ECL 2.3. Every pending language feature below is required. The current file sizes exclude semantic indexes still needed for those features and are not a size estimate for the complete engine.
 
@@ -24,7 +24,8 @@ Concrete values have a separate dictionary. Numbers retain their original decima
 | Grouped attributes and exact concrete spelling | Stored; evaluation pending |
 | Optional English display lookup | Implemented |
 | Refset membership and member fields | Not indexed |
-| ECL grammar, Boolean sets and refinements | Not implemented |
+| Basic ECL grammar and Boolean sets | Implemented in the later basic ECL milestone |
+| Attribute refinements | Not implemented |
 | Description, concept and member filters | Not implemented |
 | History supplements and field projections | Not implemented |
 | Full, Delta, multiple packages or incremental updates | Not supported |
