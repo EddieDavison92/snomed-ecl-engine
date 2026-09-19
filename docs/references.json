@@ -1,0 +1,32 @@
+[
+  {
+    "name": "hermes",
+    "commit": "4cad6cdd624a252b31eec0b8aa233dc788b1cfe0",
+    "remote": "https://github.com/wardle/hermes.git"
+  },
+  {
+    "name": "sct",
+    "commit": "5888ba839e51699d4ac19f7be7fcb4e64793306e",
+    "remote": "https://github.com/pacharanero/sct.git"
+  },
+  {
+    "name": "snomed-expression-constraint-language",
+    "commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",
+    "remote": "https://github.com/IHTSDO/snomed-expression-constraint-language.git"
+  },
+  {
+    "name": "snomed-rust",
+    "commit": "a26a0465b1b4898f8588390f3f824412e4c4c558",
+    "remote": "https://github.com/snomed-rust/snomed-rust.git"
+  },
+  {
+    "name": "snowstorm",
+    "commit": "3c10e63893fd434249a9e22b8c165226bda61ee6",
+    "remote": "https://github.com/IHTSDO/snowstorm.git"
+  },
+  {
+    "name": "snowstorm-lite",
+    "commit": "6942831706b68d23a028e16e92d23ea31d10653c",
+    "remote": "https://github.com/IHTSDO/snowstorm-lite.git"
+  }
+]

@@ -1,0 +1,9 @@
+/data/
+/references/
+/target/
+/tools/
+/.local/
+*.env
+.env*
+*.log
+__pycache__/
