@@ -4,6 +4,8 @@
 
 Build an embedded Rust query engine for one immutable, versioned RF2 snapshot. Start with a library and a CLI that imports, inspects, counts and expands ECL. Keep query execution independent of storage construction and any future HTTP service.
 
+Full ECL 2.3 syntax and semantics are a core acceptance requirement. Partial implementations are development milestones, not the finished engine. Compact storage must accommodate the data needed by the complete language; low resource use cannot justify omitted operators or altered results.
+
 The proposed advantage is low memory use and predictable query latency on UK-scale data. Neither is proven yet. The first implementation milestone must measure the alternatives before we commit to a storage format.
 
 ## Boundaries
@@ -12,7 +14,7 @@ Use the published inferred relationship view. Preserve inactive concepts and rel
 
 Initially exclude authoring, OWL classification, postcoordinated expression reasoning, multi-edition serving, incremental updates, FHIR, authentication, deployment and general free-text search. Description search required by ECL is a later engine capability, not a reason to build a terminology browser now.
 
-Target the official ECL 2.3 brief syntax in stages. Do not claim complete ECL support until every relevant grammar production and semantic rule has a recorded outcome. Syntactically valid but unsupported features must produce a specific error.
+Implement the official ECL 2.3 brief and long syntaxes in stages. Completion requires every grammar production and semantic rule to have implementation and conformance evidence. During development, syntactically valid but unsupported features must produce a specific error. An unsupported-feature error does not satisfy final acceptance.
 
 ## Proposed design
 
@@ -27,7 +29,7 @@ flowchart LR
     Eval --> Result[Count or SCTID iterator]
 ```
 
-Start with one library crate with modules for RF2, storage, parsing and evaluation, plus one CLI binary. Split crates only when there is a concrete dependency or reuse benefit. Select and pin a Rust toolchain during implementation. The installed 1.86 toolchain is older than both Rust reference projects' declared minimums.
+Start with one library crate with modules for RF2, storage, parsing and evaluation, plus one CLI binary. Split crates only when there is a concrete dependency or reuse benefit. The storage prototype pins Rust 1.93.1 and is validated on Linux.
 
 Represent external SCTIDs as `u64` internally and decimal strings at JSON boundaries. Map concepts to dense `u32` ordinals for indexes. Never use a raw SCTID as a bitmap position or assume it fits in a JavaScript number.
 
@@ -54,7 +56,11 @@ Evaluate constant subexpressions once per query. Intersect selective candidates 
 | 4. Extended ECL | Concept, description and member filters, language/dialect policy, history supplements, member field projections and remaining 2.3 operators | Explicit capability matrix; normative examples; independently checked result types and defaults |
 | 5. Resource reduction | Persistent format, startup, allocation reduction, concurrency and bounded caches | Correctness corpus unchanged; reproducible measurements on a constrained Linux runtime |
 
-Stage 3 is the first useful core release. Stage 4 is required before claiming broad ECL 2.3 coverage. Member field projection may return values other than concept IDs, so the future API must not silently coerce those results into SCTIDs.
+Stage 3 is an internal development milestone. Stage 4 is mandatory for the first complete engine release. Member field projection may return values other than concept IDs, so the API must preserve those result types. Final acceptance also requires the resource measurements in stage 5 against the complete implementation and full conformance corpus.
+
+Maintain a production-by-production conformance matrix against the pinned official grammar and prose. Record parsing, evaluation, required RF2 data, synthetic edge cases and external comparisons for every feature. Include hierarchy and Boolean operations, top/bottom, alternate identifiers, nested refinements, cardinalities and groups, reverse and dotted attributes, concrete values including Booleans, refset membership and containing-any, concept/description/member filters, dialect and acceptability rules, history supplements and member projections. A feature missing from a comparison server still requires specification-based tests. Completion means no unexplained conformance failures or unsupported standard features.
+
+Plan the remaining data alongside their operators: complete descriptions and language memberships for description filters; typed refset rows and fields for membership, filtering and projections; historical association data for history supplements; and alternate identifiers with configured scheme aliases. Preferred displays remain a separate optional lookup. These semantic indexes belong to the full engine even when a query does not need to load them.
 
 The inventoried release has 838,955 active concepts, 4,568,005 active ordinary relationships and 320,982 active concrete relationships. These file counts set the first realistic scale for stage 1; validate component uniqueness and relationship characteristics before treating them as graph counts. See [preparation results](baseline-status.md).
 
@@ -80,4 +86,4 @@ Evaluate `snomed-rust` RF2 types and parsing as a possible dependency after a fo
 
 Use `sct`, Hermes and Snowstorm to study implementation choices and test cases. Keep the engine's code original until any code reuse and licence choice are deliberate. No open-source licence has been chosen for this private project.
 
-The next piece of work is stage 1: a measured import/storage experiment and a capability matrix, followed by the basic ECL evaluator. Keep the experiment narrow enough that a poor memory result can change the design cheaply.
+Stage 1 is in progress. The [compact store prototype](compact-store.md) implements numeric adjacency arrays, grouped relationship storage and separate display lookup. Bitmap comparisons and a full module dependency resolver remain open. The next experiment compares traversal with compressed hierarchy sets before basic ECL parsing and set evaluation.
