@@ -25,10 +25,10 @@ Eight complete, version-pinned probes succeeded against Ontoserver 6.25.4. They 
 
 Snowstorm Lite 2.7.0 started with the same verified archive and exact edition URI. Import began at 22:21 UTC. At 22:28 UTC it had reached 24% of concept indexing. A sampled container-memory reading during import was 5.5 GiB within the 6 GiB cap. This is neither a measured peak nor a serving-memory figure.
 
-Import is still running at this recorded status. A background watcher waits up to 45 minutes from 22:28 UTC, runs `benchmark_local.py` after the import-complete message, and stops the container. It records success, failure or timeout in `data/baseline-status.json`. Successful import alone does not establish correct query results.
+Import completed at 22:39:10 UTC. Snowstorm Lite reported 1,057.257 seconds for the import, about 17.6 minutes, under this preparation run's settings. The index occupies 506,801,604 bytes. The watcher ran the local comparison successfully and stopped the container at 22:39 UTC.
 
-The eventual eight-query report is `data/validation/snowstorm-lite-smoke.json`. That report contains complete-result comparisons and small warm HTTP samples, not a controlled benchmark. Full Snowstorm and the Rust reference engines have not been run.
+The eight-query report is `data/validation/snowstorm-lite-smoke.json`. All eight complete result sets matched the version-pinned OneLondon baseline. The report contains small warm HTTP samples, not a controlled benchmark. Full Snowstorm and the Rust reference engines have not been run.
 
 ## Checks completed
 
-The downloader ran successfully against TRUD and verified the archive. The inventory script processed all snapshot files. The OneLondon wrapper retrieved and checked all probe results, including the exact returned edition. Python scripts compiled and PowerShell scripts passed syntax parsing. The local benchmark runner has not yet completed against the importing server.
+The downloader ran successfully against TRUD and verified the archive. The inventory script processed all snapshot files. The OneLondon wrapper retrieved and checked all probe results, including the exact returned edition. Python scripts compiled and PowerShell scripts passed syntax parsing. The local benchmark runner completed all eight probes with matching results.

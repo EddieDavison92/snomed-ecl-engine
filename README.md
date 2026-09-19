@@ -6,6 +6,7 @@ The first deliverable is a Rust library and CLI. Hosting, FHIR, authoring and cl
 
 - [Implementation plan](docs/plan.md)
 - [Research and reference code](docs/research.md)
+- [Snowstorm indexing analysis](docs/indexing-research.md)
 - [Benchmark protocol](docs/benchmarks.md)
 - [Local setup](docs/setup.md)
 - [Preparation results and local import status](docs/baseline-status.md)
