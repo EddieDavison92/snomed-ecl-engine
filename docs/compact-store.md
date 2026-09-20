@@ -23,14 +23,14 @@ Concrete values have a separate dictionary. Numbers retain their original decima
 | Eight hierarchy variants via library and CLI | Implemented |
 | Grouped attributes and exact concrete spelling | Stored and evaluated; see the refinement milestone |
 | Optional English display lookup | Implemented |
-| Refset membership and member fields | Concept membership indexed separately; typed member fields remain pending |
+| Refset membership and member fields | Active concept membership and lazy typed member tables |
 | Basic ECL grammar and Boolean sets | Implemented in the later basic ECL milestone |
 | Attribute refinements | Implemented; conformance gaps remain |
-| Description, concept and member filters | Not implemented |
-| History supplements and field projections | Not implemented |
+| Description, concept and member filters | Implemented; see the full conformance checklist for remaining details |
+| History supplements and field projections | Implemented, including typed scalar sets and terminal tuples |
 | Full, Delta, multiple packages or incremental updates | Not supported |
 
-Description filters will need their own search index. A preferred display lookup cannot answer queries about synonyms, language, dialect or description metadata.
+Description filters use a separate description index. A preferred display lookup cannot answer queries about synonyms, language, dialect or description metadata. Prefix postings and compressed text remain planned storage experiments.
 
 ## Display selection
 

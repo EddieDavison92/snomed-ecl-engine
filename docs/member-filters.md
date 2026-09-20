@@ -35,6 +35,8 @@ The [member-filter specification](https://docs.snomed.org/snomed-ct-specificatio
 
 The existing `evaluate` functions accept concept-valued results only. A tuple in a subquery returns `TypeMismatch`, even when no member could match. Hierarchy operators and successive dot steps require concept inputs. A dot step selecting both concrete and concept attributes returns a `Values` set with both tagged types. Set operations between scalar and concept results preserve those tags: a numeric value cannot equal a concept ID with the same spelling. Selecting a field with different types across refsets also preserves each value's type.
 
+Nested set operations use the same evaluator as terminal expressions. If an intersection or exclusion removes every non-concept value, the remaining concepts can feed a hierarchy, refinement, filter or dot step. The concept-only API also accepts that result and restores numeric SCTID order. A remaining scalar still produces `TypeMismatch`; it is never converted to a concept because its digits happen to match an SCTID. An empty scalar set is a valid empty input. Tuple subqueries remain invalid even when empty.
+
 ```text
 ^[referencedComponentId,mapTarget,mapGroup]999002271000000101 {{M mapGroup=#1,mapPriority=#1,mapTarget=wild:"J459"}}
 ```

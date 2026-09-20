@@ -127,6 +127,10 @@ impl Context<'_> {
         self.live -= values.capacity();
     }
     fn eval(&mut self, expr: &Expr, depth: usize) -> Result<Vec<u32>> {
+        let result = self.result(expr, depth, false)?;
+        self.concept_values(result)
+    }
+    fn eval_concepts(&mut self, expr: &Expr, depth: usize) -> Result<Vec<u32>> {
         self.tick(1)?;
         self.nodes += 1;
         if depth > MAX_DEPTH * 3 || self.nodes > MAX_NODES {
@@ -172,10 +176,6 @@ impl Context<'_> {
                 Ok(result)
             }
             Expr::History(inner, supplement) => self.history(inner, supplement, depth + 1),
-            Expr::Members(query) => match self.member_query(query, depth + 1, false)? {
-                QueryResult::Concepts(values) => Ok(values),
-                _ => Err(EvalError::TypeMismatch),
-            },
             Expr::DescriptionFiltered(inner, filters) => {
                 let candidates = self.eval(inner, depth + 1)?;
                 self.description_filters(candidates, filters, depth + 1)
@@ -202,17 +202,6 @@ impl Context<'_> {
                 }
                 self.release(candidates);
                 self.release_prepared(prepared);
-                Ok(result)
-            }
-            Expr::Dotted(focus, attributes) => {
-                let mut result = self.eval(focus, depth + 1)?;
-                for attribute in attributes {
-                    let names = self.eval(attribute, depth + 1)?;
-                    let next = self.dotted(&result, &names)?;
-                    self.release(result);
-                    self.release(names);
-                    result = next;
-                }
                 Ok(result)
             }
             Expr::Extremum { top, inner } => {
@@ -249,32 +238,11 @@ impl Context<'_> {
                 self.release(seeds);
                 Ok(result)
             }
-            Expr::And(parts) | Expr::Or(parts) => {
-                if parts.len() < 2 {
-                    return Err(EvalError::InvalidAst);
-                }
-                let mut result = self.eval(&parts[0], depth + 1)?;
-                for part in &parts[1..] {
-                    let right = self.eval(part, depth + 1)?;
-                    let merged = self.merge(
-                        &result,
-                        &right,
-                        if matches!(expr, Expr::And(_)) { 0 } else { 1 },
-                    )?;
-                    self.release(result);
-                    self.release(right);
-                    result = merged;
-                }
-                Ok(result)
-            }
-            Expr::Minus(left, right) => {
-                let left = self.eval(left, depth + 1)?;
-                let right = self.eval(right, depth + 1)?;
-                let result = self.merge(&left, &right, 2)?;
-                self.release(left);
-                self.release(right);
-                Ok(result)
-            }
+            Expr::Members(_)
+            | Expr::Dotted(_, _)
+            | Expr::And(_)
+            | Expr::Or(_)
+            | Expr::Minus(_, _) => Err(EvalError::InvalidAst),
         }
     }
     fn hierarchy(&mut self, op: Hierarchy, seeds: &[u32]) -> Result<Vec<u32>> {

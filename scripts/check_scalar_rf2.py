@@ -38,6 +38,7 @@ def main():
     concrete = set()
     single = set()
     groups = set()
+    all_groups = set()
     priority_one_groups = set()
     targets = set()
     with zipfile.ZipFile(args.archive) as archive:
@@ -54,9 +55,12 @@ def main():
                             single.add(value)
             elif 'Map' in name and 'Refset' in name:
                 for row in rows(archive, name):
-                    if row['active'] != '1' or row['refsetId'] != '999002271000000101':
+                    if row['refsetId'] != '999002271000000101':
                         continue
                     value = encoded('number', number(row['mapGroup']))
+                    all_groups.add(value)
+                    if row['active'] != '1':
+                        continue
                     groups.add(value)
                     if row['mapPriority'] == '1':
                         priority_one_groups.add(value)
@@ -78,6 +82,10 @@ def main():
         ('scalar-or', f'({a}) OR ({b})', groups | priority_one_groups),
         ('scalar-minus', f'({a}) MINUS ({b})', groups-priority_one_groups),
         ('map-targets', '^[mapTarget]999002271000000101 {{M mapGroup=#1,mapPriority=#1}}', targets),
+        ('unspaced-member-marker', f'{a} {{{{MmapPriority=#1}}}}', priority_one_groups),
+        ('all-member-states', f'{a} {{{{Mactive="*"}}}}', all_groups),
+        ('nested-concrete-dot', '((377442002 OR (377442002 . 1142138002)) MINUS (377442002 . 1142138002)) . 1142138002', single),
+        ('nested-empty-hierarchy', '<< (377442002 AND (377442002 . 1142138002))', set()),
     ]
     command = ['docker', 'run', '--rm', '-i', '--cpus', '1', '--memory', '1g', '--memory-swap', '1g',
                '--mount', f'type=bind,source={ROOT},target=/work,readonly', '-w', '/work', IMAGE,
@@ -89,8 +97,13 @@ def main():
     result = []
     for (case, ecl, expected), response in zip(cases, actual, strict=True):
         assert 'error' not in response, (case, response)
-        assert response['result_type'] == 'values', case
-        values = [json.dumps(v, sort_keys=True, separators=(',', ':')) for v in response['values']]
+        assert response['edition'] == manifest['edition'], case
+        if case == 'nested-empty-hierarchy':
+            assert 'result_type' not in response and 'codes' in response, case
+            values = [encoded('concept', code) for code in response['codes']]
+        else:
+            assert response['result_type'] == 'values', case
+            values = [json.dumps(v, sort_keys=True, separators=(',', ':')) for v in response['values']]
         matches = set(values) == expected and len(values) == len(expected) == response['total']
         assert matches, case
         result.append(dict(id=case, ecl=ecl, rf2_matches=matches, total=len(expected),

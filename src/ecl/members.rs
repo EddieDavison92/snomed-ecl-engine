@@ -63,7 +63,7 @@ impl Parser<'_> {
         let saved = self.pos;
         let result = if self.take("{{") {
             self.ws()?;
-            self.word().eq_ignore_ascii_case("m")
+            self.rest().starts_with(['m', 'M']) && !self.word().eq_ignore_ascii_case("moduleId")
         } else {
             false
         };
@@ -76,7 +76,7 @@ impl Parser<'_> {
         }
         self.take("{{");
         self.ws()?;
-        if !self.keyword("m") {
+        if !(self.take("M") || self.take("m")) {
             return Err(self.unexpected());
         }
         self.ws()?;
@@ -98,17 +98,7 @@ impl Parser<'_> {
                     || self.word().eq_ignore_ascii_case("wild"));
             self.pos = saved;
             let value = if field == "active" {
-                MemberPredicate::Boolean(
-                    if self.take("*") || self.keyword("any") || self.take("\"*\"") {
-                        None
-                    } else if self.keyword("true") || self.take("1") {
-                        Some(true)
-                    } else if self.keyword("false") || self.take("0") {
-                        Some(false)
-                    } else {
-                        return Err(self.unexpected());
-                    },
-                )
+                MemberPredicate::Boolean(self.active_value()?)
             } else if field == "effectivetime"
                 || quoted && !matches!(comparison, Comparison::Eq | Comparison::Ne)
                 || self.rest().starts_with("\"\"")

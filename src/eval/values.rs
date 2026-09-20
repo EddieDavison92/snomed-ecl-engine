@@ -52,9 +52,7 @@ impl Context<'_> {
                 }
                 let mut current = self.result(focus, depth + 1, false)?;
                 for attribute in attributes {
-                    let QueryResult::Concepts(seeds) = current else {
-                        return Err(EvalError::TypeMismatch);
-                    };
+                    let seeds = self.concept_values(current)?;
                     let names = self.eval(attribute, depth + 1)?;
                     current = self.project(&seeds, &names)?;
                     self.release(seeds);
@@ -62,7 +60,40 @@ impl Context<'_> {
                 }
                 Ok(current)
             }
-            _ => self.eval(expr, depth + 1).map(QueryResult::Concepts),
+            _ => self
+                .eval_concepts(expr, depth + 1)
+                .map(QueryResult::Concepts),
+        }
+    }
+
+    pub(super) fn concept_values(&mut self, result: QueryResult) -> Result<Vec<u32>> {
+        match result {
+            QueryResult::Concepts(values) => Ok(values),
+            QueryResult::Values(values) => {
+                let count = values.len();
+                self.tick(count.saturating_mul(
+                    20 + self.store.ids.len().checked_ilog2().unwrap_or(0) as usize
+                        + count.checked_ilog2().unwrap_or(0) as usize,
+                ))?;
+                let mut ordinals = self.reserve(count)?;
+                for value in values {
+                    let cost = value_cost(&value);
+                    let MemberValue::Concept(id) = value else {
+                        return Err(EvalError::TypeMismatch);
+                    };
+                    let ordinal = id
+                        .parse()
+                        .ok()
+                        .and_then(|id| self.store.ordinal(id))
+                        .ok_or(EvalError::TypeMismatch)?;
+                    ordinals.push(ordinal);
+                    self.live -= cost;
+                }
+                // Scalar sets use lexical SCTID order; concept consumers need ordinal order.
+                ordinals.sort_unstable();
+                Ok(ordinals)
+            }
+            QueryResult::Rows(_) => Err(EvalError::TypeMismatch),
         }
     }
 

@@ -1,0 +1,135 @@
+{
+  "recorded_at": "2026-09-20T07:51:41.526013+00:00",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "manifest_sha256": "f7b1214ad66064af12969947373213ca142a48a37be517e4a0d31ee521c4d188",
+  "manifest_bytes": 199749,
+  "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31",
+  "cpus": 1,
+  "memory_limit_mib": 1024,
+  "index_filesystem": "Windows bind mount",
+  "startup_probe_source_sha256": "89c636bcde2a4bfbbe818df8ae131ba2bff5595c0cc464fe6c587e08cc0bc902",
+  "before_probe_binary_sha256": "a1bca22884b09a88997bb4de1db5998722b3598d56f8ae34479d55cda6fc7d35",
+  "after_probe_binary_sha256": "fe197c0e1af82bbf73f95f722eb488465d01268a77a44ff94af1fa4a3afdbc44",
+  "before_source_sha256": "33ea2abe078230f32d7f637e974e34f8ce2e0573297e1a876c9f7bf838911419",
+  "after_source_sha256": "bb6b18e742ace10a812c809e01b9ad408781f8da691a9641451924375c6ed6ee",
+  "before_probe": {
+    "concept_count": 1151519,
+    "manifest_bytes": 199749,
+    "manifest_samples": [
+      {
+        "buffered": false,
+        "elapsed_ms": 20720.537573,
+        "read_calls": 199750,
+        "round": 0
+      },
+      {
+        "buffered": true,
+        "elapsed_ms": 4.903428,
+        "read_calls": 26,
+        "round": 0
+      },
+      {
+        "buffered": true,
+        "elapsed_ms": 4.867005,
+        "read_calls": 26,
+        "round": 1
+      },
+      {
+        "buffered": false,
+        "elapsed_ms": 20316.299845,
+        "read_calls": 199750,
+        "round": 1
+      },
+      {
+        "buffered": false,
+        "elapsed_ms": 21852.46331,
+        "read_calls": 199750,
+        "round": 2
+      },
+      {
+        "buffered": true,
+        "elapsed_ms": 5.2685960000000005,
+        "read_calls": 26,
+        "round": 2
+      }
+    ],
+    "manifest_sha256": "f7b1214ad66064af12969947373213ca142a48a37be517e4a0d31ee521c4d188",
+    "manifests_equal": true,
+    "scope": "Manifest parse and store open, including existing checksums and structural validation. Filesystem caches are not dropped. Excludes Docker startup and lazy semantic indexes.",
+    "store_open_ms": 21747.243004
+  },
+  "after_probe": {
+    "concept_count": 1151519,
+    "manifest_bytes": 199749,
+    "manifest_samples": [
+      {
+        "buffered": false,
+        "elapsed_ms": 20137.415283,
+        "read_calls": 199750,
+        "round": 0
+      },
+      {
+        "buffered": true,
+        "elapsed_ms": 5.655953,
+        "read_calls": 26,
+        "round": 0
+      },
+      {
+        "buffered": true,
+        "elapsed_ms": 4.95343,
+        "read_calls": 26,
+        "round": 1
+      },
+      {
+        "buffered": false,
+        "elapsed_ms": 20053.85849,
+        "read_calls": 199750,
+        "round": 1
+      },
+      {
+        "buffered": false,
+        "elapsed_ms": 20420.704756,
+        "read_calls": 199750,
+        "round": 2
+      },
+      {
+        "buffered": true,
+        "elapsed_ms": 5.193198000000001,
+        "read_calls": 26,
+        "round": 2
+      }
+    ],
+    "manifest_sha256": "f7b1214ad66064af12969947373213ca142a48a37be517e4a0d31ee521c4d188",
+    "manifests_equal": true,
+    "scope": "Manifest parse and store open, including existing checksums and structural validation. Filesystem caches are not dropped. Excludes Docker startup and lazy semantic indexes.",
+    "store_open_ms": 907.622073
+  },
+  "manifest_summary": {
+    "unbuffered": {
+      "samples": 6,
+      "median_ms": 20368.5023005,
+      "read_calls": [
+        199750
+      ]
+    },
+    "buffered": {
+      "samples": 6,
+      "median_ms": 5.073314,
+      "read_calls": [
+        26
+      ]
+    }
+  },
+  "previous_corpus": {
+    "binary_sha256": "ab54d461d972d75e24c7865b9a891e0f3e07ca76a6ab939220fbc33508ebaeba",
+    "initial_store_open_log": "Store opened in 38.804 seconds",
+    "container_start_and_first_request_ms": 41870.53369998466
+  },
+  "current_corpus": {
+    "binary_sha256": "e63f19ef533bc4bbad930e2285df73511f0f8ae87a915f8579c302c1cdd6adb0",
+    "initial_store_open_log": "Store opened in 1.237 seconds",
+    "container_start_and_first_request_ms": 1805.0155999371782
+  },
+  "scope": "Manifest experiment alternates unbuffered and buffered parsing of identical bytes; six samples each across two invocations. Direct store open has one sample per binary. Corpus startup includes two manifest reads. Filesystem caches are not dropped. All existing checksums and structural validation remain enabled. Lazy semantic data, provider cold starts and downloads are excluded. This is not an mmap or index compression result."
+}

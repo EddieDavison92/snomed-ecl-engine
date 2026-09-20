@@ -11,12 +11,14 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 | Workload | Measured result |
 |---|---|
 | 880 numeric-index expressions, one CPU and 256 MiB | 1.82 seconds per warm batch |
-| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 3.02 seconds per warm batch; 1.93 ms median request |
+| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 2.87 seconds per warm batch; 1.77 ms median request |
 | Measured numeric query-only Linux executable, without Unicode | 0.83 MiB, 0.39 MiB gzipped |
 | Numeric and concept-membership indexes | 103.3 MiB |
 | RF2 import, including descriptions, displays and typed members | 110.5 seconds with two CPUs and 3 GiB |
 
-Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/types-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 12.19 ms; container-charged peak memory was 542 MiB. The [earlier run](validation/schema-corpus-results.json) measured 1.63 ms median requests and 2.68-second batches; the timing difference has not been isolated. These figures measure the fixed corpus, not full ECL conformance or hosted cold starts.
+Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/nested-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 11.93 ms; container-charged peak memory was 547 MiB. Recent runs range from 1.63 to 1.93 ms median requests; the warm timing differences have not been isolated. These figures measure the fixed corpus, not full ECL conformance or hosted cold starts.
+
+Buffering manifest reads removed a startup I/O bottleneck. Initial store opening took 1.24 seconds in the latest run, compared with 38.8 seconds previously on the Windows Docker mount. Container start through the first response took 1.81 seconds. Checksums and structural validation remain enabled; description and member data still load on demand. The [startup measurements](validation/startup-results.json) separate manifest reads from opening the store.
 
 ## Compared with Snowstorm
 
@@ -74,7 +76,7 @@ Use `eval::evaluate_result_with_limits` when accepting [member-field projections
 
 Description term queries need `--features unicode` and ICU4C development libraries at build time. The [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers installation and the additional executable size. Numeric queries do not require this feature.
 
-The measured CLI with import and Unicode support is 32.83 MiB, or 12.93 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#term-comparison-evidence) record their latency and correctness separately.
+The measured CLI with import and Unicode support is 33.05 MiB, or 13.03 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#term-comparison-evidence) record their latency and correctness separately.
 
 The [CLI guide](docs/cli.md) covers commands and output formats. The repository [SKILL.md](SKILL.md) gives agents the build, RF2 loading and querying workflow.
 

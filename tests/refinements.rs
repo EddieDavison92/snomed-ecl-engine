@@ -58,7 +58,11 @@ fn fixture() -> NumericStore {
 }
 fn assert_query(query: &str, expected: &[u32]) {
     assert_eq!(
-        evaluate(&fixture(), &parse(query).unwrap()).unwrap(),
+        evaluate(
+            &fixture(),
+            &parse(query).unwrap_or_else(|e| panic!("{query}: {e}"))
+        )
+        .unwrap(),
         expected,
         "{query}"
     );
@@ -235,6 +239,41 @@ fn concrete_dot_preserves_exact_values_and_rejects_concept_only_operations() {
     for query in ["1000000 . 1000007 . *", "<< (1000000 . 1000007)"] {
         assert_eq!(
             evaluate_result(&store, &parse(query).unwrap()),
+            Err(EvalError::TypeMismatch)
+        );
+    }
+}
+
+#[test]
+fn nested_typed_sets_can_feed_concept_operations_after_scalars_are_removed() {
+    let scalar = "(1000000 . 1000007)";
+    let concepts = format!("((1000008 OR {scalar}) MINUS {scalar})");
+    for (query, expected) in [
+        (concepts.clone(), vec![8]),
+        (format!("< {concepts}"), vec![9, 10]),
+        (format!("> ({concepts} AND {scalar})"), vec![]),
+        (format!("!!> ({concepts} OR 1000009)"), vec![8]),
+        (format!("* : 1000005 = {concepts}"), vec![0, 1, 2, 3]),
+        (format!("{concepts} {{{{C active=1}}}}"), vec![8]),
+        (format!("{concepts} : R 1000005 = 1000000"), vec![8]),
+        (
+            format!("(1000009 OR ({concepts} AND {scalar})) . 116680003"),
+            vec![8],
+        ),
+        (
+            format!("1000000 . ((1000005 OR {scalar}) MINUS {scalar})"),
+            vec![8],
+        ),
+    ] {
+        assert_query(&query, &expected);
+    }
+    for query in [
+        format!("< (1000008 OR {scalar})"),
+        format!("(1000008 OR {scalar}) . 116680003"),
+        format!("* : 1000005 = (1000008 OR {scalar})"),
+    ] {
+        assert_eq!(
+            evaluate(&fixture(), &parse(&query).unwrap()),
             Err(EvalError::TypeMismatch)
         );
     }

@@ -42,15 +42,7 @@ impl Parser<'_> {
                 "term" => DescriptionFilter::Term(comparison, self.search_terms()?),
                 "active" => DescriptionFilter::Metadata(ConceptFilter::Active(
                     comparison,
-                    if self.take("*") || self.keyword("any") {
-                        None
-                    } else if self.take("1") || self.keyword("true") {
-                        Some(true)
-                    } else if self.take("0") || self.keyword("false") {
-                        Some(false)
-                    } else {
-                        return Err(self.unexpected());
-                    },
+                    self.active_value()?,
                 )),
                 "moduleid" => DescriptionFilter::Metadata(ConceptFilter::Module(
                     comparison,

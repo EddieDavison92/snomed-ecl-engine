@@ -87,6 +87,8 @@ fn concept_metadata_filters_compose_after_hierarchy_membership_and_extrema() {
         ),
         ("^2000001 {{C active != false}}", vec![0, 1]),
         ("^2000001 {{C active = *}}", vec![0, 1, 3]),
+        (r#"^2000001 {{C active = "*"}}"#, vec![0, 1, 3]),
+        (r#"^2000001 {{C active != "*"}}"#, vec![]),
         ("^2000001 {{C active != ANY}}", vec![]),
         (
             "!!> (1000001 OR 1000002) {{C definitionStatus=defined}}",

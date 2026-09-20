@@ -264,12 +264,6 @@ impl Context<'_> {
             }
         }
     }
-    pub(super) fn dotted(&mut self, seeds: &[u32], names: &[u32]) -> Result<Vec<u32>> {
-        match self.project(seeds, names)? {
-            QueryResult::Concepts(values) => Ok(values),
-            _ => Err(EvalError::TypeMismatch),
-        }
-    }
     pub(super) fn project(&mut self, seeds: &[u32], names: &[u32]) -> Result<QueryResult> {
         let n = self.store.ids.len();
         self.tick(n)?;

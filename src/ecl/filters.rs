@@ -10,6 +10,17 @@ pub enum ConceptFilter {
 }
 
 impl Parser<'_> {
+    pub(super) fn active_value(&mut self) -> Result<Option<bool>> {
+        if self.take("*") || self.keyword("any") || self.take("\"*\"") {
+            Ok(None)
+        } else if self.take("1") || self.keyword("true") {
+            Ok(Some(true))
+        } else if self.take("0") || self.keyword("false") {
+            Ok(Some(false))
+        } else {
+            Err(self.unexpected())
+        }
+    }
     pub(super) fn concept_filters(&mut self, depth: usize) -> Result<Vec<ConceptFilter>> {
         if depth > MAX_DEPTH {
             return Err(self.error(ParseErrorKind::Limit, "Filter nesting exceeds 64"));
@@ -32,18 +43,7 @@ impl Parser<'_> {
                 ));
             }
             let filter = match name.as_str() {
-                "active" => {
-                    let value = if self.take("*") || self.keyword("any") {
-                        None
-                    } else if self.take("1") || self.keyword("true") {
-                        Some(true)
-                    } else if self.take("0") || self.keyword("false") {
-                        Some(false)
-                    } else {
-                        return Err(self.unexpected());
-                    };
-                    ConceptFilter::Active(comparison, value)
-                }
+                "active" => ConceptFilter::Active(comparison, self.active_value()?),
                 "definitionstatus" => {
                     let set = self.take("(");
                     self.ws()?;

@@ -90,6 +90,11 @@ fn description_filters_share_a_row_within_each_block() {
         ("* {{D active=0}}", vec![100002]),
         ("* {{D active!=true}}", vec![100002]),
         ("* {{D active=*}}", vec![100001, 100002, 100003, 100004]),
+        (
+            r#"* {{D active="*"}}"#,
+            vec![100001, 100002, 100003, 100004],
+        ),
+        (r#"* {{D active!="*"}}"#, vec![]),
         ("* {{D active!=*}}", vec![]),
         ("* {{D id=(200002 200003)}}", vec![100001]),
         ("* {{D id=200003, active=*}}", vec![100002]),

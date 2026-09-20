@@ -71,7 +71,7 @@ impl Manifest {
             file.metadata()?.len() < 1024 * 1024,
             "Manifest is too large"
         );
-        let manifest: Self = serde_json::from_reader(file)?;
+        let manifest: Self = serde_json::from_reader(BufReader::new(file))?;
         ensure!(manifest.format == FORMAT, "Unsupported store format");
         Ok(manifest)
     }

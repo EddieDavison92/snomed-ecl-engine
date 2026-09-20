@@ -67,6 +67,8 @@ fn member_metadata_numeric_predicates_and_concept_projections_preserve_rows() {
     for (query, expected) in [
         ("^[referencedComponentId]200001", vec![300001, 300003]),
         ("^200001 {{M active=0}}", vec![300002]),
+        ("^200001 {{Mactive=0}}", vec![300002]),
+        ("^200001 {{mmoduleId=100001}}", vec![300001, 300003]),
         ("^200001 {{M active=\"*\"}}", vec![300001, 300002, 300003]),
         ("^200001 {{M mapGroup= #1}}", vec![300001]),
         ("^200001 {{M mapGroup!= #1}}", vec![300001, 300003]),
@@ -322,6 +324,70 @@ fn heterogeneous_sets_preserve_types_and_empty_dot_sets_are_neutral() {
             MemberValue::Number("2".into())
         ])
     );
+}
+
+#[test]
+fn member_subqueries_accept_concept_sets_recovered_from_typed_operations() {
+    let store = fixture();
+    for query in [
+        "^[referencedComponentId]((200001 OR (^[mapGroup]200001)) MINUS (^[mapGroup]200001))",
+        "^200001 {{M referencedComponentId = ((300001 OR (^[mapGroup]200001)) AND *)}}",
+    ] {
+        let expected = if query.contains("{{M") {
+            vec![300001]
+        } else {
+            vec![300001, 300003]
+        };
+        assert_eq!(codes(&store, query), expected);
+    }
+}
+
+#[test]
+fn recovered_concepts_keep_numeric_order_and_evaluation_limits() {
+    use snomed_ecl_engine::eval::evaluate_with_limits;
+    use std::sync::atomic::AtomicBool;
+    let mut store = fixture();
+    store.ids.push(10000000);
+    store.flags.push(1);
+    let query =
+        parse("((10000000 OR 300001) OR (^[mapGroup]200001)) MINUS (^[mapGroup]200001)").unwrap();
+    assert_eq!(evaluate(&store, &query).unwrap(), vec![2, 8]);
+    assert_eq!(
+        evaluate_with_limits(
+            &store,
+            &query,
+            Limits::default(),
+            Some(&AtomicBool::new(true))
+        ),
+        Err(EvalError::Cancelled)
+    );
+    for (limits, expected) in [
+        (
+            Limits {
+                max_live_set_values: 20,
+                ..Limits::default()
+            },
+            EvalError::MemoryLimit,
+        ),
+        (
+            Limits {
+                max_work: 20,
+                ..Limits::default()
+            },
+            EvalError::WorkLimit,
+        ),
+    ] {
+        assert_eq!(
+            evaluate_with_limits(&store, &query, limits, None),
+            Err(expected)
+        );
+    }
+    // An empty operand must not hide an invalid field in the other operand.
+    let invalid = parse("(999999 AND (^[mapGroup]200001)) AND (^[missing]200001)").unwrap();
+    assert!(matches!(
+        evaluate(&store, &invalid),
+        Err(EvalError::InvalidField(_))
+    ));
 }
 
 #[test]
