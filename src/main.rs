@@ -838,7 +838,14 @@ fn search_response(
         let score = label
             .as_deref()
             .map_or(i32::MIN, |label| score(label, text, &query_words));
-        scored.push((score, label, store.ids[ordinal as usize]));
+        // Whether the concept is active travels with it: a browser that shows
+        // a retired concept as though it were current is worse than useless.
+        scored.push((
+            score,
+            label,
+            store.ids[ordinal as usize],
+            store.is_active(ordinal),
+        ));
     }
     // Best score first, then shortest, then by code so ties are stable.
     scored.sort_by(|a, b| {
@@ -855,7 +862,9 @@ fn search_response(
 
     let concepts: Vec<_> = scored
         .into_iter()
-        .map(|(_, display, code)| serde_json::json!({"code": code.to_string(), "display": display}))
+        .map(|(_, display, code, active)| {
+            serde_json::json!({"code": code.to_string(), "display": display, "active": active})
+        })
         .collect();
     serde_json::to_writer(
         &mut *out,
