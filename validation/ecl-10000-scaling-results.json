@@ -1,0 +1,1094 @@
+{
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "corpus_sha256": "b3e5b35afc0882598cf2efb0c218c918bbe345f8d85bb87131bcb1018eaf8848",
+  "container_sha256": "dc9e6793951f3384f73fdaa25fe904033be595eb4d1ad657047d554d470c8ef0",
+  "recorded_at": "2026-09-20T13:25:28.104038+00:00",
+  "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31",
+  "binary_sha256": "405ae31ea347d1bc4e988f44e0b24f67f809486a4815e03a9306ba72ecf44c32",
+  "example_source_sha256": "e9318077d67c20a0aacdecc8f69b96fb6c525f05003345e2cce865431e0e2b2e",
+  "runner_source_sha256": "4f55333910a8a1bdff06415c699554d7239087fe3c26aa28cf15d075a534dc62",
+  "baseline_sha256": "b62fe6151fb90ed58d44c434f80c7d61459a61a1396dc59b39246f8fdf430e56",
+  "git_head": "a29ef5ced22378cf4d5a95c472b751793e7aff34",
+  "docker_info": {
+    "NCPU": 24,
+    "MemTotal": 16728469504,
+    "ServerVersion": "28.0.4",
+    "KernelVersion": "5.15.167.4-microsoft-standard-WSL2",
+    "OperatingSystem": "Docker Desktop",
+    "Architecture": "x86_64",
+    "CgroupVersion": "1"
+  },
+  "complete": true,
+  "runs": [
+    {
+      "cpu_max": "100000 100000",
+      "cpu_stat": "nr_periods 1471\nnr_throttled 905\nthrottled_time 7442995900\n",
+      "memory_events": "0\n",
+      "memory_max": "536870912\n",
+      "memory_peak_bytes": 297676800,
+      "samples": 5,
+      "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
+      "store_open_ms": 910.804619,
+      "verified_complete_sets": 10000,
+      "workers": 1,
+      "batch_wall": {
+        "samples_ms": [
+          23602.694177,
+          24118.149559999998,
+          22587.120628,
+          22545.778817,
+          25065.994286999998
+        ],
+        "median_ms": 23602.694177,
+        "p95_ms": 25065.994286999998
+      },
+      "request": {
+        "median_ms": 0.9171665,
+        "p95_ms": 10.010496,
+        "sample_count": 50000
+      },
+      "evaluation": {
+        "median_ms": 0.9138725000000001,
+        "p95_ms": 10.00826,
+        "sample_count": 50000
+      },
+      "categories": {
+        "ancestors": {
+          "median_ms": 0.7832195,
+          "p95_ms": 0.998632,
+          "sample_count": 1600
+        },
+        "ancestors-or-self": {
+          "median_ms": 0.7842065,
+          "p95_ms": 0.970926,
+          "sample_count": 500
+        },
+        "attribute-cardinality": {
+          "median_ms": 0.934428,
+          "p95_ms": 1.2214800000000001,
+          "sample_count": 1600
+        },
+        "attribute-equality": {
+          "median_ms": 0.7840070000000001,
+          "p95_ms": 0.973971,
+          "sample_count": 1600
+        },
+        "attribute-inequality": {
+          "median_ms": 0.7849315,
+          "p95_ms": 0.997825,
+          "sample_count": 1600
+        },
+        "bottom": {
+          "median_ms": 0.7876295,
+          "p95_ms": 0.983756,
+          "sample_count": 1600
+        },
+        "children": {
+          "median_ms": 0.7798700000000001,
+          "p95_ms": 0.972607,
+          "sample_count": 1600
+        },
+        "children-or-self": {
+          "median_ms": 0.777081,
+          "p95_ms": 0.950069,
+          "sample_count": 500
+        },
+        "concept-active": {
+          "median_ms": 0.7826695,
+          "p95_ms": 0.961785,
+          "sample_count": 500
+        },
+        "concept-effective-time": {
+          "median_ms": 0.7839769999999999,
+          "p95_ms": 1.027055,
+          "sample_count": 500
+        },
+        "concept-filter": {
+          "median_ms": 0.0045405,
+          "p95_ms": 0.008624999999999999,
+          "sample_count": 1600
+        },
+        "concept-module": {
+          "median_ms": 1.5609035,
+          "p95_ms": 1.8815279999999999,
+          "sample_count": 500
+        },
+        "concrete": {
+          "median_ms": 0.8814580000000001,
+          "p95_ms": 1.073142,
+          "sample_count": 1600
+        },
+        "descendants": {
+          "median_ms": 0.7791815,
+          "p95_ms": 0.955081,
+          "sample_count": 1600
+        },
+        "description-all-active-states": {
+          "median_ms": 0.7916045,
+          "p95_ms": 0.976745,
+          "sample_count": 500
+        },
+        "description-dialect": {
+          "median_ms": 0.7889485,
+          "p95_ms": 1.00047,
+          "sample_count": 500
+        },
+        "description-filter": {
+          "median_ms": 0.007826,
+          "p95_ms": 0.03218,
+          "sample_count": 1600
+        },
+        "description-type-negation": {
+          "median_ms": 0.7856215,
+          "p95_ms": 0.9971540000000001,
+          "sample_count": 500
+        },
+        "dotted": {
+          "median_ms": 1.4547815,
+          "p95_ms": 1.75966,
+          "sample_count": 1600
+        },
+        "exclusion": {
+          "median_ms": 1.6584025000000002,
+          "p95_ms": 3.81336,
+          "sample_count": 1600
+        },
+        "group": {
+          "median_ms": 0.7862009999999999,
+          "p95_ms": 0.983862,
+          "sample_count": 1600
+        },
+        "group-cardinality": {
+          "median_ms": 0.9327044999999999,
+          "p95_ms": 1.244937,
+          "sample_count": 1600
+        },
+        "group-conjunction": {
+          "median_ms": 0.935365,
+          "p95_ms": 1.243618,
+          "sample_count": 500
+        },
+        "history": {
+          "median_ms": 10.617870499999999,
+          "p95_ms": 19.783997,
+          "sample_count": 1600
+        },
+        "history-maximum": {
+          "median_ms": 26.0934195,
+          "p95_ms": 39.45568,
+          "sample_count": 500
+        },
+        "history-moderate": {
+          "median_ms": 19.628821000000002,
+          "p95_ms": 31.010563,
+          "sample_count": 500
+        },
+        "intersection": {
+          "median_ms": 1.6613594999999999,
+          "p95_ms": 3.847983,
+          "sample_count": 1600
+        },
+        "member-projection": {
+          "median_ms": 6.624618,
+          "p95_ms": 10.470223,
+          "sample_count": 1600
+        },
+        "membership": {
+          "median_ms": 1.2110465000000001,
+          "p95_ms": 1.463778,
+          "sample_count": 1600
+        },
+        "nested-hierarchy": {
+          "median_ms": 0.7994835,
+          "p95_ms": 1.675184,
+          "sample_count": 1600
+        },
+        "nested-value": {
+          "median_ms": 1.5630600000000001,
+          "p95_ms": 1.920428,
+          "sample_count": 1600
+        },
+        "parents": {
+          "median_ms": 0.7786455000000001,
+          "p95_ms": 0.968158,
+          "sample_count": 1600
+        },
+        "parents-or-self": {
+          "median_ms": 0.7792595,
+          "p95_ms": 0.9909770000000001,
+          "sample_count": 500
+        },
+        "refinement-conjunction": {
+          "median_ms": 0.936185,
+          "p95_ms": 1.205304,
+          "sample_count": 500
+        },
+        "refinement-disjunction": {
+          "median_ms": 0.9373910000000001,
+          "p95_ms": 1.219272,
+          "sample_count": 500
+        },
+        "refset-containing": {
+          "median_ms": 0.09710650000000001,
+          "p95_ms": 0.155728,
+          "sample_count": 500
+        },
+        "reverse": {
+          "median_ms": 6.894682,
+          "p95_ms": 8.959787,
+          "sample_count": 1600
+        },
+        "reverse-cardinality": {
+          "median_ms": 6.8841155,
+          "p95_ms": 8.688095,
+          "sample_count": 500
+        },
+        "strict-descendants": {
+          "median_ms": 0.777617,
+          "p95_ms": 0.9907710000000001,
+          "sample_count": 500
+        },
+        "term-prefix": {
+          "median_ms": 1.1482085,
+          "p95_ms": 2.860886,
+          "sample_count": 500
+        },
+        "term-set": {
+          "median_ms": 1.1579245,
+          "p95_ms": 2.8699149999999998,
+          "sample_count": 500
+        },
+        "term-wildcard": {
+          "median_ms": 1.1464195,
+          "p95_ms": 4.234374,
+          "sample_count": 500
+        },
+        "top": {
+          "median_ms": 0.853202,
+          "p95_ms": 2.9165319999999997,
+          "sample_count": 1600
+        },
+        "union": {
+          "median_ms": 1.6585189999999999,
+          "p95_ms": 3.832228,
+          "sample_count": 1600
+        },
+        "wildcard-name": {
+          "median_ms": 0.936008,
+          "p95_ms": 1.269844,
+          "sample_count": 1600
+        }
+      },
+      "expressions_per_second": 423.68044618163333,
+      "cpus": 1,
+      "memory_mib": 512,
+      "raw_report": "data\\validation\\ecl-10000-scaling-results-1-1cpu-512m-1workers.json",
+      "raw_sha256": "80774de2d9222d2618ffc0fc3a2ef2c6d84beb0fcd35be47818e4d4174b90602",
+      "exit_code": 0,
+      "throughput_speedup_vs_first": 1.0
+    },
+    {
+      "cpu_max": "400000 100000",
+      "cpu_stat": "nr_periods 1475\nnr_throttled 0\nthrottled_time 0\n",
+      "memory_events": "0\n",
+      "memory_max": "1073741824\n",
+      "memory_peak_bytes": 287506432,
+      "samples": 5,
+      "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
+      "store_open_ms": 868.642098,
+      "verified_complete_sets": 10000,
+      "workers": 1,
+      "batch_wall": {
+        "samples_ms": [
+          23159.724433,
+          22468.633535999998,
+          22951.625708000003,
+          23963.524619,
+          27324.299054
+        ],
+        "median_ms": 23159.724433,
+        "p95_ms": 27324.299054
+      },
+      "request": {
+        "median_ms": 0.9601905,
+        "p95_ms": 9.940252000000001,
+        "sample_count": 50000
+      },
+      "evaluation": {
+        "median_ms": 0.9563600000000001,
+        "p95_ms": 9.936077,
+        "sample_count": 50000
+      },
+      "categories": {
+        "ancestors": {
+          "median_ms": 0.798216,
+          "p95_ms": 1.103166,
+          "sample_count": 1600
+        },
+        "ancestors-or-self": {
+          "median_ms": 0.7972105,
+          "p95_ms": 1.1278830000000002,
+          "sample_count": 500
+        },
+        "attribute-cardinality": {
+          "median_ms": 0.97465,
+          "p95_ms": 1.476297,
+          "sample_count": 1600
+        },
+        "attribute-equality": {
+          "median_ms": 0.7984985,
+          "p95_ms": 1.157365,
+          "sample_count": 1600
+        },
+        "attribute-inequality": {
+          "median_ms": 0.800385,
+          "p95_ms": 1.0822029999999998,
+          "sample_count": 1600
+        },
+        "bottom": {
+          "median_ms": 0.802022,
+          "p95_ms": 1.147047,
+          "sample_count": 1600
+        },
+        "children": {
+          "median_ms": 0.794773,
+          "p95_ms": 1.091447,
+          "sample_count": 1600
+        },
+        "children-or-self": {
+          "median_ms": 0.7896135,
+          "p95_ms": 1.105397,
+          "sample_count": 500
+        },
+        "concept-active": {
+          "median_ms": 0.7988375,
+          "p95_ms": 1.0704259999999999,
+          "sample_count": 500
+        },
+        "concept-effective-time": {
+          "median_ms": 0.800508,
+          "p95_ms": 1.1834090000000002,
+          "sample_count": 500
+        },
+        "concept-filter": {
+          "median_ms": 0.005094,
+          "p95_ms": 0.010917000000000001,
+          "sample_count": 1600
+        },
+        "concept-module": {
+          "median_ms": 1.5948419999999999,
+          "p95_ms": 2.437462,
+          "sample_count": 500
+        },
+        "concrete": {
+          "median_ms": 0.9017295000000001,
+          "p95_ms": 1.197978,
+          "sample_count": 1600
+        },
+        "descendants": {
+          "median_ms": 0.7909809999999999,
+          "p95_ms": 1.082918,
+          "sample_count": 1600
+        },
+        "description-all-active-states": {
+          "median_ms": 0.804568,
+          "p95_ms": 1.065304,
+          "sample_count": 500
+        },
+        "description-dialect": {
+          "median_ms": 0.8062125,
+          "p95_ms": 1.1767329999999998,
+          "sample_count": 500
+        },
+        "description-filter": {
+          "median_ms": 0.0086355,
+          "p95_ms": 0.035071,
+          "sample_count": 1600
+        },
+        "description-type-negation": {
+          "median_ms": 0.8038164999999999,
+          "p95_ms": 1.154408,
+          "sample_count": 500
+        },
+        "dotted": {
+          "median_ms": 1.487281,
+          "p95_ms": 2.064486,
+          "sample_count": 1600
+        },
+        "exclusion": {
+          "median_ms": 1.6984905000000001,
+          "p95_ms": 3.9979760000000004,
+          "sample_count": 1600
+        },
+        "group": {
+          "median_ms": 0.7986455,
+          "p95_ms": 1.121143,
+          "sample_count": 1600
+        },
+        "group-cardinality": {
+          "median_ms": 0.9696775,
+          "p95_ms": 1.40196,
+          "sample_count": 1600
+        },
+        "group-conjunction": {
+          "median_ms": 0.969184,
+          "p95_ms": 1.3812570000000002,
+          "sample_count": 500
+        },
+        "history": {
+          "median_ms": 11.2746925,
+          "p95_ms": 16.90043,
+          "sample_count": 1600
+        },
+        "history-maximum": {
+          "median_ms": 27.2509455,
+          "p95_ms": 39.342189,
+          "sample_count": 500
+        },
+        "history-moderate": {
+          "median_ms": 20.626216,
+          "p95_ms": 30.688189,
+          "sample_count": 500
+        },
+        "intersection": {
+          "median_ms": 1.7149655,
+          "p95_ms": 3.847429,
+          "sample_count": 1600
+        },
+        "member-projection": {
+          "median_ms": 7.2730475,
+          "p95_ms": 11.26845,
+          "sample_count": 1600
+        },
+        "membership": {
+          "median_ms": 1.2292265,
+          "p95_ms": 1.6438780000000002,
+          "sample_count": 1600
+        },
+        "nested-hierarchy": {
+          "median_ms": 0.8361795000000001,
+          "p95_ms": 1.742517,
+          "sample_count": 1600
+        },
+        "nested-value": {
+          "median_ms": 1.588656,
+          "p95_ms": 2.2037459999999998,
+          "sample_count": 1600
+        },
+        "parents": {
+          "median_ms": 0.79269,
+          "p95_ms": 1.0882830000000001,
+          "sample_count": 1600
+        },
+        "parents-or-self": {
+          "median_ms": 0.7968664999999999,
+          "p95_ms": 1.2413809999999998,
+          "sample_count": 500
+        },
+        "refinement-conjunction": {
+          "median_ms": 0.984407,
+          "p95_ms": 1.452959,
+          "sample_count": 500
+        },
+        "refinement-disjunction": {
+          "median_ms": 0.982082,
+          "p95_ms": 1.4399490000000001,
+          "sample_count": 500
+        },
+        "refset-containing": {
+          "median_ms": 0.10572300000000001,
+          "p95_ms": 0.190898,
+          "sample_count": 500
+        },
+        "reverse": {
+          "median_ms": 6.9946435000000005,
+          "p95_ms": 8.240226999999999,
+          "sample_count": 1600
+        },
+        "reverse-cardinality": {
+          "median_ms": 6.994894,
+          "p95_ms": 8.576497,
+          "sample_count": 500
+        },
+        "strict-descendants": {
+          "median_ms": 0.792945,
+          "p95_ms": 1.0283200000000001,
+          "sample_count": 500
+        },
+        "term-prefix": {
+          "median_ms": 1.1992605,
+          "p95_ms": 2.350835,
+          "sample_count": 500
+        },
+        "term-set": {
+          "median_ms": 1.203302,
+          "p95_ms": 2.535931,
+          "sample_count": 500
+        },
+        "term-wildcard": {
+          "median_ms": 1.197626,
+          "p95_ms": 2.3999249999999996,
+          "sample_count": 500
+        },
+        "top": {
+          "median_ms": 0.8825735,
+          "p95_ms": 2.969546,
+          "sample_count": 1600
+        },
+        "union": {
+          "median_ms": 1.7205560000000002,
+          "p95_ms": 3.924311,
+          "sample_count": 1600
+        },
+        "wildcard-name": {
+          "median_ms": 0.9726295,
+          "p95_ms": 1.390201,
+          "sample_count": 1600
+        }
+      },
+      "expressions_per_second": 431.7840667288392,
+      "cpus": 4,
+      "memory_mib": 1024,
+      "raw_report": "data\\validation\\ecl-10000-scaling-results-2-4cpu-1024m-1workers.json",
+      "raw_sha256": "6e1a7e2873b54797ed08232f4e60347e97af8742990cdd1f59663f47dfe655d2",
+      "exit_code": 0,
+      "throughput_speedup_vs_first": 1.0191267277502154
+    },
+    {
+      "cpu_max": "200000 100000",
+      "cpu_stat": "nr_periods 838\nnr_throttled 716\nthrottled_time 7954440600\n",
+      "memory_events": "0\n",
+      "memory_max": "536870912\n",
+      "memory_peak_bytes": 299356160,
+      "samples": 5,
+      "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
+      "store_open_ms": 1024.793474,
+      "verified_complete_sets": 10000,
+      "workers": 2,
+      "batch_wall": {
+        "samples_ms": [
+          14391.979773,
+          12297.387924,
+          12191.704597,
+          12084.13835,
+          12701.295682
+        ],
+        "median_ms": 12297.387924,
+        "p95_ms": 14391.979773
+      },
+      "request": {
+        "median_ms": 1.0196985,
+        "p95_ms": 10.722337,
+        "sample_count": 50000
+      },
+      "evaluation": {
+        "median_ms": 1.0156155,
+        "p95_ms": 10.718377,
+        "sample_count": 50000
+      },
+      "categories": {
+        "ancestors": {
+          "median_ms": 0.7918625,
+          "p95_ms": 1.320943,
+          "sample_count": 1600
+        },
+        "ancestors-or-self": {
+          "median_ms": 0.7862275,
+          "p95_ms": 1.309839,
+          "sample_count": 500
+        },
+        "attribute-cardinality": {
+          "median_ms": 1.057527,
+          "p95_ms": 1.761617,
+          "sample_count": 1600
+        },
+        "attribute-equality": {
+          "median_ms": 0.7948445,
+          "p95_ms": 1.3255299999999999,
+          "sample_count": 1600
+        },
+        "attribute-inequality": {
+          "median_ms": 0.793854,
+          "p95_ms": 1.351834,
+          "sample_count": 1600
+        },
+        "bottom": {
+          "median_ms": 0.793365,
+          "p95_ms": 1.305441,
+          "sample_count": 1600
+        },
+        "children": {
+          "median_ms": 0.7860754999999999,
+          "p95_ms": 1.339549,
+          "sample_count": 1600
+        },
+        "children-or-self": {
+          "median_ms": 0.7867895,
+          "p95_ms": 1.310335,
+          "sample_count": 500
+        },
+        "concept-active": {
+          "median_ms": 0.791486,
+          "p95_ms": 1.393537,
+          "sample_count": 500
+        },
+        "concept-effective-time": {
+          "median_ms": 0.795876,
+          "p95_ms": 1.330317,
+          "sample_count": 500
+        },
+        "concept-filter": {
+          "median_ms": 0.004619,
+          "p95_ms": 0.010557,
+          "sample_count": 1600
+        },
+        "concept-module": {
+          "median_ms": 1.5833485,
+          "p95_ms": 2.3775760000000004,
+          "sample_count": 500
+        },
+        "concrete": {
+          "median_ms": 0.8899509999999999,
+          "p95_ms": 1.43071,
+          "sample_count": 1600
+        },
+        "descendants": {
+          "median_ms": 0.7853485,
+          "p95_ms": 1.3159020000000001,
+          "sample_count": 1600
+        },
+        "description-all-active-states": {
+          "median_ms": 0.793134,
+          "p95_ms": 1.374107,
+          "sample_count": 500
+        },
+        "description-dialect": {
+          "median_ms": 0.7932000000000001,
+          "p95_ms": 1.394081,
+          "sample_count": 500
+        },
+        "description-filter": {
+          "median_ms": 0.0079875,
+          "p95_ms": 0.016901,
+          "sample_count": 1600
+        },
+        "description-type-negation": {
+          "median_ms": 0.794778,
+          "p95_ms": 1.266294,
+          "sample_count": 500
+        },
+        "dotted": {
+          "median_ms": 1.4916885,
+          "p95_ms": 2.565973,
+          "sample_count": 1600
+        },
+        "exclusion": {
+          "median_ms": 1.7275755,
+          "p95_ms": 4.266908,
+          "sample_count": 1600
+        },
+        "group": {
+          "median_ms": 0.7916595,
+          "p95_ms": 1.289325,
+          "sample_count": 1600
+        },
+        "group-cardinality": {
+          "median_ms": 1.0616539999999999,
+          "p95_ms": 1.727574,
+          "sample_count": 1600
+        },
+        "group-conjunction": {
+          "median_ms": 1.068435,
+          "p95_ms": 1.676549,
+          "sample_count": 500
+        },
+        "history": {
+          "median_ms": 11.3968945,
+          "p95_ms": 21.998823,
+          "sample_count": 1600
+        },
+        "history-maximum": {
+          "median_ms": 28.4410695,
+          "p95_ms": 47.067405,
+          "sample_count": 500
+        },
+        "history-moderate": {
+          "median_ms": 21.017357500000003,
+          "p95_ms": 36.029028999999994,
+          "sample_count": 500
+        },
+        "intersection": {
+          "median_ms": 1.734792,
+          "p95_ms": 4.123547,
+          "sample_count": 1600
+        },
+        "member-projection": {
+          "median_ms": 6.582424,
+          "p95_ms": 13.520483,
+          "sample_count": 1600
+        },
+        "membership": {
+          "median_ms": 1.2269744999999999,
+          "p95_ms": 1.942248,
+          "sample_count": 1600
+        },
+        "nested-hierarchy": {
+          "median_ms": 0.829016,
+          "p95_ms": 1.86008,
+          "sample_count": 1600
+        },
+        "nested-value": {
+          "median_ms": 1.5961395,
+          "p95_ms": 2.683782,
+          "sample_count": 1600
+        },
+        "parents": {
+          "median_ms": 0.782529,
+          "p95_ms": 1.3272430000000002,
+          "sample_count": 1600
+        },
+        "parents-or-self": {
+          "median_ms": 0.7824605,
+          "p95_ms": 1.327478,
+          "sample_count": 500
+        },
+        "refinement-conjunction": {
+          "median_ms": 1.0657735,
+          "p95_ms": 1.764379,
+          "sample_count": 500
+        },
+        "refinement-disjunction": {
+          "median_ms": 1.0568819999999999,
+          "p95_ms": 1.683535,
+          "sample_count": 500
+        },
+        "refset-containing": {
+          "median_ms": 0.115385,
+          "p95_ms": 0.183165,
+          "sample_count": 500
+        },
+        "reverse": {
+          "median_ms": 7.1079115,
+          "p95_ms": 11.394356,
+          "sample_count": 1600
+        },
+        "reverse-cardinality": {
+          "median_ms": 7.1501395,
+          "p95_ms": 12.304312,
+          "sample_count": 500
+        },
+        "strict-descendants": {
+          "median_ms": 0.792773,
+          "p95_ms": 1.344535,
+          "sample_count": 500
+        },
+        "term-prefix": {
+          "median_ms": 1.2474955,
+          "p95_ms": 3.099528,
+          "sample_count": 500
+        },
+        "term-set": {
+          "median_ms": 1.2712505000000003,
+          "p95_ms": 3.2827680000000004,
+          "sample_count": 500
+        },
+        "term-wildcard": {
+          "median_ms": 1.2511,
+          "p95_ms": 2.859636,
+          "sample_count": 500
+        },
+        "top": {
+          "median_ms": 0.8888275,
+          "p95_ms": 3.182433,
+          "sample_count": 1600
+        },
+        "union": {
+          "median_ms": 1.7267000000000001,
+          "p95_ms": 4.246926,
+          "sample_count": 1600
+        },
+        "wildcard-name": {
+          "median_ms": 1.0720005,
+          "p95_ms": 1.753728,
+          "sample_count": 1600
+        }
+      },
+      "expressions_per_second": 813.1808203336954,
+      "cpus": 2,
+      "memory_mib": 512,
+      "raw_report": "data\\validation\\ecl-10000-scaling-results-3-2cpu-512m-2workers.json",
+      "raw_sha256": "e3107dd671403d1972ea81c608c07e549afd03ee1353d1b95c9ec791c3d8c554",
+      "exit_code": 0,
+      "throughput_speedup_vs_first": 1.9193258212938196
+    },
+    {
+      "cpu_max": "400000 100000",
+      "cpu_stat": "nr_periods 408\nnr_throttled 344\nthrottled_time 7170579100\n",
+      "memory_events": "0\n",
+      "memory_max": "1073741824\n",
+      "memory_peak_bytes": 311771136,
+      "samples": 5,
+      "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
+      "store_open_ms": 989.3132489999999,
+      "verified_complete_sets": 10000,
+      "workers": 4,
+      "batch_wall": {
+        "samples_ms": [
+          5906.486752,
+          5847.779061,
+          5873.441188,
+          5860.987102,
+          5910.8996210000005
+        ],
+        "median_ms": 5873.441188,
+        "p95_ms": 5910.8996210000005
+      },
+      "request": {
+        "median_ms": 0.950399,
+        "p95_ms": 9.459885,
+        "sample_count": 50000
+      },
+      "evaluation": {
+        "median_ms": 0.946942,
+        "p95_ms": 9.453389,
+        "sample_count": 50000
+      },
+      "categories": {
+        "ancestors": {
+          "median_ms": 0.7554225,
+          "p95_ms": 1.255156,
+          "sample_count": 1600
+        },
+        "ancestors-or-self": {
+          "median_ms": 0.7498425,
+          "p95_ms": 1.2415919999999998,
+          "sample_count": 500
+        },
+        "attribute-cardinality": {
+          "median_ms": 0.9942065,
+          "p95_ms": 1.464636,
+          "sample_count": 1600
+        },
+        "attribute-equality": {
+          "median_ms": 0.7470095000000001,
+          "p95_ms": 1.1844100000000002,
+          "sample_count": 1600
+        },
+        "attribute-inequality": {
+          "median_ms": 0.7546755,
+          "p95_ms": 1.252979,
+          "sample_count": 1600
+        },
+        "bottom": {
+          "median_ms": 0.7565744999999999,
+          "p95_ms": 1.271268,
+          "sample_count": 1600
+        },
+        "children": {
+          "median_ms": 0.7454465,
+          "p95_ms": 1.2748080000000002,
+          "sample_count": 1600
+        },
+        "children-or-self": {
+          "median_ms": 0.7433715,
+          "p95_ms": 1.072773,
+          "sample_count": 500
+        },
+        "concept-active": {
+          "median_ms": 0.749144,
+          "p95_ms": 1.183442,
+          "sample_count": 500
+        },
+        "concept-effective-time": {
+          "median_ms": 0.7478505,
+          "p95_ms": 1.2345030000000001,
+          "sample_count": 500
+        },
+        "concept-filter": {
+          "median_ms": 0.003868,
+          "p95_ms": 0.010144,
+          "sample_count": 1600
+        },
+        "concept-module": {
+          "median_ms": 1.5080144999999998,
+          "p95_ms": 2.170033,
+          "sample_count": 500
+        },
+        "concrete": {
+          "median_ms": 0.851268,
+          "p95_ms": 1.242827,
+          "sample_count": 1600
+        },
+        "descendants": {
+          "median_ms": 0.746898,
+          "p95_ms": 1.297084,
+          "sample_count": 1600
+        },
+        "description-all-active-states": {
+          "median_ms": 0.7473295,
+          "p95_ms": 1.242547,
+          "sample_count": 500
+        },
+        "description-dialect": {
+          "median_ms": 0.752904,
+          "p95_ms": 1.1672589999999998,
+          "sample_count": 500
+        },
+        "description-filter": {
+          "median_ms": 0.006285,
+          "p95_ms": 0.01675,
+          "sample_count": 1600
+        },
+        "description-type-negation": {
+          "median_ms": 0.7576955,
+          "p95_ms": 1.297689,
+          "sample_count": 500
+        },
+        "dotted": {
+          "median_ms": 1.462749,
+          "p95_ms": 2.2848289999999998,
+          "sample_count": 1600
+        },
+        "exclusion": {
+          "median_ms": 1.623353,
+          "p95_ms": 4.173336,
+          "sample_count": 1600
+        },
+        "group": {
+          "median_ms": 0.7537445,
+          "p95_ms": 1.235445,
+          "sample_count": 1600
+        },
+        "group-cardinality": {
+          "median_ms": 1.0023689999999998,
+          "p95_ms": 1.5202639999999998,
+          "sample_count": 1600
+        },
+        "group-conjunction": {
+          "median_ms": 1.0032075,
+          "p95_ms": 1.631653,
+          "sample_count": 500
+        },
+        "history": {
+          "median_ms": 10.094052000000001,
+          "p95_ms": 19.426804,
+          "sample_count": 1600
+        },
+        "history-maximum": {
+          "median_ms": 26.938384,
+          "p95_ms": 39.968614,
+          "sample_count": 500
+        },
+        "history-moderate": {
+          "median_ms": 19.881729,
+          "p95_ms": 31.343771999999998,
+          "sample_count": 500
+        },
+        "intersection": {
+          "median_ms": 1.6123725,
+          "p95_ms": 4.0656740000000005,
+          "sample_count": 1600
+        },
+        "member-projection": {
+          "median_ms": 5.528271499999999,
+          "p95_ms": 9.599487,
+          "sample_count": 1600
+        },
+        "membership": {
+          "median_ms": 1.1866839999999999,
+          "p95_ms": 1.6883110000000001,
+          "sample_count": 1600
+        },
+        "nested-hierarchy": {
+          "median_ms": 0.7772655,
+          "p95_ms": 1.633386,
+          "sample_count": 1600
+        },
+        "nested-value": {
+          "median_ms": 1.5115634999999998,
+          "p95_ms": 2.265149,
+          "sample_count": 1600
+        },
+        "parents": {
+          "median_ms": 0.744173,
+          "p95_ms": 1.252656,
+          "sample_count": 1600
+        },
+        "parents-or-self": {
+          "median_ms": 0.744936,
+          "p95_ms": 1.282313,
+          "sample_count": 500
+        },
+        "refinement-conjunction": {
+          "median_ms": 0.9935935,
+          "p95_ms": 1.4858770000000001,
+          "sample_count": 500
+        },
+        "refinement-disjunction": {
+          "median_ms": 1.0087045,
+          "p95_ms": 1.572406,
+          "sample_count": 500
+        },
+        "refset-containing": {
+          "median_ms": 0.113032,
+          "p95_ms": 0.184025,
+          "sample_count": 500
+        },
+        "reverse": {
+          "median_ms": 7.0119965,
+          "p95_ms": 10.345777,
+          "sample_count": 1600
+        },
+        "reverse-cardinality": {
+          "median_ms": 7.023598,
+          "p95_ms": 10.940992,
+          "sample_count": 500
+        },
+        "strict-descendants": {
+          "median_ms": 0.7477605,
+          "p95_ms": 1.213982,
+          "sample_count": 500
+        },
+        "term-prefix": {
+          "median_ms": 1.2058024999999999,
+          "p95_ms": 3.070611,
+          "sample_count": 500
+        },
+        "term-set": {
+          "median_ms": 1.2021205000000001,
+          "p95_ms": 3.509549,
+          "sample_count": 500
+        },
+        "term-wildcard": {
+          "median_ms": 1.2049615,
+          "p95_ms": 3.237707,
+          "sample_count": 500
+        },
+        "top": {
+          "median_ms": 0.8320084999999999,
+          "p95_ms": 3.142149,
+          "sample_count": 1600
+        },
+        "union": {
+          "median_ms": 1.6125255,
+          "p95_ms": 4.011487,
+          "sample_count": 1600
+        },
+        "wildcard-name": {
+          "median_ms": 0.99928,
+          "p95_ms": 1.4111200000000002,
+          "sample_count": 1600
+        }
+      },
+      "expressions_per_second": 1702.5794044607023,
+      "cpus": 4,
+      "memory_mib": 1024,
+      "raw_report": "data\\validation\\ecl-10000-scaling-results-4-4cpu-1024m-4workers.json",
+      "raw_sha256": "09394d319d04657d0315aa8fd8f3fa32241736e9a6241d95bf0aaba77b728b40",
+      "exit_code": 0,
+      "throughput_speedup_vs_first": 4.018546099554475
+    }
+  ],
+  "scope": "Sequential container runs on the same host; no competing task containers. One shared index per process. All CPU and RAM limits apply to the whole container, with no extra swap. Warm library calls, no JSONL or HTTP transport. Do not compare absolute times directly with the earlier CLI corpus benchmark. Filesystem caches retained. Host is not exclusively reserved. No full-ECL or serverless cold-start claim."
+}

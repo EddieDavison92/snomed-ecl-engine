@@ -20,6 +20,8 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 
 Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [1,000-case benchmark](validation/combined-ecl-corpus-results.json) and [10,000-case benchmark](validation/ecl-10000-completion-results.json) pin the release, binary, resource limits and result digests. The larger corpus preserves all 1,000 original expressions and complete results. All 10,000 sets remain unchanged after the latest compatibility fixes. Request p95 was 13.79 ms and container-charged peak memory was 227.15 MiB. An independent RF2 check matches 3,920 of its complete result sets. These figures measure the fixed workloads, not full ECL conformance or hosted cold starts. See [corpus construction and measurement conditions](docs/corpus.md).
 
+A separate [library concurrency benchmark](docs/scaling.md) completed the same 10,000 expressions in **5.87 seconds with four CPUs and four workers**, versus 23.60 seconds with one CPU and one worker. Four workers shared one index, with a 0.95 ms median query and a 297.33 MiB charged peak under a 1 GiB limit. Every complete result set matched. These direct library timings exclude transport; the CLI remains sequential.
+
 The packed store opened in 1.13 seconds; container start through the first response took 1.72 seconds. Checksums and structural validation remain enabled, and description and member data load on demand. Filesystem caches were not dropped. Earlier [startup measurements](validation/startup-results.json) identified and fixed an unbuffered manifest read.
 
 ## Compared with Snowstorm

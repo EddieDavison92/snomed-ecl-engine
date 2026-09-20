@@ -48,6 +48,11 @@ subsequent benchmark ran after this task's builds and other checks finished.
 The runs do not establish a performance improvement attributable to the code
 changes or an isolated comparison with a terminology server.
 
+The separate [CPU scaling benchmark](scaling.md) measures direct library calls
+with one shared index and up to four workers. It verifies the same 10,000 sets
+in every configuration. Its timings exclude JSONL transport and use a separate
+one-worker baseline.
+
 ## Independent correctness checks
 
 The [RF2 reference check](../validation/ecl-10000-rf2-results.json) independently
@@ -68,7 +73,7 @@ Unicode-enabled Linux executable available:
 
 ```sh
 python scripts/generate_corpus.py
-python scripts/benchmark_corpus.py --binary target/linux-unicode/release/snomed-ecl-engine --store-directory data/compact-store/v2-uk-64.ecl --output data/validation/new-10000-run.json
+python scripts/benchmark_corpus.py --binary target/linux-unicode/release/snomed-ecl-engine --store-directory data/compact-store/v2-uk-ecl-completion.ecl --output data/validation/new-10000-run.json
 python scripts/summarise_corpus.py --report data/validation/new-10000-run.json --prior validation/ecl-10000-completion-results.json --output validation/new-10000-results.json
 python scripts/check_corpus_rf2.py --archive data/rf2/uk_sct2mo_42.5.0_20260826000001Z.zip --report data/validation/new-10000-run.json --output validation/new-10000-rf2-results.json
 ```
