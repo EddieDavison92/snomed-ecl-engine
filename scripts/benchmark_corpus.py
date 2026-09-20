@@ -10,8 +10,16 @@ import random
 import subprocess
 import time
 import urllib.parse
+import urllib.error
 
 from benchmark_ecl import ROOT, IMAGE, digest, http, resource_snapshot, summary
+
+
+def known_language_rejection(ecl, status, body):
+    # This pinned Snowstorm parser rejects ECL 2.3 extrema at the first '!'.
+    # Do not treat arbitrary HTTP 400s or wrong result sets as unsupported.
+    return (status == 400 and ecl.lstrip().startswith(("!!>", "!!<"))
+            and "mismatched input '!'" in body and "Syntax error" in body)
 
 
 def snowstorm(base, ecl):
@@ -44,6 +52,7 @@ def main():
     parser.add_argument("--store-volume", help="Optional Docker volume holding core.bin and manifest.json")
     parser.add_argument("--snowstorm", help="Optional loopback full Snowstorm URL; requires a completed, release-matched MAIN import")
     parser.add_argument("--import-id", help="Completed local Snowstorm import job ID")
+    parser.add_argument("--import-report", type=Path, help="Prior report with completed import evidence and the unchanged MAIN head, for a serving-only restart")
     parser.add_argument("--timeout-seconds", type=int, default=3600)
     args = parser.parse_args()
     if args.output.exists() or args.samples < 1 or args.timeout_seconds < 1:
@@ -66,9 +75,19 @@ def main():
               "scope": "One CPU, 256 MiB, persistent Rust process. No result cache. Each measured count request evaluates and materialises the full ordinal set. Five seeded shuffled batches by default; p95 describes this corpus only. Complete enumeration is checked once outside warm count timings. A local-file startup does not measure object-storage download, provider cold start or full-ECL index costs.",
               "results": list(rows.values())}
     if args.snowstorm:
-        if not args.import_id:
-            parser.error("--snowstorm requires --import-id")
-        imports = http(args.snowstorm, "/imports/" + urllib.parse.quote(args.import_id, safe=""), {})
+        if bool(args.import_id) == bool(args.import_report):
+            parser.error("--snowstorm requires exactly one of --import-id or --import-report")
+        prior = None
+        if args.import_report:
+            evidence = args.import_report.read_bytes()
+            prior = json.loads(evidence)
+            if (prior["edition"] != manifest["edition"]
+                    or prior["archive_sha256"].lower() != manifest["archive_sha256"].lower()):
+                raise ValueError("Prior import report is for a different release")
+            imports = prior["snowstorm_imports"]
+            report["import_evidence_sha256"] = hashlib.sha256(evidence).hexdigest()
+        else:
+            imports = http(args.snowstorm, "/imports/" + urllib.parse.quote(args.import_id, safe=""), {})
         # Require explicit evidence that a snapshot import completed before using MAIN.
         if imports.get("status") != "COMPLETED" or imports.get("branchPath") != "MAIN" or imports.get("type") != "SNAPSHOT":
             raise ValueError("No completed MAIN import reported")
@@ -77,6 +96,8 @@ def main():
         if any(link.get("relation") == "next" for link in systems.get("link", [])) or manifest["edition"] not in [entry["resource"].get("version") for entry in systems.get("entry", [])]:
             raise ValueError("Snowstorm does not advertise the pinned edition")
         report["snowstorm_branch_before"] = http(args.snowstorm, "/branches/MAIN", {})
+        if prior and report["snowstorm_branch_before"] != prior["snowstorm_branch_before"]:
+            raise ValueError("MAIN differs from the branch in the completed import report")
         # CLI setup pins the archive. These sentinels additionally reject a wrong or partial release.
         for ecl, expected in [("*", manifest["active_concept_count"]), ("<< 404684003", 137834)]:
             if http(args.snowstorm, "/MAIN/concepts", {"ecl": ecl, "returnIdOnly": "true", "limit": 1})["total"] != expected:
@@ -121,7 +142,7 @@ def main():
                 continue
             codes = set(observed["codes"])
             assert len(codes) == len(observed["codes"]) == observed["total"]
-            row.update(status="evaluated", total=len(codes), sha256=digest(codes), evaluation_samples_ms=[], parse_samples_ms=[], snowstorm_count_samples_ms=[])
+            row.update(status="evaluated", total=len(codes), sha256=digest(codes), evaluation_samples_ms=[], parse_samples_ms=[], rust_request_samples_ms=[], snowstorm_count_samples_ms=[])
             if args.snowstorm:
                 try:
                     start = time.perf_counter()
@@ -129,27 +150,36 @@ def main():
                     row.update(snowstorm_enumeration_ms=(time.perf_counter() - start) * 1000, matches_snowstorm=codes == other, only_rust=len(codes - other), only_snowstorm=len(other - codes))
                     if codes != other:
                         row["status"] = "mismatch"
+                        row["only_rust_codes"] = sorted(codes - other, key=int)
+                        row["only_snowstorm_codes"] = sorted(other - codes, key=int)
                 except Exception as error:
-                    row.update(status="comparison-error", comparison_error=str(error))
-                    comparison_errors += 1
-                    if comparison_errors >= 5:
-                        raise RuntimeError("Stopped after five comparison errors") from error
+                    body = error.read(65536).decode("utf-8", errors="replace") if isinstance(error, urllib.error.HTTPError) else ""
+                    status = getattr(error, "code", None)
+                    if known_language_rejection(row["ecl"], status, body):
+                        row.update(status="snowstorm-unsupported", comparison_http_status=status, comparison_error_body=body)
+                    else:
+                        row.update(status="comparison-error", comparison_error=str(error), comparison_http_status=status, comparison_error_body=body)
+                        comparison_errors += 1
+                        if comparison_errors >= 5:
+                            raise RuntimeError("Stopped after five comparison errors") from error
             if index % 100 == 0:
                 print(json.dumps({"enumerated": index + 1}), flush=True)
                 save()
-        successful = [r for r in rows.values() if r["status"] == "evaluated"]
+        successful = [r for r in rows.values() if r["status"] in ("evaluated", "snowstorm-unsupported")]
         batches = []
         for iteration in range(args.samples):
             order = successful.copy()
             random.Random(20260826 + iteration).shuffle(order)
             start = time.perf_counter()
             for row in order:
+                request_start = time.perf_counter()
                 result = query(row["ecl"])
+                row["rust_request_samples_ms"].append((time.perf_counter() - request_start) * 1000)
                 if result.get("total") != row["total"]:
                     raise ValueError(f"Unstable result: {row['id']}")
                 row["evaluation_samples_ms"].append(result["eval_ms"])
                 row["parse_samples_ms"].append(result["parse_ms"])
-                if args.snowstorm:
+                if args.snowstorm and row.get("matches_snowstorm"):
                     snow_start = time.perf_counter()
                     other = http(args.snowstorm, "/MAIN/concepts", {"ecl": row["ecl"], "returnIdOnly": "true", "limit": 1})
                     row["snowstorm_count_samples_ms"].append((time.perf_counter() - snow_start) * 1000)
@@ -157,6 +187,7 @@ def main():
                         raise ValueError(f"Unstable Snowstorm result: {row['id']}")
             batches.append((time.perf_counter() - start) * 1000)
             print(json.dumps({"batch": iteration + 1, "expressions": len(successful), "wall_ms": batches[-1]}), flush=True)
+            save()
         report["warm_batch_wall"] = summary(batches)
         report["status_counts"] = dict(collections.Counter(r["status"] for r in rows.values()))
         report["categories"] = {}
@@ -170,7 +201,12 @@ def main():
         report["warm_batch_engine_ms"] = [sum(r["evaluation_samples_ms"][i] for r in successful) for i in range(args.samples)]
         report["resources"] = resource_snapshot("snomed-ecl-corpus")
         if args.snowstorm:
-            report["comparison_scope"] = "All code sets verified before timing. Snowstorm warm count HTTP requests return total plus at most one ID, use its default caches, and include HTTP overhead. Rust evaluates complete ordinal sets without a result cache; eval_ms excludes JSONL transport. Batch wall time includes both engines when comparison is enabled. This is not isolated equal-cache engine timing."
+            paired = [r for r in successful if r.get("matches_snowstorm")]
+            report["paired_expressions"] = len(paired)
+            report["paired_rust_engine_batch_ms"] = [sum(r["evaluation_samples_ms"][i] for r in paired) for i in range(args.samples)]
+            report["paired_rust_request_batch_ms"] = [sum(r["rust_request_samples_ms"][i] for r in paired) for i in range(args.samples)]
+            report["paired_snowstorm_http_batch_ms"] = [sum(r["snowstorm_count_samples_ms"][i] for r in paired) for i in range(args.samples)]
+            report["comparison_scope"] = "Only expressions with matching complete code sets receive paired timings. Snowstorm-unsupported cases retain Rust-only timings. Snowstorm warm count HTTP requests return total plus at most one ID, use its default caches, and include HTTP overhead. Rust evaluates complete ordinal sets without a result cache; eval_ms excludes JSONL transport, rust_request_samples_ms includes it. Batch wall time includes both engines. This is not isolated equal-cache engine timing."
             report["snowstorm_resources"] = resource_snapshot("snomed-ecl-snowstorm")
             report["elasticsearch_resources"] = resource_snapshot("snomed-ecl-elasticsearch")
             if http(args.snowstorm, "/branches/MAIN", {}) != report["snowstorm_branch_before"]:
@@ -186,7 +222,7 @@ def main():
         report["exit_code"] = process.returncode
         save()
     print(json.dumps(report.get("status_counts", {})))
-    if process.returncode or any(r["status"] not in ("evaluated", "unsupported") for r in rows.values()):
+    if process.returncode or any(r["status"] not in ("evaluated", "unsupported", "snowstorm-unsupported") for r in rows.values()):
         raise SystemExit(1)
 
 

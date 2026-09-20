@@ -35,7 +35,9 @@ Snowstorm 11.0.0 completed the same UK Monolith Snapshot import on MAIN at 01:12
 
 The 1,000-expression comparison stopped after five HTTP 400 responses. All five were top/bottom expressions (`!!>` and `!!<`), which this Snowstorm build's parser rejected at the first `!`. Before the stop, 24 complete result sets matched Rust, 10 expressions were recorded as unsupported by Rust, and 961 remained unattempted. No result-set mismatches were recorded in that partial run, and no warm timing batches completed.
 
-The partial report is `data/validation/ecl-1000-full-snowstorm.json`. Both containers stopped after the failed comparison; the Elasticsearch volume remains available. Resume with a serving-only Snowstorm container, not the original container's `--import` command. The benchmark still needs to distinguish comparison-server language rejections from transport failures and complete the remaining corpus.
+The partial report is `data/validation/ecl-1000-full-snowstorm.json`. Both containers stopped after the failed comparison; the Elasticsearch volume remains available. Resume with a serving-only Snowstorm container, not the original container's `--import` command. At that point the benchmark needed to distinguish comparison-server language rejections from transport failures and complete the remaining corpus.
+
+The subsequent [full-corpus run](full-snowstorm.md) processed all 1,000 expressions and completed five timing batches. It recorded 719 complete matches, one concrete inequality discrepancy confirmed against OneLondon in Rust's favour, 80 Snowstorm parser rejections and 200 Rust coverage gaps. Both services stopped after the run; no reimport was needed.
 
 ## Checks completed
 

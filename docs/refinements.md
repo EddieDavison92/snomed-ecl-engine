@@ -35,8 +35,20 @@ See [serverless measurements](serverless.md) for binary size, startup and memory
 
 ## Local full Snowstorm comparison
 
+The [completed run](full-snowstorm.md) records 719 full-set matches, the independently checked inequality discrepancy, unsupported categories and five timing batches.
+
 The current local import uses Snowstorm 11.0.0 and Elasticsearch 8.19.8, each capped at four CPUs and 6 GiB. Snowstorm imports the checksum-pinned archive into an initially empty `MAIN`, with the UK Monolith module URI. Its image is `snomedinternational/snowstorm@sha256:fa9cce11ce3f25bdc98c67d8f93ccd6c96665fbeaab7cb42f273f0118fbc222e`. Elasticsearch uses `docker.elastic.co/elasticsearch/elasticsearch@sha256:1b6a877f18352510860ee065f01472bd37d33ac5eb1d943e0b9ed366b149638c`.
 
-`scripts/Watch-FullBaseline.ps1` waits for the import, runs the comparison, then stops both containers. It writes status to `data/full-baseline-status.json` and comparison evidence to `data/validation/ecl-1000-full-snowstorm.json`. The import wait is bounded to 90 minutes; the comparison has a one-hour budget and stops after five request errors. A successful import is required, along with an advertised matching FHIR edition and release-count checks. A pending run is not validation evidence.
+`scripts/Watch-FullBaseline.ps1` waits for the import, runs the comparison, then stops both containers. It writes status to `data/full-baseline-status.json` and comparison evidence to `data/validation/ecl-1000-full-snowstorm.json`. The import wait is bounded to 90 minutes; the comparison has a one-hour budget and stops after five unexpected request errors. A successful import is required, along with an advertised matching FHIR edition and release-count checks. A pending run is not validation evidence.
 
-The comparison requests IDs only, pages with `searchAfter`, and checks every code. Warm Snowstorm count requests return a total plus at most one ID and include HTTP overhead and its default caches. Rust has no result cache. Report these differences with any timing comparison. The Snowstorm and Elasticsearch resource snapshots include their import lifetime, so they cannot establish serving-only memory use.
+The comparison requests IDs only, pages with `searchAfter`, and checks every code. Warm Snowstorm count requests return a total plus at most one ID and include HTTP overhead and its default caches. Rust has no result cache. Report these differences with any timing comparison. Resource snapshots cover the running container's lifetime; separate the original import from a serving-only restart when interpreting memory.
+
+For a serving-only restart, use a prior report as completed-import evidence because Snowstorm's in-memory import job has disappeared. The runner checks the edition, archive checksum, complete MAIN branch response and live release sentinels before comparison:
+
+```sh
+python scripts/benchmark_corpus.py --store-volume snomed-ecl-runtime-index --snowstorm http://127.0.0.1:18082 --import-report data/validation/ecl-1000-full-snowstorm.json --output data/validation/ecl-1000-full-snowstorm-rerun.json
+```
+
+The output path must be new. Restart the saved Elasticsearch volume and start Snowstorm without `--import`; retain the original container for its import logs. Stop both services after the run. Do not use a report for a different edition or a branch changed since that report.
+
+The pinned Snowstorm parser rejects the first `!` in ECL 2.3 top/bottom expressions. The runner recognises only that specific HTTP 400 response as `snowstorm-unsupported`, retains the response body and continues. These cases receive Rust-only timings. Other request errors and result mismatches remain failures. Paired timings include only expressions whose complete code sets match. Rust request timings include Docker JSONL transport as a separate measure from engine evaluation.

@@ -37,4 +37,6 @@ Any initial HTTP timings are smoke measurements. They precede a Rust implementat
 
 ## Basic ECL milestone
 
-The [basic ECL comparison](basic-ecl.md#recorded-outcome) now measures the Rust parser and evaluator. It records 18 complete Snowstorm Lite matches and four wildcard disagreements, with independent RF2 checks for the broad cases. Its small sample counts and different transports make it a correctness and measurement experiment, not the controlled performance study described above. Full Snowstorm, equal-output HTTP comparisons, independent repeated batches and concurrency measurements remain open.
+The [basic ECL comparison](basic-ecl.md#recorded-outcome) measures the Rust parser and evaluator. It records 18 complete Snowstorm Lite matches and four wildcard disagreements, with independent RF2 checks for the broad cases. Its small sample counts and different transports make it a correctness and measurement experiment, not the controlled performance study described above.
+
+The later [full Snowstorm run](full-snowstorm.md) processes the 1,000-expression corpus and records five shuffled timing batches. Equal-transport HTTP comparisons, controlled cache/resource allocation and concurrency measurements remain open.

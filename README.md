@@ -14,6 +14,7 @@ The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested 
 - [Compact store prototype and commands](docs/compact-store.md)
 - [Basic ECL commands and validation](docs/basic-ecl.md)
 - [Refinements and the 1,000-expression corpus](docs/refinements.md)
+- [Full Snowstorm comparison results](docs/full-snowstorm.md)
 - [Serverless runtime requirements and measurements](docs/serverless.md)
 - [Full ECL acceptance checklist](docs/conformance.md)
 - [Research and reference code](docs/research.md)

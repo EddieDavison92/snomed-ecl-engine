@@ -99,6 +99,61 @@ fn concrete_values_compare_exactly_and_keep_their_types() {
 }
 
 #[test]
+fn concrete_inequality_matches_a_different_value_even_when_an_equal_value_exists() {
+    let mut store = fixture();
+    store.concrete_values = vec![
+        ConcreteValue::Number("#10".into()),
+        ConcreteValue::Number("#20".into()),
+    ];
+    store.concrete = Attributes::build(
+        store.ids.len(),
+        vec![
+            (
+                0,
+                Attribute {
+                    group: 1,
+                    kind: 7,
+                    value: 0,
+                },
+            ),
+            (
+                0,
+                Attribute {
+                    group: 2,
+                    kind: 7,
+                    value: 1,
+                },
+            ),
+            (
+                1,
+                Attribute {
+                    group: 1,
+                    kind: 7,
+                    value: 0,
+                },
+            ),
+        ],
+    )
+    .unwrap();
+    store.validate().unwrap();
+    for (query, expected) in [
+        ("* : 1000007 != #10", vec![0]),
+        ("* : 1000007 = #10", vec![0, 1]),
+        ("* : 1000007 > #10", vec![0]),
+        ("* : [1..1] 1000007 != #10", vec![0]),
+        ("* : [2..*] 1000007 != #10", vec![]),
+        ("1000000 : [0..0] 1000007 = #10", vec![]),
+        ("* : { 1000007 != #10 }", vec![0]),
+    ] {
+        assert_eq!(
+            evaluate(&store, &parse(query).unwrap()).unwrap(),
+            expected,
+            "{query}"
+        );
+    }
+}
+
+#[test]
 fn nested_names_values_projection_and_extrema() {
     assert_query("* : (1000005 OR 1000006) = (<< 1000009)", &[0, 1, 2, 3]);
     assert_query("* : 1000005 = (* : R 1000005 = 1000000)", &[0, 1, 2, 3]);

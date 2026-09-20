@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-09-20T01:36:29.2881934Z",
+  "software": "Ontoserver®",
+  "softwareVersion": "6.25.4",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "digestFormat": "Numeric SCTID sort; UTF-8; LF separated; final LF for non-empty sets; no BOM.",
+  "results": [
+    {
+      "id": "concrete-26",
+      "ecl": "(<< 377442002) : 1142138002 != #10",
+      "total": 1,
+      "sha256": "a4916350f0bbfe91e8874eea78208ddad2df0bb407768fa0b9931375f9783494",
+      "complete": true,
+      "reportedVersions": [
+        "http://snomed.info/sct/83821000000107/version/20260826"
+      ]
+    },
+    {
+      "id": "concrete-equal",
+      "ecl": "377442002 : 1142138002 = #10",
+      "total": 1,
+      "sha256": "a4916350f0bbfe91e8874eea78208ddad2df0bb407768fa0b9931375f9783494",
+      "complete": true,
+      "reportedVersions": [
+        "http://snomed.info/sct/83821000000107/version/20260826"
+      ]
+    },
+    {
+      "id": "concrete-greater",
+      "ecl": "377442002 : 1142138002 > #10",
+      "total": 1,
+      "sha256": "a4916350f0bbfe91e8874eea78208ddad2df0bb407768fa0b9931375f9783494",
+      "complete": true,
+      "reportedVersions": [
+        "http://snomed.info/sct/83821000000107/version/20260826"
+      ]
+    }
+  ]
+}
