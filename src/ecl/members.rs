@@ -8,6 +8,11 @@ pub enum MemberPredicate {
     Text(Vec<SearchTerm>),
     Boolean(Option<bool>),
     Dates(Vec<Option<u32>>),
+    /// Quoted dates also satisfy the untyped string grammar; the column decides their meaning.
+    DatesOrText {
+        dates: Vec<Option<u32>>,
+        terms: Vec<SearchTerm>,
+    },
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MemberFilter {
@@ -87,9 +92,10 @@ impl Parser<'_> {
             if self.take("(") {
                 self.ws()?;
             }
-            let quoted = self.rest().starts_with('"')
-                || self.word().eq_ignore_ascii_case("match")
-                || self.word().eq_ignore_ascii_case("wild");
+            let quoted = !self.starts_alternate()
+                && (self.rest().starts_with('"')
+                    || self.word().eq_ignore_ascii_case("match")
+                    || self.word().eq_ignore_ascii_case("wild"));
             self.pos = saved;
             let value = if field == "active" {
                 MemberPredicate::Boolean(
@@ -103,7 +109,7 @@ impl Parser<'_> {
                         return Err(self.unexpected());
                     },
                 )
-            } else if field.ends_with("effectivetime")
+            } else if field == "effectivetime"
                 || quoted && !matches!(comparison, Comparison::Eq | Comparison::Ne)
                 || self.rest().starts_with("\"\"")
             {
@@ -143,11 +149,22 @@ impl Parser<'_> {
                 MemberPredicate::Number(
                     Decimal::parse(&self.text[start..self.pos]).ok_or_else(|| self.unexpected())?,
                 )
-            } else if quoted {
-                MemberPredicate::Text(self.search_terms()?)
-            } else if self.keyword("true") {
+            } else if quoted && !self.starts_alternate() {
+                let start = self.pos;
+                if let Ok(dates) = self.member_dates() {
+                    let terms = dates
+                        .iter()
+                        .flatten()
+                        .map(|d| SearchTerm::Match(vec![format!("{d:08}")]))
+                        .collect();
+                    MemberPredicate::DatesOrText { dates, terms }
+                } else {
+                    self.pos = start;
+                    MemberPredicate::Text(self.search_terms()?)
+                }
+            } else if !self.starts_alternate() && self.keyword("true") {
                 MemberPredicate::Boolean(Some(true))
-            } else if self.keyword("false") {
+            } else if !self.starts_alternate() && self.keyword("false") {
                 MemberPredicate::Boolean(Some(false))
             } else {
                 MemberPredicate::Concepts(Box::new(self.filter_concepts(depth + 1)?))
@@ -176,6 +193,22 @@ impl Parser<'_> {
                 return Err(self.unexpected());
             }
             self.ws()?;
+        }
+    }
+
+    fn member_dates(&mut self) -> Result<Vec<Option<u32>>> {
+        let list = self.take("(");
+        self.ws()?;
+        let mut result = vec![self.filter_date()?];
+        loop {
+            let separated = self.ws()?;
+            if !list || self.take(")") {
+                return Ok(result);
+            }
+            if !separated {
+                return Err(self.unexpected());
+            }
+            result.push(self.filter_date()?);
         }
     }
 }

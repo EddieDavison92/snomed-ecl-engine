@@ -1,5 +1,5 @@
 use super::{active, date, id, rows};
-use crate::store::{parse_uuid, MemberColumn, MemberManifest, MemberTable, TextColumn};
+use crate::store::{parse_uuid, MemberColumn, MemberManifest, MemberTable, NumericStore};
 use anyhow::{ensure, Context, Result};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
@@ -7,14 +7,16 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 use zip::ZipArchive;
 
-/// File column types supply the RF2 representation; known time/Boolean fields keep their semantics.
+/// Descriptors supply field semantics; filename types provide a fallback.
 pub(super) fn build(
     archive: &mut ZipArchive<BufReader<File>>,
     concepts: &HashMap<u64, u32>,
+    store: &NumericStore,
     edition_date: u32,
     directory: &Path,
     prior: Option<&crate::store::MemberStore>,
 ) -> Result<Vec<MemberManifest>> {
+    let schemas = super::member_schema::Schemas::read(archive, prior, edition_date)?;
     let mut names: Vec<_> = archive
         .file_names()
         .filter(|n| {
@@ -60,6 +62,10 @@ pub(super) fn build(
             "Refset filename and field count differ"
         );
         let types: Vec<_> = pattern.bytes().collect();
+        let column_names: Vec<String> = fields
+            .iter()
+            .map(|name| name.chars().filter(|c| !c.is_whitespace()).collect())
+            .collect();
         let mut tables = BTreeMap::new();
         rows(archive, &name, &fields, |r| {
             let effective = date(r[1])?;
@@ -86,7 +92,7 @@ pub(super) fn build(
             );
             let uuid = parse_uuid(r[0])?;
             ensure!(seen_ids.insert(uuid), "Duplicate Snapshot member UUID");
-            let table = tables.entry(refset).or_insert_with(|| {
+            if let std::collections::btree_map::Entry::Vacant(entry) = tables.entry(refset) {
                 let mut columns = vec![
                     MemberColumn::Uuid(vec![]),
                     MemberColumn::Time(vec![]),
@@ -95,29 +101,39 @@ pub(super) fn build(
                     MemberColumn::Id(vec![]),
                     MemberColumn::Id(vec![]),
                 ];
-                for (field, kind) in fields[6..].iter().zip(&types) {
-                    columns.push(if field.ends_with("EffectiveTime") {
-                        MemberColumn::Time(vec![])
-                    } else if *field == "grouped" {
-                        MemberColumn::Boolean(vec![])
-                    } else {
-                        match kind {
-                            b'c' => MemberColumn::Id(vec![]),
-                            b'i' => MemberColumn::Integer(vec![]),
-                            _ => MemberColumn::Text(TextColumn::default()),
-                        }
-                    });
+                let schema = schemas.resolve(refset, store)?;
+                if let Some(schema) = schema {
+                    ensure!(
+                        schema.len() == fields.len() - 5,
+                        "Refset descriptor and column count differ"
+                    );
                 }
-                MemberTable {
+                for (index, (field, kind)) in column_names[6..].iter().zip(&types).enumerate() {
+                    columns.push(super::member_schema::column(
+                        schema.and_then(|s| s.get(&(index as u32 + 1))).copied(),
+                        *kind,
+                        field,
+                        refset,
+                        store,
+                    )?);
+                }
+                entry.insert(MemberTable {
                     refset,
-                    names: fields.iter().map(|s| (*s).into()).collect(),
+                    names: column_names.clone(),
                     columns,
-                }
-            });
+                });
+            }
+            let table = tables.get_mut(&refset).unwrap();
             for (i, column) in table.columns.iter_mut().enumerate() {
                 match column {
-                    MemberColumn::Uuid(v) => v.push(uuid),
-                    MemberColumn::Time(v) => v.push(if i == 1 { effective } else { date(r[i])? }),
+                    MemberColumn::Uuid(v) => v.push(if i == 0 { uuid } else { parse_uuid(r[i])? }),
+                    MemberColumn::Time(v) => v.push(if i == 1 {
+                        effective
+                    } else if r[i].is_empty() {
+                        0
+                    } else {
+                        date(r[i])?
+                    }),
                     MemberColumn::Boolean(v) => {
                         v.push(u8::from(if i == 2 { enabled } else { active(r[i])? }))
                     }
@@ -125,6 +141,7 @@ pub(super) fn build(
                     MemberColumn::Integer(v) => {
                         v.push(r[i].parse().context("Invalid integer member field")?)
                     }
+                    MemberColumn::Number(v) => super::member_schema::push_number(v, r[i])?,
                     MemberColumn::Text(v) => {
                         ensure!(types[i - 6] == b's', "Unknown RF2 field type");
                         v.push(r[i])?;

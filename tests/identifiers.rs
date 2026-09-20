@@ -104,6 +104,8 @@ fn alias_configuration_and_identifier_keys_are_validated() {
         r#"{"dialects":{"a":"300001","A":"300002"}}"#,
         r#"{"dialects":{"a":"0"}}"#,
         r#"{"unknown":{}}"#,
+        r#"{"member_language":"eng"}"#,
+        r#"{"member_language":"12"}"#,
     ] {
         std::fs::write(&path, text).unwrap();
         assert!(QueryConfig::read(&path).is_err());

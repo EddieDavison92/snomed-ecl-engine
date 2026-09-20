@@ -49,13 +49,14 @@ impl TextColumn {
 pub enum MemberColumn {
     Id(Vec<u64>),
     Integer(Vec<i64>),
+    Number(TextColumn),
     Boolean(Vec<u8>),
     Time(Vec<u32>),
     Text(TextColumn),
     Uuid(Vec<[u8; 16]>),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum MemberValue {
     Concept(String),
@@ -72,7 +73,7 @@ impl MemberColumn {
             Self::Integer(v) => v.len(),
             Self::Boolean(v) => v.len(),
             Self::Time(v) => v.len(),
-            Self::Text(v) => v.offsets.len().saturating_sub(1),
+            Self::Text(v) | Self::Number(v) => v.offsets.len().saturating_sub(1),
             Self::Uuid(v) => v.len(),
         }
     }
@@ -83,6 +84,7 @@ impl MemberColumn {
         match self {
             Self::Id(v) => MemberValue::Concept(v[row].to_string()),
             Self::Integer(v) => MemberValue::Number(v[row].to_string()),
+            Self::Number(v) => MemberValue::Number(v.get(row).into()),
             Self::Boolean(v) => MemberValue::Boolean(v[row] != 0),
             Self::Time(v) => MemberValue::Time(if v[row] == 0 {
                 String::new()
@@ -145,7 +147,8 @@ impl MemberTable {
                 (MemberColumn::Boolean(a), MemberColumn::Boolean(b)) => a.extend(b),
                 (MemberColumn::Time(a), MemberColumn::Time(b)) => a.extend(b),
                 (MemberColumn::Uuid(a), MemberColumn::Uuid(b)) => a.extend(b),
-                (MemberColumn::Text(a), MemberColumn::Text(b)) => {
+                (MemberColumn::Text(a), MemberColumn::Text(b))
+                | (MemberColumn::Number(a), MemberColumn::Number(b)) => {
                     let start = u32::try_from(a.text.len())?;
                     for offset in b.offsets.into_iter().skip(1) {
                         a.offsets.push(
@@ -213,7 +216,7 @@ impl MemberTable {
                 MemberColumn::Time(v) => {
                     ensure!(v.iter().all(|&v| valid_time(v)), "Invalid member date")
                 }
-                MemberColumn::Text(v) => {
+                MemberColumn::Text(v) | MemberColumn::Number(v) => {
                     ensure!(
                         v.offsets.first() == Some(&0)
                             && v.offsets.last().copied() == u32::try_from(v.text.len()).ok(),
@@ -226,6 +229,13 @@ impl MemberTable {
                                 .all(|&i| v.text.is_char_boundary(i as usize)),
                         "Invalid member UTF-8 boundary"
                     );
+                    if matches!(col, MemberColumn::Number(_)) {
+                        ensure!(
+                            (0..v.offsets.len() - 1)
+                                .all(|i| crate::decimal::Decimal::parse(v.get(i)).is_some()),
+                            "Invalid numeric member field"
+                        );
+                    }
                 }
                 _ => {}
             }
@@ -287,8 +297,15 @@ impl MemberTable {
                     put_u32(&mut out, 3)?;
                     put_u32s(&mut out, v)?;
                 }
-                MemberColumn::Text(v) => {
-                    put_u32(&mut out, 4)?;
+                MemberColumn::Text(v) | MemberColumn::Number(v) => {
+                    put_u32(
+                        &mut out,
+                        if matches!(column, MemberColumn::Number(_)) {
+                            6
+                        } else {
+                            4
+                        },
+                    )?;
                     put_u32s(&mut out, &v.offsets)?;
                     put_u64(&mut out, v.text.len() as u64)?;
                     out.write_all(v.text.as_bytes())?;
@@ -353,6 +370,10 @@ impl MemberTable {
                     }
                     MemberColumn::Uuid(v)
                 }
+                6 => MemberColumn::Number(TextColumn {
+                    offsets: input.u32s()?,
+                    text: String::from_utf8(input.bytes()?)?,
+                }),
                 _ => bail!("Unknown member field type"),
             });
         }

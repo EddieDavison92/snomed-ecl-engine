@@ -265,9 +265,17 @@ impl Context<'_> {
         }
     }
     pub(super) fn dotted(&mut self, seeds: &[u32], names: &[u32]) -> Result<Vec<u32>> {
+        match self.project(seeds, names)? {
+            QueryResult::Concepts(values) => Ok(values),
+            _ => Err(EvalError::TypeMismatch),
+        }
+    }
+    pub(super) fn project(&mut self, seeds: &[u32], names: &[u32]) -> Result<QueryResult> {
         let n = self.store.ids.len();
         self.tick(n)?;
+        self.claim(n.div_ceil(4))?;
         let mut selected = vec![false; n];
+        let mut values = std::collections::BTreeSet::new();
         let isa = self
             .store
             .ordinal(116680003)
@@ -287,17 +295,46 @@ impl Context<'_> {
                 }
             }
             self.tick(self.store.concrete.get(seed).len())?;
-            if self
-                .store
-                .concrete
-                .get(seed)
-                .iter()
-                .any(|row| names.binary_search(&row.kind).is_ok())
-            {
-                return Err(EvalError::Unsupported(
-                    "Concrete dotted projection needs typed result output",
-                ));
+            for row in self.store.concrete.get(seed) {
+                if names.binary_search(&row.kind).is_err() {
+                    continue;
+                }
+                let wire = &self.store.concrete_values[row.value as usize];
+                let bytes = match wire {
+                    ConcreteValue::Number(v) | ConcreteValue::Text(v) => v.len(),
+                    ConcreteValue::Boolean(_) => 0,
+                };
+                self.tick(bytes + 1)?;
+                self.claim(16 + bytes.div_ceil(4))?;
+                let value = match wire {
+                    ConcreteValue::Number(v) => crate::store::MemberValue::Number(
+                        Decimal::parse(v.trim_start_matches('#'))
+                            .ok_or(EvalError::InvalidAst)?
+                            .to_string(),
+                    ),
+                    ConcreteValue::Text(v) => {
+                        crate::store::MemberValue::String(decode_rf2_string(v)?)
+                    }
+                    ConcreteValue::Boolean(v) => crate::store::MemberValue::Boolean(*v),
+                };
+                self.live -= 16 + bytes.div_ceil(4);
+                if !values.contains(&value) {
+                    self.claim(super::values::value_cost(&value))?;
+                    values.insert(value);
+                }
             }
+        }
+        if !values.is_empty() {
+            for (i, &included) in selected.iter().enumerate() {
+                self.tick(1)?;
+                if included {
+                    let value = crate::store::MemberValue::Concept(self.store.ids[i].to_string());
+                    self.claim(super::values::value_cost(&value))?;
+                    values.insert(value);
+                }
+            }
+            self.live -= n.div_ceil(4);
+            return Ok(QueryResult::Values(values.into_iter().collect()));
         }
         let mut result = self.reserve(selected.iter().filter(|&&s| s).count())?;
         result.extend(
@@ -307,7 +344,8 @@ impl Context<'_> {
                 .filter(|(_, s)| **s)
                 .map(|(i, _)| i as u32),
         );
-        Ok(result)
+        self.live -= n.div_ceil(4);
+        Ok(QueryResult::Concepts(result))
     }
 }
 

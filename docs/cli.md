@@ -32,7 +32,7 @@ Terminal output has an index summary, a code/display table with `--display`, and
 
 `batch STORE` loads the index once and reads newline-delimited JSON from stdin. It always emits JSONL, including in a terminal. Individual query errors return an error object and do not stop the batch. An empty successful expansion has total zero. See [the agent batch workflow](../SKILL.md#reuse-the-index-for-many-queries) for schemas and process handling.
 
-[Member projections](member-filters.md) can return typed rows. `expand` emits these as JSONL, and `--count` counts rows. `--display` rejects row-valued results. Batch responses use `result_type: "rows"` and `rows` instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
+[Member projections](member-filters.md) can return distinct typed values or rows. `expand` emits these as JSONL, and `--count` counts values or rows. `--display` requires concept results. Batch responses use `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`, instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
 
 The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](conformance.md) tracks the outstanding work.
 

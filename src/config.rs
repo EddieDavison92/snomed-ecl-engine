@@ -11,10 +11,12 @@ pub struct QueryConfig {
     pub identifier_schemes: BTreeMap<String, u64>,
     #[serde(with = "id_map")]
     pub dialects: BTreeMap<String, u64>,
+    pub member_language: String,
 }
 impl Default for QueryConfig {
     fn default() -> Self {
         Self {
+            member_language: "en".into(),
             identifier_schemes: BTreeMap::new(),
             dialects: BTreeMap::from([
                 ("da-dk".into(), 554461000005103),
@@ -61,6 +63,15 @@ impl QueryConfig {
         Ok(config)
     }
     pub fn normalise(&mut self) -> Result<()> {
+        ensure!(
+            self.member_language.len() == 2
+                && self
+                    .member_language
+                    .bytes()
+                    .all(|b| b.is_ascii_alphabetic()),
+            "Member language must be a two-letter language code"
+        );
+        self.member_language.make_ascii_lowercase();
         for map in [&mut self.identifier_schemes, &mut self.dialects] {
             let mut result = BTreeMap::new();
             for (name, id) in map.iter() {
@@ -77,6 +88,13 @@ impl QueryConfig {
             *map = result;
         }
         Ok(())
+    }
+    pub fn member_language_code(&self) -> Option<[u8; 2]> {
+        self.member_language
+            .as_bytes()
+            .try_into()
+            .ok()
+            .filter(|code: &[u8; 2]| code.iter().all(u8::is_ascii_lowercase))
     }
 }
 pub(crate) fn valid_alias(name: &str) -> bool {

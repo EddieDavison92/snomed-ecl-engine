@@ -11,12 +11,12 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 | Workload | Measured result |
 |---|---|
 | 880 numeric-index expressions, one CPU and 256 MiB | 1.82 seconds per warm batch |
-| 960 expressions including description metadata and member projections, one CPU and 1 GiB | 2.10 seconds per warm batch; 1.57 ms median request |
+| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 2.68 seconds per warm batch; 1.63 ms median request |
 | Measured numeric query-only Linux executable, without Unicode | 0.83 MiB, 0.39 MiB gzipped |
 | Numeric and concept-membership indexes | 103.3 MiB |
 | RF2 import, including descriptions, displays and typed members | 110.5 seconds with two CPUs and 3 GiB |
 
-Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/member-corpus-results.json) pins the release, binary, resource limits and result digests.
+Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/schema-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 10.60 ms; container-charged peak memory was 543 MiB. This measures the fixed corpus, not full ECL conformance or hosted cold starts.
 
 ## Compared with Snowstorm
 
@@ -70,7 +70,7 @@ Use your own licensed RF2 content. Archives and generated indexes are not includ
 
 For Rust integration, open a `NumericStore`, parse with `ecl::parse` and evaluate with `eval::evaluate_with_limits`. Keep the store open for repeated queries. Results are concept ordinals that resolve to SNOMED IDs; display labels are a separate lookup. Disable default Cargo features to omit the offline ZIP importer from a query-only application.
 
-Use `eval::evaluate_result_with_limits` when accepting [member-field projections](docs/member-filters.md). It preserves typed rows as well as concept results. The CLI exposes row-valued results as JSONL.
+Use `eval::evaluate_result_with_limits` when accepting [member-field projections](docs/member-filters.md). It preserves typed scalar sets and rows as well as concept results. The CLI exposes typed results as JSONL.
 
 Description term queries need `--features unicode` and ICU4C development libraries at build time. The [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers installation and the additional executable size. Numeric queries do not require this feature.
 

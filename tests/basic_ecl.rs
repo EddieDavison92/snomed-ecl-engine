@@ -1,7 +1,7 @@
 use snomed_ecl_engine::ecl::{parse, Expr, Hierarchy, ParseErrorKind};
 use snomed_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
 use snomed_ecl_engine::store::{Adjacency, Attributes, NumericStore};
-use std::collections::{BTreeSet, VecDeque};
+use std::collections::BTreeSet;
 use std::sync::atomic::AtomicBool;
 
 fn store(n: usize) -> NumericStore {
@@ -32,71 +32,89 @@ fn store(n: usize) -> NumericStore {
     }
 }
 
-// Deliberately separate per-seed searches and BTreeSet operations from the production evaluator.
-fn slow(store: &NumericStore, expr: &Expr) -> BTreeSet<u32> {
-    match expr {
-        Expr::Concept(id) => store.ordinal(*id).into_iter().collect(),
-        Expr::All => (0..store.ids.len() as u32).collect(),
-        Expr::Hierarchy(op, expr) => {
-            let mut result = BTreeSet::new();
-            for seed in slow(store, expr) {
-                let mut visited = BTreeSet::from([seed]);
-                let mut pending = VecDeque::from([seed]);
-                if op.include_self() {
-                    result.insert(seed);
-                }
-                while let Some(from) = pending.pop_front() {
-                    for child in 0..store.ids.len() as u32 {
-                        for &parent in store.parents.get(child) {
-                            let (a, b) = if op.ancestors() {
-                                (child, parent)
-                            } else {
-                                (parent, child)
-                            };
-                            if from == a {
-                                result.insert(b);
-                                if !op.direct() && visited.insert(b) {
-                                    pending.push_back(b);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            result
-        }
-        Expr::And(parts) => parts
-            .iter()
-            .map(|e| slow(store, e))
-            .reduce(|a, b| a.intersection(&b).copied().collect())
-            .unwrap(),
-        Expr::Or(parts) => parts.iter().flat_map(|e| slow(store, e)).collect(),
-        Expr::Minus(a, b) => slow(store, a)
-            .difference(&slow(store, b))
-            .copied()
+mod support;
+use support::slow;
+
+#[test]
+fn generated_refinements_groups_cardinalities_and_membership_match_slow_scans() {
+    use snomed_ecl_engine::store::{Attribute, MembershipIndex};
+    let mut store = store(13);
+    store.attributes = Attributes::build(
+        13,
+        (0..12u32)
+            .flat_map(|source| {
+                (0..4u32).flat_map(move |group| {
+                    (8..11u32).filter_map(move |kind| {
+                        ((source * 17 + group * 11 + kind) % 5 < 3).then_some((
+                            source,
+                            Attribute {
+                                group,
+                                kind,
+                                value: (source * 3 + kind + group) % 8,
+                            },
+                        ))
+                    })
+                })
+            })
             .collect(),
-        Expr::Extremum { top, inner } => {
-            let seeds = slow(store, inner);
-            let op = if *top {
-                Hierarchy::Descendant
-            } else {
-                Hierarchy::Ancestor
-            };
-            seeds
-                .difference(&slow(store, &Expr::Hierarchy(op, inner.clone())))
-                .copied()
-                .collect()
-        }
-        Expr::Refined(..)
-        | Expr::Dotted(..)
-        | Expr::Members(..)
-        | Expr::History(..)
-        | Expr::AlternateIdentifier { .. }
-        | Expr::DialectAlias(..)
-        | Expr::MemberOf(..)
-        | Expr::DescriptionFiltered(..)
-        | Expr::ConceptFiltered(..)
-        | Expr::RefsetContainingAny(..) => panic!("Outside the basic hierarchy fixture"),
+    )
+    .unwrap();
+    store.membership = Some(
+        MembershipIndex::build(
+            13,
+            (9..12u32)
+                .flat_map(|refset| {
+                    (0..13u32).filter_map(move |member| {
+                        ((refset * 13 + member * 7) % 5 < 2).then_some((refset, member))
+                    })
+                })
+                .collect(),
+        )
+        .unwrap(),
+    );
+    store.validate().unwrap();
+    let concept = |i: usize| match i % 7 {
+        0 => "*".to_owned(),
+        1 => format!("<< {}", 1000001 + i % 8),
+        2 => format!("> {}", 1000001 + i % 8),
+        3 => format!("^ {}", 1000010 + i % 3),
+        4 => format!("^R {}", 1000001 + i % 13),
+        _ => (1000001 + i % 13).to_string(),
+    };
+    for i in 0..1000usize {
+        let name = if i % 4 == 0 {
+            "*".into()
+        } else {
+            (1000009 + i % 3).to_string()
+        };
+        let min = i % 3;
+        let max = if i % 5 == 0 {
+            "*".into()
+        } else {
+            (min + i % 4).to_string()
+        };
+        let comparison = if i % 2 == 0 { "=" } else { "!=" };
+        let reverse = if i % 9 == 0 { "R " } else { "" };
+        let a = format!(
+            "[{min}..{max}] {reverse}{name} {comparison} {}",
+            concept(i / 3)
+        );
+        let b = format!("{} = {}", 1000009 + i % 3, concept(i / 7));
+        let refinement = match i % 4 {
+            0 => a,
+            1 => format!("({a}) OR ({b})"),
+            2 => format!("[0..2] {{ {b} }} AND ({a})"),
+            _ => format!("{{ ({b}) OR ([0..0] 1000009 = {}) }}", concept(i / 11)),
+        };
+        let query = format!(
+            "({} : {refinement}) OR ({} MINUS {})",
+            concept(i / 13),
+            concept(i / 17),
+            concept(i / 19)
+        );
+        let expression = parse(&query).unwrap();
+        let actual: BTreeSet<_> = evaluate(&store, &expression).unwrap().into_iter().collect();
+        assert_eq!(actual, slow(&store, &expression), "{query}");
     }
 }
 
@@ -134,7 +152,7 @@ fn brief_long_terms_comments_and_boolean_grouping() {
             "descendantOf (1000001 or 1000002)",
         ),
         (
-            "1000001 |Synthetic café|",
+            "1000001 |Synthetic cafÃ©|",
             "/* leading */ 1000001 /* trailing */",
         ),
     ];

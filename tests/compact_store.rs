@@ -20,6 +20,44 @@ const KIND: u64 = 9000001;
 const TARGET: u64 = 9000002;
 const ISA: u64 = 116680003;
 
+#[test]
+fn legacy_identifier_columns_resolve_the_same_codes() {
+    use std::io::Read;
+    let temp = TempDir::new().unwrap();
+    let original = temp.path().join("original.zip");
+    fixture(&original, false, false);
+    let archive = temp.path().join("legacy.zip");
+    let mut source = zip::ZipArchive::new(File::open(&original).unwrap()).unwrap();
+    let mut output = zip::ZipWriter::new(File::create(&archive).unwrap());
+    for i in 0..source.len() {
+        let mut file = source.by_index(i).unwrap();
+        let mut body = String::new();
+        file.read_to_string(&mut body).unwrap();
+        if file.name().contains("sct2_Identifier_") {
+            body = body
+                .lines()
+                .map(|line| {
+                    let fields: Vec<_> = line.split('\t').collect();
+                    [4, 0, 1, 2, 3, 5].map(|p| fields[p]).join("\t") + "\n"
+                })
+                .collect();
+        }
+        output
+            .start_file(file.name(), SimpleFileOptions::default())
+            .unwrap();
+        output.write_all(body.as_bytes()).unwrap();
+    }
+    output.finish().unwrap();
+    let destination = temp.path().join("store");
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let store = NumericStore::open(&destination).unwrap();
+    let index = store.identifiers.get().unwrap().unwrap();
+    assert_eq!(index.lookup(ROOT, "A.1"), Some(LEAF));
+    assert_eq!(index.lookup(KIND, "A.1"), Some(ROOT));
+    assert_eq!(index.lookup(ROOT, "old"), None);
+    assert_eq!(index.lookup(ROOT, "description"), None);
+}
+
 fn fixture(path: &Path, cycle: bool, duplicate: bool) {
     let mut archive = zip::ZipWriter::new(File::create(path).unwrap());
     let mut add = |name: &str, body: String| {
@@ -96,6 +134,129 @@ fn options(path: &Path) -> ImportOptions {
         expected_sha256: sha256(path).unwrap(),
         display_refsets: UK_DISPLAY_REFSETS.to_vec(),
     }
+}
+
+fn descriptor_fixture(path: &Path, invalid_decimal: bool) {
+    use std::io::Read;
+    fixture(path, false, false);
+    let mut original = zip::ZipArchive::new(File::open(path).unwrap()).unwrap();
+    let mut files = Vec::new();
+    for index in 0..original.len() {
+        let mut file = original.by_index(index).unwrap();
+        let mut body = String::new();
+        file.read_to_string(&mut body).unwrap();
+        let name = file.name().to_owned();
+        if name.contains("sct2_Concept_") {
+            for id in [
+                800001u64,
+                800002,
+                1119403002,
+                900000000000456007,
+                900000000000461009,
+                900000000000474003,
+                900000000000475002,
+            ] {
+                body.push_str(&format!("{id}\t20260826\t1\t{ROOT}\t900000000000074008\n"));
+            }
+        }
+        if name.contains("sct2_Relationship_Snapshot") {
+            body.push_str(&format!("3999901\t20260826\t1\t{ROOT}\t800001\t800002\t0\t{ISA}\t900000000000011006\t900000000000451002\n"));
+        }
+        files.push((name, body));
+    }
+    drop(original);
+    let mut descriptors = "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tattributeDescription\tattributeType\tattributeOrder\n".to_owned();
+    for (position, kind) in [
+        900000000000461009u64,
+        1119403002,
+        900000000000475002,
+        900000000000474003,
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        descriptors.push_str(&format!("00000000-0000-4000-8000-00000000100{position}\t20260826\t1\t{ROOT}\t900000000000456007\t800002\t{ROOT}\t{kind}\t{position}\n"));
+    }
+    files.push((
+        "Synthetic/Snapshot/Refset/der2_cciRefset_RefsetDescriptorSnapshot.txt".into(),
+        descriptors,
+    ));
+    let amount = if invalid_decimal {
+        "NaN"
+    } else {
+        "0.100000000000000001"
+    };
+    files.push(("Synthetic/Snapshot/Refset/der2_sssRefset_CustomSnapshot.txt".into(), format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tcustom Amount\tReview Date\tlinkUuid\n00000000-0000-4000-8000-000000002001\t20260826\t1\t{ROOT}\t800001\t{LEAF}\t{amount}\t20260801\t00000000-0000-4000-8000-000000009001\n00000000-0000-4000-8000-000000002002\t20260826\t1\t{ROOT}\t800001\t{RIGHT}\t0.1\t\t00000000-0000-4000-8000-000000009002\n")));
+    let mut archive = zip::ZipWriter::new(File::create(path).unwrap());
+    for (name, body) in files {
+        archive
+            .start_file(name, SimpleFileOptions::default())
+            .unwrap();
+        archive.write_all(body.as_bytes()).unwrap();
+    }
+    archive.finish().unwrap();
+}
+
+#[test]
+fn rf2_descriptors_preserve_inherited_decimal_date_and_uuid_types() {
+    use snomed_ecl_engine::{
+        ecl::parse,
+        eval::{evaluate, evaluate_result, QueryResult},
+        store::{MemberColumn, MemberValue},
+    };
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    descriptor_fixture(&archive, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let store = NumericStore::open(&destination).unwrap();
+    for (query, expected) in [
+        ("^800001 {{M customAmount>#0.1}}", vec![LEAF]),
+        ("^800001 {{M customAmount=#0.1000}}", vec![RIGHT]),
+        (r#"^800001 {{M reviewDate="20260801"}}"#, vec![LEAF]),
+        (r#"^800001 {{M reviewDate=""}}"#, vec![RIGHT]),
+        (
+            r#"^800001 {{M reviewDate=("20260801" "")}}"#,
+            vec![RIGHT, LEAF],
+        ),
+    ] {
+        assert_eq!(
+            evaluate(&store, &parse(query).unwrap())
+                .unwrap()
+                .iter()
+                .map(|&o| store.ids[o as usize])
+                .collect::<Vec<_>>(),
+            expected,
+            "{query}"
+        );
+    }
+    let QueryResult::Rows(rows) = evaluate_result(
+        &store,
+        &parse("^[customAmount,reviewDate,linkUuid]800001").unwrap(),
+    )
+    .unwrap() else {
+        panic!()
+    };
+    assert_eq!(
+        rows[0]["customAmount"],
+        MemberValue::Number("0.100000000000000001".into())
+    );
+    assert_eq!(rows[0]["ReviewDate"], MemberValue::Time("20260801".into()));
+    assert_eq!(
+        rows[0]["linkUuid"],
+        MemberValue::String("00000000-0000-4000-8000-000000009001".into())
+    );
+    let mut table = store.member_tables.get(800001).unwrap().unwrap().clone();
+    let MemberColumn::Number(number) = &mut table.columns[6] else {
+        panic!()
+    };
+    number.text.replace_range(..3, "NaN");
+    assert!(table.validate().is_err());
+    let bad_archive = temp.path().join("bad.zip");
+    let bad_store = temp.path().join("bad-store");
+    descriptor_fixture(&bad_archive, true);
+    assert!(import_snapshot(&bad_archive, &bad_store, &options(&bad_archive)).is_err());
+    assert!(!bad_store.exists());
 }
 
 #[test]
@@ -352,6 +513,11 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
             "{{\"ecl\":\"^[sourceEffectiveTime]900000000000534007\",\"count_only\":true}}"
         )
         .unwrap();
+        writeln!(
+            input,
+            "{{\"ecl\":\"^[sourceEffectiveTime]900000000000534007\"}}"
+        )
+        .unwrap();
     }
     let output = process.wait_with_output().unwrap();
     assert!(output.status.success());
@@ -360,7 +526,7 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
         .lines()
         .map(|line| serde_json::from_str(line).unwrap())
         .collect();
-    assert_eq!(rows.len(), 5);
+    assert_eq!(rows.len(), 6);
     assert!(rows[0]["error"]
         .as_str()
         .unwrap()
@@ -388,8 +554,15 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
     );
     assert!(rows[3].get("codes").is_none());
     assert_eq!(rows[4]["total"], 1);
-    assert_eq!(rows[4]["result_type"], "rows");
+    assert_eq!(rows[4]["result_type"], "values");
     assert!(rows[4].get("rows").is_none());
+    assert!(rows[4].get("values").is_none());
+    assert_eq!(rows[5]["result_type"], "values");
+    assert_eq!(
+        rows[5]["values"],
+        serde_json::json!([{"type":"time", "value":"20260826"}])
+    );
+    assert!(rows[5].get("codes").is_none());
     let invalid_display = Command::new(binary)
         .arg("expand")
         .arg(&destination)

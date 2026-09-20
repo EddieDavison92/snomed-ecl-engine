@@ -170,12 +170,55 @@ fn nested_names_values_projection_and_extrema() {
     assert_query("bottom (1000008 OR 1000009 OR 1000010)", &[10]);
     assert!(matches!(
         evaluate(&fixture(), &parse("1000000 . 1000007").unwrap()),
-        Err(EvalError::Unsupported(_))
+        Err(EvalError::TypeMismatch)
     ));
     assert!(matches!(
         evaluate(&fixture(), &parse("* : { R 1000005 = * }").unwrap()),
         Err(EvalError::Unsupported(_))
     ));
+}
+
+#[test]
+fn concrete_dot_preserves_exact_values_and_rejects_concept_only_operations() {
+    use snomed_ecl_engine::{
+        eval::{evaluate_result, QueryResult},
+        store::MemberValue as V,
+    };
+    let store = fixture();
+    for (query, expected) in [
+        (
+            "1000000 . 1000007",
+            vec![V::Number("0.10000000000000000001".into())],
+        ),
+        ("1000003 . 1000007", vec![V::String("A\"B".into())]),
+        ("1000004 . 1000007", vec![V::Boolean(true)]),
+        (
+            "(1000000 . 1000007) OR (1000001 . 1000007)",
+            vec![
+                V::Number("0.1".into()),
+                V::Number("0.10000000000000000001".into()),
+            ],
+        ),
+        (
+            "1000000 . (1000005 OR 1000007)",
+            vec![
+                V::Concept("1000008".into()),
+                V::Number("0.10000000000000000001".into()),
+            ],
+        ),
+    ] {
+        assert_eq!(
+            evaluate_result(&store, &parse(query).unwrap()).unwrap(),
+            QueryResult::Values(expected),
+            "{query}"
+        );
+    }
+    for query in ["1000000 . 1000007 . *", "<< (1000000 . 1000007)"] {
+        assert_eq!(
+            evaluate_result(&store, &parse(query).unwrap()),
+            Err(EvalError::TypeMismatch)
+        );
+    }
 }
 
 #[test]

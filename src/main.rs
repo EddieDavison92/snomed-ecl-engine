@@ -176,6 +176,36 @@ fn run() -> Result<()> {
             let eval_ms = eval_start.elapsed().as_secs_f64() * 1000.0;
             let ordinals = match result {
                 eval::QueryResult::Concepts(ordinals) => ordinals,
+                eval::QueryResult::Values(values) => {
+                    ensure!(option != Some("--display"), "--display requires a concept result; this projection returns scalar values");
+                    if human {
+                        eprintln!(
+                            "  {} values | query {:.3} ms | parse {:.3} ms | index {:.3} s",
+                            presentation::number(values.len()),
+                            eval_ms,
+                            parse_ms,
+                            open_seconds
+                        );
+                    }
+                    if option == Some("--count") {
+                        if json {
+                            println!(
+                                "{}",
+                                serde_json::json!({"total": values.len(), "result_type":"values"})
+                            );
+                        } else {
+                            println!("{}", values.len());
+                        }
+                    } else {
+                        let mut out = io::BufWriter::new(io::stdout().lock());
+                        for value in values {
+                            serde_json::to_writer(&mut out, &value)?;
+                            writeln!(out)?;
+                        }
+                        out.flush()?;
+                    }
+                    return Ok(());
+                }
                 eval::QueryResult::Rows(rows) => {
                     ensure!(
                         option != Some("--display"),
@@ -388,6 +418,8 @@ struct BatchResponse<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     rows: Option<&'a [std::collections::BTreeMap<String, snomed_ecl_engine::store::MemberValue>]>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    values: Option<&'a [snomed_ecl_engine::store::MemberValue]>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     result_type: Option<&'static str>,
 }
 
@@ -443,7 +475,15 @@ fn batch_response(
                 eval::QueryResult::Rows(rows) if !request.count_only => Some(rows),
                 _ => None,
             },
-            result_type: matches!(result, eval::QueryResult::Rows(_)).then_some("rows"),
+            values: match &result {
+                eval::QueryResult::Values(values) if !request.count_only => Some(values),
+                _ => None,
+            },
+            result_type: match result {
+                eval::QueryResult::Rows(_) => Some("rows"),
+                eval::QueryResult::Values(_) => Some("values"),
+                _ => None,
+            },
         },
     )?;
     writeln!(out)?;

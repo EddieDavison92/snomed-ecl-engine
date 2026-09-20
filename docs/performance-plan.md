@@ -35,6 +35,8 @@ Each step needs unchanged correctness results and separate measurements for impo
 
 ## Format and candidate-selection conditions
 
+The independent evaluator now checks 1,000 generated combinations of refinements, groups, cardinalities and membership in `tests/basic_ecl.rs`, using separate row scans in `tests/support/mod.rs`. Concrete and typed scalar semantics have their own fixtures and independent RF2 checks. This supplies comparison evidence for later rewrites; remaining ECL semantics still need completion first.
+
 Small values in this release justify adaptive encodings, not fixed UK limits. Wider modules, dates, groups, languages, dialects and custom fields must remain representable. Preserve inactive descriptions, member rows, association targets, exact decimals and configured identifier schemes required by full ECL.
 
 An mmap reader needs a reviewed safe interface around mapping creation, bounded accessors and a rule that mapped files cannot be mutated. A dependency does not remove the caller's unsafe obligations. Combining files alone does not reduce resident memory.

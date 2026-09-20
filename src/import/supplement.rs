@@ -428,6 +428,7 @@ pub fn add_refsets_snapshot(
         let additional = super::members::build(
             &mut archive,
             &lookup,
+            &store,
             release_date,
             &staging,
             Some(&original.member_tables),

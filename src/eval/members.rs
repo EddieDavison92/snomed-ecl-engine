@@ -7,12 +7,14 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Eq)]
 pub enum QueryResult {
     Concepts(Vec<u32>),
+    Values(Vec<MemberValue>),
     Rows(Vec<BTreeMap<String, MemberValue>>),
 }
 impl QueryResult {
     pub fn len(&self) -> usize {
         match self {
             Self::Concepts(v) => v.len(),
+            Self::Values(v) => v.len(),
             Self::Rows(v) => v.len(),
         }
     }
@@ -25,6 +27,11 @@ enum Prepared<'a> {
     Number(&'a Decimal),
     Boolean(Option<bool>),
     Dates(&'a [Option<u32>]),
+    DatesOrText {
+        dates: &'a [Option<u32>],
+        #[cfg(feature = "unicode")]
+        terms: Option<crate::text::Terms<'a>>,
+    },
     #[cfg(feature = "unicode")]
     Text(crate::text::Terms<'a>),
 }
@@ -110,6 +117,22 @@ impl Context<'_> {
                     Prepared::Boolean(*value)
                 }
                 MemberPredicate::Dates(values) if !values.is_empty() => Prepared::Dates(values),
+                MemberPredicate::DatesOrText { dates, terms } if !dates.is_empty() => {
+                    #[cfg(not(feature = "unicode"))]
+                    let _ = terms;
+                    Prepared::DatesOrText {
+                        dates,
+                        #[cfg(feature = "unicode")]
+                        terms: if dates.iter().all(Option::is_some) {
+                            Some(
+                                crate::text::Terms::new(terms)
+                                    .map_err(|_| EvalError::InvalidAst)?,
+                            )
+                        } else {
+                            None
+                        },
+                    }
+                }
                 MemberPredicate::Text(values) if matches!(op, Comparison::Eq | Comparison::Ne) => {
                     #[cfg(feature = "unicode")]
                     {
@@ -130,14 +153,15 @@ impl Context<'_> {
             prepared.push(value);
         }
         // Reject tuple-valued subqueries before scanning, even when no row could match.
-        if !terminal && requested.len() > 1 {
+        if !terminal && requested.len() != 1 {
             return Err(EvalError::TypeMismatch);
         }
         let mut rows = Vec::new();
+        let mut values = std::collections::BTreeSet::new();
         let words = self.store.ids.len().div_ceil(32);
         let mut marked = self.reserve(words)?;
         marked.resize(words, 0);
-        let mut row_result = terminal && query.fields.as_ref().is_some_and(|f| f.len() != 1);
+        let row_result = terminal && query.fields.as_ref().is_some_and(|f| f.len() != 1);
         let mut scalar_concepts = None;
         let active_explicit = query
             .filters
@@ -173,12 +197,6 @@ impl Context<'_> {
                     return Err(EvalError::TypeMismatch);
                 }
                 scalar_concepts = Some(concepts);
-            }
-            if !concepts && !terminal {
-                return Err(EvalError::TypeMismatch);
-            }
-            if !concepts {
-                row_result = true;
             }
             for (column, predicate) in filter_columns.iter().zip(&prepared) {
                 validate_type(column, predicate)?;
@@ -229,11 +247,33 @@ impl Context<'_> {
                         .ordinal(values[row])
                         .ok_or(EvalError::TypeMismatch)?;
                     marked[ordinal as usize / 32] |= 1 << (ordinal % 32);
+                } else if !row_result && requested.len() == 1 {
+                    let column = columns[0];
+                    let bytes = match column {
+                        MemberColumn::Text(text) | MemberColumn::Number(text) => {
+                            text.get(row).len()
+                        }
+                        _ => 40,
+                    };
+                    self.tick(bytes)?;
+                    // Check before cloning a potentially large string.
+                    self.claim(16 + bytes.div_ceil(4))?;
+                    let mut value = column.value(row);
+                    if let MemberValue::Number(number) = &mut value {
+                        *number = Decimal::parse(number)
+                            .ok_or(EvalError::InvalidAst)?
+                            .to_string();
+                    }
+                    self.live -= 16 + bytes.div_ceil(4);
+                    if !values.contains(&value) {
+                        self.claim(super::values::value_cost(&value))?;
+                        values.insert(value);
+                    }
                 } else {
                     self.claim(names.len().saturating_mul(32))?;
                     let mut values = BTreeMap::new();
                     for (name, col) in names.iter().zip(&columns) {
-                        if let MemberColumn::Text(text) = col {
+                        if let MemberColumn::Text(text) | MemberColumn::Number(text) = col {
                             self.tick(text.get(row).len())?;
                             self.claim(text.get(row).len().div_ceil(4))?;
                         }
@@ -255,6 +295,10 @@ impl Context<'_> {
             }
         }
         self.release(candidates);
+        if scalar_concepts == Some(false) && !row_result {
+            self.release(marked);
+            return Ok(QueryResult::Values(values.into_iter().collect()));
+        }
         if row_result {
             // A field with mixed types across refsets must not silently drop earlier concept values.
             if marked.iter().any(|&bits| bits != 0) {
@@ -295,10 +339,21 @@ impl Context<'_> {
             (MemberColumn::Integer(values), Prepared::Number(value)) => {
                 return Ok(op.matches(Decimal::parse(&values[row].to_string()).unwrap().cmp(value)))
             }
+            (MemberColumn::Number(values), Prepared::Number(value)) => {
+                self.tick(values.get(row).len())?;
+                return Ok(op.matches(
+                    Decimal::parse(values.get(row))
+                        .ok_or(EvalError::InvalidAst)?
+                        .cmp(value),
+                ));
+            }
             (MemberColumn::Boolean(values), Prepared::Boolean(value)) => {
                 value.is_none_or(|v| v == (values[row] != 0))
             }
-            (MemberColumn::Time(values), Prepared::Dates(dates)) => {
+            (
+                MemberColumn::Time(values),
+                Prepared::Dates(dates) | Prepared::DatesOrText { dates, .. },
+            ) => {
                 self.tick(dates.len())?;
                 let actual = (values[row] != 0).then_some(values[row]);
                 dates.iter().any(|date| match op {
@@ -310,18 +365,42 @@ impl Context<'_> {
                 })
             }
             #[cfg(feature = "unicode")]
-            (MemberColumn::Text(values), Prepared::Text(terms)) => {
+            (
+                MemberColumn::Text(values),
+                Prepared::Text(terms)
+                | Prepared::DatesOrText {
+                    terms: Some(terms), ..
+                },
+            ) => {
                 self.tick(terms.work(values.get(row)))?;
                 terms
-                    .matches(values.get(row), *b"en")
+                    .matches(
+                        values.get(row),
+                        self.store
+                            .config
+                            .member_language_code()
+                            .ok_or(EvalError::InvalidAst)?,
+                    )
                     .map_err(|e| EvalError::Text(format!("{e:?}")))?
             }
             #[cfg(feature = "unicode")]
-            (MemberColumn::Uuid(values), Prepared::Text(terms)) => {
+            (
+                MemberColumn::Uuid(values),
+                Prepared::Text(terms)
+                | Prepared::DatesOrText {
+                    terms: Some(terms), ..
+                },
+            ) => {
                 let text = crate::store::format_uuid(&values[row]);
                 self.tick(terms.work(&text))?;
                 terms
-                    .matches(&text, *b"en")
+                    .matches(
+                        &text,
+                        self.store
+                            .config
+                            .member_language_code()
+                            .ok_or(EvalError::InvalidAst)?,
+                    )
                     .map_err(|e| EvalError::Text(format!("{e:?}")))?
             }
             _ => return Err(EvalError::TypeMismatch),
@@ -332,9 +411,19 @@ impl Context<'_> {
 fn validate_type(column: &MemberColumn, predicate: &Prepared<'_>) -> Result<()> {
     let valid = match (column, predicate) {
         (MemberColumn::Id(_), Prepared::Concepts(_))
-        | (MemberColumn::Integer(_), Prepared::Number(_))
+        | (MemberColumn::Integer(_) | MemberColumn::Number(_), Prepared::Number(_))
         | (MemberColumn::Boolean(_), Prepared::Boolean(_))
-        | (MemberColumn::Time(_), Prepared::Dates(_)) => true,
+        | (MemberColumn::Time(_), Prepared::Dates(_) | Prepared::DatesOrText { .. }) => true,
+        (MemberColumn::Text(_) | MemberColumn::Uuid(_), Prepared::DatesOrText { dates, .. })
+            if dates.iter().all(Option::is_some) =>
+        {
+            if !cfg!(feature = "unicode") {
+                return Err(EvalError::Unsupported(
+                    "Member string matching requires the unicode Cargo feature",
+                ));
+            }
+            true
+        }
         #[cfg(feature = "unicode")]
         (MemberColumn::Text(_) | MemberColumn::Uuid(_), Prepared::Text(_)) => true,
         _ => false,

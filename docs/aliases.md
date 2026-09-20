@@ -5,11 +5,14 @@
 ```json
 {
   "identifier_schemes": {"example": "100001"},
+  "member_language": "en",
   "dialects": {"en-gb": "900000000000508004", "local": "100002"}
 }
 ```
 
 The two small SCTIDs above are synthetic examples. Use the identifier scheme and language refset concepts supplied with your edition. Alias names are case-insensitive; identifier codes are case-sensitive. A supplied `dialects` map replaces the defaults. Omitting it retains the aliases listed in [Appendix C of the ECL specification](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/appendices/appendix-c-dialect-aliases).
+
+`member_language` selects collation for member string predicates. It defaults to `en` and accepts a two-letter language code, such as `sv`. RF2 member rows have no language field. Description predicates continue to use each description's own language.
 
 ```sh
 snomed-ecl-engine expand STORE 'example#code' --config aliases.json

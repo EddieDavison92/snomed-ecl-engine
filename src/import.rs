@@ -11,6 +11,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use zip::ZipArchive;
 mod descriptions;
 mod identifiers;
+mod member_schema;
 mod members;
 mod membership;
 mod supplement;
@@ -443,7 +444,8 @@ pub fn import_snapshot_with_progress(
     let description_manifest = descriptions.write(&staging.join("descriptions.bin"))?;
     drop(descriptions);
     progress("Indexing typed reference-set members");
-    let member_tables = members::build(&mut archive, &lookup, edition_date, &staging, None)?;
+    let member_tables =
+        members::build(&mut archive, &lookup, &store, edition_date, &staging, None)?;
     let identifiers = crate::store::IdentifierIndex::build(identifiers::read(
         &mut archive,
         &lookup,

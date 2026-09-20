@@ -63,6 +63,22 @@ impl Ord for Decimal {
         }
     }
 }
+impl std::fmt::Display for Decimal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.negative {
+            f.write_str("-")?;
+        }
+        f.write_str(if self.integer.is_empty() {
+            "0"
+        } else {
+            &self.integer
+        })?;
+        if !self.fraction.is_empty() {
+            write!(f, ".{}", self.fraction)?;
+        }
+        Ok(())
+    }
+}
 impl PartialOrd for Decimal {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))

@@ -84,6 +84,8 @@ def main():
               "core_index_bytes": manifest["core_bytes"], "samples": args.samples,
               "membership_index_bytes": (manifest.get("membership") or {}).get("bytes", 0),
               "description_index_bytes": (manifest.get("descriptions") or {}).get("bytes", 0),
+              "identifier_index_bytes": (manifest.get("identifiers") or {}).get("bytes", 0),
+              "display_index_bytes": manifest.get("display_bytes", 0),
               "member_index_bytes": sum(t['bytes'] for t in manifest.get('member_tables') or []),
               "manifest_sha256": hashlib.sha256((store_directory / 'manifest.json').read_bytes()).hexdigest(),
               "supplements": supplements,

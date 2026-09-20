@@ -100,6 +100,75 @@ fn member_metadata_numeric_predicates_and_concept_projections_preserve_rows() {
         assert_eq!(codes(&store, query), expected, "{query}");
     }
 }
+
+#[test]
+fn arbitrary_date_fields_resolve_ambiguous_quoted_values_from_the_column_type() {
+    let mut table = table();
+    table.names[10] = "reviewDate".into();
+    let mut store = fixture();
+    store.member_tables = MemberStore::loaded(vec![table]).unwrap();
+    for (predicate, expected) in [
+        (r#"="20260826""#, vec![300001]),
+        (r#"!="20260826""#, vec![300001, 300003]),
+        (r#"=("20260826" "")"#, vec![300001, 300003]),
+        (r#"<"20260826""#, vec![300001]),
+        (r#">="20260826""#, vec![300001]),
+        (r#"="""#, vec![300003]),
+    ] {
+        assert_eq!(
+            codes(&store, &format!("^200001 {{{{M reviewDate{predicate}}}}}")),
+            expected
+        );
+    }
+    assert!(matches!(
+        evaluate(
+            &store,
+            &parse(r#"^200001 {{M reviewDate=wild:"20260826"}}"#).unwrap()
+        ),
+        Err(EvalError::TypeMismatch | EvalError::Unsupported(_))
+    ));
+    #[cfg(feature = "unicode")]
+    {
+        let mut table = crate::table();
+        let mut text = TextColumn::default();
+        for value in ["20260826 suffix", "other", "20260826", "20260731"] {
+            text.push(value).unwrap();
+        }
+        table.columns[7] = C::Text(text);
+        store.member_tables = MemberStore::loaded(vec![table]).unwrap();
+        assert_eq!(
+            codes(&store, r#"^200001 {{M mapTarget="20260826"}}"#),
+            vec![300001]
+        );
+        assert_eq!(
+            codes(&store, r#"^200001 {{M mapTarget=("20260826" "20260731")}}"#),
+            vec![300001, 300003]
+        );
+    }
+}
+
+#[cfg(feature = "unicode")]
+#[test]
+fn member_text_collation_uses_the_configured_language() {
+    let mut table = table();
+    let mut text = TextColumn::default();
+    for value in ["sjögren", "other", "other", "other"] {
+        text.push(value).unwrap();
+    }
+    table.columns[7] = C::Text(text);
+    let mut store = fixture();
+    store.member_tables = MemberStore::loaded(vec![table]).unwrap();
+    assert_eq!(
+        codes(&store, r#"^200001 {{M mapTarget="sjogren"}}"#),
+        vec![300001]
+    );
+    store.config.member_language = "sv".into();
+    assert!(codes(&store, r#"^200001 {{M mapTarget="sjogren"}}"#).is_empty());
+    assert_eq!(
+        codes(&store, r#"^200001 {{M mapTarget="sjögren"}}"#),
+        vec![300001]
+    );
+}
 #[test]
 fn terminal_tuples_have_typed_values_and_fail_in_concept_subqueries() {
     let store = fixture();
@@ -136,6 +205,78 @@ fn terminal_tuples_have_typed_values_and_fail_in_concept_subqueries() {
             &query,
             Limits {
                 max_live_set_values: 20,
+                ..Limits::default()
+            },
+            None
+        ),
+        Err(EvalError::MemoryLimit)
+    );
+}
+
+#[test]
+fn scalar_projections_form_exact_typed_sets() {
+    let mut store = fixture();
+    let mut table = table();
+    let mut numbers = TextColumn::default();
+    for value in ["+1.000", "1", "-0.00", "1.000000000000000001"] {
+        numbers.push(value).unwrap();
+    }
+    table.columns[6] = C::Number(numbers);
+    store.member_tables = MemberStore::loaded(vec![table]).unwrap();
+    for (query, expected) in [
+        ("^[mapGroup]200001", vec!["1", "1.000000000000000001"]),
+        (
+            "(^[mapGroup]200001) AND (^[mapGroup]200001 {{M referencedComponentId=300001}})",
+            vec!["1"],
+        ),
+        (
+            "(^[mapGroup]200001) MINUS (^[mapGroup]200001 {{M referencedComponentId=300001}})",
+            vec!["1.000000000000000001"],
+        ),
+        (
+            "(^[mapGroup]200001 {{M active=0}}) OR (^[mapGroup]200001)",
+            vec!["0", "1", "1.000000000000000001"],
+        ),
+        (
+            "(^[mapGroup]200001 {{M mapGroup=#99}}) OR (^[mapGroup]200001)",
+            vec!["1", "1.000000000000000001"],
+        ),
+    ] {
+        let result = evaluate_result(&store, &parse(query).unwrap()).unwrap();
+        assert_eq!(
+            result,
+            QueryResult::Values(
+                expected
+                    .into_iter()
+                    .map(|s| MemberValue::Number(s.into()))
+                    .collect()
+            ),
+            "{query}"
+        );
+    }
+    assert_eq!(
+        evaluate_result(&store, &parse("^[grouped]200001").unwrap()).unwrap(),
+        QueryResult::Values(vec![
+            MemberValue::Boolean(false),
+            MemberValue::Boolean(true)
+        ])
+    );
+    for query in [
+        "(^[*]200001 {{M mapGroup=#99}}) OR (*)",
+        "(^[mapGroup]200001) OR (*)",
+        "<< (^[mapGroup]200001)",
+    ] {
+        assert_eq!(
+            evaluate_result(&store, &parse(query).unwrap()),
+            Err(EvalError::TypeMismatch)
+        );
+    }
+    assert_eq!(
+        evaluate_result_with_limits(
+            &store,
+            &parse("^[mapGroup]200001").unwrap(),
+            Limits {
+                max_live_set_values: 10,
                 ..Limits::default()
             },
             None

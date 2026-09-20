@@ -10,6 +10,7 @@ mod members;
 mod membership;
 pub use members::QueryResult;
 mod refinement;
+mod values;
 
 #[derive(Clone, Copy)]
 pub struct Limits {
@@ -65,11 +66,7 @@ pub fn evaluate_result_with_limits(
         live: 0,
         nodes: 0,
     };
-    if let Expr::Members(query) = expression {
-        context.member_query(query, 0, true)
-    } else {
-        context.eval(expression, 0).map(QueryResult::Concepts)
-    }
+    context.result(expression, 0, true)
 }
 pub fn evaluate_with_limits(
     store: &NumericStore,
