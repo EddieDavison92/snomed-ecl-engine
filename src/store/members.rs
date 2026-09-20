@@ -216,7 +216,7 @@ impl MemberTable {
                 MemberColumn::Text(v) => {
                     ensure!(
                         v.offsets.first() == Some(&0)
-                            && v.offsets.last().copied() == Some(v.text.len() as u32),
+                            && v.offsets.last().copied() == u32::try_from(v.text.len()).ok(),
                         "Invalid member text offsets"
                     );
                     ensure!(

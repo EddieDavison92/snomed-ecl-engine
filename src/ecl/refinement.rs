@@ -148,7 +148,7 @@ impl Parser<'_> {
                 let Some(escaped) = self.rest().chars().next() else {
                     return Err(self.unexpected());
                 };
-                if !matches!(escaped, '\\' | '"' | '*') {
+                if !matches!(escaped, '\\' | '"') {
                     return Err(self.error(ParseErrorKind::Syntax, "Invalid string escape"));
                 }
                 self.pos += escaped.len_utf8();
@@ -161,7 +161,7 @@ impl Parser<'_> {
         }
     }
     fn attribute(&mut self, depth: usize, cardinality: Cardinality) -> Result<Refinement> {
-        let reverse = self.keyword("r") || self.keyword("reverseof");
+        let reverse = !self.starts_alternate() && (self.keyword("r") || self.keyword("reverseof"));
         self.ws()?;
         let name = Box::new(self.subexpression(depth + 1)?);
         let comparison = self.comparison()?;
@@ -184,22 +184,22 @@ impl Parser<'_> {
             let number = Decimal::parse(&self.text[start..self.pos])
                 .ok_or_else(|| self.error(ParseErrorKind::Syntax, "Invalid decimal"))?;
             AttributeValue::Number(number)
-        } else if self.rest().starts_with('"') {
+        } else if self.rest().starts_with('"') && !self.starts_alternate() {
             let value = self.quoted()?;
             if value.is_empty() {
                 return Err(self.error(ParseErrorKind::Syntax, "Empty concrete string"));
             }
             AttributeValue::Strings(vec![value])
-        } else if self.keyword("true") {
+        } else if !self.starts_alternate() && self.keyword("true") {
             AttributeValue::Boolean(true)
-        } else if self.keyword("false") {
+        } else if !self.starts_alternate() && self.keyword("false") {
             AttributeValue::Boolean(false)
         } else {
             let saved = self.pos;
             if self.take("(") {
                 self.ws()?;
             }
-            if self.pos != saved && self.rest().starts_with('"') {
+            if self.pos != saved && self.rest().starts_with('"') && !self.starts_alternate() {
                 let mut values = vec![self.quoted()?];
                 loop {
                     let spaced = self.ws()?;

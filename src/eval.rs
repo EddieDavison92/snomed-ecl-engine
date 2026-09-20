@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error::Error, fmt};
 mod descriptions;
 mod filters;
+mod history;
 mod members;
 mod membership;
 pub use members::QueryResult;
@@ -34,6 +35,7 @@ pub enum EvalError {
     Text(String),
     InvalidField(String),
     TypeMismatch,
+    UnconfiguredAlias(String),
 }
 impl fmt::Display for EvalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -134,6 +136,45 @@ impl Context<'_> {
             return Err(EvalError::InvalidAst);
         }
         match expr {
+            Expr::AlternateIdentifier { scheme, code } => {
+                let id = self
+                    .store
+                    .config
+                    .identifier_schemes
+                    .get(&scheme.to_ascii_lowercase())
+                    .ok_or_else(|| EvalError::UnconfiguredAlias(scheme.clone()))?;
+                let index = self
+                    .store
+                    .identifiers
+                    .get()
+                    .map_err(|e| EvalError::Index(e.to_string()))?
+                    .ok_or(EvalError::Unsupported(
+                        "Identifier index is absent; rebuild from RF2",
+                    ))?;
+                self.tick(index.rows.len().checked_ilog2().unwrap_or(0) as usize + code.len() + 1)?;
+                let mut result = self.reserve(1)?;
+                if let Some(code) = index.lookup(*id, code) {
+                    let ordinal = self.store.ordinal(code).ok_or_else(|| {
+                        EvalError::Index("Identifier refers to an absent concept".into())
+                    })?;
+                    result.push(ordinal);
+                }
+                Ok(result)
+            }
+            Expr::DialectAlias(alias) => {
+                let id = self
+                    .store
+                    .config
+                    .dialects
+                    .get(&alias.to_ascii_lowercase())
+                    .ok_or_else(|| EvalError::UnconfiguredAlias(alias.clone()))?;
+                let mut result = self.reserve(1)?;
+                if let Some(ordinal) = self.store.ordinal(*id) {
+                    result.push(ordinal);
+                }
+                Ok(result)
+            }
+            Expr::History(inner, supplement) => self.history(inner, supplement, depth + 1),
             Expr::Members(query) => match self.member_query(query, depth + 1, false)? {
                 QueryResult::Concepts(values) => Ok(values),
                 _ => Err(EvalError::TypeMismatch),

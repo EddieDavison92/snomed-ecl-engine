@@ -1,4 +1,4 @@
-use snomed_ecl_engine::ecl::{parse, Comparison, ConceptFilter, Expr, ParseErrorKind};
+use snomed_ecl_engine::ecl::{parse, Comparison, ConceptFilter, Expr};
 use snomed_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
 use snomed_ecl_engine::store::{Adjacency, Attributes, MembershipIndex, NumericStore};
 use std::sync::atomic::AtomicBool;
@@ -22,6 +22,8 @@ fn fixture() -> NumericStore {
     NumericStore {
         descriptions: Default::default(),
         member_tables: Default::default(),
+        identifiers: Default::default(),
+        config: Default::default(),
         ids,
         flags: vec![1, 3, 1, 2, 3, 1, 1, 1, 1, 1, 1],
         modules: vec![6, 6, 7, 7, 7, 6, 6, 6, 6, 6, 6],
@@ -168,10 +170,10 @@ fn filters_keep_errors_visible_and_respect_limits() {
         evaluate(&store, &expression),
         Err(EvalError::Unsupported(_))
     ));
-    assert_eq!(
-        parse("* {{+ HISTORY}}").unwrap_err().kind,
-        ParseErrorKind::Unsupported
-    );
+    assert!(matches!(
+        evaluate(&store, &parse("* {{+ HISTORY}}").unwrap()),
+        Err(EvalError::Unsupported(_))
+    ));
     let expression = parse("* {{C active=1}}").unwrap();
     assert_eq!(
         evaluate_with_limits(

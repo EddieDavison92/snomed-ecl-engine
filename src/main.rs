@@ -23,6 +23,21 @@ fn main() {
 
 fn run() -> Result<()> {
     let mut args: Vec<_> = std::env::args().skip(1).collect();
+    let mut query_config = None;
+    if let Some(position) = args.iter().position(|s| s == "--config") {
+        ensure!(
+            position + 1 < args.len(),
+            "--config requires a JSON file path"
+        );
+        query_config = Some(snomed_ecl_engine::config::QueryConfig::read(Path::new(
+            &args[position + 1],
+        ))?);
+        args.drain(position..=position + 1);
+        ensure!(
+            !args.iter().any(|s| s == "--config"),
+            "--config may only be supplied once"
+        );
+    }
     let json = args.iter().any(|s| s == "--json");
     let plain = args.iter().any(|s| s == "--plain");
     ensure!(!(json && plain), "Choose either --json or --plain");
@@ -151,7 +166,10 @@ fn run() -> Result<()> {
                 eprintln!("  Opening and verifying index...");
             }
             let open_start = Instant::now();
-            let store = NumericStore::open(Path::new(&args[1]))?;
+            let mut store = NumericStore::open(Path::new(&args[1]))?;
+            if let Some(config) = &query_config {
+                store.config = config.clone();
+            }
             let open_seconds = open_start.elapsed().as_secs_f64();
             let eval_start = Instant::now();
             let result = eval::evaluate_result(&store, &expression)?;
@@ -253,8 +271,12 @@ fn run() -> Result<()> {
             ensure!(args.len() == 2, "Usage: batch STORE (JSON lines on stdin)");
             let directory = Path::new(&args[1]);
             let start = Instant::now();
-            let store = NumericStore::open(directory)?;
+            let mut store = NumericStore::open(directory)?;
+            if let Some(config) = &query_config {
+                store.config = config.clone();
+            }
             let manifest = Manifest::read(directory)?;
+            let config_sha256 = store.config.fingerprint()?;
             eprintln!(
                 "Store opened in {:.3} seconds",
                 start.elapsed().as_secs_f64()
@@ -269,7 +291,9 @@ fn run() -> Result<()> {
                 }
                 ensure!(line.len() <= 524288, "Batch request exceeds 512 KiB");
                 match serde_json::from_slice::<BatchRequest>(&line) {
-                    Ok(request) => batch_response(&store, &manifest, &request, &mut out)?,
+                    Ok(request) => {
+                        batch_response(&store, &manifest, &config_sha256, &request, &mut out)?
+                    }
                     Err(_) => writeln!(out, "{{\"error\":\"InvalidRequest\"}}")?,
                 }
                 out.flush()?;
@@ -353,6 +377,7 @@ impl serde::Serialize for Codes<'_> {
 #[derive(serde::Serialize)]
 struct BatchResponse<'a> {
     edition: &'a str,
+    query_config_sha256: &'a str,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     supplements: Vec<&'a str>,
     total: usize,
@@ -369,6 +394,7 @@ struct BatchResponse<'a> {
 fn batch_response(
     store: &NumericStore,
     manifest: &Manifest,
+    config_sha256: &str,
     request: &BatchRequest,
     out: &mut impl Write,
 ) -> Result<()> {
@@ -398,6 +424,7 @@ fn batch_response(
         &mut *out,
         &BatchResponse {
             edition: &manifest.edition,
+            query_config_sha256: config_sha256,
             supplements: manifest
                 .supplements
                 .iter()

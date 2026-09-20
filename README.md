@@ -82,7 +82,7 @@ The [CLI guide](docs/cli.md) covers commands and output formats. The repository 
 
 Full ECL 2.3 support is the acceptance requirement. Current capabilities include hierarchy and Boolean operations, nested refinements, groups and cardinalities, exact concrete comparisons, top/bottom, concept refsets, concept filters and description filters. The optional Unicode backend evaluates term prefixes, wildcards and term sets.
 
-The 1,000-expression corpus currently evaluates 960 cases, including member projections, with all previous 920 result sets unchanged. This measures coverage of that workload, not percentage conformance to the language. History, alternate identifiers, configurable dialect aliases, general custom member types and remaining semantic details are still in progress. Unsupported expressions fail explicitly. The [conformance checklist](docs/conformance.md) tracks the remaining work.
+The 1,000-expression corpus now evaluates all 1,000 cases, including history supplements, with all previous 960 result sets unchanged. This measures coverage of that workload, not percentage conformance to the language. History profiles, alternate identifiers and configurable dialect aliases are implemented. General custom member types and remaining semantic details are still in progress. Unsupported expressions fail explicitly. The [conformance checklist](docs/conformance.md) tracks the remaining work.
 
 The engine is intended to power embedded tools, low-resource servers and serverless applications. An HTTP or deployment wrapper belongs in a separate application that consumes the library. Cloud cold starts and the complete engine's final resource footprint still need measurement.
 

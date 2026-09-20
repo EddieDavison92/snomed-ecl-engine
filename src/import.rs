@@ -10,6 +10,7 @@ use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use zip::ZipArchive;
 mod descriptions;
+mod identifiers;
 mod members;
 mod membership;
 mod supplement;
@@ -443,6 +444,12 @@ pub fn import_snapshot_with_progress(
     drop(descriptions);
     progress("Indexing typed reference-set members");
     let member_tables = members::build(&mut archive, &lookup, edition_date, &staging, None)?;
+    let identifiers = crate::store::IdentifierIndex::build(identifiers::read(
+        &mut archive,
+        &lookup,
+        edition_date,
+    )?)?
+    .write(&staging)?;
     drop(lookup);
     let manifest = Manifest {
         format: FORMAT,
@@ -470,10 +477,12 @@ pub fn import_snapshot_with_progress(
             "concept-refset-membership".into(),
             "complete-description-metadata".into(),
             "typed-concept-refset-members".into(),
+            "alternate-identifiers".into(),
         ],
         membership: Some(membership_manifest),
         descriptions: Some(description_manifest),
         member_tables: Some(member_tables),
+        identifiers: Some(identifiers),
         supplements: Vec::new(),
     };
     let mut manifest_file = File::create_new(staging.join("manifest.json"))?;

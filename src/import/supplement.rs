@@ -412,6 +412,17 @@ pub fn add_refsets_snapshot(
     let nonce = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
     let staging = parent.join(format!(".store-building-{}-{nonce}", std::process::id()));
     fs::create_dir(&staging)?;
+    let extra_identifiers = super::identifiers::read(&mut archive, &lookup, release_date)?;
+    if let Some(base_ids) = original.identifiers.get()? {
+        let mut rows = base_ids.rows.clone();
+        rows.extend(extra_identifiers);
+        manifest.identifiers = Some(crate::store::IdentifierIndex::build(rows)?.write(&staging)?);
+    } else {
+        ensure!(
+            extra_identifiers.is_empty(),
+            "Base identifier index is absent; reimport the base before adding identifiers"
+        );
+    }
     if let Some(tables) = &mut manifest.member_tables {
         fs::create_dir(staging.join("members"))?;
         let additional = super::members::build(

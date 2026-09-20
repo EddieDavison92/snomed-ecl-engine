@@ -1,0 +1,98 @@
+[
+  {
+    "id": "history-check-01",
+    "ecl": "195967001 {{ +HISTORY-MIN }}",
+    "seed": "195967001",
+    "descendants": false,
+    "profile": "MIN",
+    "probe": true
+  },
+  {
+    "id": "history-check-02",
+    "ecl": "195967001 {{ +HISTORY-MOD }}",
+    "seed": "195967001",
+    "descendants": false,
+    "profile": "MOD",
+    "probe": true
+  },
+  {
+    "id": "history-check-03",
+    "ecl": "195967001 {{ +HISTORY-MAX }}",
+    "seed": "195967001",
+    "descendants": false,
+    "profile": "MAX",
+    "probe": true
+  },
+  {
+    "id": "history-check-04",
+    "ecl": "195967001 {{ +HISTORY }}",
+    "seed": "195967001",
+    "descendants": false,
+    "profile": "MAX",
+    "probe": false
+  },
+  {
+    "id": "history-check-05",
+    "ecl": "195967001 {{ +HISTORY (*) }}",
+    "seed": "195967001",
+    "descendants": false,
+    "profile": "MAX",
+    "probe": false
+  },
+  {
+    "id": "history-check-06",
+    "ecl": "195967001 {{ +HISTORY (900000000000526001) }}",
+    "seed": "195967001",
+    "descendants": false,
+    "profile": "REPLACED",
+    "probe": false
+  },
+  {
+    "id": "history-check-07",
+    "ecl": "<< 195967001 {{ +HISTORY-MIN }}",
+    "seed": "195967001",
+    "descendants": true,
+    "profile": "MIN",
+    "probe": false
+  },
+  {
+    "id": "history-check-08",
+    "ecl": "<< 195967001 {{ +HISTORY-MOD }}",
+    "seed": "195967001",
+    "descendants": true,
+    "profile": "MOD",
+    "probe": true
+  },
+  {
+    "id": "history-check-09",
+    "ecl": "<< 195967001 {{ +HISTORY-MAX }}",
+    "seed": "195967001",
+    "descendants": true,
+    "profile": "MAX",
+    "probe": false
+  },
+  {
+    "id": "history-check-10",
+    "ecl": "<< 195967001 {{ +HISTORY }}",
+    "seed": "195967001",
+    "descendants": true,
+    "profile": "MAX",
+    "probe": false
+  },
+  {
+    "id": "history-check-11",
+    "ecl": "<< 195967001 {{ +HISTORY (*) }}",
+    "seed": "195967001",
+    "descendants": true,
+    "profile": "MAX",
+    "probe": false
+  },
+  {
+    "id": "history-check-12",
+    "ecl": "<< 195967001 {{ +HISTORY (900000000000526001) }}",
+    "seed": "195967001",
+    "descendants": true,
+    "profile": "REPLACED",
+    "probe": false
+  }
+]

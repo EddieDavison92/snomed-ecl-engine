@@ -6,9 +6,11 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 mod descriptions;
+mod identifiers;
 mod members;
 mod membership;
 pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
+pub use identifiers::{Identifier, IdentifierIndex, IdentifierManifest, IdentifierStore};
 pub use members::{
     format_uuid, parse_uuid, MemberColumn, MemberManifest, MemberStore, MemberTable, MemberValue,
     TextColumn,
@@ -44,6 +46,8 @@ pub struct Manifest {
     pub descriptions: Option<DescriptionManifest>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub member_tables: Option<Vec<MemberManifest>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub identifiers: Option<IdentifierManifest>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplements: Vec<RefsetSupplement>,
 }
@@ -208,6 +212,8 @@ pub struct NumericStore {
     pub membership: Option<MembershipIndex>,
     pub descriptions: DescriptionStore,
     pub member_tables: MemberStore,
+    pub identifiers: IdentifierStore,
+    pub config: crate::config::QueryConfig,
 }
 
 impl NumericStore {
@@ -445,6 +451,11 @@ impl NumericStore {
                 .map(|m| MemberStore::lazy(directory, m))
                 .transpose()?
                 .unwrap_or_default(),
+            identifiers: manifest
+                .identifiers
+                .map(|m| IdentifierStore::lazy(directory, m))
+                .unwrap_or_default(),
+            config: crate::config::QueryConfig::default(),
         };
         store.validate()?;
         ensure!(

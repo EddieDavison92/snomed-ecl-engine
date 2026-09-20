@@ -3,10 +3,13 @@ use std::fmt;
 mod descriptions;
 mod filters;
 pub use descriptions::{DescriptionFilter, Dialect};
+mod history;
+mod identifiers;
 mod members;
 mod refinement;
 mod search;
 pub use filters::ConceptFilter;
+pub use history::History;
 pub use members::{MemberFilter, MemberPredicate, MemberQuery};
 pub use refinement::{AttributeConstraint, AttributeValue, Cardinality, Comparison, Refinement};
 pub use search::SearchTerm;
@@ -47,6 +50,8 @@ impl Hierarchy {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
     Concept(u64),
+    AlternateIdentifier { scheme: String, code: String },
+    DialectAlias(String),
     All,
     Hierarchy(Hierarchy, Box<Expr>),
     And(Vec<Expr>),
@@ -57,6 +62,7 @@ pub enum Expr {
     Extremum { top: bool, inner: Box<Expr> },
     MemberOf(Box<Expr>),
     Members(MemberQuery),
+    History(Box<Expr>, History),
     RefsetContainingAny(Box<Expr>),
     ConceptFiltered(Box<Expr>, Vec<ConceptFilter>),
     DescriptionFiltered(Box<Expr>, Vec<DescriptionFilter>),
@@ -288,10 +294,10 @@ impl Parser<'_> {
             Some(true)
         } else if self.take("!!<") {
             Some(false)
-        } else if self.keyword("top") {
+        } else if !self.starts_alternate() && self.keyword("top") {
             self.required_ws()?;
             Some(true)
-        } else if self.keyword("bottom") {
+        } else if !self.starts_alternate() && self.keyword("bottom") {
             self.required_ws()?;
             Some(false)
         } else {
@@ -314,7 +320,7 @@ impl Parser<'_> {
                 break;
             }
         }
-        if hierarchy.is_none() {
+        if hierarchy.is_none() && !self.starts_alternate() {
             let word = self.word();
             for (name, op) in [
                 ("descendantof", Hierarchy::Descendant),
@@ -345,11 +351,11 @@ impl Parser<'_> {
             Some(true)
         } else if self.take("^") {
             Some(false)
-        } else if self.keyword("memberOf") {
-            self.required_ws()?;
+        } else if !self.starts_alternate() && self.keyword("memberOf") {
+            self.ws()?;
             Some(false)
-        } else if self.keyword("refsetContainingAny") {
-            self.required_ws()?;
+        } else if !self.starts_alternate() && self.keyword("refsetContainingAny") {
+            self.ws()?;
             Some(true)
         } else {
             None
@@ -367,6 +373,8 @@ impl Parser<'_> {
                 return Err(self.unexpected());
             }
             inner
+        } else if self.starts_alternate() {
+            self.alternate_identifier()?
         } else if self.take("*") {
             self.node(Expr::All)?
         } else if self.word().eq_ignore_ascii_case("any") {
@@ -435,18 +443,16 @@ impl Parser<'_> {
             self.take("{{");
             self.ws()?;
             let concept = self.rest().starts_with(['C', 'c']);
-            let unsupported = self.rest().starts_with('+')
-                || self.rest().starts_with(['m', 'M'])
-                    && !self.word().eq_ignore_ascii_case("moduleId");
+            let history = self.rest().starts_with('+');
             self.pos = saved;
-            if concept {
+            if history {
+                let supplement = self.history(depth + 1)?;
+                expression = self.node(Expr::History(Box::new(expression), supplement))?;
+                self.ws()?;
+                break;
+            } else if concept {
                 let filters = self.concept_filters(depth + 1)?;
                 expression = self.node(Expr::ConceptFiltered(Box::new(expression), filters))?;
-            } else if unsupported {
-                return Err(self.error(
-                    ParseErrorKind::Unsupported,
-                    "Member filters and history supplements are not implemented",
-                ));
             } else {
                 let filters = self.description_filters(depth + 1)?;
                 expression = self.node(Expr::DescriptionFiltered(Box::new(expression), filters))?;

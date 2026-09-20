@@ -208,3 +208,44 @@ fn description_limits_and_missing_data_never_produce_partial_results() {
         assert!(parse(invalid).is_err(), "{invalid}");
     }
 }
+
+#[test]
+fn configured_dialect_aliases_resolve_at_evaluation() {
+    let mut store = fixture();
+    store
+        .config
+        .dialects
+        .insert("local-dialect".into(), 900000000000508004);
+    assert_eq!(
+        evaluate(
+            &store,
+            &parse("* {{D dialect=local-dialect (prefer)}}").unwrap()
+        )
+        .unwrap(),
+        evaluate(
+            &store,
+            &parse("* {{D dialectId=900000000000508004 (prefer)}}").unwrap()
+        )
+        .unwrap()
+    );
+    assert_eq!(
+        evaluate(&store, &parse("* {{D dialect=unknown-dialect}}").unwrap()),
+        Err(EvalError::UnconfiguredAlias("unknown-dialect".into()))
+    );
+    for (brief, long) in [
+        (
+            "* {{D type=(syn fsn def)}}",
+            "* {{D type=(synonym fullySpecifiedName definition)}}",
+        ),
+        (
+            "* {{D dialect=en-gb (prefer accept)}}",
+            "* {{D dialect=en-gb (preferred acceptable)}}",
+        ),
+    ] {
+        assert_eq!(parse(brief).unwrap(), parse(long).unwrap());
+        assert_eq!(
+            evaluate(&store, &parse(brief).unwrap()),
+            evaluate(&store, &parse(long).unwrap())
+        );
+    }
+}

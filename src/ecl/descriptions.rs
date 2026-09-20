@@ -81,11 +81,11 @@ impl Parser<'_> {
                 }
                 "type" => {
                     let values = self.description_list(|p| {
-                        let code = if p.keyword("syn") {
+                        let code = if p.keyword("syn") || p.keyword("synonym") {
                             900000000000013009
-                        } else if p.keyword("fsn") {
+                        } else if p.keyword("fsn") || p.keyword("fullySpecifiedName") {
                             900000000000003001
-                        } else if p.keyword("def") {
+                        } else if p.keyword("def") || p.keyword("definition") {
                             900000000000550004
                         } else {
                             return Err(p.unexpected());
@@ -125,8 +125,9 @@ impl Parser<'_> {
         let saved = (self.pos, self.nodes);
         let mut dialects = if aliases || self.rest().starts_with('(') {
             let list = self.description_list(|p| {
-                let code = if aliases {
-                    p.dialect_alias()?
+                let refsets = if aliases {
+                    let alias = p.alias()?;
+                    p.node(Expr::DialectAlias(alias))?
                 } else {
                     let id = p.description_id()?;
                     let end = p.pos;
@@ -136,7 +137,7 @@ impl Parser<'_> {
                     } else {
                         p.pos = end;
                     }
-                    id
+                    p.node(Expr::Concept(id))?
                 };
                 let end = p.pos;
                 p.ws()?;
@@ -147,7 +148,7 @@ impl Parser<'_> {
                     Vec::new()
                 };
                 Ok(Dialect {
-                    refsets: p.node(Expr::Concept(code))?,
+                    refsets,
                     acceptability,
                 })
             });
@@ -210,9 +211,9 @@ impl Parser<'_> {
     }
     fn acceptabilities(&mut self) -> Result<Vec<u64>> {
         self.description_list(|p| {
-            if p.keyword("prefer") {
+            if p.keyword("prefer") || p.keyword("preferred") {
                 Ok(900000000000548007)
-            } else if p.keyword("accept") {
+            } else if p.keyword("accept") || p.keyword("acceptable") {
                 Ok(900000000000549004)
             } else {
                 let code = p.description_id()?;
@@ -226,22 +227,5 @@ impl Parser<'_> {
                 Ok(code)
             }
         })
-    }
-    fn dialect_alias(&mut self) -> Result<u64> {
-        let start = self.pos;
-        while self
-            .rest()
-            .starts_with(|c: char| c.is_ascii_alphanumeric() || c == '-')
-        {
-            self.pos += 1;
-        }
-        match self.text[start..self.pos].to_ascii_lowercase().as_str() {
-            "en-gb" => Ok(900000000000508004),
-            "en-us" => Ok(900000000000509007),
-            _ => Err(self.error(
-                ParseErrorKind::Unsupported,
-                "Unconfigured dialect alias; use dialectId",
-            )),
-        }
     }
 }

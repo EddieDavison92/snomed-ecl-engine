@@ -131,26 +131,26 @@
         {
           "production": "altIdentifier",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "altIdentifierSchemeAlias",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "altIdentifierCodeWithinQuotes",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "altIdentifierCodeWithoutQuotes",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "wildCard",
@@ -833,44 +833,44 @@
         {
           "production": "historySupplement",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyKeyword",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyProfileSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyMinimumSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyModerateSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyMaximumSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historySubset",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "numericValue",
@@ -1217,26 +1217,26 @@
         {
           "production": "altIdentifier",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "altIdentifierSchemeAlias",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "altIdentifierCodeWithinQuotes",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "altIdentifierCodeWithoutQuotes",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/identifiers.rs"
         },
         {
           "production": "wildCard",
@@ -1919,44 +1919,44 @@
         {
           "production": "historySupplement",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyKeyword",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyProfileSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyMinimumSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyModerateSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historyMaximumSuffix",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "historySubset",
           "area": "history",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/history.rs"
         },
         {
           "production": "numericValue",

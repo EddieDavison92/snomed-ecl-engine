@@ -61,6 +61,7 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
         ));
     }
     add("Snapshot/Terminology/sct2_Concept_Snapshot.txt", concepts);
+    add("Snapshot/Terminology/sct2_Identifier_Snapshot.txt", format!("alternateIdentifier\teffectiveTime\tactive\tmoduleId\tidentifierSchemeId\treferencedComponentId\nA.1\t20260826\t1\t{ROOT}\t{ROOT}\t{LEAF}\nA.1\t20260826\t1\t{ROOT}\t{KIND}\t{ROOT}\nold\t20260826\t0\t{ROOT}\t{ROOT}\t{LEAF}\ndescription\t20260826\t1\t{ROOT}\t{ROOT}\t6000012\n"));
     let mut relationships = "id\teffectiveTime\tactive\tmoduleId\tsourceId\tdestinationId\trelationshipGroup\ttypeId\tcharacteristicTypeId\tmodifierId\n".to_owned();
     let mut edges = vec![
         (LEFT, ROOT, 0, ISA),
@@ -106,6 +107,34 @@ fn roundtrip_preserves_groups_precision_and_separate_displays() {
     let manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
     assert_eq!(manifest.active_concept_count, 14);
     let store = NumericStore::open(&destination).unwrap();
+    assert_eq!(store.identifiers.get().unwrap().unwrap().rows.len(), 4);
+    assert_eq!(
+        store
+            .identifiers
+            .get()
+            .unwrap()
+            .unwrap()
+            .lookup(ROOT, "A.1"),
+        Some(LEAF)
+    );
+    assert_eq!(
+        store
+            .identifiers
+            .get()
+            .unwrap()
+            .unwrap()
+            .lookup(ROOT, "old"),
+        None
+    );
+    assert_eq!(
+        store
+            .identifiers
+            .get()
+            .unwrap()
+            .unwrap()
+            .lookup(ROOT, "description"),
+        None
+    );
     assert_eq!(
         store.hierarchy(ROOT, false, false, false),
         [LEFT, RIGHT, LEAF]
@@ -214,6 +243,8 @@ fn hierarchy_matches_slow_edge_scan_on_generated_dag() {
     let store = NumericStore {
         descriptions: Default::default(),
         member_tables: Default::default(),
+        identifiers: Default::default(),
+        config: Default::default(),
         ids: (0..n).map(|i| ROOT + i as u64).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -600,6 +631,15 @@ fn supplementary_refsets_preserve_base_semantics_and_provenance() {
         original.core_sha256
     );
     let store = NumericStore::open(&output).unwrap();
+    assert_eq!(
+        store
+            .identifiers
+            .get()
+            .unwrap()
+            .unwrap()
+            .lookup(ROOT, "A.1"),
+        Some(LEAF)
+    );
     let codes = |query: &str| {
         evaluate(&store, &parse(query).unwrap())
             .unwrap()
@@ -653,6 +693,76 @@ fn supplementary_refsets_preserve_base_semantics_and_provenance() {
     )
     .is_err());
     assert!(add_refsets_snapshot(&base, &extra, &output, "20260820", &hash).is_err());
+}
+
+#[test]
+fn identifier_cli_configuration_and_lazy_integrity() {
+    use snomed_ecl_engine::{
+        config::QueryConfig,
+        ecl::parse,
+        eval::{evaluate, EvalError},
+    };
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    let mut manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let config = temp.path().join("aliases.json");
+    fs::write(
+        &config,
+        format!(r#"{{"identifier_schemes":{{"demo":"{ROOT}"}}}}"#),
+    )
+    .unwrap();
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .arg("expand")
+        .arg(&destination)
+        .arg("demo#A.1")
+        .arg("--config")
+        .arg(&config)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        LEAF.to_string()
+    );
+    let path = destination.join("identifiers.json");
+    let bytes = fs::read(&path).unwrap();
+    fs::write(&path, b"invalid").unwrap();
+    let mut store = NumericStore::open(&destination).unwrap();
+    store.config = QueryConfig::read(&config).unwrap();
+    assert_eq!(
+        evaluate(&store, &parse(&ROOT.to_string()).unwrap())
+            .unwrap()
+            .len(),
+        1
+    );
+    assert!(matches!(
+        evaluate(&store, &parse("demo#A.1").unwrap()),
+        Err(EvalError::Index(_))
+    ));
+    let mut index: snomed_ecl_engine::store::IdentifierIndex =
+        serde_json::from_slice(&bytes).unwrap();
+    index.rows.push(index.rows[0].clone());
+    fs::write(&path, serde_json::to_vec(&index).unwrap()).unwrap();
+    let metadata = manifest.identifiers.as_mut().unwrap();
+    metadata.bytes = fs::metadata(&path).unwrap().len();
+    metadata.sha256 = sha256(&path).unwrap();
+    metadata.rows = index.rows.len();
+    serde_json::to_writer(
+        File::create(destination.join("manifest.json")).unwrap(),
+        &manifest,
+    )
+    .unwrap();
+    assert!(NumericStore::open(&destination)
+        .unwrap()
+        .identifiers
+        .get()
+        .is_err());
 }
 
 #[test]

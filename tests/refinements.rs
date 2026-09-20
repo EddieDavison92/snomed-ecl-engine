@@ -36,6 +36,8 @@ fn fixture() -> NumericStore {
     NumericStore {
         descriptions: Default::default(),
         member_tables: Default::default(),
+        identifiers: Default::default(),
+        config: Default::default(),
         ids: (1000000..1000011).chain([116680003]).collect(),
         flags: vec![1; n],
         modules: vec![0; n],
@@ -94,6 +96,10 @@ fn concrete_values_compare_exactly_and_keep_their_types() {
     assert_query("* : 1000007 != #0.1", &[0, 2]);
     assert_query("* : 1000007 = \"A\\\"B\"", &[3]);
     assert_query("* : 1000007 = (\"other\" \"A\\\"B\")", &[3]);
+    assert_query("* : 1000007 = \"a\\\"b\"", &[]);
+    assert_query("* : 1000007 = \"A\"", &[]);
+    assert_query("* : 1000007 = \"*B\"", &[]);
+    assert_query("* : 1000007 != \"A\"", &[3]);
     assert_query("* : 1000007 = true", &[4]);
     assert_query("* : 1000007 != false", &[4]);
     assert_query("* : { 1000007 = true }", &[]);
@@ -181,6 +187,9 @@ fn malformed_refinements_fail_and_long_syntax_agrees() {
         "* : 1000007 = #01",
         "* : 1000007 = #1.",
         "* : 1000007 = #--1",
+        "* : 1000007 = wild:\"*B\"",
+        "* : 1000007 = match:\"A\"",
+        r#"* : 1000007 = "A\*B""#,
         "* : R 1000007 = #1",
         "* : { { 1000005 = * } }",
         "* : [1..*] (1000005 = *)",
