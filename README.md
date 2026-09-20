@@ -28,7 +28,7 @@ The intended advantage is fast embedded and batch expansion with a small runtime
 | Metric | This engine | Snowstorm Lite 2.7.0 | Snowstorm 11.0.0 |
 |---|---|---|---|
 | Query architecture | Rust library or native CLI | Java service with Lucene | Java service plus Elasticsearch |
-| Observed import time | 110.5 seconds, including typed members | 1,057 seconds, 17.6 minutes | 4,360 seconds, 72.7 minutes |
+| Observed import time | 119.8 seconds, including typed members | 1,057 seconds, 17.6 minutes | 4,360 seconds, 72.7 minutes |
 | Current index files | 289.5 MiB packed with descriptions, displays and typed members; 103.3 MiB original numeric components | 483.3 MiB | 6.11 GiB Elasticsearch directory |
 | Serving allocations used | One CPU; 256 MiB for the current corpus and separate text probes | One CPU, 2 GiB | Each service: four CPUs, 6 GiB |
 | Median request, 719-expression Snowstorm comparison | **2.24 ms** | Not measured on this workload | **12.66 ms** |
@@ -38,15 +38,15 @@ The intended advantage is fast embedded and batch expansion with a small runtime
 
 Request timings include transport. Rust uses a persistent JSONL process; the servers use loopback HTTP. The Lite comparison also includes pagination and display materialisation. Latency statistics include only expressions with matching complete result sets. The Lite and full Snowstorm workloads are different, so their columns do not establish a speed ranking between the two servers.
 
-Index contents and import allocations also differ. Rust now packs its existing components into independently compressed blocks; packing took a further 33.6 seconds on one CPU. The full language still has conformance gaps. These are observed builds, not equal-capability storage ratios or minimum serving allocations. Sources: [container measurements](docs/container.md), [member import](docs/member-filters.md#release-validation), [Snowstorm comparison](docs/full-snowstorm.md), [Lite comparison](docs/basic-ecl.md) and [derived latency figures](validation/readme-comparison.json).
+Index contents and import allocations also differ. Rust now packs its existing components into independently compressed blocks; packing took a further 33.6 seconds on one CPU. The full language still has conformance gaps. These are observed builds, not equal-capability storage ratios or minimum serving allocations. Sources: [container measurements](docs/container.md), [latest RF2 import](validation/combined-ecl-results.json), [Snowstorm comparison](docs/full-snowstorm.md), [Lite comparison](docs/basic-ecl.md) and [derived latency figures](validation/readme-comparison.json).
 
 The comparison servers also have ECL coverage limits. Lite documents an ECL Core subset without attribute groups, concept/description/member filters or member-field selection in its [pinned source](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/README.md#ecl-utility-endpoints). The tested full Snowstorm parser rejected all 80 top/bottom expressions in our corpus. We also recorded a concrete-inequality disagreement where Rust matched OneLondon's Ontoserver and the RF2 evidence.
 
 OneLondon's Ontoserver 6.25.4 also rejected our [description metadata probes](validation/ontoserver-description-metadata.json), including `type` filters. These findings apply to the tested versions; full ECL 2.3 remains this project's target, not a claim that it is already complete.
 
-Description metadata now uses compact dictionaries, with term text read from disk as needed. The current 1,000-expression corpus peaked at 219.4 MiB under a 1 GiB limit, down from 542.6 MiB. A separate run at 256 MiB preserved every result, with a 2.09 ms median request and a 3.22-second median batch. Ten text probes also passed at 256 MiB. These checks do not establish that every ECL workload fits that limit. The [description measurements](docs/descriptions.md#compact-runtime-measurements) record the current results and earlier builds separately.
+Description metadata now uses compact dictionaries, with term text read from disk as needed. The rewrite reduced the 1,000-expression corpus's peak from 542.6 MiB to 219.4 MiB under a 1 GiB limit. The latest combined build preserved every result at 256 MiB, with a **1.65 ms median request**, a **2.71-second median batch** and a 218.3 MiB charged peak. Ten text probes also passed at 256 MiB. These checks do not establish that every ECL workload fits that limit. The [description measurements](docs/descriptions.md#compact-runtime-measurements) and [combined evaluation](validation/combined-ecl-results.json) record the builds separately.
 
-Typed member data occupies 175.6 MiB packed, compared with 565.6 MiB decoded, and loads one refset at a time. The corpus does not touch every member table. The [storage plan](docs/performance-plan.md) includes their cost when measuring the full-engine memory target.
+Typed member data occupies 175.6 MiB packed, compared with 565.6 MiB decoded, and loads refsets lazily. Loaded tables remain cached; the corpus does not touch every table. The [storage plan](docs/performance-plan.md) includes their cost when measuring the full-engine memory target.
 
 ## Use it
 
@@ -81,7 +81,7 @@ Use `eval::evaluate_result_with_limits` when accepting [member-field projections
 
 Description term queries need `--features unicode` and ICU4C development libraries at build time. The [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers installation and the additional executable size. Numeric queries do not require this feature.
 
-The measured CLI with import, Unicode and block compression is 33.92 MiB, or 13.36 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#compact-runtime-measurements) record their latency and correctness separately.
+The measured CLI with import, Unicode and block compression is 33.91 MiB, or 13.36 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#compact-runtime-measurements) record their latency and correctness separately.
 
 The [CLI guide](docs/cli.md) covers commands and output formats. The repository [SKILL.md](SKILL.md) gives agents the build, RF2 loading and querying workflow.
 

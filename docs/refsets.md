@@ -1,6 +1,6 @@
 # Load and query reference sets
 
-The engine supports `^` / `memberOf` and ECL 2.3 `^R` / `refsetContainingAny` for concept-based refsets. Both compose with hierarchy, Boolean sets and refinements. Member filters and typed field projections remain required work.
+The engine supports `^` / `memberOf` and ECL 2.3 `^R` / `refsetContainingAny` for concept-based refsets. Both compose with hierarchy, Boolean sets and refinements. Typed member filters and field projections use the [member-query API](member-filters.md).
 
 ```sh
 snomed-ecl-engine expand STORE '^723562003' --count
@@ -10,7 +10,7 @@ snomed-ecl-engine expand STORE '(<<195967001) AND (^*)' --count
 
 `membership.bin` contains sparse refset keys and sorted, deduplicated concept ordinals. Only active RF2 member rows contribute. Description-referencing language rows are not converted into their owning concepts. The file has its own version, bounds checks and checksum. Old stores still open, but membership queries fail explicitly if their manifest has no membership index. Reimport the base Snapshot to build it.
 
-The current numeric loader opens membership with the core. Preferred display text remains separate. The later [description index](descriptions.md) retains descriptions, definitions and active language memberships. Typed member fields and historical associations still need further semantic indexes. These are part of full ECL's eventual storage budget.
+The current numeric loader opens membership with the core. Preferred display text remains separate. The later [description index](descriptions.md) retains descriptions, definitions and active language memberships. The [typed member index](member-filters.md) retains member fields and historical associations. Include all these components in storage measurements.
 
 ## Concept status defaults
 

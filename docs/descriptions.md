@@ -65,6 +65,12 @@ bounded member-table loading remain required work.
 
 The following sections retain the earlier build measurements for comparison.
 
+The subsequent [combined compatibility build](../validation/combined-ecl-results.json)
+also passes all ten term probes and 18 metadata probes. Its 1,000-query corpus
+has a 1.65 ms median request, 10.27 ms p95, 2.71-second median batch and 218.3 MiB
+charged peak at a 256 MiB limit. This is a separate run after the member-typing
+changes, not a controlled speedup comparison with the table above.
+
 ## Supported predicates
 
 Description filters support `active`, `moduleId`, `effectiveTime`, `language`, `id`, `type`, `typeId`, `dialect` and `dialectId`, including equality, inequality and applicable value sets. Effective time supports ordered comparisons. Type and module IDs can use nested concept expressions. Dialects can constrain acceptability per refset or through a shared set. The built-in aliases are `en-gb` and `en-us`; use `dialectId` or [configured aliases](aliases.md) for other refsets.

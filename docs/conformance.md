@@ -4,6 +4,14 @@ The finished engine must implement the complete ECL 2.3 language. The [productio
 
 Production names provide a coverage inventory, not a conformance score. Every production needs positive and negative syntax evidence. Each semantic rule also needs an independent expected result, including cases not supported by comparison servers. A final release cannot retain an unsupported standard feature or an unexplained mismatch.
 
+The latest [combined evaluation](../validation/combined-ecl-results.json) passes
+84 Unicode-enabled tests, 60 tests without default features and all 121 official
+syntax examples. All 1,000 preceding corpus sets are unchanged at one CPU and
+256 MiB. Independent RF2 checks pass for 17 scalar cases, nine member queries and
+a tuple, 52 history cases, ten term cases, 18 description cases, and every PCD
+refset's active and inactive members. This integrates the member-typing changes
+with streamed descriptions; it does not close the semantic gaps below.
+
 | Required area | Data and behaviour needed | Current evidence or remaining work |
 |---|---|---|
 | Literals, wildcard, eight hierarchy operators and Boolean sets | All concept metadata, active parent/child graph, set operations and explicit grouping | Synthetic evaluator comparisons and 17 version-pinned queries against OneLondon's Ontoserver |
@@ -21,7 +29,7 @@ Production names provide a coverage inventory, not a conformance score. Every pr
 | History supplements | Historical association members, defined profiles and explicit subsets | Implemented with one-hop profile/subset evaluation and reversed MOVED FROM handling. See [history](history.md) |
 | Resource behaviour | Bounded work and memory, cancellation, complete results and concurrency policy | Sequential limits tested; full-language resource and concurrency measurements pending |
 
-The [latest corpus run](../validation/types-corpus-results.json) evaluates all 1,000 expressions with every previous complete set unchanged. This is workload coverage, not a language-conformance score. Its generated cases omit many combinations and lexical edges. The [additional evaluation checks](../validation/schema-results.json) cover nine scalar projections, nine member queries, a tuple projection, 52 history queries, fresh checks against OneLondon's Ontoserver, and every PCD refset's active and inactive members. All 121 official example files parse. Parsing does not prove correct evaluation.
+The earlier [typed-set corpus run](../validation/types-corpus-results.json) evaluates all 1,000 expressions with every previous complete set unchanged. This is workload coverage, not a language-conformance score. Its generated cases omit many combinations and lexical edges. The [additional evaluation checks](../validation/schema-results.json) cover nine scalar projections, nine member queries, a tuple projection, 52 history queries, fresh checks against OneLondon's Ontoserver, and every PCD refset's active and inactive members. All 121 official example files parse. Parsing does not prove correct evaluation.
 
 The [type and lexical checks](../validation/types-results.json) add heterogeneous scalar sets, exact field types across refsets and cardinality bounds beyond machine integers. All 13 independent scalar checks and 64 Unicode-enabled tests pass. Continue with the remaining projection/type semantics. Continue testing lexical and collation details. Choose indexes based on these semantics and measured query work. Full Snowstorm is a comparison option where Lite lacks a feature. Requests to OneLondon's remote Ontoserver remain small correctness probes.
 
