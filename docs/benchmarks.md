@@ -133,23 +133,23 @@ code sets from both engines.
   <img alt="Cost of a complete expansion against concepts returned, both axes logarithmic. This engine runs from 2 ms at one concept to 0.4 s at 839,000. Snowstorm asked for the first time runs from 31 ms to 30 s; once cached, from 28 ms to 2 s." src="images/expansion-scaling-light.svg">
 </picture>
 
-| Concepts returned | This engine | Snowstorm, first ask | Snowstorm, cached | First-ask ratio |
+| Concepts returned | This engine | Snowstorm, first ask | Snowstorm, cached | First ask vs engine |
 |---:|---:|---:|---:|---:|
-| 1 | 2.1 ms | 0.04 s | 0.03 s | 0x |
-| 3 | 2.1 ms | 0.03 s | 0.03 s | 15x |
-| 10 | 2.0 ms | 0.04 s | 0.03 s | 18x |
-| 30 | 1.9 ms | 0.07 s | 0.02 s | 31x |
-| 104 | 3.0 ms | 0.09 s | 0.03 s | 31x |
-| 305 | 3.3 ms | 0.11 s | 0.03 s | 29x |
-| 1,020 | 3.9 ms | 0.15 s | 0.04 s | 41x |
-| 2,803 | 4.4 ms | 0.30 s | 0.03 s | 72x |
-| 9,301 | 6.9 ms | 0.82 s | 0.04 s | 140x |
-| 29,978 | 13.3 ms | 1.00 s | 0.09 s | 81x |
-| 43,647 | 18.2 ms | 1.61 s | 0.13 s | 91x |
-| 71,560 | 24.2 ms | 2.46 s | 0.20 s | 85x |
-| 92,718 | 38.0 ms | 3.28 s | 0.23 s | 100x |
-| 232,007 | 90.6 ms | 8.21 s | 0.56 s | 106x |
-| 838,955 | 408.3 ms | 30.17 s | 1.96 s | 94x |
+| 1 | 2.1 ms | 36 ms | 32 ms | 17x |
+| 3 | 2.1 ms | 31 ms | 28 ms | 15x |
+| 10 | 2.0 ms | 35 ms | 29 ms | 18x |
+| 30 | 1.9 ms | 69 ms | 23 ms | 37x |
+| 104 | 3.0 ms | 89 ms | 30 ms | 30x |
+| 305 | 3.3 ms | 114 ms | 30 ms | 35x |
+| 1,020 | 3.9 ms | 147 ms | 37 ms | 38x |
+| 2,803 | 4.4 ms | 298 ms | 28 ms | 68x |
+| 9,301 | 6.9 ms | 821 ms | 38 ms | 118x |
+| 29,978 | 13.3 ms | 995 ms | 86 ms | 75x |
+| 43,647 | 18.2 ms | 1.6 s | 133 ms | 88x |
+| 71,560 | 24.2 ms | 2.5 s | 205 ms | 102x |
+| 92,718 | 38.0 ms | 3.3 s | 230 ms | 86x |
+| 232,007 | 90.6 ms | 8.2 s | 555 ms | 91x |
+| 838,955 | 408.3 ms | 30.2 s | 2.0 s | 74x |
 
 Snowstorm caches an expansion once it has been asked for, and the cache is
 effective: about 15 times quicker on the second ask. Measuring without
@@ -254,38 +254,38 @@ No comparison server involved.
 | Query-only executable, `--no-default-features` | 2,231,176 B (2.13 MiB), 955,586 B gzipped |
 | Default build, with the RF2 importer | 2,973,128 B (2.84 MiB), 1,290,251 B gzipped |
 | With `--features unicode` for term matching | 35,731,536 B (34.08 MiB), 14,106,938 B gzipped |
-| Open a packed index | 525 ms |
-| Open an uncompressed index | 285 ms |
+| Open a packed index | 293 ms |
+| Open an uncompressed index | 116 ms |
 | Process start, open and answer one query | 650 ms |
 
 ## Starting cold
 
 Opening an index is the cost a serverless invocation pays before it can answer
-anything. `examples/open_breakdown.rs` splits it, on one CPU with the index on a
-local filesystem:
+anything. `examples/open_breakdown.rs` measures it, on one CPU with the index on
+a local filesystem:
 
-| Phase | Uncompressed | Packed |
+| | Uncompressed | Packed |
 |---|---:|---:|
-| Read and decode the core | 145 ms | 460 ms |
-| Verify the core checksum | 47 ms | included above |
-| Structural validation | 88 ms | 100 ms |
-| **Total** | **285 ms** | **525 ms** |
+| Open, which a query pays | **116 ms** | **293 ms** |
+| of which, verifying the core checksum | 46 ms | included |
+| Full semantic validation, which only `verify` pays | 84 ms | 84 ms |
 
-The packed layout costs about 240 ms more to open, because zstd decodes 21.8 MiB
+Opening reads the core, checks its checksum, decodes it, and checks that every
+stored offset and reference is inside its array. It does not re-derive the
+semantic invariants: that IDs are sorted, that the two hierarchy directions
+agree, that the graph is acyclic. Import proves those before publishing an
+index, and the checksum shows the bytes have not changed since. `verify` runs
+them on demand, and the split is covered by a test.
+
+The packed layout costs about 180 ms more to open, because zstd decodes 21.8 MiB
 into the 86 MiB core. It is 290 MiB on disk against 1.08 GiB. Which way that
-trades depends on whether the file is already local or downloaded per cold start.
-
-Process start, opening a packed index and answering one hierarchy query takes
-650 ms inside a running container. Creating the container is the platform's
-cost, not the engine's: an empty `docker run` on this host takes 1,045 ms, so
-end-to-end here is about 1.5 s. That figure describes Docker Desktop on Windows
-and says nothing about a Linux serverless host.
+trades depends on whether the file is already local or fetched per cold start.
 
 Measure with the index on a local filesystem. A Windows bind mount reads at
 181 MB/s against 5.6 GB/s for the container's own filesystem, which dominates
 every figure above.
 
-[Bringing this down](roadmap.md#now) is open work.
+[Bringing this down further](roadmap.md#now) is open work.
 
 ## Executable size
 

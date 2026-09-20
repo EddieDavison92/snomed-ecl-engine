@@ -262,16 +262,18 @@ impl NumericStore {
         matches
     }
 
-    pub fn validate(&self) -> Result<()> {
+    /// Checks that every stored index stays inside its own arrays.
+    ///
+    /// Opening a store runs only these. They are what later evaluation relies
+    /// on to index safely; the semantic invariants in `validate` were proved
+    /// when the index was written, and the section checksum already shows the
+    /// bytes are the same ones.
+    pub fn validate_bounds(&self) -> Result<()> {
         let n = self.ids.len();
         if let Some(membership) = &self.membership {
             membership.validate(n)?;
         }
         ensure!(n > 0 && n < u32::MAX as usize, "Invalid concept count");
-        ensure!(
-            self.ids.windows(2).all(|w| w[0] < w[1]),
-            "Duplicate or unordered concept IDs"
-        );
         ensure!(
             self.modules.len() == n && self.effective_times.len() == n && self.flags.len() == n,
             "Concept section length mismatch"
@@ -287,6 +289,43 @@ impl NumericStore {
                 graph.values.iter().all(|&i| (i as usize) < n),
                 "Invalid hierarchy endpoint"
             );
+        }
+        ensure!(
+            self.parents.values.len() == self.children.values.len(),
+            "Hierarchy directions disagree"
+        );
+        for (index, value_count) in [
+            (&self.attributes, n),
+            (&self.concrete, self.concrete_values.len()),
+        ] {
+            validate_offsets(&index.offsets, n, index.rows.len())?;
+            ensure!(
+                index
+                    .rows
+                    .iter()
+                    .all(|r| (r.kind as usize) < n && (r.value as usize) < value_count),
+                "Invalid attribute reference"
+            );
+        }
+        Ok(())
+    }
+
+    /// Checks the bounds above and then every semantic invariant: ordering,
+    /// that the two hierarchy directions agree, that the graph is acyclic, and
+    /// that active rows reference active concepts.
+    ///
+    /// Import runs this before publishing an index and `verify` runs it on
+    /// demand. Opening a store does not, because re-deriving these properties
+    /// on every process start costs more than it protects: the checksum
+    /// detects the corruption they would otherwise catch.
+    pub fn validate(&self) -> Result<()> {
+        self.validate_bounds()?;
+        let n = self.ids.len();
+        ensure!(
+            self.ids.windows(2).all(|w| w[0] < w[1]),
+            "Duplicate or unordered concept IDs"
+        );
+        for graph in [&self.parents, &self.children] {
             for i in 0..n {
                 ensure!(
                     graph.get(i as u32).windows(2).all(|w| w[0] < w[1]),
@@ -294,10 +333,6 @@ impl NumericStore {
                 );
             }
         }
-        ensure!(
-            self.parents.values.len() == self.children.values.len(),
-            "Hierarchy directions disagree"
-        );
         for i in 0..n {
             for &parent in self.parents.get(i as u32) {
                 ensure!(
@@ -325,18 +360,7 @@ impl NumericStore {
             }
         }
         ensure!(processed == n, "Hierarchy contains a cycle");
-        for (index, value_count) in [
-            (&self.attributes, n),
-            (&self.concrete, self.concrete_values.len()),
-        ] {
-            validate_offsets(&index.offsets, n, index.rows.len())?;
-            ensure!(
-                index
-                    .rows
-                    .iter()
-                    .all(|r| (r.kind as usize) < n && (r.value as usize) < value_count),
-                "Invalid attribute reference"
-            );
+        for index in [&self.attributes, &self.concrete] {
             for i in 0..n {
                 ensure!(
                     index.get(i as u32).windows(2).all(|w| w[0] <= w[1]),
@@ -389,9 +413,9 @@ impl NumericStore {
         let (manifest, source) = IndexSource::open(directory)?;
         let mut input = Input::open(&source.section("core.bin")?, CORE_MAGIC)?;
         let count = input.count(8)?;
-        let ids = (0..count)
-            .map(|_| input.u64())
-            .collect::<Result<Vec<_>>>()?;
+        let ids = input.records(count, 8, |b| {
+            u64::from_le_bytes([b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]])
+        })?;
         let modules = input.u32s()?;
         let effective_times = input.u32s()?;
         let flags = input.bytes()?;
@@ -406,15 +430,11 @@ impl NumericStore {
         let mut attributes = || -> Result<Attributes> {
             let offsets = input.u32s()?;
             let count = input.count(12)?;
-            let rows = (0..count)
-                .map(|_| {
-                    Ok(Attribute {
-                        group: input.u32()?,
-                        kind: input.u32()?,
-                        value: input.u32()?,
-                    })
-                })
-                .collect::<Result<Vec<_>>>()?;
+            let rows = input.records(count, 12, |b| Attribute {
+                group: u32::from_le_bytes([b[0], b[1], b[2], b[3]]),
+                kind: u32::from_le_bytes([b[4], b[5], b[6], b[7]]),
+                value: u32::from_le_bytes([b[8], b[9], b[10], b[11]]),
+            })?;
             Ok(Attributes { offsets, rows })
         };
         let attributes_index = attributes()?;
@@ -457,7 +477,7 @@ impl NumericStore {
                 .unwrap_or_default(),
             config: crate::config::QueryConfig::default(),
         };
-        store.validate()?;
+        store.validate_bounds()?;
         ensure!(
             store.ids.len() == manifest.concept_count
                 && store.flags.iter().filter(|&&f| f & 1 != 0).count()
@@ -656,9 +676,35 @@ impl Input {
         );
         Ok(usize::try_from(n)?)
     }
+    /// Reads `n` fixed-width records through one scratch buffer.
+    ///
+    /// Pulling each record out of the reader separately costs a `read_exact`
+    /// call per value, and the core holds tens of millions of them. Filling a
+    /// buffer and decoding from the slice keeps the reads large and the decode
+    /// loop tight, without allocating a second copy of the whole column.
+    fn records<T>(
+        &mut self,
+        n: usize,
+        width: usize,
+        decode: impl Fn(&[u8]) -> T,
+    ) -> Result<Vec<T>> {
+        const SCRATCH: usize = 64 * 1024;
+        let mut out = Vec::with_capacity(n);
+        let per_pass = (SCRATCH / width).max(1);
+        let mut scratch = vec![0; per_pass * width];
+        let mut left = n;
+        while left > 0 {
+            let take = left.min(per_pass);
+            let filled = &mut scratch[..take * width];
+            self.read(filled)?;
+            out.extend(filled.chunks_exact(width).map(&decode));
+            left -= take;
+        }
+        Ok(out)
+    }
     fn u32s(&mut self) -> Result<Vec<u32>> {
         let n = self.count(4)?;
-        (0..n).map(|_| self.u32()).collect()
+        self.records(n, 4, |b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
     }
     fn bytes(&mut self) -> Result<Vec<u8>> {
         let n = self.count(1)?;

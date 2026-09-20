@@ -311,7 +311,7 @@ def expansion_scaling():
         ],
         "Snowstorm caches an expansion once asked, so its second answer is far quicker than "
         "its first. This engine has no result cache; every ask costs the same. Opening the "
-        "index is a separate one-off of 285 to 525 ms.",
+        "index is a separate one-off of 116 to 293 ms.",
     )
 
 

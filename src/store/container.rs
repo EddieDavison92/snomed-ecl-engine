@@ -454,6 +454,8 @@ pub struct Verification {
 pub fn verify(path: &Path) -> Result<Verification> {
     let (manifest, source) = IndexSource::open(path)?;
     let store = NumericStore::open(path)?;
+    // Opening only checks bounds, so verification does the semantic pass.
+    store.validate()?;
     let mut result = Verification {
         sections: source.sections.len(),
         component_bytes: source.sections.values().map(|s| s.length).sum(),

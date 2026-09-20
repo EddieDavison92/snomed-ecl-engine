@@ -28,33 +28,27 @@ expressions where this engine loses.
   of every selected reference set's member table. An index from concept to the
   association rows that reference it would replace the scan.
 
-**Cold start.** Opening a packed index takes 525 ms, and 285 ms uncompressed.
-A serverless invocation pays that before it answers anything. Measured with
-`examples/open_breakdown.rs`, the cost splits four ways, and each has a
-different fix.
+**Cold start.** Opening an index takes 116 ms uncompressed and 293 ms packed.
+Opening checks that stored indexes are in range; it does not re-derive the
+semantic invariants that import proved and the checksum protects. What is left,
+measured with `examples/open_breakdown.rs`:
 
-- *Structural validation, 88 ms.* Every open re-derives graph invariants,
-  including a topological sort for acyclicity, on bytes whose SHA-256 already
-  matches the manifest. The same bytes passed those checks when the index was
-  written. Skipping validation when the section hash matches keeps corruption
-  detection, which the checksum does better, and drops the work. `verify` keeps
-  the full checks.
-- *Reading and decoding the core, 145 ms uncompressed and 460 ms packed.* The
-  decoder builds each vector one element at a time through a per-element
-  `Result`: 1.15 million concept IDs, 1.6 million edges, 2.96 million attribute
-  rows. Decoding in bulk from the byte buffer would vectorise.
+- *Decompression, about 180 ms of the packed figure.* zstd expands 21.8 MiB into
+  the 86 MiB core before a query can run. Decoding blocks on demand, which the
+  container format already supports through its per-block table and hashes,
+  would move that cost to the queries that need those bytes.
 - *Attributes the query never uses.* Attribute rows are roughly 35 MiB of the
-  86 MiB core and are only needed for refinements. A hierarchy or Boolean query
-  loads, checksums and validates them for nothing. Making them lazy, as
-  descriptions and member tables already are, would cut all three costs for the
-  common case.
-- *Everything else.* Memory-mapping an uncompressed index would make opening it
-  close to free and let pages fault in on demand. It needs `unsafe` and careful
-  alignment, and it rules out compression, so it is a separate layout rather
-  than a replacement.
+  86 MiB core and only refinements need them. A hierarchy or Boolean query
+  reads, checksums and decodes them for nothing. Making them lazy, as
+  descriptions and member tables already are, would cut the core a query must
+  touch to about 41 MiB.
+- *Reading the core at all.* Memory-mapping an uncompressed index would make
+  opening it close to free and let pages fault in on demand. It needs `unsafe`
+  and careful alignment, and rules out compression, so it is a separate layout
+  rather than a replacement.
 
-The first two are worth doing before the last two. Together they should put a
-hierarchy query well under 100 ms.
+The second is worth doing next: it halves what a serverless invocation must read
+and is the difference between fitting a 128 MiB budget and not.
 
 **A comparison on the broad corpus.** The 10,000-expression corpus has no
 server comparison: several of its

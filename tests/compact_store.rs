@@ -1325,6 +1325,52 @@ fn cli_remembers_a_selected_index_and_finds_the_indexes_on_disk() {
 }
 
 #[test]
+fn opening_checks_bounds_and_verification_checks_meaning() {
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let store_path = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &store_path, &options(&archive)).unwrap();
+
+    // A sound index passes both.
+    let mut store = NumericStore::open(&store_path).unwrap();
+    store.validate_bounds().unwrap();
+    store.validate().unwrap();
+
+    // An edge pointing outside the concept array would let evaluation index
+    // out of range, so opening has to reject it.
+    let edge = store.parents.values[0];
+    store.parents.values[0] = store.ids.len() as u32;
+    assert!(
+        store.validate_bounds().is_err(),
+        "out-of-range edge must fail bounds"
+    );
+    assert!(store.validate().is_err());
+    store.parents.values[0] = edge;
+
+    // Unordered concept IDs stay in range, so bounds pass. They break binary
+    // search, which is a semantic property, so verification has to catch it.
+    let mut store = NumericStore::open(&store_path).unwrap();
+    store.ids.swap(0, 1);
+    store.validate_bounds().unwrap();
+    assert!(
+        store.validate().is_err(),
+        "unordered IDs must fail verification"
+    );
+
+    // Same split for the hierarchy: dropping the reverse edge keeps every
+    // index in range but makes the two directions disagree.
+    let mut store = NumericStore::open(&store_path).unwrap();
+    let last = store.children.values.len() - 1;
+    store.children.values[last] = store.children.values[0];
+    store.validate_bounds().unwrap();
+    assert!(
+        store.validate().is_err(),
+        "disagreeing directions must fail verification"
+    );
+}
+
+#[test]
 fn cli_inspect_reports_what_an_archive_declares_before_importing() {
     let temp = TempDir::new().unwrap();
     let config = temp.path().join("config");

@@ -1,8 +1,10 @@
-//! Split the cost of opening a store into checksum, decode and validation.
+//! Report what opening a store costs, and what a full verification adds.
 //!
-//! `NumericStore::open` does all three. `validate` is public and idempotent, so
-//! timing it on an already-open store gives its share, and timing `sha256` over
-//! the core section gives the checksum's. Decode is what is left.
+//! `NumericStore::open` reads the core, checks its checksum, decodes it and
+//! checks that every stored index is in range. It deliberately does not re-run
+//! the semantic checks in `validate`, which import already proved and the
+//! checksum already protects; `verify` runs those on demand. Both are timed
+//! here so the split is visible.
 use anyhow::{ensure, Result};
 use snomed_ecl_engine::store::{sha256, Manifest, NumericStore};
 use std::path::Path;
@@ -14,8 +16,8 @@ fn main() -> Result<()> {
     let path = Path::new(&args[0]);
     let manifest = Manifest::read(path)?;
 
-    // Three rounds; the filesystem cache is deliberately left warm, so these
-    // are process-start costs rather than cold-disk costs.
+    // Three rounds with the filesystem cache left warm, so these are
+    // process-start costs rather than cold-disk costs.
     for round in 0..3 {
         let start = Instant::now();
         let store = NumericStore::open(path)?;
@@ -25,13 +27,14 @@ fn main() -> Result<()> {
         store.validate()?;
         let validate_ms = start.elapsed().as_secs_f64() * 1000.0;
 
+        // Only a directory store exposes the core as its own file to hash.
         let checksum_ms = if path.is_dir() {
             let start = Instant::now();
             let digest = sha256(&path.join("core.bin"))?;
             ensure!(digest == manifest.core_sha256, "Core checksum differs");
-            start.elapsed().as_secs_f64() * 1000.0
+            Some(start.elapsed().as_secs_f64() * 1000.0)
         } else {
-            f64::NAN
+            None
         };
 
         println!(
@@ -40,9 +43,8 @@ fn main() -> Result<()> {
                 "round": round,
                 "layout": if path.is_dir() { "directory" } else { "container" },
                 "open_ms": open_ms,
-                "validate_ms": validate_ms,
                 "core_checksum_ms": checksum_ms,
-                "read_and_decode_ms": open_ms - validate_ms - if checksum_ms.is_nan() { 0.0 } else { checksum_ms },
+                "full_validate_ms": validate_ms,
                 "concepts": store.ids.len(),
                 "hierarchy_edges": store.parents.values.len(),
                 "attribute_rows": store.attributes.rows.len(),
