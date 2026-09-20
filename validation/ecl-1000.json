@@ -1,0 +1,5007 @@
+{
+  "seed": 20260826,
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "scope": "40 cases in each of 25 categories. Deterministic relationship-row reservoir with distinct source concepts. A coverage and performance workload, not a proof of full ECL conformance or a clinical workload distribution. Pending capabilities remain included.",
+  "cases": [
+    {
+      "id": "descendants-01",
+      "category": "descendants",
+      "ecl": "<< 824004"
+    },
+    {
+      "id": "ancestors-01",
+      "category": "ancestors",
+      "ecl": "> 824004"
+    },
+    {
+      "id": "children-01",
+      "category": "children",
+      "ecl": "<! 824004"
+    },
+    {
+      "id": "parents-01",
+      "category": "parents",
+      "ecl": ">! 824004"
+    },
+    {
+      "id": "union-01",
+      "category": "union",
+      "ecl": "(<< 824004) OR (<< 106327000)"
+    },
+    {
+      "id": "intersection-01",
+      "category": "intersection",
+      "ecl": "(<< 824004) AND (<< 106327000)"
+    },
+    {
+      "id": "exclusion-01",
+      "category": "exclusion",
+      "ecl": "(<< 106327000) MINUS (<< 824004)"
+    },
+    {
+      "id": "nested-hierarchy-01",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 824004)"
+    },
+    {
+      "id": "top-01",
+      "category": "top",
+      "ecl": "!!> (824004 OR 106327000)"
+    },
+    {
+      "id": "bottom-01",
+      "category": "bottom",
+      "ecl": "!!< (824004 OR 106327000)"
+    },
+    {
+      "id": "membership-01",
+      "category": "membership",
+      "ecl": "(<< 824004) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-01",
+      "category": "concept-filter",
+      "ecl": "824004 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-01",
+      "category": "description-filter",
+      "ecl": "824004 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-01",
+      "category": "history",
+      "ecl": "824004 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-01",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 824004 }}"
+    },
+    {
+      "id": "descendants-02",
+      "category": "descendants",
+      "ecl": "<< 911003"
+    },
+    {
+      "id": "ancestors-02",
+      "category": "ancestors",
+      "ecl": "> 911003"
+    },
+    {
+      "id": "children-02",
+      "category": "children",
+      "ecl": "<! 911003"
+    },
+    {
+      "id": "parents-02",
+      "category": "parents",
+      "ecl": ">! 911003"
+    },
+    {
+      "id": "union-02",
+      "category": "union",
+      "ecl": "(<< 911003) OR (<< 231059002)"
+    },
+    {
+      "id": "intersection-02",
+      "category": "intersection",
+      "ecl": "(<< 911003) AND (<< 231059002)"
+    },
+    {
+      "id": "exclusion-02",
+      "category": "exclusion",
+      "ecl": "(<< 231059002) MINUS (<< 911003)"
+    },
+    {
+      "id": "nested-hierarchy-02",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 911003)"
+    },
+    {
+      "id": "top-02",
+      "category": "top",
+      "ecl": "!!> (911003 OR 231059002)"
+    },
+    {
+      "id": "bottom-02",
+      "category": "bottom",
+      "ecl": "!!< (911003 OR 231059002)"
+    },
+    {
+      "id": "membership-02",
+      "category": "membership",
+      "ecl": "(<< 911003) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-02",
+      "category": "concept-filter",
+      "ecl": "911003 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-02",
+      "category": "description-filter",
+      "ecl": "911003 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-02",
+      "category": "history",
+      "ecl": "911003 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-02",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 911003 }}"
+    },
+    {
+      "id": "descendants-03",
+      "category": "descendants",
+      "ecl": "<< 1239002"
+    },
+    {
+      "id": "ancestors-03",
+      "category": "ancestors",
+      "ecl": "> 1239002"
+    },
+    {
+      "id": "children-03",
+      "category": "children",
+      "ecl": "<! 1239002"
+    },
+    {
+      "id": "parents-03",
+      "category": "parents",
+      "ecl": ">! 1239002"
+    },
+    {
+      "id": "union-03",
+      "category": "union",
+      "ecl": "(<< 1239002) OR (<< 419003001)"
+    },
+    {
+      "id": "intersection-03",
+      "category": "intersection",
+      "ecl": "(<< 1239002) AND (<< 419003001)"
+    },
+    {
+      "id": "exclusion-03",
+      "category": "exclusion",
+      "ecl": "(<< 419003001) MINUS (<< 1239002)"
+    },
+    {
+      "id": "nested-hierarchy-03",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 1239002)"
+    },
+    {
+      "id": "top-03",
+      "category": "top",
+      "ecl": "!!> (1239002 OR 419003001)"
+    },
+    {
+      "id": "bottom-03",
+      "category": "bottom",
+      "ecl": "!!< (1239002 OR 419003001)"
+    },
+    {
+      "id": "membership-03",
+      "category": "membership",
+      "ecl": "(<< 1239002) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-03",
+      "category": "concept-filter",
+      "ecl": "1239002 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-03",
+      "category": "description-filter",
+      "ecl": "1239002 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-03",
+      "category": "history",
+      "ecl": "1239002 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-03",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 1239002 }}"
+    },
+    {
+      "id": "descendants-04",
+      "category": "descendants",
+      "ecl": "<< 1545006"
+    },
+    {
+      "id": "ancestors-04",
+      "category": "ancestors",
+      "ecl": "> 1545006"
+    },
+    {
+      "id": "children-04",
+      "category": "children",
+      "ecl": "<! 1545006"
+    },
+    {
+      "id": "parents-04",
+      "category": "parents",
+      "ecl": ">! 1545006"
+    },
+    {
+      "id": "union-04",
+      "category": "union",
+      "ecl": "(<< 1545006) OR (<< 130091008)"
+    },
+    {
+      "id": "intersection-04",
+      "category": "intersection",
+      "ecl": "(<< 1545006) AND (<< 130091008)"
+    },
+    {
+      "id": "exclusion-04",
+      "category": "exclusion",
+      "ecl": "(<< 130091008) MINUS (<< 1545006)"
+    },
+    {
+      "id": "nested-hierarchy-04",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 1545006)"
+    },
+    {
+      "id": "top-04",
+      "category": "top",
+      "ecl": "!!> (1545006 OR 130091008)"
+    },
+    {
+      "id": "bottom-04",
+      "category": "bottom",
+      "ecl": "!!< (1545006 OR 130091008)"
+    },
+    {
+      "id": "membership-04",
+      "category": "membership",
+      "ecl": "(<< 1545006) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-04",
+      "category": "concept-filter",
+      "ecl": "1545006 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-04",
+      "category": "description-filter",
+      "ecl": "1545006 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-04",
+      "category": "history",
+      "ecl": "1545006 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-04",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 1545006 }}"
+    },
+    {
+      "id": "descendants-05",
+      "category": "descendants",
+      "ecl": "<< 3162001"
+    },
+    {
+      "id": "ancestors-05",
+      "category": "ancestors",
+      "ecl": "> 3162001"
+    },
+    {
+      "id": "children-05",
+      "category": "children",
+      "ecl": "<! 3162001"
+    },
+    {
+      "id": "parents-05",
+      "category": "parents",
+      "ecl": ">! 3162001"
+    },
+    {
+      "id": "union-05",
+      "category": "union",
+      "ecl": "(<< 3162001) OR (<< 430925007)"
+    },
+    {
+      "id": "intersection-05",
+      "category": "intersection",
+      "ecl": "(<< 3162001) AND (<< 430925007)"
+    },
+    {
+      "id": "exclusion-05",
+      "category": "exclusion",
+      "ecl": "(<< 430925007) MINUS (<< 3162001)"
+    },
+    {
+      "id": "nested-hierarchy-05",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 3162001)"
+    },
+    {
+      "id": "top-05",
+      "category": "top",
+      "ecl": "!!> (3162001 OR 430925007)"
+    },
+    {
+      "id": "bottom-05",
+      "category": "bottom",
+      "ecl": "!!< (3162001 OR 430925007)"
+    },
+    {
+      "id": "membership-05",
+      "category": "membership",
+      "ecl": "(<< 3162001) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-05",
+      "category": "concept-filter",
+      "ecl": "3162001 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-05",
+      "category": "description-filter",
+      "ecl": "3162001 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-05",
+      "category": "history",
+      "ecl": "3162001 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-05",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 3162001 }}"
+    },
+    {
+      "id": "descendants-06",
+      "category": "descendants",
+      "ecl": "<< 4348005"
+    },
+    {
+      "id": "ancestors-06",
+      "category": "ancestors",
+      "ecl": "> 4348005"
+    },
+    {
+      "id": "children-06",
+      "category": "children",
+      "ecl": "<! 4348005"
+    },
+    {
+      "id": "parents-06",
+      "category": "parents",
+      "ecl": ">! 4348005"
+    },
+    {
+      "id": "union-06",
+      "category": "union",
+      "ecl": "(<< 4348005) OR (<< 119654003)"
+    },
+    {
+      "id": "intersection-06",
+      "category": "intersection",
+      "ecl": "(<< 4348005) AND (<< 119654003)"
+    },
+    {
+      "id": "exclusion-06",
+      "category": "exclusion",
+      "ecl": "(<< 119654003) MINUS (<< 4348005)"
+    },
+    {
+      "id": "nested-hierarchy-06",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 4348005)"
+    },
+    {
+      "id": "top-06",
+      "category": "top",
+      "ecl": "!!> (4348005 OR 119654003)"
+    },
+    {
+      "id": "bottom-06",
+      "category": "bottom",
+      "ecl": "!!< (4348005 OR 119654003)"
+    },
+    {
+      "id": "membership-06",
+      "category": "membership",
+      "ecl": "(<< 4348005) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-06",
+      "category": "concept-filter",
+      "ecl": "4348005 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-06",
+      "category": "description-filter",
+      "ecl": "4348005 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-06",
+      "category": "history",
+      "ecl": "4348005 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-06",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 4348005 }}"
+    },
+    {
+      "id": "descendants-07",
+      "category": "descendants",
+      "ecl": "<< 5282006"
+    },
+    {
+      "id": "ancestors-07",
+      "category": "ancestors",
+      "ecl": "> 5282006"
+    },
+    {
+      "id": "children-07",
+      "category": "children",
+      "ecl": "<! 5282006"
+    },
+    {
+      "id": "parents-07",
+      "category": "parents",
+      "ecl": ">! 5282006"
+    },
+    {
+      "id": "union-07",
+      "category": "union",
+      "ecl": "(<< 5282006) OR (<< 89901005)"
+    },
+    {
+      "id": "intersection-07",
+      "category": "intersection",
+      "ecl": "(<< 5282006) AND (<< 89901005)"
+    },
+    {
+      "id": "exclusion-07",
+      "category": "exclusion",
+      "ecl": "(<< 89901005) MINUS (<< 5282006)"
+    },
+    {
+      "id": "nested-hierarchy-07",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 5282006)"
+    },
+    {
+      "id": "top-07",
+      "category": "top",
+      "ecl": "!!> (5282006 OR 89901005)"
+    },
+    {
+      "id": "bottom-07",
+      "category": "bottom",
+      "ecl": "!!< (5282006 OR 89901005)"
+    },
+    {
+      "id": "membership-07",
+      "category": "membership",
+      "ecl": "(<< 5282006) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-07",
+      "category": "concept-filter",
+      "ecl": "5282006 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-07",
+      "category": "description-filter",
+      "ecl": "5282006 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-07",
+      "category": "history",
+      "ecl": "5282006 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-07",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 5282006 }}"
+    },
+    {
+      "id": "descendants-08",
+      "category": "descendants",
+      "ecl": "<< 11486001"
+    },
+    {
+      "id": "ancestors-08",
+      "category": "ancestors",
+      "ecl": "> 11486001"
+    },
+    {
+      "id": "children-08",
+      "category": "children",
+      "ecl": "<! 11486001"
+    },
+    {
+      "id": "parents-08",
+      "category": "parents",
+      "ecl": ">! 11486001"
+    },
+    {
+      "id": "union-08",
+      "category": "union",
+      "ecl": "(<< 11486001) OR (<< 348003)"
+    },
+    {
+      "id": "intersection-08",
+      "category": "intersection",
+      "ecl": "(<< 11486001) AND (<< 348003)"
+    },
+    {
+      "id": "exclusion-08",
+      "category": "exclusion",
+      "ecl": "(<< 348003) MINUS (<< 11486001)"
+    },
+    {
+      "id": "nested-hierarchy-08",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 11486001)"
+    },
+    {
+      "id": "top-08",
+      "category": "top",
+      "ecl": "!!> (11486001 OR 348003)"
+    },
+    {
+      "id": "bottom-08",
+      "category": "bottom",
+      "ecl": "!!< (11486001 OR 348003)"
+    },
+    {
+      "id": "membership-08",
+      "category": "membership",
+      "ecl": "(<< 11486001) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-08",
+      "category": "concept-filter",
+      "ecl": "11486001 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-08",
+      "category": "description-filter",
+      "ecl": "11486001 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-08",
+      "category": "history",
+      "ecl": "11486001 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-08",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 11486001 }}"
+    },
+    {
+      "id": "descendants-09",
+      "category": "descendants",
+      "ecl": "<< 12062007"
+    },
+    {
+      "id": "ancestors-09",
+      "category": "ancestors",
+      "ecl": "> 12062007"
+    },
+    {
+      "id": "children-09",
+      "category": "children",
+      "ecl": "<! 12062007"
+    },
+    {
+      "id": "parents-09",
+      "category": "parents",
+      "ecl": ">! 12062007"
+    },
+    {
+      "id": "union-09",
+      "category": "union",
+      "ecl": "(<< 12062007) OR (<< 280486004)"
+    },
+    {
+      "id": "intersection-09",
+      "category": "intersection",
+      "ecl": "(<< 12062007) AND (<< 280486004)"
+    },
+    {
+      "id": "exclusion-09",
+      "category": "exclusion",
+      "ecl": "(<< 280486004) MINUS (<< 12062007)"
+    },
+    {
+      "id": "nested-hierarchy-09",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 12062007)"
+    },
+    {
+      "id": "top-09",
+      "category": "top",
+      "ecl": "!!> (12062007 OR 280486004)"
+    },
+    {
+      "id": "bottom-09",
+      "category": "bottom",
+      "ecl": "!!< (12062007 OR 280486004)"
+    },
+    {
+      "id": "membership-09",
+      "category": "membership",
+      "ecl": "(<< 12062007) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-09",
+      "category": "concept-filter",
+      "ecl": "12062007 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-09",
+      "category": "description-filter",
+      "ecl": "12062007 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-09",
+      "category": "history",
+      "ecl": "12062007 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-09",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 12062007 }}"
+    },
+    {
+      "id": "descendants-10",
+      "category": "descendants",
+      "ecl": "<< 12191008"
+    },
+    {
+      "id": "ancestors-10",
+      "category": "ancestors",
+      "ecl": "> 12191008"
+    },
+    {
+      "id": "children-10",
+      "category": "children",
+      "ecl": "<! 12191008"
+    },
+    {
+      "id": "parents-10",
+      "category": "parents",
+      "ecl": ">! 12191008"
+    },
+    {
+      "id": "union-10",
+      "category": "union",
+      "ecl": "(<< 12191008) OR (<< 18334002)"
+    },
+    {
+      "id": "intersection-10",
+      "category": "intersection",
+      "ecl": "(<< 12191008) AND (<< 18334002)"
+    },
+    {
+      "id": "exclusion-10",
+      "category": "exclusion",
+      "ecl": "(<< 18334002) MINUS (<< 12191008)"
+    },
+    {
+      "id": "nested-hierarchy-10",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 12191008)"
+    },
+    {
+      "id": "top-10",
+      "category": "top",
+      "ecl": "!!> (12191008 OR 18334002)"
+    },
+    {
+      "id": "bottom-10",
+      "category": "bottom",
+      "ecl": "!!< (12191008 OR 18334002)"
+    },
+    {
+      "id": "membership-10",
+      "category": "membership",
+      "ecl": "(<< 12191008) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-10",
+      "category": "concept-filter",
+      "ecl": "12191008 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-10",
+      "category": "description-filter",
+      "ecl": "12191008 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-10",
+      "category": "history",
+      "ecl": "12191008 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-10",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 12191008 }}"
+    },
+    {
+      "id": "descendants-11",
+      "category": "descendants",
+      "ecl": "<< 12446006"
+    },
+    {
+      "id": "ancestors-11",
+      "category": "ancestors",
+      "ecl": "> 12446006"
+    },
+    {
+      "id": "children-11",
+      "category": "children",
+      "ecl": "<! 12446006"
+    },
+    {
+      "id": "parents-11",
+      "category": "parents",
+      "ecl": ">! 12446006"
+    },
+    {
+      "id": "union-11",
+      "category": "union",
+      "ecl": "(<< 12446006) OR (<< 53733008)"
+    },
+    {
+      "id": "intersection-11",
+      "category": "intersection",
+      "ecl": "(<< 12446006) AND (<< 53733008)"
+    },
+    {
+      "id": "exclusion-11",
+      "category": "exclusion",
+      "ecl": "(<< 53733008) MINUS (<< 12446006)"
+    },
+    {
+      "id": "nested-hierarchy-11",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 12446006)"
+    },
+    {
+      "id": "top-11",
+      "category": "top",
+      "ecl": "!!> (12446006 OR 53733008)"
+    },
+    {
+      "id": "bottom-11",
+      "category": "bottom",
+      "ecl": "!!< (12446006 OR 53733008)"
+    },
+    {
+      "id": "membership-11",
+      "category": "membership",
+      "ecl": "(<< 12446006) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-11",
+      "category": "concept-filter",
+      "ecl": "12446006 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-11",
+      "category": "description-filter",
+      "ecl": "12446006 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-11",
+      "category": "history",
+      "ecl": "12446006 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-11",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 12446006 }}"
+    },
+    {
+      "id": "descendants-12",
+      "category": "descendants",
+      "ecl": "<< 12479006"
+    },
+    {
+      "id": "ancestors-12",
+      "category": "ancestors",
+      "ecl": "> 12479006"
+    },
+    {
+      "id": "children-12",
+      "category": "children",
+      "ecl": "<! 12479006"
+    },
+    {
+      "id": "parents-12",
+      "category": "parents",
+      "ecl": ">! 12479006"
+    },
+    {
+      "id": "union-12",
+      "category": "union",
+      "ecl": "(<< 12479006) OR (<< 844005)"
+    },
+    {
+      "id": "intersection-12",
+      "category": "intersection",
+      "ecl": "(<< 12479006) AND (<< 844005)"
+    },
+    {
+      "id": "exclusion-12",
+      "category": "exclusion",
+      "ecl": "(<< 844005) MINUS (<< 12479006)"
+    },
+    {
+      "id": "nested-hierarchy-12",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 12479006)"
+    },
+    {
+      "id": "top-12",
+      "category": "top",
+      "ecl": "!!> (12479006 OR 844005)"
+    },
+    {
+      "id": "bottom-12",
+      "category": "bottom",
+      "ecl": "!!< (12479006 OR 844005)"
+    },
+    {
+      "id": "membership-12",
+      "category": "membership",
+      "ecl": "(<< 12479006) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-12",
+      "category": "concept-filter",
+      "ecl": "12479006 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-12",
+      "category": "description-filter",
+      "ecl": "12479006 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-12",
+      "category": "history",
+      "ecl": "12479006 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-12",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 12479006 }}"
+    },
+    {
+      "id": "descendants-13",
+      "category": "descendants",
+      "ecl": "<< 15847003"
+    },
+    {
+      "id": "ancestors-13",
+      "category": "ancestors",
+      "ecl": "> 15847003"
+    },
+    {
+      "id": "children-13",
+      "category": "children",
+      "ecl": "<! 15847003"
+    },
+    {
+      "id": "parents-13",
+      "category": "parents",
+      "ecl": ">! 15847003"
+    },
+    {
+      "id": "union-13",
+      "category": "union",
+      "ecl": "(<< 15847003) OR (<< 46627006)"
+    },
+    {
+      "id": "intersection-13",
+      "category": "intersection",
+      "ecl": "(<< 15847003) AND (<< 46627006)"
+    },
+    {
+      "id": "exclusion-13",
+      "category": "exclusion",
+      "ecl": "(<< 46627006) MINUS (<< 15847003)"
+    },
+    {
+      "id": "nested-hierarchy-13",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 15847003)"
+    },
+    {
+      "id": "top-13",
+      "category": "top",
+      "ecl": "!!> (15847003 OR 46627006)"
+    },
+    {
+      "id": "bottom-13",
+      "category": "bottom",
+      "ecl": "!!< (15847003 OR 46627006)"
+    },
+    {
+      "id": "membership-13",
+      "category": "membership",
+      "ecl": "(<< 15847003) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-13",
+      "category": "concept-filter",
+      "ecl": "15847003 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-13",
+      "category": "description-filter",
+      "ecl": "15847003 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-13",
+      "category": "history",
+      "ecl": "15847003 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-13",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 15847003 }}"
+    },
+    {
+      "id": "descendants-14",
+      "category": "descendants",
+      "ecl": "<< 18197001"
+    },
+    {
+      "id": "ancestors-14",
+      "category": "ancestors",
+      "ecl": "> 18197001"
+    },
+    {
+      "id": "children-14",
+      "category": "children",
+      "ecl": "<! 18197001"
+    },
+    {
+      "id": "parents-14",
+      "category": "parents",
+      "ecl": ">! 18197001"
+    },
+    {
+      "id": "union-14",
+      "category": "union",
+      "ecl": "(<< 18197001) OR (<< 72670004)"
+    },
+    {
+      "id": "intersection-14",
+      "category": "intersection",
+      "ecl": "(<< 18197001) AND (<< 72670004)"
+    },
+    {
+      "id": "exclusion-14",
+      "category": "exclusion",
+      "ecl": "(<< 72670004) MINUS (<< 18197001)"
+    },
+    {
+      "id": "nested-hierarchy-14",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 18197001)"
+    },
+    {
+      "id": "top-14",
+      "category": "top",
+      "ecl": "!!> (18197001 OR 72670004)"
+    },
+    {
+      "id": "bottom-14",
+      "category": "bottom",
+      "ecl": "!!< (18197001 OR 72670004)"
+    },
+    {
+      "id": "membership-14",
+      "category": "membership",
+      "ecl": "(<< 18197001) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-14",
+      "category": "concept-filter",
+      "ecl": "18197001 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-14",
+      "category": "description-filter",
+      "ecl": "18197001 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-14",
+      "category": "history",
+      "ecl": "18197001 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-14",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 18197001 }}"
+    },
+    {
+      "id": "descendants-15",
+      "category": "descendants",
+      "ecl": "<< 18202008"
+    },
+    {
+      "id": "ancestors-15",
+      "category": "ancestors",
+      "ecl": "> 18202008"
+    },
+    {
+      "id": "children-15",
+      "category": "children",
+      "ecl": "<! 18202008"
+    },
+    {
+      "id": "parents-15",
+      "category": "parents",
+      "ecl": ">! 18202008"
+    },
+    {
+      "id": "union-15",
+      "category": "union",
+      "ecl": "(<< 18202008) OR (<< 259398005)"
+    },
+    {
+      "id": "intersection-15",
+      "category": "intersection",
+      "ecl": "(<< 18202008) AND (<< 259398005)"
+    },
+    {
+      "id": "exclusion-15",
+      "category": "exclusion",
+      "ecl": "(<< 259398005) MINUS (<< 18202008)"
+    },
+    {
+      "id": "nested-hierarchy-15",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 18202008)"
+    },
+    {
+      "id": "top-15",
+      "category": "top",
+      "ecl": "!!> (18202008 OR 259398005)"
+    },
+    {
+      "id": "bottom-15",
+      "category": "bottom",
+      "ecl": "!!< (18202008 OR 259398005)"
+    },
+    {
+      "id": "membership-15",
+      "category": "membership",
+      "ecl": "(<< 18202008) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-15",
+      "category": "concept-filter",
+      "ecl": "18202008 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-15",
+      "category": "description-filter",
+      "ecl": "18202008 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-15",
+      "category": "history",
+      "ecl": "18202008 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-15",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 18202008 }}"
+    },
+    {
+      "id": "descendants-16",
+      "category": "descendants",
+      "ecl": "<< 18268005"
+    },
+    {
+      "id": "ancestors-16",
+      "category": "ancestors",
+      "ecl": "> 18268005"
+    },
+    {
+      "id": "children-16",
+      "category": "children",
+      "ecl": "<! 18268005"
+    },
+    {
+      "id": "parents-16",
+      "category": "parents",
+      "ecl": ">! 18268005"
+    },
+    {
+      "id": "union-16",
+      "category": "union",
+      "ecl": "(<< 18268005) OR (<< 239954007)"
+    },
+    {
+      "id": "intersection-16",
+      "category": "intersection",
+      "ecl": "(<< 18268005) AND (<< 239954007)"
+    },
+    {
+      "id": "exclusion-16",
+      "category": "exclusion",
+      "ecl": "(<< 239954007) MINUS (<< 18268005)"
+    },
+    {
+      "id": "nested-hierarchy-16",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 18268005)"
+    },
+    {
+      "id": "top-16",
+      "category": "top",
+      "ecl": "!!> (18268005 OR 239954007)"
+    },
+    {
+      "id": "bottom-16",
+      "category": "bottom",
+      "ecl": "!!< (18268005 OR 239954007)"
+    },
+    {
+      "id": "membership-16",
+      "category": "membership",
+      "ecl": "(<< 18268005) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-16",
+      "category": "concept-filter",
+      "ecl": "18268005 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-16",
+      "category": "description-filter",
+      "ecl": "18268005 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-16",
+      "category": "history",
+      "ecl": "18268005 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-16",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 18268005 }}"
+    },
+    {
+      "id": "descendants-17",
+      "category": "descendants",
+      "ecl": "<< 19445006"
+    },
+    {
+      "id": "ancestors-17",
+      "category": "ancestors",
+      "ecl": "> 19445006"
+    },
+    {
+      "id": "children-17",
+      "category": "children",
+      "ecl": "<! 19445006"
+    },
+    {
+      "id": "parents-17",
+      "category": "parents",
+      "ecl": ">! 19445006"
+    },
+    {
+      "id": "union-17",
+      "category": "union",
+      "ecl": "(<< 19445006) OR (<< 724655005)"
+    },
+    {
+      "id": "intersection-17",
+      "category": "intersection",
+      "ecl": "(<< 19445006) AND (<< 724655005)"
+    },
+    {
+      "id": "exclusion-17",
+      "category": "exclusion",
+      "ecl": "(<< 724655005) MINUS (<< 19445006)"
+    },
+    {
+      "id": "nested-hierarchy-17",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 19445006)"
+    },
+    {
+      "id": "top-17",
+      "category": "top",
+      "ecl": "!!> (19445006 OR 724655005)"
+    },
+    {
+      "id": "bottom-17",
+      "category": "bottom",
+      "ecl": "!!< (19445006 OR 724655005)"
+    },
+    {
+      "id": "membership-17",
+      "category": "membership",
+      "ecl": "(<< 19445006) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-17",
+      "category": "concept-filter",
+      "ecl": "19445006 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-17",
+      "category": "description-filter",
+      "ecl": "19445006 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-17",
+      "category": "history",
+      "ecl": "19445006 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-17",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 19445006 }}"
+    },
+    {
+      "id": "descendants-18",
+      "category": "descendants",
+      "ecl": "<< 20480004"
+    },
+    {
+      "id": "ancestors-18",
+      "category": "ancestors",
+      "ecl": "> 20480004"
+    },
+    {
+      "id": "children-18",
+      "category": "children",
+      "ecl": "<! 20480004"
+    },
+    {
+      "id": "parents-18",
+      "category": "parents",
+      "ecl": ">! 20480004"
+    },
+    {
+      "id": "union-18",
+      "category": "union",
+      "ecl": "(<< 20480004) OR (<< 284398002)"
+    },
+    {
+      "id": "intersection-18",
+      "category": "intersection",
+      "ecl": "(<< 20480004) AND (<< 284398002)"
+    },
+    {
+      "id": "exclusion-18",
+      "category": "exclusion",
+      "ecl": "(<< 284398002) MINUS (<< 20480004)"
+    },
+    {
+      "id": "nested-hierarchy-18",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 20480004)"
+    },
+    {
+      "id": "top-18",
+      "category": "top",
+      "ecl": "!!> (20480004 OR 284398002)"
+    },
+    {
+      "id": "bottom-18",
+      "category": "bottom",
+      "ecl": "!!< (20480004 OR 284398002)"
+    },
+    {
+      "id": "membership-18",
+      "category": "membership",
+      "ecl": "(<< 20480004) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-18",
+      "category": "concept-filter",
+      "ecl": "20480004 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-18",
+      "category": "description-filter",
+      "ecl": "20480004 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-18",
+      "category": "history",
+      "ecl": "20480004 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-18",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 20480004 }}"
+    },
+    {
+      "id": "descendants-19",
+      "category": "descendants",
+      "ecl": "<< 21249000"
+    },
+    {
+      "id": "ancestors-19",
+      "category": "ancestors",
+      "ecl": "> 21249000"
+    },
+    {
+      "id": "children-19",
+      "category": "children",
+      "ecl": "<! 21249000"
+    },
+    {
+      "id": "parents-19",
+      "category": "parents",
+      "ecl": ">! 21249000"
+    },
+    {
+      "id": "union-19",
+      "category": "union",
+      "ecl": "(<< 21249000) OR (<< 257418003)"
+    },
+    {
+      "id": "intersection-19",
+      "category": "intersection",
+      "ecl": "(<< 21249000) AND (<< 257418003)"
+    },
+    {
+      "id": "exclusion-19",
+      "category": "exclusion",
+      "ecl": "(<< 257418003) MINUS (<< 21249000)"
+    },
+    {
+      "id": "nested-hierarchy-19",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 21249000)"
+    },
+    {
+      "id": "top-19",
+      "category": "top",
+      "ecl": "!!> (21249000 OR 257418003)"
+    },
+    {
+      "id": "bottom-19",
+      "category": "bottom",
+      "ecl": "!!< (21249000 OR 257418003)"
+    },
+    {
+      "id": "membership-19",
+      "category": "membership",
+      "ecl": "(<< 21249000) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-19",
+      "category": "concept-filter",
+      "ecl": "21249000 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-19",
+      "category": "description-filter",
+      "ecl": "21249000 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-19",
+      "category": "history",
+      "ecl": "21249000 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-19",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 21249000 }}"
+    },
+    {
+      "id": "descendants-20",
+      "category": "descendants",
+      "ecl": "<< 22558005"
+    },
+    {
+      "id": "ancestors-20",
+      "category": "ancestors",
+      "ecl": "> 22558005"
+    },
+    {
+      "id": "children-20",
+      "category": "children",
+      "ecl": "<! 22558005"
+    },
+    {
+      "id": "parents-20",
+      "category": "parents",
+      "ecl": ">! 22558005"
+    },
+    {
+      "id": "union-20",
+      "category": "union",
+      "ecl": "(<< 22558005) OR (<< 57185003)"
+    },
+    {
+      "id": "intersection-20",
+      "category": "intersection",
+      "ecl": "(<< 22558005) AND (<< 57185003)"
+    },
+    {
+      "id": "exclusion-20",
+      "category": "exclusion",
+      "ecl": "(<< 57185003) MINUS (<< 22558005)"
+    },
+    {
+      "id": "nested-hierarchy-20",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 22558005)"
+    },
+    {
+      "id": "top-20",
+      "category": "top",
+      "ecl": "!!> (22558005 OR 57185003)"
+    },
+    {
+      "id": "bottom-20",
+      "category": "bottom",
+      "ecl": "!!< (22558005 OR 57185003)"
+    },
+    {
+      "id": "membership-20",
+      "category": "membership",
+      "ecl": "(<< 22558005) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-20",
+      "category": "concept-filter",
+      "ecl": "22558005 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-20",
+      "category": "description-filter",
+      "ecl": "22558005 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-20",
+      "category": "history",
+      "ecl": "22558005 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-20",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 22558005 }}"
+    },
+    {
+      "id": "descendants-21",
+      "category": "descendants",
+      "ecl": "<< 23827009"
+    },
+    {
+      "id": "ancestors-21",
+      "category": "ancestors",
+      "ecl": "> 23827009"
+    },
+    {
+      "id": "children-21",
+      "category": "children",
+      "ecl": "<! 23827009"
+    },
+    {
+      "id": "parents-21",
+      "category": "parents",
+      "ecl": ">! 23827009"
+    },
+    {
+      "id": "union-21",
+      "category": "union",
+      "ecl": "(<< 23827009) OR (<< 766779001)"
+    },
+    {
+      "id": "intersection-21",
+      "category": "intersection",
+      "ecl": "(<< 23827009) AND (<< 766779001)"
+    },
+    {
+      "id": "exclusion-21",
+      "category": "exclusion",
+      "ecl": "(<< 766779001) MINUS (<< 23827009)"
+    },
+    {
+      "id": "nested-hierarchy-21",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 23827009)"
+    },
+    {
+      "id": "top-21",
+      "category": "top",
+      "ecl": "!!> (23827009 OR 766779001)"
+    },
+    {
+      "id": "bottom-21",
+      "category": "bottom",
+      "ecl": "!!< (23827009 OR 766779001)"
+    },
+    {
+      "id": "membership-21",
+      "category": "membership",
+      "ecl": "(<< 23827009) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-21",
+      "category": "concept-filter",
+      "ecl": "23827009 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-21",
+      "category": "description-filter",
+      "ecl": "23827009 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-21",
+      "category": "history",
+      "ecl": "23827009 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-21",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 23827009 }}"
+    },
+    {
+      "id": "descendants-22",
+      "category": "descendants",
+      "ecl": "<< 25721003"
+    },
+    {
+      "id": "ancestors-22",
+      "category": "ancestors",
+      "ecl": "> 25721003"
+    },
+    {
+      "id": "children-22",
+      "category": "children",
+      "ecl": "<! 25721003"
+    },
+    {
+      "id": "parents-22",
+      "category": "parents",
+      "ecl": ">! 25721003"
+    },
+    {
+      "id": "union-22",
+      "category": "union",
+      "ecl": "(<< 25721003) OR (<< 255297006)"
+    },
+    {
+      "id": "intersection-22",
+      "category": "intersection",
+      "ecl": "(<< 25721003) AND (<< 255297006)"
+    },
+    {
+      "id": "exclusion-22",
+      "category": "exclusion",
+      "ecl": "(<< 255297006) MINUS (<< 25721003)"
+    },
+    {
+      "id": "nested-hierarchy-22",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 25721003)"
+    },
+    {
+      "id": "top-22",
+      "category": "top",
+      "ecl": "!!> (25721003 OR 255297006)"
+    },
+    {
+      "id": "bottom-22",
+      "category": "bottom",
+      "ecl": "!!< (25721003 OR 255297006)"
+    },
+    {
+      "id": "membership-22",
+      "category": "membership",
+      "ecl": "(<< 25721003) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-22",
+      "category": "concept-filter",
+      "ecl": "25721003 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-22",
+      "category": "description-filter",
+      "ecl": "25721003 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-22",
+      "category": "history",
+      "ecl": "25721003 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-22",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 25721003 }}"
+    },
+    {
+      "id": "descendants-23",
+      "category": "descendants",
+      "ecl": "<< 26624006"
+    },
+    {
+      "id": "ancestors-23",
+      "category": "ancestors",
+      "ecl": "> 26624006"
+    },
+    {
+      "id": "children-23",
+      "category": "children",
+      "ecl": "<! 26624006"
+    },
+    {
+      "id": "parents-23",
+      "category": "parents",
+      "ecl": ">! 26624006"
+    },
+    {
+      "id": "union-23",
+      "category": "union",
+      "ecl": "(<< 26624006) OR (<< 91922000)"
+    },
+    {
+      "id": "intersection-23",
+      "category": "intersection",
+      "ecl": "(<< 26624006) AND (<< 91922000)"
+    },
+    {
+      "id": "exclusion-23",
+      "category": "exclusion",
+      "ecl": "(<< 91922000) MINUS (<< 26624006)"
+    },
+    {
+      "id": "nested-hierarchy-23",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 26624006)"
+    },
+    {
+      "id": "top-23",
+      "category": "top",
+      "ecl": "!!> (26624006 OR 91922000)"
+    },
+    {
+      "id": "bottom-23",
+      "category": "bottom",
+      "ecl": "!!< (26624006 OR 91922000)"
+    },
+    {
+      "id": "membership-23",
+      "category": "membership",
+      "ecl": "(<< 26624006) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-23",
+      "category": "concept-filter",
+      "ecl": "26624006 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-23",
+      "category": "description-filter",
+      "ecl": "26624006 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-23",
+      "category": "history",
+      "ecl": "26624006 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-23",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 26624006 }}"
+    },
+    {
+      "id": "descendants-24",
+      "category": "descendants",
+      "ecl": "<< 27970007"
+    },
+    {
+      "id": "ancestors-24",
+      "category": "ancestors",
+      "ecl": "> 27970007"
+    },
+    {
+      "id": "children-24",
+      "category": "children",
+      "ecl": "<! 27970007"
+    },
+    {
+      "id": "parents-24",
+      "category": "parents",
+      "ecl": ">! 27970007"
+    },
+    {
+      "id": "union-24",
+      "category": "union",
+      "ecl": "(<< 27970007) OR (<< 444905003)"
+    },
+    {
+      "id": "intersection-24",
+      "category": "intersection",
+      "ecl": "(<< 27970007) AND (<< 444905003)"
+    },
+    {
+      "id": "exclusion-24",
+      "category": "exclusion",
+      "ecl": "(<< 444905003) MINUS (<< 27970007)"
+    },
+    {
+      "id": "nested-hierarchy-24",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 27970007)"
+    },
+    {
+      "id": "top-24",
+      "category": "top",
+      "ecl": "!!> (27970007 OR 444905003)"
+    },
+    {
+      "id": "bottom-24",
+      "category": "bottom",
+      "ecl": "!!< (27970007 OR 444905003)"
+    },
+    {
+      "id": "membership-24",
+      "category": "membership",
+      "ecl": "(<< 27970007) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-24",
+      "category": "concept-filter",
+      "ecl": "27970007 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-24",
+      "category": "description-filter",
+      "ecl": "27970007 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-24",
+      "category": "history",
+      "ecl": "27970007 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-24",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 27970007 }}"
+    },
+    {
+      "id": "descendants-25",
+      "category": "descendants",
+      "ecl": "<< 31117002"
+    },
+    {
+      "id": "ancestors-25",
+      "category": "ancestors",
+      "ecl": "> 31117002"
+    },
+    {
+      "id": "children-25",
+      "category": "children",
+      "ecl": "<! 31117002"
+    },
+    {
+      "id": "parents-25",
+      "category": "parents",
+      "ecl": ">! 31117002"
+    },
+    {
+      "id": "union-25",
+      "category": "union",
+      "ecl": "(<< 31117002) OR (<< 72670004)"
+    },
+    {
+      "id": "intersection-25",
+      "category": "intersection",
+      "ecl": "(<< 31117002) AND (<< 72670004)"
+    },
+    {
+      "id": "exclusion-25",
+      "category": "exclusion",
+      "ecl": "(<< 72670004) MINUS (<< 31117002)"
+    },
+    {
+      "id": "nested-hierarchy-25",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 31117002)"
+    },
+    {
+      "id": "top-25",
+      "category": "top",
+      "ecl": "!!> (31117002 OR 72670004)"
+    },
+    {
+      "id": "bottom-25",
+      "category": "bottom",
+      "ecl": "!!< (31117002 OR 72670004)"
+    },
+    {
+      "id": "membership-25",
+      "category": "membership",
+      "ecl": "(<< 31117002) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-25",
+      "category": "concept-filter",
+      "ecl": "31117002 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-25",
+      "category": "description-filter",
+      "ecl": "31117002 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-25",
+      "category": "history",
+      "ecl": "31117002 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-25",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 31117002 }}"
+    },
+    {
+      "id": "descendants-26",
+      "category": "descendants",
+      "ecl": "<< 32379001"
+    },
+    {
+      "id": "ancestors-26",
+      "category": "ancestors",
+      "ecl": "> 32379001"
+    },
+    {
+      "id": "children-26",
+      "category": "children",
+      "ecl": "<! 32379001"
+    },
+    {
+      "id": "parents-26",
+      "category": "parents",
+      "ecl": ">! 32379001"
+    },
+    {
+      "id": "union-26",
+      "category": "union",
+      "ecl": "(<< 32379001) OR (<< 404468008)"
+    },
+    {
+      "id": "intersection-26",
+      "category": "intersection",
+      "ecl": "(<< 32379001) AND (<< 404468008)"
+    },
+    {
+      "id": "exclusion-26",
+      "category": "exclusion",
+      "ecl": "(<< 404468008) MINUS (<< 32379001)"
+    },
+    {
+      "id": "nested-hierarchy-26",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 32379001)"
+    },
+    {
+      "id": "top-26",
+      "category": "top",
+      "ecl": "!!> (32379001 OR 404468008)"
+    },
+    {
+      "id": "bottom-26",
+      "category": "bottom",
+      "ecl": "!!< (32379001 OR 404468008)"
+    },
+    {
+      "id": "membership-26",
+      "category": "membership",
+      "ecl": "(<< 32379001) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-26",
+      "category": "concept-filter",
+      "ecl": "32379001 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-26",
+      "category": "description-filter",
+      "ecl": "32379001 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-26",
+      "category": "history",
+      "ecl": "32379001 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-26",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 32379001 }}"
+    },
+    {
+      "id": "descendants-27",
+      "category": "descendants",
+      "ecl": "<< 32801008"
+    },
+    {
+      "id": "ancestors-27",
+      "category": "ancestors",
+      "ecl": "> 32801008"
+    },
+    {
+      "id": "children-27",
+      "category": "children",
+      "ecl": "<! 32801008"
+    },
+    {
+      "id": "parents-27",
+      "category": "parents",
+      "ecl": ">! 32801008"
+    },
+    {
+      "id": "union-27",
+      "category": "union",
+      "ecl": "(<< 32801008) OR (<< 27174002)"
+    },
+    {
+      "id": "intersection-27",
+      "category": "intersection",
+      "ecl": "(<< 32801008) AND (<< 27174002)"
+    },
+    {
+      "id": "exclusion-27",
+      "category": "exclusion",
+      "ecl": "(<< 27174002) MINUS (<< 32801008)"
+    },
+    {
+      "id": "nested-hierarchy-27",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 32801008)"
+    },
+    {
+      "id": "top-27",
+      "category": "top",
+      "ecl": "!!> (32801008 OR 27174002)"
+    },
+    {
+      "id": "bottom-27",
+      "category": "bottom",
+      "ecl": "!!< (32801008 OR 27174002)"
+    },
+    {
+      "id": "membership-27",
+      "category": "membership",
+      "ecl": "(<< 32801008) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-27",
+      "category": "concept-filter",
+      "ecl": "32801008 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-27",
+      "category": "description-filter",
+      "ecl": "32801008 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-27",
+      "category": "history",
+      "ecl": "32801008 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-27",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 32801008 }}"
+    },
+    {
+      "id": "descendants-28",
+      "category": "descendants",
+      "ecl": "<< 33545008"
+    },
+    {
+      "id": "ancestors-28",
+      "category": "ancestors",
+      "ecl": "> 33545008"
+    },
+    {
+      "id": "children-28",
+      "category": "children",
+      "ecl": "<! 33545008"
+    },
+    {
+      "id": "parents-28",
+      "category": "parents",
+      "ecl": ">! 33545008"
+    },
+    {
+      "id": "union-28",
+      "category": "union",
+      "ecl": "(<< 33545008) OR (<< 130090009)"
+    },
+    {
+      "id": "intersection-28",
+      "category": "intersection",
+      "ecl": "(<< 33545008) AND (<< 130090009)"
+    },
+    {
+      "id": "exclusion-28",
+      "category": "exclusion",
+      "ecl": "(<< 130090009) MINUS (<< 33545008)"
+    },
+    {
+      "id": "nested-hierarchy-28",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 33545008)"
+    },
+    {
+      "id": "top-28",
+      "category": "top",
+      "ecl": "!!> (33545008 OR 130090009)"
+    },
+    {
+      "id": "bottom-28",
+      "category": "bottom",
+      "ecl": "!!< (33545008 OR 130090009)"
+    },
+    {
+      "id": "membership-28",
+      "category": "membership",
+      "ecl": "(<< 33545008) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-28",
+      "category": "concept-filter",
+      "ecl": "33545008 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-28",
+      "category": "description-filter",
+      "ecl": "33545008 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-28",
+      "category": "history",
+      "ecl": "33545008 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-28",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 33545008 }}"
+    },
+    {
+      "id": "descendants-29",
+      "category": "descendants",
+      "ecl": "<< 38549000"
+    },
+    {
+      "id": "ancestors-29",
+      "category": "ancestors",
+      "ecl": "> 38549000"
+    },
+    {
+      "id": "children-29",
+      "category": "children",
+      "ecl": "<! 38549000"
+    },
+    {
+      "id": "parents-29",
+      "category": "parents",
+      "ecl": ">! 38549000"
+    },
+    {
+      "id": "union-29",
+      "category": "union",
+      "ecl": "(<< 38549000) OR (<< 1187225007)"
+    },
+    {
+      "id": "intersection-29",
+      "category": "intersection",
+      "ecl": "(<< 38549000) AND (<< 1187225007)"
+    },
+    {
+      "id": "exclusion-29",
+      "category": "exclusion",
+      "ecl": "(<< 1187225007) MINUS (<< 38549000)"
+    },
+    {
+      "id": "nested-hierarchy-29",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 38549000)"
+    },
+    {
+      "id": "top-29",
+      "category": "top",
+      "ecl": "!!> (38549000 OR 1187225007)"
+    },
+    {
+      "id": "bottom-29",
+      "category": "bottom",
+      "ecl": "!!< (38549000 OR 1187225007)"
+    },
+    {
+      "id": "membership-29",
+      "category": "membership",
+      "ecl": "(<< 38549000) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-29",
+      "category": "concept-filter",
+      "ecl": "38549000 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-29",
+      "category": "description-filter",
+      "ecl": "38549000 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-29",
+      "category": "history",
+      "ecl": "38549000 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-29",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 38549000 }}"
+    },
+    {
+      "id": "descendants-30",
+      "category": "descendants",
+      "ecl": "<< 40528000"
+    },
+    {
+      "id": "ancestors-30",
+      "category": "ancestors",
+      "ecl": "> 40528000"
+    },
+    {
+      "id": "children-30",
+      "category": "children",
+      "ecl": "<! 40528000"
+    },
+    {
+      "id": "parents-30",
+      "category": "parents",
+      "ecl": ">! 40528000"
+    },
+    {
+      "id": "union-30",
+      "category": "union",
+      "ecl": "(<< 40528000) OR (<< 7295002)"
+    },
+    {
+      "id": "intersection-30",
+      "category": "intersection",
+      "ecl": "(<< 40528000) AND (<< 7295002)"
+    },
+    {
+      "id": "exclusion-30",
+      "category": "exclusion",
+      "ecl": "(<< 7295002) MINUS (<< 40528000)"
+    },
+    {
+      "id": "nested-hierarchy-30",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 40528000)"
+    },
+    {
+      "id": "top-30",
+      "category": "top",
+      "ecl": "!!> (40528000 OR 7295002)"
+    },
+    {
+      "id": "bottom-30",
+      "category": "bottom",
+      "ecl": "!!< (40528000 OR 7295002)"
+    },
+    {
+      "id": "membership-30",
+      "category": "membership",
+      "ecl": "(<< 40528000) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-30",
+      "category": "concept-filter",
+      "ecl": "40528000 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-30",
+      "category": "description-filter",
+      "ecl": "40528000 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-30",
+      "category": "history",
+      "ecl": "40528000 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-30",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 40528000 }}"
+    },
+    {
+      "id": "descendants-31",
+      "category": "descendants",
+      "ecl": "<< 42526005"
+    },
+    {
+      "id": "ancestors-31",
+      "category": "ancestors",
+      "ecl": "> 42526005"
+    },
+    {
+      "id": "children-31",
+      "category": "children",
+      "ecl": "<! 42526005"
+    },
+    {
+      "id": "parents-31",
+      "category": "parents",
+      "ecl": ">! 42526005"
+    },
+    {
+      "id": "union-31",
+      "category": "union",
+      "ecl": "(<< 42526005) OR (<< 710955000)"
+    },
+    {
+      "id": "intersection-31",
+      "category": "intersection",
+      "ecl": "(<< 42526005) AND (<< 710955000)"
+    },
+    {
+      "id": "exclusion-31",
+      "category": "exclusion",
+      "ecl": "(<< 710955000) MINUS (<< 42526005)"
+    },
+    {
+      "id": "nested-hierarchy-31",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 42526005)"
+    },
+    {
+      "id": "top-31",
+      "category": "top",
+      "ecl": "!!> (42526005 OR 710955000)"
+    },
+    {
+      "id": "bottom-31",
+      "category": "bottom",
+      "ecl": "!!< (42526005 OR 710955000)"
+    },
+    {
+      "id": "membership-31",
+      "category": "membership",
+      "ecl": "(<< 42526005) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-31",
+      "category": "concept-filter",
+      "ecl": "42526005 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-31",
+      "category": "description-filter",
+      "ecl": "42526005 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-31",
+      "category": "history",
+      "ecl": "42526005 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-31",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 42526005 }}"
+    },
+    {
+      "id": "descendants-32",
+      "category": "descendants",
+      "ecl": "<< 46523000"
+    },
+    {
+      "id": "ancestors-32",
+      "category": "ancestors",
+      "ecl": "> 46523000"
+    },
+    {
+      "id": "children-32",
+      "category": "children",
+      "ecl": "<! 46523000"
+    },
+    {
+      "id": "parents-32",
+      "category": "parents",
+      "ecl": ">! 46523000"
+    },
+    {
+      "id": "union-32",
+      "category": "union",
+      "ecl": "(<< 46523000) OR (<< 45640006)"
+    },
+    {
+      "id": "intersection-32",
+      "category": "intersection",
+      "ecl": "(<< 46523000) AND (<< 45640006)"
+    },
+    {
+      "id": "exclusion-32",
+      "category": "exclusion",
+      "ecl": "(<< 45640006) MINUS (<< 46523000)"
+    },
+    {
+      "id": "nested-hierarchy-32",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 46523000)"
+    },
+    {
+      "id": "top-32",
+      "category": "top",
+      "ecl": "!!> (46523000 OR 45640006)"
+    },
+    {
+      "id": "bottom-32",
+      "category": "bottom",
+      "ecl": "!!< (46523000 OR 45640006)"
+    },
+    {
+      "id": "membership-32",
+      "category": "membership",
+      "ecl": "(<< 46523000) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-32",
+      "category": "concept-filter",
+      "ecl": "46523000 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-32",
+      "category": "description-filter",
+      "ecl": "46523000 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-32",
+      "category": "history",
+      "ecl": "46523000 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-32",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 46523000 }}"
+    },
+    {
+      "id": "descendants-33",
+      "category": "descendants",
+      "ecl": "<< 46603009"
+    },
+    {
+      "id": "ancestors-33",
+      "category": "ancestors",
+      "ecl": "> 46603009"
+    },
+    {
+      "id": "children-33",
+      "category": "children",
+      "ecl": "<! 46603009"
+    },
+    {
+      "id": "parents-33",
+      "category": "parents",
+      "ecl": ">! 46603009"
+    },
+    {
+      "id": "union-33",
+      "category": "union",
+      "ecl": "(<< 46603009) OR (<< 106471000)"
+    },
+    {
+      "id": "intersection-33",
+      "category": "intersection",
+      "ecl": "(<< 46603009) AND (<< 106471000)"
+    },
+    {
+      "id": "exclusion-33",
+      "category": "exclusion",
+      "ecl": "(<< 106471000) MINUS (<< 46603009)"
+    },
+    {
+      "id": "nested-hierarchy-33",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 46603009)"
+    },
+    {
+      "id": "top-33",
+      "category": "top",
+      "ecl": "!!> (46603009 OR 106471000)"
+    },
+    {
+      "id": "bottom-33",
+      "category": "bottom",
+      "ecl": "!!< (46603009 OR 106471000)"
+    },
+    {
+      "id": "membership-33",
+      "category": "membership",
+      "ecl": "(<< 46603009) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-33",
+      "category": "concept-filter",
+      "ecl": "46603009 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-33",
+      "category": "description-filter",
+      "ecl": "46603009 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-33",
+      "category": "history",
+      "ecl": "46603009 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-33",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 46603009 }}"
+    },
+    {
+      "id": "descendants-34",
+      "category": "descendants",
+      "ecl": "<< 47526003"
+    },
+    {
+      "id": "ancestors-34",
+      "category": "ancestors",
+      "ecl": "> 47526003"
+    },
+    {
+      "id": "children-34",
+      "category": "children",
+      "ecl": "<! 47526003"
+    },
+    {
+      "id": "parents-34",
+      "category": "parents",
+      "ecl": ">! 47526003"
+    },
+    {
+      "id": "union-34",
+      "category": "union",
+      "ecl": "(<< 47526003) OR (<< 86095007)"
+    },
+    {
+      "id": "intersection-34",
+      "category": "intersection",
+      "ecl": "(<< 47526003) AND (<< 86095007)"
+    },
+    {
+      "id": "exclusion-34",
+      "category": "exclusion",
+      "ecl": "(<< 86095007) MINUS (<< 47526003)"
+    },
+    {
+      "id": "nested-hierarchy-34",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 47526003)"
+    },
+    {
+      "id": "top-34",
+      "category": "top",
+      "ecl": "!!> (47526003 OR 86095007)"
+    },
+    {
+      "id": "bottom-34",
+      "category": "bottom",
+      "ecl": "!!< (47526003 OR 86095007)"
+    },
+    {
+      "id": "membership-34",
+      "category": "membership",
+      "ecl": "(<< 47526003) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-34",
+      "category": "concept-filter",
+      "ecl": "47526003 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-34",
+      "category": "description-filter",
+      "ecl": "47526003 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-34",
+      "category": "history",
+      "ecl": "47526003 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-34",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 47526003 }}"
+    },
+    {
+      "id": "descendants-35",
+      "category": "descendants",
+      "ecl": "<< 51371005"
+    },
+    {
+      "id": "ancestors-35",
+      "category": "ancestors",
+      "ecl": "> 51371005"
+    },
+    {
+      "id": "children-35",
+      "category": "children",
+      "ecl": "<! 51371005"
+    },
+    {
+      "id": "parents-35",
+      "category": "parents",
+      "ecl": ">! 51371005"
+    },
+    {
+      "id": "union-35",
+      "category": "union",
+      "ecl": "(<< 51371005) OR (<< 367460001)"
+    },
+    {
+      "id": "intersection-35",
+      "category": "intersection",
+      "ecl": "(<< 51371005) AND (<< 367460001)"
+    },
+    {
+      "id": "exclusion-35",
+      "category": "exclusion",
+      "ecl": "(<< 367460001) MINUS (<< 51371005)"
+    },
+    {
+      "id": "nested-hierarchy-35",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 51371005)"
+    },
+    {
+      "id": "top-35",
+      "category": "top",
+      "ecl": "!!> (51371005 OR 367460001)"
+    },
+    {
+      "id": "bottom-35",
+      "category": "bottom",
+      "ecl": "!!< (51371005 OR 367460001)"
+    },
+    {
+      "id": "membership-35",
+      "category": "membership",
+      "ecl": "(<< 51371005) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-35",
+      "category": "concept-filter",
+      "ecl": "51371005 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-35",
+      "category": "description-filter",
+      "ecl": "51371005 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-35",
+      "category": "history",
+      "ecl": "51371005 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-35",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 51371005 }}"
+    },
+    {
+      "id": "descendants-36",
+      "category": "descendants",
+      "ecl": "<< 52390004"
+    },
+    {
+      "id": "ancestors-36",
+      "category": "ancestors",
+      "ecl": "> 52390004"
+    },
+    {
+      "id": "children-36",
+      "category": "children",
+      "ecl": "<! 52390004"
+    },
+    {
+      "id": "parents-36",
+      "category": "parents",
+      "ecl": ">! 52390004"
+    },
+    {
+      "id": "union-36",
+      "category": "union",
+      "ecl": "(<< 52390004) OR (<< 79493003)"
+    },
+    {
+      "id": "intersection-36",
+      "category": "intersection",
+      "ecl": "(<< 52390004) AND (<< 79493003)"
+    },
+    {
+      "id": "exclusion-36",
+      "category": "exclusion",
+      "ecl": "(<< 79493003) MINUS (<< 52390004)"
+    },
+    {
+      "id": "nested-hierarchy-36",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 52390004)"
+    },
+    {
+      "id": "top-36",
+      "category": "top",
+      "ecl": "!!> (52390004 OR 79493003)"
+    },
+    {
+      "id": "bottom-36",
+      "category": "bottom",
+      "ecl": "!!< (52390004 OR 79493003)"
+    },
+    {
+      "id": "membership-36",
+      "category": "membership",
+      "ecl": "(<< 52390004) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-36",
+      "category": "concept-filter",
+      "ecl": "52390004 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-36",
+      "category": "description-filter",
+      "ecl": "52390004 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-36",
+      "category": "history",
+      "ecl": "52390004 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-36",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 52390004 }}"
+    },
+    {
+      "id": "descendants-37",
+      "category": "descendants",
+      "ecl": "<< 53386008"
+    },
+    {
+      "id": "ancestors-37",
+      "category": "ancestors",
+      "ecl": "> 53386008"
+    },
+    {
+      "id": "children-37",
+      "category": "children",
+      "ecl": "<! 53386008"
+    },
+    {
+      "id": "parents-37",
+      "category": "parents",
+      "ecl": ">! 53386008"
+    },
+    {
+      "id": "union-37",
+      "category": "union",
+      "ecl": "(<< 53386008) OR (<< 19063003)"
+    },
+    {
+      "id": "intersection-37",
+      "category": "intersection",
+      "ecl": "(<< 53386008) AND (<< 19063003)"
+    },
+    {
+      "id": "exclusion-37",
+      "category": "exclusion",
+      "ecl": "(<< 19063003) MINUS (<< 53386008)"
+    },
+    {
+      "id": "nested-hierarchy-37",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 53386008)"
+    },
+    {
+      "id": "top-37",
+      "category": "top",
+      "ecl": "!!> (53386008 OR 19063003)"
+    },
+    {
+      "id": "bottom-37",
+      "category": "bottom",
+      "ecl": "!!< (53386008 OR 19063003)"
+    },
+    {
+      "id": "membership-37",
+      "category": "membership",
+      "ecl": "(<< 53386008) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-37",
+      "category": "concept-filter",
+      "ecl": "53386008 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-37",
+      "category": "description-filter",
+      "ecl": "53386008 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-37",
+      "category": "history",
+      "ecl": "53386008 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-37",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 53386008 }}"
+    },
+    {
+      "id": "descendants-38",
+      "category": "descendants",
+      "ecl": "<< 55849004"
+    },
+    {
+      "id": "ancestors-38",
+      "category": "ancestors",
+      "ecl": "> 55849004"
+    },
+    {
+      "id": "children-38",
+      "category": "children",
+      "ecl": "<! 55849004"
+    },
+    {
+      "id": "parents-38",
+      "category": "parents",
+      "ecl": ">! 55849004"
+    },
+    {
+      "id": "union-38",
+      "category": "union",
+      "ecl": "(<< 55849004) OR (<< 712893003)"
+    },
+    {
+      "id": "intersection-38",
+      "category": "intersection",
+      "ecl": "(<< 55849004) AND (<< 712893003)"
+    },
+    {
+      "id": "exclusion-38",
+      "category": "exclusion",
+      "ecl": "(<< 712893003) MINUS (<< 55849004)"
+    },
+    {
+      "id": "nested-hierarchy-38",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 55849004)"
+    },
+    {
+      "id": "top-38",
+      "category": "top",
+      "ecl": "!!> (55849004 OR 712893003)"
+    },
+    {
+      "id": "bottom-38",
+      "category": "bottom",
+      "ecl": "!!< (55849004 OR 712893003)"
+    },
+    {
+      "id": "membership-38",
+      "category": "membership",
+      "ecl": "(<< 55849004) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-38",
+      "category": "concept-filter",
+      "ecl": "55849004 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-38",
+      "category": "description-filter",
+      "ecl": "55849004 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-38",
+      "category": "history",
+      "ecl": "55849004 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-38",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 55849004 }}"
+    },
+    {
+      "id": "descendants-39",
+      "category": "descendants",
+      "ecl": "<< 56367006"
+    },
+    {
+      "id": "ancestors-39",
+      "category": "ancestors",
+      "ecl": "> 56367006"
+    },
+    {
+      "id": "children-39",
+      "category": "children",
+      "ecl": "<! 56367006"
+    },
+    {
+      "id": "parents-39",
+      "category": "parents",
+      "ecl": ">! 56367006"
+    },
+    {
+      "id": "union-39",
+      "category": "union",
+      "ecl": "(<< 56367006) OR (<< 123906002)"
+    },
+    {
+      "id": "intersection-39",
+      "category": "intersection",
+      "ecl": "(<< 56367006) AND (<< 123906002)"
+    },
+    {
+      "id": "exclusion-39",
+      "category": "exclusion",
+      "ecl": "(<< 123906002) MINUS (<< 56367006)"
+    },
+    {
+      "id": "nested-hierarchy-39",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 56367006)"
+    },
+    {
+      "id": "top-39",
+      "category": "top",
+      "ecl": "!!> (56367006 OR 123906002)"
+    },
+    {
+      "id": "bottom-39",
+      "category": "bottom",
+      "ecl": "!!< (56367006 OR 123906002)"
+    },
+    {
+      "id": "membership-39",
+      "category": "membership",
+      "ecl": "(<< 56367006) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-39",
+      "category": "concept-filter",
+      "ecl": "56367006 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-39",
+      "category": "description-filter",
+      "ecl": "56367006 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-39",
+      "category": "history",
+      "ecl": "56367006 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-39",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 56367006 }}"
+    },
+    {
+      "id": "descendants-40",
+      "category": "descendants",
+      "ecl": "<< 56564003"
+    },
+    {
+      "id": "ancestors-40",
+      "category": "ancestors",
+      "ecl": "> 56564003"
+    },
+    {
+      "id": "children-40",
+      "category": "children",
+      "ecl": "<! 56564003"
+    },
+    {
+      "id": "parents-40",
+      "category": "parents",
+      "ecl": ">! 56564003"
+    },
+    {
+      "id": "union-40",
+      "category": "union",
+      "ecl": "(<< 56564003) OR (<< 41469002)"
+    },
+    {
+      "id": "intersection-40",
+      "category": "intersection",
+      "ecl": "(<< 56564003) AND (<< 41469002)"
+    },
+    {
+      "id": "exclusion-40",
+      "category": "exclusion",
+      "ecl": "(<< 41469002) MINUS (<< 56564003)"
+    },
+    {
+      "id": "nested-hierarchy-40",
+      "category": "nested-hierarchy",
+      "ecl": ">! (<! 56564003)"
+    },
+    {
+      "id": "top-40",
+      "category": "top",
+      "ecl": "!!> (56564003 OR 41469002)"
+    },
+    {
+      "id": "bottom-40",
+      "category": "bottom",
+      "ecl": "!!< (56564003 OR 41469002)"
+    },
+    {
+      "id": "membership-40",
+      "category": "membership",
+      "ecl": "(<< 56564003) AND (^ 999002271000000101)"
+    },
+    {
+      "id": "concept-filter-40",
+      "category": "concept-filter",
+      "ecl": "56564003 {{ C definitionStatus = defined }}"
+    },
+    {
+      "id": "description-filter-40",
+      "category": "description-filter",
+      "ecl": "56564003 {{ D type = syn, language = en }}"
+    },
+    {
+      "id": "history-40",
+      "category": "history",
+      "ecl": "56564003 {{ +HISTORY-MIN }}"
+    },
+    {
+      "id": "member-projection-40",
+      "category": "member-projection",
+      "ecl": "^ [targetComponentId] 900000000000526001 {{ M referencedComponentId = 56564003 }}"
+    },
+    {
+      "id": "dotted-01",
+      "category": "dotted",
+      "ecl": "(<< 2069003) . 260686004"
+    },
+    {
+      "id": "attribute-equality-01",
+      "category": "attribute-equality",
+      "ecl": "(<< 2069003) : 260686004 = 129336009"
+    },
+    {
+      "id": "attribute-inequality-01",
+      "category": "attribute-inequality",
+      "ecl": "(<< 2069003) : 260686004 != 129336009"
+    },
+    {
+      "id": "nested-value-01",
+      "category": "nested-value",
+      "ecl": "(<< 2069003) : 260686004 = (<< 129336009)"
+    },
+    {
+      "id": "wildcard-name-01",
+      "category": "wildcard-name",
+      "ecl": "(<< 2069003) : * = 129336009"
+    },
+    {
+      "id": "attribute-cardinality-01",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 2069003) : [0..1] 260686004 = *"
+    },
+    {
+      "id": "group-01",
+      "category": "group",
+      "ecl": "(<< 2069003) : { 260686004 = 129336009 }"
+    },
+    {
+      "id": "group-cardinality-01",
+      "category": "group-cardinality",
+      "ecl": "(<< 2069003) : [0..1] { 260686004 = * }"
+    },
+    {
+      "id": "reverse-01",
+      "category": "reverse",
+      "ecl": "* : R 260686004 = 2069003"
+    },
+    {
+      "id": "dotted-02",
+      "category": "dotted",
+      "ecl": "(<< 2978006) . 363698007"
+    },
+    {
+      "id": "attribute-equality-02",
+      "category": "attribute-equality",
+      "ecl": "(<< 2978006) : 363698007 = 14957007"
+    },
+    {
+      "id": "attribute-inequality-02",
+      "category": "attribute-inequality",
+      "ecl": "(<< 2978006) : 363698007 != 14957007"
+    },
+    {
+      "id": "nested-value-02",
+      "category": "nested-value",
+      "ecl": "(<< 2978006) : 363698007 = (<< 14957007)"
+    },
+    {
+      "id": "wildcard-name-02",
+      "category": "wildcard-name",
+      "ecl": "(<< 2978006) : * = 14957007"
+    },
+    {
+      "id": "attribute-cardinality-02",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 2978006) : [1..2] 363698007 = *"
+    },
+    {
+      "id": "group-02",
+      "category": "group",
+      "ecl": "(<< 2978006) : { 363698007 = 14957007 }"
+    },
+    {
+      "id": "group-cardinality-02",
+      "category": "group-cardinality",
+      "ecl": "(<< 2978006) : [1..2] { 363698007 = * }"
+    },
+    {
+      "id": "reverse-02",
+      "category": "reverse",
+      "ecl": "* : R 363698007 = 2978006"
+    },
+    {
+      "id": "dotted-03",
+      "category": "dotted",
+      "ecl": "(<< 5902003) . 260686004"
+    },
+    {
+      "id": "attribute-equality-03",
+      "category": "attribute-equality",
+      "ecl": "(<< 5902003) : 260686004 = 302199004"
+    },
+    {
+      "id": "attribute-inequality-03",
+      "category": "attribute-inequality",
+      "ecl": "(<< 5902003) : 260686004 != 302199004"
+    },
+    {
+      "id": "nested-value-03",
+      "category": "nested-value",
+      "ecl": "(<< 5902003) : 260686004 = (<< 302199004)"
+    },
+    {
+      "id": "wildcard-name-03",
+      "category": "wildcard-name",
+      "ecl": "(<< 5902003) : * = 302199004"
+    },
+    {
+      "id": "attribute-cardinality-03",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 5902003) : [2..3] 260686004 = *"
+    },
+    {
+      "id": "group-03",
+      "category": "group",
+      "ecl": "(<< 5902003) : { 260686004 = 302199004 }"
+    },
+    {
+      "id": "group-cardinality-03",
+      "category": "group-cardinality",
+      "ecl": "(<< 5902003) : [0..1] { 260686004 = * }"
+    },
+    {
+      "id": "reverse-03",
+      "category": "reverse",
+      "ecl": "* : R 260686004 = 5902003"
+    },
+    {
+      "id": "dotted-04",
+      "category": "dotted",
+      "ecl": "(<< 10321002) . 116676008"
+    },
+    {
+      "id": "attribute-equality-04",
+      "category": "attribute-equality",
+      "ecl": "(<< 10321002) : 116676008 = 44132006"
+    },
+    {
+      "id": "attribute-inequality-04",
+      "category": "attribute-inequality",
+      "ecl": "(<< 10321002) : 116676008 != 44132006"
+    },
+    {
+      "id": "nested-value-04",
+      "category": "nested-value",
+      "ecl": "(<< 10321002) : 116676008 = (<< 44132006)"
+    },
+    {
+      "id": "wildcard-name-04",
+      "category": "wildcard-name",
+      "ecl": "(<< 10321002) : * = 44132006"
+    },
+    {
+      "id": "attribute-cardinality-04",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 10321002) : [0..1] 116676008 = *"
+    },
+    {
+      "id": "group-04",
+      "category": "group",
+      "ecl": "(<< 10321002) : { 116676008 = 44132006 }"
+    },
+    {
+      "id": "group-cardinality-04",
+      "category": "group-cardinality",
+      "ecl": "(<< 10321002) : [1..2] { 116676008 = * }"
+    },
+    {
+      "id": "reverse-04",
+      "category": "reverse",
+      "ecl": "* : R 116676008 = 10321002"
+    },
+    {
+      "id": "dotted-05",
+      "category": "dotted",
+      "ecl": "(<< 15857002) . 127489000"
+    },
+    {
+      "id": "attribute-equality-05",
+      "category": "attribute-equality",
+      "ecl": "(<< 15857002) : 127489000 = 373248002"
+    },
+    {
+      "id": "attribute-inequality-05",
+      "category": "attribute-inequality",
+      "ecl": "(<< 15857002) : 127489000 != 373248002"
+    },
+    {
+      "id": "nested-value-05",
+      "category": "nested-value",
+      "ecl": "(<< 15857002) : 127489000 = (<< 373248002)"
+    },
+    {
+      "id": "wildcard-name-05",
+      "category": "wildcard-name",
+      "ecl": "(<< 15857002) : * = 373248002"
+    },
+    {
+      "id": "attribute-cardinality-05",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 15857002) : [1..2] 127489000 = *"
+    },
+    {
+      "id": "group-05",
+      "category": "group",
+      "ecl": "(<< 15857002) : { 127489000 = 373248002 }"
+    },
+    {
+      "id": "group-cardinality-05",
+      "category": "group-cardinality",
+      "ecl": "(<< 15857002) : [0..1] { 127489000 = * }"
+    },
+    {
+      "id": "reverse-05",
+      "category": "reverse",
+      "ecl": "* : R 127489000 = 15857002"
+    },
+    {
+      "id": "dotted-06",
+      "category": "dotted",
+      "ecl": "(<< 16427007) . 363713009"
+    },
+    {
+      "id": "attribute-equality-06",
+      "category": "attribute-equality",
+      "ecl": "(<< 16427007) : 363713009 = 281300000"
+    },
+    {
+      "id": "attribute-inequality-06",
+      "category": "attribute-inequality",
+      "ecl": "(<< 16427007) : 363713009 != 281300000"
+    },
+    {
+      "id": "nested-value-06",
+      "category": "nested-value",
+      "ecl": "(<< 16427007) : 363713009 = (<< 281300000)"
+    },
+    {
+      "id": "wildcard-name-06",
+      "category": "wildcard-name",
+      "ecl": "(<< 16427007) : * = 281300000"
+    },
+    {
+      "id": "attribute-cardinality-06",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 16427007) : [2..3] 363713009 = *"
+    },
+    {
+      "id": "group-06",
+      "category": "group",
+      "ecl": "(<< 16427007) : { 363713009 = 281300000 }"
+    },
+    {
+      "id": "group-cardinality-06",
+      "category": "group-cardinality",
+      "ecl": "(<< 16427007) : [1..2] { 363713009 = * }"
+    },
+    {
+      "id": "reverse-06",
+      "category": "reverse",
+      "ecl": "* : R 363713009 = 16427007"
+    },
+    {
+      "id": "dotted-07",
+      "category": "dotted",
+      "ecl": "(<< 16508004) . 363700003"
+    },
+    {
+      "id": "attribute-equality-07",
+      "category": "attribute-equality",
+      "ecl": "(<< 16508004) : 363700003 = 76640006"
+    },
+    {
+      "id": "attribute-inequality-07",
+      "category": "attribute-inequality",
+      "ecl": "(<< 16508004) : 363700003 != 76640006"
+    },
+    {
+      "id": "nested-value-07",
+      "category": "nested-value",
+      "ecl": "(<< 16508004) : 363700003 = (<< 76640006)"
+    },
+    {
+      "id": "wildcard-name-07",
+      "category": "wildcard-name",
+      "ecl": "(<< 16508004) : * = 76640006"
+    },
+    {
+      "id": "attribute-cardinality-07",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 16508004) : [0..1] 363700003 = *"
+    },
+    {
+      "id": "group-07",
+      "category": "group",
+      "ecl": "(<< 16508004) : { 363700003 = 76640006 }"
+    },
+    {
+      "id": "group-cardinality-07",
+      "category": "group-cardinality",
+      "ecl": "(<< 16508004) : [0..1] { 363700003 = * }"
+    },
+    {
+      "id": "reverse-07",
+      "category": "reverse",
+      "ecl": "* : R 363700003 = 16508004"
+    },
+    {
+      "id": "dotted-08",
+      "category": "dotted",
+      "ecl": "(<< 16646002) . 260686004"
+    },
+    {
+      "id": "attribute-equality-08",
+      "category": "attribute-equality",
+      "ecl": "(<< 16646002) : 260686004 = 129301005"
+    },
+    {
+      "id": "attribute-inequality-08",
+      "category": "attribute-inequality",
+      "ecl": "(<< 16646002) : 260686004 != 129301005"
+    },
+    {
+      "id": "nested-value-08",
+      "category": "nested-value",
+      "ecl": "(<< 16646002) : 260686004 = (<< 129301005)"
+    },
+    {
+      "id": "wildcard-name-08",
+      "category": "wildcard-name",
+      "ecl": "(<< 16646002) : * = 129301005"
+    },
+    {
+      "id": "attribute-cardinality-08",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 16646002) : [1..2] 260686004 = *"
+    },
+    {
+      "id": "group-08",
+      "category": "group",
+      "ecl": "(<< 16646002) : { 260686004 = 129301005 }"
+    },
+    {
+      "id": "group-cardinality-08",
+      "category": "group-cardinality",
+      "ecl": "(<< 16646002) : [1..2] { 260686004 = * }"
+    },
+    {
+      "id": "reverse-08",
+      "category": "reverse",
+      "ecl": "* : R 260686004 = 16646002"
+    },
+    {
+      "id": "dotted-09",
+      "category": "dotted",
+      "ecl": "(<< 18232000) . 363713009"
+    },
+    {
+      "id": "attribute-equality-09",
+      "category": "attribute-equality",
+      "ecl": "(<< 18232000) : 363713009 = 371157007"
+    },
+    {
+      "id": "attribute-inequality-09",
+      "category": "attribute-inequality",
+      "ecl": "(<< 18232000) : 363713009 != 371157007"
+    },
+    {
+      "id": "nested-value-09",
+      "category": "nested-value",
+      "ecl": "(<< 18232000) : 363713009 = (<< 371157007)"
+    },
+    {
+      "id": "wildcard-name-09",
+      "category": "wildcard-name",
+      "ecl": "(<< 18232000) : * = 371157007"
+    },
+    {
+      "id": "attribute-cardinality-09",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 18232000) : [2..3] 363713009 = *"
+    },
+    {
+      "id": "group-09",
+      "category": "group",
+      "ecl": "(<< 18232000) : { 363713009 = 371157007 }"
+    },
+    {
+      "id": "group-cardinality-09",
+      "category": "group-cardinality",
+      "ecl": "(<< 18232000) : [0..1] { 363713009 = * }"
+    },
+    {
+      "id": "reverse-09",
+      "category": "reverse",
+      "ecl": "* : R 363713009 = 18232000"
+    },
+    {
+      "id": "dotted-10",
+      "category": "dotted",
+      "ecl": "(<< 18551005) . 405813007"
+    },
+    {
+      "id": "attribute-equality-10",
+      "category": "attribute-equality",
+      "ecl": "(<< 18551005) : 405813007 = 29445007"
+    },
+    {
+      "id": "attribute-inequality-10",
+      "category": "attribute-inequality",
+      "ecl": "(<< 18551005) : 405813007 != 29445007"
+    },
+    {
+      "id": "nested-value-10",
+      "category": "nested-value",
+      "ecl": "(<< 18551005) : 405813007 = (<< 29445007)"
+    },
+    {
+      "id": "wildcard-name-10",
+      "category": "wildcard-name",
+      "ecl": "(<< 18551005) : * = 29445007"
+    },
+    {
+      "id": "attribute-cardinality-10",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 18551005) : [0..1] 405813007 = *"
+    },
+    {
+      "id": "group-10",
+      "category": "group",
+      "ecl": "(<< 18551005) : { 405813007 = 29445007 }"
+    },
+    {
+      "id": "group-cardinality-10",
+      "category": "group-cardinality",
+      "ecl": "(<< 18551005) : [1..2] { 405813007 = * }"
+    },
+    {
+      "id": "reverse-10",
+      "category": "reverse",
+      "ecl": "* : R 405813007 = 18551005"
+    },
+    {
+      "id": "dotted-11",
+      "category": "dotted",
+      "ecl": "(<< 22089003) . 424361007"
+    },
+    {
+      "id": "attribute-equality-11",
+      "category": "attribute-equality",
+      "ecl": "(<< 22089003) : 424361007 = 6038004"
+    },
+    {
+      "id": "attribute-inequality-11",
+      "category": "attribute-inequality",
+      "ecl": "(<< 22089003) : 424361007 != 6038004"
+    },
+    {
+      "id": "nested-value-11",
+      "category": "nested-value",
+      "ecl": "(<< 22089003) : 424361007 = (<< 6038004)"
+    },
+    {
+      "id": "wildcard-name-11",
+      "category": "wildcard-name",
+      "ecl": "(<< 22089003) : * = 6038004"
+    },
+    {
+      "id": "attribute-cardinality-11",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 22089003) : [1..2] 424361007 = *"
+    },
+    {
+      "id": "group-11",
+      "category": "group",
+      "ecl": "(<< 22089003) : { 424361007 = 6038004 }"
+    },
+    {
+      "id": "group-cardinality-11",
+      "category": "group-cardinality",
+      "ecl": "(<< 22089003) : [0..1] { 424361007 = * }"
+    },
+    {
+      "id": "reverse-11",
+      "category": "reverse",
+      "ecl": "* : R 424361007 = 22089003"
+    },
+    {
+      "id": "dotted-12",
+      "category": "dotted",
+      "ecl": "(<< 23008004) . 370135005"
+    },
+    {
+      "id": "attribute-equality-12",
+      "category": "attribute-equality",
+      "ecl": "(<< 23008004) : 370135005 = 441862004"
+    },
+    {
+      "id": "attribute-inequality-12",
+      "category": "attribute-inequality",
+      "ecl": "(<< 23008004) : 370135005 != 441862004"
+    },
+    {
+      "id": "nested-value-12",
+      "category": "nested-value",
+      "ecl": "(<< 23008004) : 370135005 = (<< 441862004)"
+    },
+    {
+      "id": "wildcard-name-12",
+      "category": "wildcard-name",
+      "ecl": "(<< 23008004) : * = 441862004"
+    },
+    {
+      "id": "attribute-cardinality-12",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 23008004) : [2..3] 370135005 = *"
+    },
+    {
+      "id": "group-12",
+      "category": "group",
+      "ecl": "(<< 23008004) : { 370135005 = 441862004 }"
+    },
+    {
+      "id": "group-cardinality-12",
+      "category": "group-cardinality",
+      "ecl": "(<< 23008004) : [1..2] { 370135005 = * }"
+    },
+    {
+      "id": "reverse-12",
+      "category": "reverse",
+      "ecl": "* : R 370135005 = 23008004"
+    },
+    {
+      "id": "dotted-13",
+      "category": "dotted",
+      "ecl": "(<< 23170007) . 246093002"
+    },
+    {
+      "id": "attribute-equality-13",
+      "category": "attribute-equality",
+      "ecl": "(<< 23170007) : 246093002 = 6478000"
+    },
+    {
+      "id": "attribute-inequality-13",
+      "category": "attribute-inequality",
+      "ecl": "(<< 23170007) : 246093002 != 6478000"
+    },
+    {
+      "id": "nested-value-13",
+      "category": "nested-value",
+      "ecl": "(<< 23170007) : 246093002 = (<< 6478000)"
+    },
+    {
+      "id": "wildcard-name-13",
+      "category": "wildcard-name",
+      "ecl": "(<< 23170007) : * = 6478000"
+    },
+    {
+      "id": "attribute-cardinality-13",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 23170007) : [0..1] 246093002 = *"
+    },
+    {
+      "id": "group-13",
+      "category": "group",
+      "ecl": "(<< 23170007) : { 246093002 = 6478000 }"
+    },
+    {
+      "id": "group-cardinality-13",
+      "category": "group-cardinality",
+      "ecl": "(<< 23170007) : [0..1] { 246093002 = * }"
+    },
+    {
+      "id": "reverse-13",
+      "category": "reverse",
+      "ecl": "* : R 246093002 = 23170007"
+    },
+    {
+      "id": "dotted-14",
+      "category": "dotted",
+      "ecl": "(<< 24829000) . 363713009"
+    },
+    {
+      "id": "attribute-equality-14",
+      "category": "attribute-equality",
+      "ecl": "(<< 24829000) : 363713009 = 281302008"
+    },
+    {
+      "id": "attribute-inequality-14",
+      "category": "attribute-inequality",
+      "ecl": "(<< 24829000) : 363713009 != 281302008"
+    },
+    {
+      "id": "nested-value-14",
+      "category": "nested-value",
+      "ecl": "(<< 24829000) : 363713009 = (<< 281302008)"
+    },
+    {
+      "id": "wildcard-name-14",
+      "category": "wildcard-name",
+      "ecl": "(<< 24829000) : * = 281302008"
+    },
+    {
+      "id": "attribute-cardinality-14",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 24829000) : [1..2] 363713009 = *"
+    },
+    {
+      "id": "group-14",
+      "category": "group",
+      "ecl": "(<< 24829000) : { 363713009 = 281302008 }"
+    },
+    {
+      "id": "group-cardinality-14",
+      "category": "group-cardinality",
+      "ecl": "(<< 24829000) : [1..2] { 363713009 = * }"
+    },
+    {
+      "id": "reverse-14",
+      "category": "reverse",
+      "ecl": "* : R 363713009 = 24829000"
+    },
+    {
+      "id": "dotted-15",
+      "category": "dotted",
+      "ecl": "(<< 25106000) . 363698007"
+    },
+    {
+      "id": "attribute-equality-15",
+      "category": "attribute-equality",
+      "ecl": "(<< 25106000) : 363698007 = 80891009"
+    },
+    {
+      "id": "attribute-inequality-15",
+      "category": "attribute-inequality",
+      "ecl": "(<< 25106000) : 363698007 != 80891009"
+    },
+    {
+      "id": "nested-value-15",
+      "category": "nested-value",
+      "ecl": "(<< 25106000) : 363698007 = (<< 80891009)"
+    },
+    {
+      "id": "wildcard-name-15",
+      "category": "wildcard-name",
+      "ecl": "(<< 25106000) : * = 80891009"
+    },
+    {
+      "id": "attribute-cardinality-15",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 25106000) : [2..3] 363698007 = *"
+    },
+    {
+      "id": "group-15",
+      "category": "group",
+      "ecl": "(<< 25106000) : { 363698007 = 80891009 }"
+    },
+    {
+      "id": "group-cardinality-15",
+      "category": "group-cardinality",
+      "ecl": "(<< 25106000) : [0..1] { 363698007 = * }"
+    },
+    {
+      "id": "reverse-15",
+      "category": "reverse",
+      "ecl": "* : R 363698007 = 25106000"
+    },
+    {
+      "id": "dotted-16",
+      "category": "dotted",
+      "ecl": "(<< 25299008) . 363714003"
+    },
+    {
+      "id": "attribute-equality-16",
+      "category": "attribute-equality",
+      "ecl": "(<< 25299008) : 363714003 = 63911002"
+    },
+    {
+      "id": "attribute-inequality-16",
+      "category": "attribute-inequality",
+      "ecl": "(<< 25299008) : 363714003 != 63911002"
+    },
+    {
+      "id": "nested-value-16",
+      "category": "nested-value",
+      "ecl": "(<< 25299008) : 363714003 = (<< 63911002)"
+    },
+    {
+      "id": "wildcard-name-16",
+      "category": "wildcard-name",
+      "ecl": "(<< 25299008) : * = 63911002"
+    },
+    {
+      "id": "attribute-cardinality-16",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 25299008) : [0..1] 363714003 = *"
+    },
+    {
+      "id": "group-16",
+      "category": "group",
+      "ecl": "(<< 25299008) : { 363714003 = 63911002 }"
+    },
+    {
+      "id": "group-cardinality-16",
+      "category": "group-cardinality",
+      "ecl": "(<< 25299008) : [1..2] { 363714003 = * }"
+    },
+    {
+      "id": "reverse-16",
+      "category": "reverse",
+      "ecl": "* : R 363714003 = 25299008"
+    },
+    {
+      "id": "dotted-17",
+      "category": "dotted",
+      "ecl": "(<< 25552000) . 363698007"
+    },
+    {
+      "id": "attribute-equality-17",
+      "category": "attribute-equality",
+      "ecl": "(<< 25552000) : 363698007 = 32713005"
+    },
+    {
+      "id": "attribute-inequality-17",
+      "category": "attribute-inequality",
+      "ecl": "(<< 25552000) : 363698007 != 32713005"
+    },
+    {
+      "id": "nested-value-17",
+      "category": "nested-value",
+      "ecl": "(<< 25552000) : 363698007 = (<< 32713005)"
+    },
+    {
+      "id": "wildcard-name-17",
+      "category": "wildcard-name",
+      "ecl": "(<< 25552000) : * = 32713005"
+    },
+    {
+      "id": "attribute-cardinality-17",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 25552000) : [1..2] 363698007 = *"
+    },
+    {
+      "id": "group-17",
+      "category": "group",
+      "ecl": "(<< 25552000) : { 363698007 = 32713005 }"
+    },
+    {
+      "id": "group-cardinality-17",
+      "category": "group-cardinality",
+      "ecl": "(<< 25552000) : [0..1] { 363698007 = * }"
+    },
+    {
+      "id": "reverse-17",
+      "category": "reverse",
+      "ecl": "* : R 363698007 = 25552000"
+    },
+    {
+      "id": "dotted-18",
+      "category": "dotted",
+      "ecl": "(<< 29119006) . 405813007"
+    },
+    {
+      "id": "attribute-equality-18",
+      "category": "attribute-equality",
+      "ecl": "(<< 29119006) : 405813007 = 66019005"
+    },
+    {
+      "id": "attribute-inequality-18",
+      "category": "attribute-inequality",
+      "ecl": "(<< 29119006) : 405813007 != 66019005"
+    },
+    {
+      "id": "nested-value-18",
+      "category": "nested-value",
+      "ecl": "(<< 29119006) : 405813007 = (<< 66019005)"
+    },
+    {
+      "id": "wildcard-name-18",
+      "category": "wildcard-name",
+      "ecl": "(<< 29119006) : * = 66019005"
+    },
+    {
+      "id": "attribute-cardinality-18",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 29119006) : [2..3] 405813007 = *"
+    },
+    {
+      "id": "group-18",
+      "category": "group",
+      "ecl": "(<< 29119006) : { 405813007 = 66019005 }"
+    },
+    {
+      "id": "group-cardinality-18",
+      "category": "group-cardinality",
+      "ecl": "(<< 29119006) : [1..2] { 405813007 = * }"
+    },
+    {
+      "id": "reverse-18",
+      "category": "reverse",
+      "ecl": "* : R 405813007 = 29119006"
+    },
+    {
+      "id": "dotted-19",
+      "category": "dotted",
+      "ecl": "(<< 31457007) . 363713009"
+    },
+    {
+      "id": "attribute-equality-19",
+      "category": "attribute-equality",
+      "ecl": "(<< 31457007) : 363713009 = 1250004"
+    },
+    {
+      "id": "attribute-inequality-19",
+      "category": "attribute-inequality",
+      "ecl": "(<< 31457007) : 363713009 != 1250004"
+    },
+    {
+      "id": "nested-value-19",
+      "category": "nested-value",
+      "ecl": "(<< 31457007) : 363713009 = (<< 1250004)"
+    },
+    {
+      "id": "wildcard-name-19",
+      "category": "wildcard-name",
+      "ecl": "(<< 31457007) : * = 1250004"
+    },
+    {
+      "id": "attribute-cardinality-19",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 31457007) : [0..1] 363713009 = *"
+    },
+    {
+      "id": "group-19",
+      "category": "group",
+      "ecl": "(<< 31457007) : { 363713009 = 1250004 }"
+    },
+    {
+      "id": "group-cardinality-19",
+      "category": "group-cardinality",
+      "ecl": "(<< 31457007) : [0..1] { 363713009 = * }"
+    },
+    {
+      "id": "reverse-19",
+      "category": "reverse",
+      "ecl": "* : R 363713009 = 31457007"
+    },
+    {
+      "id": "dotted-20",
+      "category": "dotted",
+      "ecl": "(<< 31547008) . 405813007"
+    },
+    {
+      "id": "attribute-equality-20",
+      "category": "attribute-equality",
+      "ecl": "(<< 31547008) : 405813007 = 45292006"
+    },
+    {
+      "id": "attribute-inequality-20",
+      "category": "attribute-inequality",
+      "ecl": "(<< 31547008) : 405813007 != 45292006"
+    },
+    {
+      "id": "nested-value-20",
+      "category": "nested-value",
+      "ecl": "(<< 31547008) : 405813007 = (<< 45292006)"
+    },
+    {
+      "id": "wildcard-name-20",
+      "category": "wildcard-name",
+      "ecl": "(<< 31547008) : * = 45292006"
+    },
+    {
+      "id": "attribute-cardinality-20",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 31547008) : [1..2] 405813007 = *"
+    },
+    {
+      "id": "group-20",
+      "category": "group",
+      "ecl": "(<< 31547008) : { 405813007 = 45292006 }"
+    },
+    {
+      "id": "group-cardinality-20",
+      "category": "group-cardinality",
+      "ecl": "(<< 31547008) : [1..2] { 405813007 = * }"
+    },
+    {
+      "id": "reverse-20",
+      "category": "reverse",
+      "ecl": "* : R 405813007 = 31547008"
+    },
+    {
+      "id": "dotted-21",
+      "category": "dotted",
+      "ecl": "(<< 35882009) . 371881003"
+    },
+    {
+      "id": "attribute-equality-21",
+      "category": "attribute-equality",
+      "ecl": "(<< 35882009) : 371881003 = 236973005"
+    },
+    {
+      "id": "attribute-inequality-21",
+      "category": "attribute-inequality",
+      "ecl": "(<< 35882009) : 371881003 != 236973005"
+    },
+    {
+      "id": "nested-value-21",
+      "category": "nested-value",
+      "ecl": "(<< 35882009) : 371881003 = (<< 236973005)"
+    },
+    {
+      "id": "wildcard-name-21",
+      "category": "wildcard-name",
+      "ecl": "(<< 35882009) : * = 236973005"
+    },
+    {
+      "id": "attribute-cardinality-21",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 35882009) : [2..3] 371881003 = *"
+    },
+    {
+      "id": "group-21",
+      "category": "group",
+      "ecl": "(<< 35882009) : { 371881003 = 236973005 }"
+    },
+    {
+      "id": "group-cardinality-21",
+      "category": "group-cardinality",
+      "ecl": "(<< 35882009) : [0..1] { 371881003 = * }"
+    },
+    {
+      "id": "reverse-21",
+      "category": "reverse",
+      "ecl": "* : R 371881003 = 35882009"
+    },
+    {
+      "id": "dotted-22",
+      "category": "dotted",
+      "ecl": "(<< 40315008) . 363698007"
+    },
+    {
+      "id": "attribute-equality-22",
+      "category": "attribute-equality",
+      "ecl": "(<< 40315008) : 363698007 = 15776009"
+    },
+    {
+      "id": "attribute-inequality-22",
+      "category": "attribute-inequality",
+      "ecl": "(<< 40315008) : 363698007 != 15776009"
+    },
+    {
+      "id": "nested-value-22",
+      "category": "nested-value",
+      "ecl": "(<< 40315008) : 363698007 = (<< 15776009)"
+    },
+    {
+      "id": "wildcard-name-22",
+      "category": "wildcard-name",
+      "ecl": "(<< 40315008) : * = 15776009"
+    },
+    {
+      "id": "attribute-cardinality-22",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 40315008) : [0..1] 363698007 = *"
+    },
+    {
+      "id": "group-22",
+      "category": "group",
+      "ecl": "(<< 40315008) : { 363698007 = 15776009 }"
+    },
+    {
+      "id": "group-cardinality-22",
+      "category": "group-cardinality",
+      "ecl": "(<< 40315008) : [1..2] { 363698007 = * }"
+    },
+    {
+      "id": "reverse-22",
+      "category": "reverse",
+      "ecl": "* : R 363698007 = 40315008"
+    },
+    {
+      "id": "dotted-23",
+      "category": "dotted",
+      "ecl": "(<< 43427008) . 116676008"
+    },
+    {
+      "id": "attribute-equality-23",
+      "category": "attribute-equality",
+      "ecl": "(<< 43427008) : 116676008 = 416286003"
+    },
+    {
+      "id": "attribute-inequality-23",
+      "category": "attribute-inequality",
+      "ecl": "(<< 43427008) : 116676008 != 416286003"
+    },
+    {
+      "id": "nested-value-23",
+      "category": "nested-value",
+      "ecl": "(<< 43427008) : 116676008 = (<< 416286003)"
+    },
+    {
+      "id": "wildcard-name-23",
+      "category": "wildcard-name",
+      "ecl": "(<< 43427008) : * = 416286003"
+    },
+    {
+      "id": "attribute-cardinality-23",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 43427008) : [1..2] 116676008 = *"
+    },
+    {
+      "id": "group-23",
+      "category": "group",
+      "ecl": "(<< 43427008) : { 116676008 = 416286003 }"
+    },
+    {
+      "id": "group-cardinality-23",
+      "category": "group-cardinality",
+      "ecl": "(<< 43427008) : [0..1] { 116676008 = * }"
+    },
+    {
+      "id": "reverse-23",
+      "category": "reverse",
+      "ecl": "* : R 116676008 = 43427008"
+    },
+    {
+      "id": "dotted-24",
+      "category": "dotted",
+      "ecl": "(<< 48616004) . 405813007"
+    },
+    {
+      "id": "attribute-equality-24",
+      "category": "attribute-equality",
+      "ecl": "(<< 48616004) : 405813007 = 321667001"
+    },
+    {
+      "id": "attribute-inequality-24",
+      "category": "attribute-inequality",
+      "ecl": "(<< 48616004) : 405813007 != 321667001"
+    },
+    {
+      "id": "nested-value-24",
+      "category": "nested-value",
+      "ecl": "(<< 48616004) : 405813007 = (<< 321667001)"
+    },
+    {
+      "id": "wildcard-name-24",
+      "category": "wildcard-name",
+      "ecl": "(<< 48616004) : * = 321667001"
+    },
+    {
+      "id": "attribute-cardinality-24",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 48616004) : [2..3] 405813007 = *"
+    },
+    {
+      "id": "group-24",
+      "category": "group",
+      "ecl": "(<< 48616004) : { 405813007 = 321667001 }"
+    },
+    {
+      "id": "group-cardinality-24",
+      "category": "group-cardinality",
+      "ecl": "(<< 48616004) : [1..2] { 405813007 = * }"
+    },
+    {
+      "id": "reverse-24",
+      "category": "reverse",
+      "ecl": "* : R 405813007 = 48616004"
+    },
+    {
+      "id": "dotted-25",
+      "category": "dotted",
+      "ecl": "(<< 54085006) . 260686004"
+    },
+    {
+      "id": "attribute-equality-25",
+      "category": "attribute-equality",
+      "ecl": "(<< 54085006) : 260686004 = 129306000"
+    },
+    {
+      "id": "attribute-inequality-25",
+      "category": "attribute-inequality",
+      "ecl": "(<< 54085006) : 260686004 != 129306000"
+    },
+    {
+      "id": "nested-value-25",
+      "category": "nested-value",
+      "ecl": "(<< 54085006) : 260686004 = (<< 129306000)"
+    },
+    {
+      "id": "wildcard-name-25",
+      "category": "wildcard-name",
+      "ecl": "(<< 54085006) : * = 129306000"
+    },
+    {
+      "id": "attribute-cardinality-25",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 54085006) : [0..1] 260686004 = *"
+    },
+    {
+      "id": "group-25",
+      "category": "group",
+      "ecl": "(<< 54085006) : { 260686004 = 129306000 }"
+    },
+    {
+      "id": "group-cardinality-25",
+      "category": "group-cardinality",
+      "ecl": "(<< 54085006) : [0..1] { 260686004 = * }"
+    },
+    {
+      "id": "reverse-25",
+      "category": "reverse",
+      "ecl": "* : R 260686004 = 54085006"
+    },
+    {
+      "id": "dotted-26",
+      "category": "dotted",
+      "ecl": "(<< 55257005) . 363714003"
+    },
+    {
+      "id": "attribute-equality-26",
+      "category": "attribute-equality",
+      "ecl": "(<< 55257005) : 363714003 = 252416005"
+    },
+    {
+      "id": "attribute-inequality-26",
+      "category": "attribute-inequality",
+      "ecl": "(<< 55257005) : 363714003 != 252416005"
+    },
+    {
+      "id": "nested-value-26",
+      "category": "nested-value",
+      "ecl": "(<< 55257005) : 363714003 = (<< 252416005)"
+    },
+    {
+      "id": "wildcard-name-26",
+      "category": "wildcard-name",
+      "ecl": "(<< 55257005) : * = 252416005"
+    },
+    {
+      "id": "attribute-cardinality-26",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 55257005) : [1..2] 363714003 = *"
+    },
+    {
+      "id": "group-26",
+      "category": "group",
+      "ecl": "(<< 55257005) : { 363714003 = 252416005 }"
+    },
+    {
+      "id": "group-cardinality-26",
+      "category": "group-cardinality",
+      "ecl": "(<< 55257005) : [1..2] { 363714003 = * }"
+    },
+    {
+      "id": "reverse-26",
+      "category": "reverse",
+      "ecl": "* : R 363714003 = 55257005"
+    },
+    {
+      "id": "dotted-27",
+      "category": "dotted",
+      "ecl": "(<< 57871005) . 363698007"
+    },
+    {
+      "id": "attribute-equality-27",
+      "category": "attribute-equality",
+      "ecl": "(<< 57871005) : 363698007 = 62834003"
+    },
+    {
+      "id": "attribute-inequality-27",
+      "category": "attribute-inequality",
+      "ecl": "(<< 57871005) : 363698007 != 62834003"
+    },
+    {
+      "id": "nested-value-27",
+      "category": "nested-value",
+      "ecl": "(<< 57871005) : 363698007 = (<< 62834003)"
+    },
+    {
+      "id": "wildcard-name-27",
+      "category": "wildcard-name",
+      "ecl": "(<< 57871005) : * = 62834003"
+    },
+    {
+      "id": "attribute-cardinality-27",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 57871005) : [2..3] 363698007 = *"
+    },
+    {
+      "id": "group-27",
+      "category": "group",
+      "ecl": "(<< 57871005) : { 363698007 = 62834003 }"
+    },
+    {
+      "id": "group-cardinality-27",
+      "category": "group-cardinality",
+      "ecl": "(<< 57871005) : [0..1] { 363698007 = * }"
+    },
+    {
+      "id": "reverse-27",
+      "category": "reverse",
+      "ecl": "* : R 363698007 = 57871005"
+    },
+    {
+      "id": "dotted-28",
+      "category": "dotted",
+      "ecl": "(<< 62466004) . 272741003"
+    },
+    {
+      "id": "attribute-equality-28",
+      "category": "attribute-equality",
+      "ecl": "(<< 62466004) : 272741003 = 182353008"
+    },
+    {
+      "id": "attribute-inequality-28",
+      "category": "attribute-inequality",
+      "ecl": "(<< 62466004) : 272741003 != 182353008"
+    },
+    {
+      "id": "nested-value-28",
+      "category": "nested-value",
+      "ecl": "(<< 62466004) : 272741003 = (<< 182353008)"
+    },
+    {
+      "id": "wildcard-name-28",
+      "category": "wildcard-name",
+      "ecl": "(<< 62466004) : * = 182353008"
+    },
+    {
+      "id": "attribute-cardinality-28",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 62466004) : [0..1] 272741003 = *"
+    },
+    {
+      "id": "group-28",
+      "category": "group",
+      "ecl": "(<< 62466004) : { 272741003 = 182353008 }"
+    },
+    {
+      "id": "group-cardinality-28",
+      "category": "group-cardinality",
+      "ecl": "(<< 62466004) : [1..2] { 272741003 = * }"
+    },
+    {
+      "id": "reverse-28",
+      "category": "reverse",
+      "ecl": "* : R 272741003 = 62466004"
+    },
+    {
+      "id": "dotted-29",
+      "category": "dotted",
+      "ecl": "(<< 62631009) . 116676008"
+    },
+    {
+      "id": "attribute-equality-29",
+      "category": "attribute-equality",
+      "ecl": "(<< 62631009) : 116676008 = 12143007"
+    },
+    {
+      "id": "attribute-inequality-29",
+      "category": "attribute-inequality",
+      "ecl": "(<< 62631009) : 116676008 != 12143007"
+    },
+    {
+      "id": "nested-value-29",
+      "category": "nested-value",
+      "ecl": "(<< 62631009) : 116676008 = (<< 12143007)"
+    },
+    {
+      "id": "wildcard-name-29",
+      "category": "wildcard-name",
+      "ecl": "(<< 62631009) : * = 12143007"
+    },
+    {
+      "id": "attribute-cardinality-29",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 62631009) : [1..2] 116676008 = *"
+    },
+    {
+      "id": "group-29",
+      "category": "group",
+      "ecl": "(<< 62631009) : { 116676008 = 12143007 }"
+    },
+    {
+      "id": "group-cardinality-29",
+      "category": "group-cardinality",
+      "ecl": "(<< 62631009) : [0..1] { 116676008 = * }"
+    },
+    {
+      "id": "reverse-29",
+      "category": "reverse",
+      "ecl": "* : R 116676008 = 62631009"
+    },
+    {
+      "id": "dotted-30",
+      "category": "dotted",
+      "ecl": "(<< 65528008) . 370135005"
+    },
+    {
+      "id": "attribute-equality-30",
+      "category": "attribute-equality",
+      "ecl": "(<< 65528008) : 370135005 = 442614005"
+    },
+    {
+      "id": "attribute-inequality-30",
+      "category": "attribute-inequality",
+      "ecl": "(<< 65528008) : 370135005 != 442614005"
+    },
+    {
+      "id": "nested-value-30",
+      "category": "nested-value",
+      "ecl": "(<< 65528008) : 370135005 = (<< 442614005)"
+    },
+    {
+      "id": "wildcard-name-30",
+      "category": "wildcard-name",
+      "ecl": "(<< 65528008) : * = 442614005"
+    },
+    {
+      "id": "attribute-cardinality-30",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 65528008) : [2..3] 370135005 = *"
+    },
+    {
+      "id": "group-30",
+      "category": "group",
+      "ecl": "(<< 65528008) : { 370135005 = 442614005 }"
+    },
+    {
+      "id": "group-cardinality-30",
+      "category": "group-cardinality",
+      "ecl": "(<< 65528008) : [1..2] { 370135005 = * }"
+    },
+    {
+      "id": "reverse-30",
+      "category": "reverse",
+      "ecl": "* : R 370135005 = 65528008"
+    },
+    {
+      "id": "dotted-31",
+      "category": "dotted",
+      "ecl": "(<< 71186008) . 363698007"
+    },
+    {
+      "id": "attribute-equality-31",
+      "category": "attribute-equality",
+      "ecl": "(<< 71186008) : 363698007 = 955009"
+    },
+    {
+      "id": "attribute-inequality-31",
+      "category": "attribute-inequality",
+      "ecl": "(<< 71186008) : 363698007 != 955009"
+    },
+    {
+      "id": "nested-value-31",
+      "category": "nested-value",
+      "ecl": "(<< 71186008) : 363698007 = (<< 955009)"
+    },
+    {
+      "id": "wildcard-name-31",
+      "category": "wildcard-name",
+      "ecl": "(<< 71186008) : * = 955009"
+    },
+    {
+      "id": "attribute-cardinality-31",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 71186008) : [0..1] 363698007 = *"
+    },
+    {
+      "id": "group-31",
+      "category": "group",
+      "ecl": "(<< 71186008) : { 363698007 = 955009 }"
+    },
+    {
+      "id": "group-cardinality-31",
+      "category": "group-cardinality",
+      "ecl": "(<< 71186008) : [0..1] { 363698007 = * }"
+    },
+    {
+      "id": "reverse-31",
+      "category": "reverse",
+      "ecl": "* : R 363698007 = 71186008"
+    },
+    {
+      "id": "dotted-32",
+      "category": "dotted",
+      "ecl": "(<< 71610005) . 370135005"
+    },
+    {
+      "id": "attribute-equality-32",
+      "category": "attribute-equality",
+      "ecl": "(<< 71610005) : 370135005 = 769247005"
+    },
+    {
+      "id": "attribute-inequality-32",
+      "category": "attribute-inequality",
+      "ecl": "(<< 71610005) : 370135005 != 769247005"
+    },
+    {
+      "id": "nested-value-32",
+      "category": "nested-value",
+      "ecl": "(<< 71610005) : 370135005 = (<< 769247005)"
+    },
+    {
+      "id": "wildcard-name-32",
+      "category": "wildcard-name",
+      "ecl": "(<< 71610005) : * = 769247005"
+    },
+    {
+      "id": "attribute-cardinality-32",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 71610005) : [1..2] 370135005 = *"
+    },
+    {
+      "id": "group-32",
+      "category": "group",
+      "ecl": "(<< 71610005) : { 370135005 = 769247005 }"
+    },
+    {
+      "id": "group-cardinality-32",
+      "category": "group-cardinality",
+      "ecl": "(<< 71610005) : [1..2] { 370135005 = * }"
+    },
+    {
+      "id": "reverse-32",
+      "category": "reverse",
+      "ecl": "* : R 370135005 = 71610005"
+    },
+    {
+      "id": "dotted-33",
+      "category": "dotted",
+      "ecl": "(<< 72019009) . 405813007"
+    },
+    {
+      "id": "attribute-equality-33",
+      "category": "attribute-equality",
+      "ecl": "(<< 72019009) : 405813007 = 47538007"
+    },
+    {
+      "id": "attribute-inequality-33",
+      "category": "attribute-inequality",
+      "ecl": "(<< 72019009) : 405813007 != 47538007"
+    },
+    {
+      "id": "nested-value-33",
+      "category": "nested-value",
+      "ecl": "(<< 72019009) : 405813007 = (<< 47538007)"
+    },
+    {
+      "id": "wildcard-name-33",
+      "category": "wildcard-name",
+      "ecl": "(<< 72019009) : * = 47538007"
+    },
+    {
+      "id": "attribute-cardinality-33",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 72019009) : [2..3] 405813007 = *"
+    },
+    {
+      "id": "group-33",
+      "category": "group",
+      "ecl": "(<< 72019009) : { 405813007 = 47538007 }"
+    },
+    {
+      "id": "group-cardinality-33",
+      "category": "group-cardinality",
+      "ecl": "(<< 72019009) : [0..1] { 405813007 = * }"
+    },
+    {
+      "id": "reverse-33",
+      "category": "reverse",
+      "ecl": "* : R 405813007 = 72019009"
+    },
+    {
+      "id": "dotted-34",
+      "category": "dotted",
+      "ecl": "(<< 73462009) . 363714003"
+    },
+    {
+      "id": "attribute-equality-34",
+      "category": "attribute-equality",
+      "ecl": "(<< 73462009) : 363714003 = 363847004"
+    },
+    {
+      "id": "attribute-inequality-34",
+      "category": "attribute-inequality",
+      "ecl": "(<< 73462009) : 363714003 != 363847004"
+    },
+    {
+      "id": "nested-value-34",
+      "category": "nested-value",
+      "ecl": "(<< 73462009) : 363714003 = (<< 363847004)"
+    },
+    {
+      "id": "wildcard-name-34",
+      "category": "wildcard-name",
+      "ecl": "(<< 73462009) : * = 363847004"
+    },
+    {
+      "id": "attribute-cardinality-34",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 73462009) : [0..1] 363714003 = *"
+    },
+    {
+      "id": "group-34",
+      "category": "group",
+      "ecl": "(<< 73462009) : { 363714003 = 363847004 }"
+    },
+    {
+      "id": "group-cardinality-34",
+      "category": "group-cardinality",
+      "ecl": "(<< 73462009) : [1..2] { 363714003 = * }"
+    },
+    {
+      "id": "reverse-34",
+      "category": "reverse",
+      "ecl": "* : R 363714003 = 73462009"
+    },
+    {
+      "id": "dotted-35",
+      "category": "dotted",
+      "ecl": "(<< 73632009) . 405813007"
+    },
+    {
+      "id": "attribute-equality-35",
+      "category": "attribute-equality",
+      "ecl": "(<< 73632009) : 405813007 = 59380008"
+    },
+    {
+      "id": "attribute-inequality-35",
+      "category": "attribute-inequality",
+      "ecl": "(<< 73632009) : 405813007 != 59380008"
+    },
+    {
+      "id": "nested-value-35",
+      "category": "nested-value",
+      "ecl": "(<< 73632009) : 405813007 = (<< 59380008)"
+    },
+    {
+      "id": "wildcard-name-35",
+      "category": "wildcard-name",
+      "ecl": "(<< 73632009) : * = 59380008"
+    },
+    {
+      "id": "attribute-cardinality-35",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 73632009) : [1..2] 405813007 = *"
+    },
+    {
+      "id": "group-35",
+      "category": "group",
+      "ecl": "(<< 73632009) : { 405813007 = 59380008 }"
+    },
+    {
+      "id": "group-cardinality-35",
+      "category": "group-cardinality",
+      "ecl": "(<< 73632009) : [0..1] { 405813007 = * }"
+    },
+    {
+      "id": "reverse-35",
+      "category": "reverse",
+      "ecl": "* : R 405813007 = 73632009"
+    },
+    {
+      "id": "dotted-36",
+      "category": "dotted",
+      "ecl": "(<< 75014006) . 246454002"
+    },
+    {
+      "id": "attribute-equality-36",
+      "category": "attribute-equality",
+      "ecl": "(<< 75014006) : 246454002 = 1156672001"
+    },
+    {
+      "id": "attribute-inequality-36",
+      "category": "attribute-inequality",
+      "ecl": "(<< 75014006) : 246454002 != 1156672001"
+    },
+    {
+      "id": "nested-value-36",
+      "category": "nested-value",
+      "ecl": "(<< 75014006) : 246454002 = (<< 1156672001)"
+    },
+    {
+      "id": "wildcard-name-36",
+      "category": "wildcard-name",
+      "ecl": "(<< 75014006) : * = 1156672001"
+    },
+    {
+      "id": "attribute-cardinality-36",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 75014006) : [2..3] 246454002 = *"
+    },
+    {
+      "id": "group-36",
+      "category": "group",
+      "ecl": "(<< 75014006) : { 246454002 = 1156672001 }"
+    },
+    {
+      "id": "group-cardinality-36",
+      "category": "group-cardinality",
+      "ecl": "(<< 75014006) : [1..2] { 246454002 = * }"
+    },
+    {
+      "id": "reverse-36",
+      "category": "reverse",
+      "ecl": "* : R 246454002 = 75014006"
+    },
+    {
+      "id": "dotted-37",
+      "category": "dotted",
+      "ecl": "(<< 75246004) . 363713009"
+    },
+    {
+      "id": "attribute-equality-37",
+      "category": "attribute-equality",
+      "ecl": "(<< 75246004) : 363713009 = 371240000"
+    },
+    {
+      "id": "attribute-inequality-37",
+      "category": "attribute-inequality",
+      "ecl": "(<< 75246004) : 363713009 != 371240000"
+    },
+    {
+      "id": "nested-value-37",
+      "category": "nested-value",
+      "ecl": "(<< 75246004) : 363713009 = (<< 371240000)"
+    },
+    {
+      "id": "wildcard-name-37",
+      "category": "wildcard-name",
+      "ecl": "(<< 75246004) : * = 371240000"
+    },
+    {
+      "id": "attribute-cardinality-37",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 75246004) : [0..1] 363713009 = *"
+    },
+    {
+      "id": "group-37",
+      "category": "group",
+      "ecl": "(<< 75246004) : { 363713009 = 371240000 }"
+    },
+    {
+      "id": "group-cardinality-37",
+      "category": "group-cardinality",
+      "ecl": "(<< 75246004) : [0..1] { 363713009 = * }"
+    },
+    {
+      "id": "reverse-37",
+      "category": "reverse",
+      "ecl": "* : R 363713009 = 75246004"
+    },
+    {
+      "id": "dotted-38",
+      "category": "dotted",
+      "ecl": "(<< 75979009) . 116676008"
+    },
+    {
+      "id": "attribute-equality-38",
+      "category": "attribute-equality",
+      "ecl": "(<< 75979009) : 116676008 = 49755003"
+    },
+    {
+      "id": "attribute-inequality-38",
+      "category": "attribute-inequality",
+      "ecl": "(<< 75979009) : 116676008 != 49755003"
+    },
+    {
+      "id": "nested-value-38",
+      "category": "nested-value",
+      "ecl": "(<< 75979009) : 116676008 = (<< 49755003)"
+    },
+    {
+      "id": "wildcard-name-38",
+      "category": "wildcard-name",
+      "ecl": "(<< 75979009) : * = 49755003"
+    },
+    {
+      "id": "attribute-cardinality-38",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 75979009) : [1..2] 116676008 = *"
+    },
+    {
+      "id": "group-38",
+      "category": "group",
+      "ecl": "(<< 75979009) : { 116676008 = 49755003 }"
+    },
+    {
+      "id": "group-cardinality-38",
+      "category": "group-cardinality",
+      "ecl": "(<< 75979009) : [1..2] { 116676008 = * }"
+    },
+    {
+      "id": "reverse-38",
+      "category": "reverse",
+      "ecl": "* : R 116676008 = 75979009"
+    },
+    {
+      "id": "dotted-39",
+      "category": "dotted",
+      "ecl": "(<< 79385002) . 363714003"
+    },
+    {
+      "id": "attribute-equality-39",
+      "category": "attribute-equality",
+      "ecl": "(<< 79385002) : 363714003 = 247573007"
+    },
+    {
+      "id": "attribute-inequality-39",
+      "category": "attribute-inequality",
+      "ecl": "(<< 79385002) : 363714003 != 247573007"
+    },
+    {
+      "id": "nested-value-39",
+      "category": "nested-value",
+      "ecl": "(<< 79385002) : 363714003 = (<< 247573007)"
+    },
+    {
+      "id": "wildcard-name-39",
+      "category": "wildcard-name",
+      "ecl": "(<< 79385002) : * = 247573007"
+    },
+    {
+      "id": "attribute-cardinality-39",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 79385002) : [2..3] 363714003 = *"
+    },
+    {
+      "id": "group-39",
+      "category": "group",
+      "ecl": "(<< 79385002) : { 363714003 = 247573007 }"
+    },
+    {
+      "id": "group-cardinality-39",
+      "category": "group-cardinality",
+      "ecl": "(<< 79385002) : [0..1] { 363714003 = * }"
+    },
+    {
+      "id": "reverse-39",
+      "category": "reverse",
+      "ecl": "* : R 363714003 = 79385002"
+    },
+    {
+      "id": "dotted-40",
+      "category": "dotted",
+      "ecl": "(<< 85004006) . 260686004"
+    },
+    {
+      "id": "attribute-equality-40",
+      "category": "attribute-equality",
+      "ecl": "(<< 85004006) : 260686004 = 386746003"
+    },
+    {
+      "id": "attribute-inequality-40",
+      "category": "attribute-inequality",
+      "ecl": "(<< 85004006) : 260686004 != 386746003"
+    },
+    {
+      "id": "nested-value-40",
+      "category": "nested-value",
+      "ecl": "(<< 85004006) : 260686004 = (<< 386746003)"
+    },
+    {
+      "id": "wildcard-name-40",
+      "category": "wildcard-name",
+      "ecl": "(<< 85004006) : * = 386746003"
+    },
+    {
+      "id": "attribute-cardinality-40",
+      "category": "attribute-cardinality",
+      "ecl": "(<< 85004006) : [0..1] 260686004 = *"
+    },
+    {
+      "id": "group-40",
+      "category": "group",
+      "ecl": "(<< 85004006) : { 260686004 = 386746003 }"
+    },
+    {
+      "id": "group-cardinality-40",
+      "category": "group-cardinality",
+      "ecl": "(<< 85004006) : [1..2] { 260686004 = * }"
+    },
+    {
+      "id": "reverse-40",
+      "category": "reverse",
+      "ecl": "* : R 260686004 = 85004006"
+    },
+    {
+      "id": "concrete-01",
+      "category": "concrete",
+      "ecl": "(<< 318176004) : 1142135004 = #2.5"
+    },
+    {
+      "id": "concrete-02",
+      "category": "concrete",
+      "ecl": "(<< 318591005) : 1142136003 != #1"
+    },
+    {
+      "id": "concrete-03",
+      "category": "concrete",
+      "ecl": "(<< 321847007) : 1142136003 < #1"
+    },
+    {
+      "id": "concrete-04",
+      "category": "concrete",
+      "ecl": "(<< 322254008) : 1142135004 <= #240"
+    },
+    {
+      "id": "concrete-05",
+      "category": "concrete",
+      "ecl": "(<< 323233006) : 1142137007 > #1"
+    },
+    {
+      "id": "concrete-06",
+      "category": "concrete",
+      "ecl": "(<< 323365007) : 1142136003 >= #1"
+    },
+    {
+      "id": "concrete-07",
+      "category": "concrete",
+      "ecl": "(<< 323673005) : 1142135004 = #2"
+    },
+    {
+      "id": "concrete-08",
+      "category": "concrete",
+      "ecl": "(<< 323738003) : 1142139005 != #1"
+    },
+    {
+      "id": "concrete-09",
+      "category": "concrete",
+      "ecl": "(<< 324248006) : 1142135004 < #250"
+    },
+    {
+      "id": "concrete-10",
+      "category": "concrete",
+      "ecl": "(<< 324877002) : 1142135004 <= #200"
+    },
+    {
+      "id": "concrete-11",
+      "category": "concrete",
+      "ecl": "(<< 325001005) : 1142136003 > #1"
+    },
+    {
+      "id": "concrete-12",
+      "category": "concrete",
+      "ecl": "(<< 325991000) : 1142139005 >= #1"
+    },
+    {
+      "id": "concrete-13",
+      "category": "concrete",
+      "ecl": "(<< 327410006) : 1142139005 = #1"
+    },
+    {
+      "id": "concrete-14",
+      "category": "concrete",
+      "ecl": "(<< 329839005) : 1142139005 != #1"
+    },
+    {
+      "id": "concrete-15",
+      "category": "concrete",
+      "ecl": "(<< 330611009) : 1142137007 < #1"
+    },
+    {
+      "id": "concrete-16",
+      "category": "concrete",
+      "ecl": "(<< 331640004) : 1142137007 <= #1"
+    },
+    {
+      "id": "concrete-17",
+      "category": "concrete",
+      "ecl": "(<< 331853004) : 1142139005 > #2"
+    },
+    {
+      "id": "concrete-18",
+      "category": "concrete",
+      "ecl": "(<< 332096008) : 1142138002 >= #50"
+    },
+    {
+      "id": "concrete-19",
+      "category": "concrete",
+      "ecl": "(<< 353131001) : 1142139005 = #1"
+    },
+    {
+      "id": "concrete-20",
+      "category": "concrete",
+      "ecl": "(<< 371236009) : 1142136003 != #1"
+    },
+    {
+      "id": "concrete-21",
+      "category": "concrete",
+      "ecl": "(<< 375254004) : 1142139005 < #1"
+    },
+    {
+      "id": "concrete-22",
+      "category": "concrete",
+      "ecl": "(<< 375289002) : 1142139005 <= #1"
+    },
+    {
+      "id": "concrete-23",
+      "category": "concrete",
+      "ecl": "(<< 375313005) : 1142136003 > #1"
+    },
+    {
+      "id": "concrete-24",
+      "category": "concrete",
+      "ecl": "(<< 375337005) : 1142138002 >= #417"
+    },
+    {
+      "id": "concrete-25",
+      "category": "concrete",
+      "ecl": "(<< 377146006) : 1142139005 = #1"
+    },
+    {
+      "id": "concrete-26",
+      "category": "concrete",
+      "ecl": "(<< 377442002) : 1142138002 != #10"
+    },
+    {
+      "id": "concrete-27",
+      "category": "concrete",
+      "ecl": "(<< 377539005) : 1142135004 < #2.5"
+    },
+    {
+      "id": "concrete-28",
+      "category": "concrete",
+      "ecl": "(<< 377564008) : 1142137007 <= #1"
+    },
+    {
+      "id": "concrete-29",
+      "category": "concrete",
+      "ecl": "(<< 385553003) : 1142135004 > #5"
+    },
+    {
+      "id": "concrete-30",
+      "category": "concrete",
+      "ecl": "(<< 386603007) : 1142136003 >= #1"
+    },
+    {
+      "id": "concrete-31",
+      "category": "concrete",
+      "ecl": "(<< 408624008) : 1142139005 = #1"
+    },
+    {
+      "id": "concrete-32",
+      "category": "concrete",
+      "ecl": "(<< 409221004) : 1142139005 != #1"
+    },
+    {
+      "id": "concrete-33",
+      "category": "concrete",
+      "ecl": "(<< 409371004) : 1142136003 < #1"
+    },
+    {
+      "id": "concrete-34",
+      "category": "concrete",
+      "ecl": "(<< 413393009) : 1142136003 <= #1"
+    },
+    {
+      "id": "concrete-35",
+      "category": "concrete",
+      "ecl": "(<< 413586006) : 1142136003 > #1"
+    },
+    {
+      "id": "concrete-36",
+      "category": "concrete",
+      "ecl": "(<< 418568005) : 1142137007 >= #1"
+    },
+    {
+      "id": "concrete-37",
+      "category": "concrete",
+      "ecl": "(<< 444723001) : 1142136003 = #1"
+    },
+    {
+      "id": "concrete-38",
+      "category": "concrete",
+      "ecl": "(<< 703788008) : 1142136003 != #1"
+    },
+    {
+      "id": "concrete-39",
+      "category": "concrete",
+      "ecl": "(<< 765643009) : 1142139005 < #1"
+    },
+    {
+      "id": "concrete-40",
+      "category": "concrete",
+      "ecl": "(<< 765687000) : 1142136003 <= #1"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 use anyhow::{bail, ensure, Context, Result};
+#[cfg(feature = "import")]
 use snomed_rust_ecl_engine::import::{import_snapshot, ImportOptions, UK_DISPLAY_REFSETS};
 use snomed_rust_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
 use snomed_rust_ecl_engine::{ecl, eval};
@@ -16,6 +17,9 @@ fn main() {
 fn run() -> Result<()> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
+        #[cfg(not(feature = "import"))]
+        Some("import") => bail!("Import support was excluded; rebuild with --features import"),
+        #[cfg(feature = "import")]
         Some("import") => {
             ensure!(
                 args.len() == 5 || args.len() == 6,

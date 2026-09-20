@@ -17,8 +17,8 @@
         {
           "production": "refinedExpressionConstraint",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "compoundExpressionConstraint",
@@ -47,14 +47,14 @@
         {
           "production": "dottedExpressionConstraint",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "dottedExpressionAttribute",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "subExpressionConstraint",
@@ -71,8 +71,8 @@
         {
           "production": "dot",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "refsetOperator",
@@ -215,14 +215,14 @@
         {
           "production": "top",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "bottom",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "conjunction",
@@ -245,116 +245,116 @@
         {
           "production": "eclRefinement",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "conjunctionRefinementSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "disjunctionRefinementSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "subRefinement",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "conjunctionAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "disjunctionAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "subAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttributeGroup",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttribute",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "cardinality",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "minValue",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "to",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "maxValue",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "many",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "reverseFlag",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttributeName",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "expressionComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "numericComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "timeComparisonOperator",
@@ -365,14 +365,14 @@
         {
           "production": "stringComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "booleanComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "idComparisonOperator",
@@ -443,20 +443,20 @@
         {
           "production": "concreteStringSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "concreteString",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "concreteStringCharacters",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "wild",
@@ -875,8 +875,8 @@
         {
           "production": "numericValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "stringValue",
@@ -887,20 +887,20 @@
         {
           "production": "integerValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "decimalValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "booleanValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "true",
@@ -917,8 +917,8 @@
         {
           "production": "nonNegativeIntegerValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "sctId",
@@ -1103,8 +1103,8 @@
         {
           "production": "refinedExpressionConstraint",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "compoundExpressionConstraint",
@@ -1133,14 +1133,14 @@
         {
           "production": "dottedExpressionConstraint",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "dottedExpressionAttribute",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "subExpressionConstraint",
@@ -1157,8 +1157,8 @@
         {
           "production": "dot",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "refsetOperator",
@@ -1301,14 +1301,14 @@
         {
           "production": "top",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "bottom",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "conjunction",
@@ -1331,116 +1331,116 @@
         {
           "production": "eclRefinement",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "conjunctionRefinementSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "disjunctionRefinementSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "subRefinement",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "conjunctionAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "disjunctionAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "subAttributeSet",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttributeGroup",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttribute",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "cardinality",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "minValue",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "to",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "maxValue",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "many",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "reverseFlag",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "eclAttributeName",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "expressionComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "numericComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "timeComparisonOperator",
@@ -1451,14 +1451,14 @@
         {
           "production": "stringComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "booleanComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "idComparisonOperator",
@@ -1529,20 +1529,20 @@
         {
           "production": "concreteStringSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "concreteString",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "concreteStringCharacters",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "wild",
@@ -1961,8 +1961,8 @@
         {
           "production": "numericValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "stringValue",
@@ -1973,20 +1973,20 @@
         {
           "production": "integerValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "decimalValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "booleanValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "true",
@@ -2003,8 +2003,8 @@
         {
           "production": "nonNegativeIntegerValue",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/refinements.rs"
         },
         {
           "production": "sctId",

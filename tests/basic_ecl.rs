@@ -76,6 +76,19 @@ fn slow(store: &NumericStore, expr: &Expr) -> BTreeSet<u32> {
             .difference(&slow(store, b))
             .copied()
             .collect(),
+        Expr::Extremum { top, inner } => {
+            let seeds = slow(store, inner);
+            let op = if *top {
+                Hierarchy::Descendant
+            } else {
+                Hierarchy::Ancestor
+            };
+            seeds
+                .difference(&slow(store, &Expr::Hierarchy(op, inner.clone())))
+                .copied()
+                .collect()
+        }
+        Expr::Refined(..) | Expr::Dotted(..) => panic!("Outside the basic hierarchy fixture"),
     }
 }
 
@@ -136,12 +149,8 @@ fn brief_long_terms_comments_and_boolean_grouping() {
 fn unsupported_features_never_become_partial_success() {
     for query in [
         "* OR (^ 1000001)",
-        "<1000001 : 1000002 = 1000003",
-        "1000001 . 1000002",
         "* {{ C active = false }}",
         "* {{ +HISTORY }}",
-        "!!> *",
-        "bottom *",
         "^R 1000001",
         "scheme#code",
         "^ [targetComponentId] 1000001",

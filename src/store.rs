@@ -126,6 +126,7 @@ fn prefix_sum(offsets: &mut [u32]) -> Result<()> {
 pub enum ConcreteValue {
     Number(String),
     Text(String),
+    Boolean(bool),
 }
 
 impl ConcreteValue {
@@ -146,6 +147,8 @@ impl ConcreteValue {
             Ok(Self::Number(wire.to_owned()))
         } else if wire.len() >= 2 && wire.starts_with('"') && wire.ends_with('"') {
             Ok(Self::Text(wire.to_owned()))
+        } else if wire == "true" || wire == "false" {
+            Ok(Self::Boolean(wire == "true"))
         } else {
             bail!("Unsupported concrete value encoding")
         }
@@ -154,6 +157,8 @@ impl ConcreteValue {
     fn wire(&self) -> &str {
         match self {
             Self::Number(s) | Self::Text(s) => s,
+            Self::Boolean(true) => "true",
+            Self::Boolean(false) => "false",
         }
     }
 }
@@ -488,7 +493,7 @@ impl DisplayStore {
 pub fn sha256(path: &Path) -> Result<String> {
     let mut file = BufReader::new(File::open(path)?);
     let mut hash = Sha256::new();
-    let mut buffer = [0u8; 65536];
+    let mut buffer = vec![0u8; 1024 * 1024];
     loop {
         let n = file.read(&mut buffer)?;
         if n == 0 {
@@ -534,7 +539,8 @@ impl Input {
             "Unsupported store file size"
         );
         let mut result = Self {
-            reader: BufReader::new(file),
+            // Large sequential reads reduce host/filesystem round trips at startup.
+            reader: BufReader::with_capacity(1024 * 1024, file),
             remaining: size,
         };
         let mut actual = [0; 8];

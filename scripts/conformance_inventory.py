@@ -8,6 +8,9 @@ import re
 ROOT = Path(__file__).resolve().parent.parent
 IMPLEMENTED = set("conjunctionExpressionConstraint disjunctionExpressionConstraint exclusionExpressionConstraint eclConceptReference conceptId wildCard descendantOf descendantOrSelfOf childOf childOrSelfOf ancestorOf ancestorOrSelfOf parentOf parentOrSelfOf conjunction disjunction exclusion sctId".split())
 PARTIAL = set("expressionConstraint compoundExpressionConstraint subExpressionConstraint eclFocusConcept constraintOperator term ws mws comment".split())
+REFINEMENTS = set("refinedExpressionConstraint dottedExpressionConstraint dottedExpressionAttribute dot top bottom eclRefinement conjunctionRefinementSet disjunctionRefinementSet subRefinement eclAttributeSet conjunctionAttributeSet disjunctionAttributeSet subAttributeSet eclAttributeGroup eclAttribute cardinality minValue to maxValue many reverseFlag eclAttributeName expressionComparisonOperator numericComparisonOperator stringComparisonOperator booleanComparisonOperator concreteString concreteStringSet concreteStringCharacters numericValue integerValue decimalValue nonNegativeIntegerValue booleanValue".split())
+# These rules have implementation evidence, but remaining alternatives and semantics need review.
+PARTIAL |= REFINEMENTS
 BOUNDARIES = {
     "expressionConstraint": "expressions", "eclRefinement": "refinements",
     "descriptionFilterConstraint": "description_filters", "conceptFilterConstraint": "concept_filters",
@@ -27,7 +30,7 @@ def inventory():
             group = BOUNDARIES.get(rule, group)
             status = "implemented" if rule in IMPLEMENTED else "partial" if rule in PARTIAL else "pending"
             rules.append({"production": rule, "area": group, "status": status,
-                          "evidence": "tests/basic_ecl.rs" if status != "pending" else None})
+                          "evidence": "tests/refinements.rs" if rule in REFINEMENTS else "tests/basic_ecl.rs" if status != "pending" else None})
         assert len({r["production"] for r in rules}) == len(rules)
         grammars.append({"file": name, "sha256_utf8_lf": hashlib.sha256(raw).hexdigest(), "productions": rules})
     return {"version": "2.3", "reference_commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",

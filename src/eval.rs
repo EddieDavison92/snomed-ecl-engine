@@ -3,6 +3,7 @@ use crate::ecl::{Expr, Hierarchy, MAX_DEPTH, MAX_NODES};
 use crate::store::NumericStore;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error::Error, fmt};
+mod refinement;
 
 #[derive(Clone, Copy)]
 pub struct Limits {
@@ -23,6 +24,7 @@ pub enum EvalError {
     MemoryLimit,
     Cancelled,
     InvalidAst,
+    Unsupported(&'static str),
 }
 impl fmt::Display for EvalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -96,6 +98,45 @@ impl Context<'_> {
             return Err(EvalError::InvalidAst);
         }
         match expr {
+            Expr::Refined(focus, refinement) => {
+                let candidates = self.eval(focus, depth + 1)?;
+                let prepared = self.prepare(refinement, depth + 1, false)?;
+                let mut result = self.reserve(candidates.len())?;
+                for &source in &candidates {
+                    if self.matches_refinement(&prepared, source, None)? {
+                        result.push(source);
+                    }
+                }
+                self.release(candidates);
+                self.release_prepared(prepared);
+                Ok(result)
+            }
+            Expr::Dotted(focus, attributes) => {
+                let mut result = self.eval(focus, depth + 1)?;
+                for attribute in attributes {
+                    let names = self.eval(attribute, depth + 1)?;
+                    let next = self.dotted(&result, &names)?;
+                    self.release(result);
+                    self.release(names);
+                    result = next;
+                }
+                Ok(result)
+            }
+            Expr::Extremum { top, inner } => {
+                let candidates = self.eval(inner, depth + 1)?;
+                let excluded = self.hierarchy(
+                    if *top {
+                        Hierarchy::Descendant
+                    } else {
+                        Hierarchy::Ancestor
+                    },
+                    &candidates,
+                )?;
+                let result = self.merge(&candidates, &excluded, 2)?;
+                self.release(candidates);
+                self.release(excluded);
+                Ok(result)
+            }
             Expr::Concept(code) => {
                 let ordinal = self
                     .store

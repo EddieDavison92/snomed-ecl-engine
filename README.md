@@ -4,11 +4,13 @@ A private personal project to build a fast, lightweight ECL engine over a publis
 
 Full ECL 2.3 support is a core requirement. The project is complete only when the full language has implementation and conformance evidence; subsets are intermediate milestones.
 
-The prototype is a Rust library and CLI that imports an immutable numeric store and parses basic ECL: literals, wildcard, hierarchy operators and Boolean sets. It preserves relationship groups and concrete values for the next evaluator stage. Displays are optional lookups in a separate file. Refinements and the rest of the language remain required work. Hosting, FHIR, authoring and classification are outside the current scope.
+The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested attribute refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact decimal comparisons and top/bottom selection. Displays are optional lookups in a separate file. Membership, filters, history, typed projections and other conformance gaps remain required work. Hosting, FHIR, authoring and classification are outside the current implementation scope.
 
 - [Implementation plan](docs/plan.md)
 - [Compact store prototype and commands](docs/compact-store.md)
 - [Basic ECL commands and validation](docs/basic-ecl.md)
+- [Refinements and the 1,000-expression corpus](docs/refinements.md)
+- [Serverless runtime requirements and measurements](docs/serverless.md)
 - [Full ECL acceptance checklist](docs/conformance.md)
 - [Research and reference code](docs/research.md)
 - [Snowstorm indexing analysis](docs/indexing-research.md)

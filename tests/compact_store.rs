@@ -1,3 +1,5 @@
+#![cfg(feature = "import")]
+
 use snomed_rust_ecl_engine::import::{import_snapshot, ImportOptions, UK_DISPLAY_REFSETS};
 use snomed_rust_ecl_engine::store::{
     sha256, Adjacency, Attributes, ConcreteValue, DisplayStore, Manifest, NumericStore,

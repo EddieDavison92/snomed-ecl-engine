@@ -1,5 +1,7 @@
-//! Basic ECL 2.3 parsing. Unsupported constructs fail before evaluation.
+//! ECL 2.3 parsing. Unsupported constructs fail before evaluation.
 use std::fmt;
+mod refinement;
+pub use refinement::{AttributeConstraint, AttributeValue, Cardinality, Comparison, Refinement};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Hierarchy {
@@ -42,6 +44,9 @@ pub enum Expr {
     And(Vec<Expr>),
     Or(Vec<Expr>),
     Minus(Box<Expr>, Box<Expr>),
+    Refined(Box<Expr>, Box<Refinement>),
+    Dotted(Box<Expr>, Vec<Expr>),
+    Extremum { top: bool, inner: Box<Expr> },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -221,6 +226,17 @@ impl Parser<'_> {
             return Err(self.error(ParseErrorKind::Limit, "Expression nesting exceeds 64"));
         }
         let left = self.subexpression(depth)?;
+        if self.take(":") {
+            let refinement = self.refinement(depth + 1, true)?;
+            return self.node(Expr::Refined(Box::new(left), Box::new(refinement)));
+        }
+        if self.take(".") {
+            let mut attributes = vec![self.subexpression(depth + 1)?];
+            while self.take(".") {
+                attributes.push(self.subexpression(depth + 1)?);
+            }
+            return self.node(Expr::Dotted(Box::new(left), attributes));
+        }
         let Some(op) = self.boolean()? else {
             return Ok(left);
         };
@@ -252,6 +268,37 @@ impl Parser<'_> {
     }
     fn subexpression(&mut self, depth: usize) -> Result<Expr> {
         self.ws()?;
+        if depth > MAX_DEPTH {
+            return Err(self.error(ParseErrorKind::Limit, "Expression nesting exceeds 64"));
+        }
+        let extremum = if self.take("!!>") {
+            Some(true)
+        } else if self.take("!!<") {
+            Some(false)
+        } else if self.keyword("top") {
+            self.required_ws()?;
+            Some(true)
+        } else if self.keyword("bottom") {
+            self.required_ws()?;
+            Some(false)
+        } else {
+            None
+        };
+        if let Some(top) = extremum {
+            self.ws()?;
+            let parenthesised = self.rest().starts_with('(');
+            let inner = self.subexpression(depth + 1)?;
+            if !parenthesised && matches!(inner, Expr::Hierarchy(_, _) | Expr::Extremum { .. }) {
+                return Err(self.error(
+                    ParseErrorKind::Syntax,
+                    "Unary operators require a parenthesised operand",
+                ));
+            }
+            return self.node(Expr::Extremum {
+                top,
+                inner: Box::new(inner),
+            });
+        }
         let mut hierarchy = None;
         for (symbol, op) in [
             ("<<!", Hierarchy::ChildOrSelf),
@@ -325,7 +372,7 @@ impl Parser<'_> {
             return Err(self.unexpected());
         };
         self.ws()?;
-        if self.rest().starts_with([':', '.', '^', '{', '[']) {
+        if self.rest().starts_with(['^', '{', '[']) {
             return Err(self.unexpected());
         }
         if let Some(op) = hierarchy {
