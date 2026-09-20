@@ -15,6 +15,46 @@ The two cost this engine 2.20 ms and 2.29 ms. They cost Snowstorm 13.19 ms and
 36.40 ms. Quoting a count latency for an enumeration workload would understate
 Snowstorm's by a factor of three, so the tables below keep them apart.
 
+## Is this a fair comparison?
+
+Partly, and it is worth being precise about which parts.
+
+**What is fair.** Both engines answer the same expressions against the same
+release, gated by four checks before any timing runs: the store manifest and the
+recorded import agree on edition and archive checksum, the server advertises
+that edition, its branch head is unchanged since the import completed, and two
+sentinel queries return exact expected counts. Only expressions where both
+returned identical complete code sets receive paired timings. Snowstorm is asked
+for its cheapest form, `returnIdOnly=true`, at its own maximum page size of
+10,000, using cursor pagination rather than deep offsets. It also had eight CPUs
+and 12 GiB against this engine's one CPU and 256 MiB.
+
+**What is not.** Three things.
+
+*Transport is included and is not symmetric.* This engine hands a result to a
+parent process over a pipe. Snowstorm serialises JSON and returns it in pages
+over HTTP. Much of the difference on large results is serialisation and round
+trips, not evaluation. That is a fair measure of what it costs to get a complete
+code set out of each system, which is the question here, but it is not a measure
+of whose set algebra is faster. HTTP is Snowstorm's only interface, so there is
+no version of this comparison without it.
+
+*The corpus is ours.* The multiples above are a property of this workload. The
+1,000-expression corpus and the 10,000-expression corpus have the same median
+result size, one concept, and differ almost entirely in the tail: two results
+over 50,000 concepts against 107. That tail is what moves the ratio. On a
+workload of mostly small expansions the gap is closer to the count figure.
+
+*The products are not equivalent.* Snowstorm is a terminology server with
+search, FHIR endpoints, branch management, authoring and multiple versions
+loaded at once. This engine evaluates ECL against one fixed release. Being
+faster at that one operation is not being better.
+
+**What is untested.** Every measurement here is a single sequential client.
+Snowstorm's extra CPUs would matter under concurrent load; this engine's CLI is
+sequential and would not use them. Neither side has been measured under
+concurrency.
+
 ## Setting up and serving one release
 
 <picture>

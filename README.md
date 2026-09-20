@@ -57,7 +57,10 @@ slowest 5% take 9.97 ms here and 41.63 ms through Snowstorm.
 
 It is worth saying what each side was given. This engine had one CPU and
 256 MiB. Snowstorm had eight CPUs and 12 GiB across its service and
-Elasticsearch, and Snowstorm Lite one CPU and 2 GiB.
+Elasticsearch, and Snowstorm Lite one CPU and 2 GiB. Snowstorm was asked for its
+cheapest response at its own maximum page size, and only expressions where both
+engines returned identical code sets were timed. Where the comparison is and is
+not fair is [set out in full](docs/benchmarks.md#is-this-a-fair-comparison).
 
 Two paths are slower here than on either server, and you should know about them
 before you rely on this. The first description-filter query in a process loads
