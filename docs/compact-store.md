@@ -1,31 +1,31 @@
 # Compact store prototype
 
-The prototype keeps expansion data in `core.bin` and selected English displays in `display.bin`. Numeric queries open only the core and manifest. With `--display`, the CLI resolves the code set first, then fetches labels by concept ordinal.
+The prototype keeps expansion data in `core.bin` and selected English displays in `display.bin`. Numeric queries open the core, manifest and membership file when declared. With `--display`, the CLI resolves the code set first, then fetches labels by concept ordinal.
 
-This document records the first storage experiment. The later [basic ECL milestone](basic-ecl.md) adds a parser and set evaluator. Attribute refinements remain pending. The original `hierarchy` command still exposes the eight hierarchy variants directly for validation.
+This document records the first storage experiment. The later [basic ECL milestone](basic-ecl.md) adds a parser and set evaluator. Later milestones add [refinements](refinements.md) and [membership](refsets.md). The original `hierarchy` command still exposes the eight hierarchy variants directly for validation.
 
 The finished engine must implement full ECL 2.3. Every pending language feature below is required. The current file sizes exclude semantic indexes still needed for those features and are not a size estimate for the complete engine.
 
 ## Stored data
 
-Every concept, including inactive concepts, has a dense `u32` ordinal. The core holds the sorted `u64` SCTID dictionary, module ordinals, effective dates and active/definition flags. Ordinary evaluation returns active concepts.
+Every concept, including inactive concepts, has a dense `u32` ordinal. The core holds the sorted `u64` SCTID dictionary, module ordinals, effective dates and active/definition flags. The ECL default includes all concepts; hierarchy uses active inferred edges.
 
 The UK dictionary uses 9,212,152 bytes for SCTIDs. Relationships reference four-byte ordinals, so repeated 18-digit codes are not stored in every row. This binary format has no SQL `NUMBER` columns. The current population needs 21 bits per ordinal, making three-byte or bit-packed encodings possible experiments. Their space savings must be measured against decoding cost. Smaller dictionaries for attribute types and compact group numbers are further candidates.
 
 Parent and child adjacency arrays contain the active inferred is-a graph. Attribute arrays are ordered by source, relationship group, type and value. A row uses three `u32` fields; per-concept offsets identify its source. Group numbers survive import, including group zero and groups shared across ordinary and concrete relationships.
 
-Concrete values have a separate dictionary. Numbers retain their original decimal spelling, so import loses no precision. This is storage, not decimal comparison support. Concrete strings remain semantic values in the core even though display text is separate.
+Concrete values have a separate dictionary. Numbers retain their original decimal spelling, so import loses no precision. The evaluator compares decimals exactly. Concrete strings remain semantic values in the core even though display text is separate.
 
 | Capability | Status |
 |---|---|
 | Verified UK Monolith Snapshot import | Implemented |
 | Concept metadata and inferred hierarchy | Implemented |
 | Eight hierarchy variants via library and CLI | Implemented |
-| Grouped attributes and exact concrete spelling | Stored; evaluation pending |
+| Grouped attributes and exact concrete spelling | Stored and evaluated; see the refinement milestone |
 | Optional English display lookup | Implemented |
-| Refset membership and member fields | Not indexed |
+| Refset membership and member fields | Concept membership indexed separately; typed member fields remain pending |
 | Basic ECL grammar and Boolean sets | Implemented in the later basic ECL milestone |
-| Attribute refinements | Not implemented |
+| Attribute refinements | Implemented; conformance gaps remain |
 | Description, concept and member filters | Not implemented |
 | History supplements and field projections | Not implemented |
 | Full, Delta, multiple packages or incremental updates | Not supported |

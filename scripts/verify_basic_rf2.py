@@ -34,7 +34,8 @@ def main():
             with archive.open(names[0]) as member:
                 yield from csv.DictReader(io.TextIOWrapper(member, encoding="utf-8-sig"), delimiter="\t", quoting=csv.QUOTE_NONE)
 
-        active = {int(row["id"]) for row in rows("sct2_Concept_") if row["active"] == "1"}
+        concepts = {int(row["id"]): row["active"] == "1" for row in rows("sct2_Concept_")}
+        active = {code for code, is_active in concepts.items() if is_active}
         print(json.dumps({"active_concepts": len(active)}), flush=True)
         children = collections.defaultdict(list)
         sources, destinations = set(), set()
@@ -55,10 +56,10 @@ def main():
                     pending.append(child)
     expected = {
         "large-result": finding,
-        "wildcard": active,
+        "wildcard": set(concepts),
         "wildcard-descendants": sources,
         "wildcard-ancestors": destinations,
-        "large-exclusion": active - finding,
+        "large-exclusion": set(concepts) - finding,
     }
     expected = {key: {str(code) for code in values} for key, values in expected.items()}
     del children, active, finding, sources, destinations
@@ -92,7 +93,7 @@ def main():
             subprocess.run(["docker", "stop", "snomed-ecl-rf2-check"], check=False, capture_output=True)
             process.wait(timeout=15)
     report = {"archive_sha256": archive_hash, "elapsed_seconds": time.perf_counter() - start,
-              "scope": "Exact set differences against a separate Python RF2 reader. Wildcard uses active concept rows; descendant/ancestor wildcard uses inferred is-a source/destination sets; finding uses an independent graph traversal. Timings are single observations, not a latency benchmark.", "results": results}
+              "scope": "Exact set differences against a separate Python RF2 reader. Wildcard uses all concept rows; descendant/ancestor wildcard uses inferred is-a source/destination sets; finding uses an independent graph traversal. Timings are single observations, not a latency benchmark.", "results": results}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     if process.returncode != 0 or len(results) != len(expected) or any(not row["matches_rf2"] for row in results):

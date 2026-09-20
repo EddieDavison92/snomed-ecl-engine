@@ -77,20 +77,20 @@
         {
           "production": "refsetOperator",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/membership.rs"
         },
         {
           "production": "memberOf",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/membership.rs"
         },
         {
           "production": "refsetContainingAny",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/membership.rs"
         },
         {
           "production": "refsetFieldNameSet",
@@ -1163,20 +1163,20 @@
         {
           "production": "refsetOperator",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/membership.rs"
         },
         {
           "production": "memberOf",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/membership.rs"
         },
         {
           "production": "refsetContainingAny",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/membership.rs"
         },
         {
           "production": "refsetFieldNameSet",

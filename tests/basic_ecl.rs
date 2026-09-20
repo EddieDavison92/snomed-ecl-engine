@@ -24,20 +24,15 @@ fn store(n: usize) -> NumericStore {
         attributes: Attributes::build(n, vec![]).unwrap(),
         concrete: Attributes::build(n, vec![]).unwrap(),
         concrete_values: vec![],
+        membership: None,
     }
 }
 
 // Deliberately separate per-seed searches and BTreeSet operations from the production evaluator.
 fn slow(store: &NumericStore, expr: &Expr) -> BTreeSet<u32> {
     match expr {
-        Expr::Concept(id) => store
-            .ordinal(*id)
-            .filter(|&i| store.is_active(i))
-            .into_iter()
-            .collect(),
-        Expr::All => (0..store.ids.len() as u32)
-            .filter(|&i| store.is_active(i))
-            .collect(),
+        Expr::Concept(id) => store.ordinal(*id).into_iter().collect(),
+        Expr::All => (0..store.ids.len() as u32).collect(),
         Expr::Hierarchy(op, expr) => {
             let mut result = BTreeSet::new();
             for seed in slow(store, expr) {
@@ -88,7 +83,29 @@ fn slow(store: &NumericStore, expr: &Expr) -> BTreeSet<u32> {
                 .copied()
                 .collect()
         }
-        Expr::Refined(..) | Expr::Dotted(..) => panic!("Outside the basic hierarchy fixture"),
+        Expr::Refined(..)
+        | Expr::Dotted(..)
+        | Expr::MemberOf(..)
+        | Expr::RefsetContainingAny(..) => panic!("Outside the basic hierarchy fixture"),
+    }
+}
+
+#[test]
+fn default_substrate_includes_inactive_concepts_but_only_active_edges() {
+    let store = store(4);
+    for (query, expected) in [
+        ("*", vec![0, 1, 2, 3]),
+        ("1000004", vec![3]),
+        ("<<1000004", vec![3]),
+        ("<1000004", vec![]),
+        ("* MINUS (<<1000001)", vec![3]),
+        ("1000004 : [0..0] 1000001 = *", vec![3]),
+    ] {
+        assert_eq!(
+            evaluate(&store, &parse(query).unwrap()).unwrap(),
+            expected,
+            "{query}"
+        );
     }
 }
 
@@ -148,10 +165,9 @@ fn brief_long_terms_comments_and_boolean_grouping() {
 #[test]
 fn unsupported_features_never_become_partial_success() {
     for query in [
-        "* OR (^ 1000001)",
+        "* OR (^ [targetComponentId] 1000001)",
         "* {{ C active = false }}",
         "* {{ +HISTORY }}",
-        "^R 1000001",
         "scheme#code",
         "^ [targetComponentId] 1000001",
     ] {

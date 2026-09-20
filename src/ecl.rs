@@ -47,6 +47,8 @@ pub enum Expr {
     Refined(Box<Expr>, Box<Refinement>),
     Dotted(Box<Expr>, Vec<Expr>),
     Extremum { top: bool, inner: Box<Expr> },
+    MemberOf(Box<Expr>),
+    RefsetContainingAny(Box<Expr>),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -336,7 +338,27 @@ impl Parser<'_> {
             }
         }
         self.ws()?;
-        let expression = if self.take("(") {
+        let refset_operator = if self.take("^R") || self.take("^r") {
+            Some(true)
+        } else if self.take("^") {
+            Some(false)
+        } else if self.keyword("memberOf") {
+            self.required_ws()?;
+            Some(false)
+        } else if self.keyword("refsetContainingAny") {
+            self.required_ws()?;
+            Some(true)
+        } else {
+            None
+        };
+        self.ws()?;
+        if refset_operator.is_some() && self.rest().starts_with('[') {
+            return Err(self.error(
+                ParseErrorKind::Unsupported,
+                "Member field projections are not implemented",
+            ));
+        }
+        let mut expression = if self.take("(") {
             let inner = self.expression(depth + 1)?;
             self.ws()?;
             if !self.take(")") {
@@ -374,6 +396,13 @@ impl Parser<'_> {
         self.ws()?;
         if self.rest().starts_with(['^', '{', '[']) {
             return Err(self.unexpected());
+        }
+        if let Some(reverse) = refset_operator {
+            expression = self.node(if reverse {
+                Expr::RefsetContainingAny(Box::new(expression))
+            } else {
+                Expr::MemberOf(Box::new(expression))
+            })?;
         }
         if let Some(op) = hierarchy {
             self.node(Expr::Hierarchy(op, Box::new(expression)))

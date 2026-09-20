@@ -12,7 +12,7 @@ The proposed advantage is low memory use and predictable query latency on UK-sca
 
 ## Boundaries
 
-Use the published inferred relationship view. Preserve inactive concepts and relevant metadata for later filters and history support, but follow the specification's active-component defaults for ordinary evaluation. Make the edition, module dependencies, relationship view and supported ECL capabilities inspectable.
+Use the published inferred relationship view. Preserve inactive concepts and relevant metadata for later filters and history support, and include them in the ECL default. Use active relationships, descriptions and refset members unless a supported filter selects otherwise. Make the edition, module dependencies, relationship view and supported ECL capabilities inspectable.
 
 Initially exclude authoring, OWL classification, postcoordinated expression reasoning, multi-edition serving, incremental updates, FHIR, authentication, deployment and general free-text search. Description search required by ECL is a later engine capability, not a reason to build a terminology browser now.
 
@@ -90,4 +90,4 @@ Evaluate `snomed-rust` RF2 types and parsing as a possible dependency after a fo
 
 Use `sct`, Hermes and Snowstorm to study implementation choices and test cases. Keep the engine's code original until any code reuse and licence choice are deliberate. No open-source licence has been chosen for this private project.
 
-The [compact store prototype](compact-store.md) implements numeric adjacency arrays, grouped relationship storage and separate display lookup. The [basic ECL milestone](basic-ecl.md) adds parsing, sorted-vector evaluation and release-matched comparisons. Bitmap experiments and a full module dependency resolver remain open. Next, implement membership and refinements against the [full conformance checklist](conformance.md), then use those workloads to guide further compression.
+The [compact store prototype](compact-store.md) implements numeric adjacency arrays, grouped relationship storage and separate display lookup. The [basic ECL milestone](basic-ecl.md) adds parsing, sorted-vector evaluation and release-matched comparisons. Bitmap experiments and a full module dependency resolver remain open. Continue with filters, history, alternate identifiers and typed projections against the [full conformance checklist](conformance.md), then use those workloads to guide further compression.

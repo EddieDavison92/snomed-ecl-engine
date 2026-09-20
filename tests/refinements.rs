@@ -51,6 +51,7 @@ fn fixture() -> NumericStore {
             ConcreteValue::Text("\"A\\\"B\"".into()),
             ConcreteValue::Boolean(true),
         ],
+        membership: None,
     }
 }
 fn assert_query(query: &str, expected: &[u32]) {

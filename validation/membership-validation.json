@@ -1,0 +1,197 @@
+{
+  "recorded_at": "2026-09-20T02:21:17.783352+00:00",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "corpus_sha256": "522c8ce939e62c2b3ad622bdf220d3ae735fbaa0da9e9aaf12a2d16127ddde8d",
+  "binary_sha256": "737d33387c559610a240c9c82fd7caa7e28222349c2733853cf025bb099bb4aa",
+  "binary_bytes": 793992,
+  "binary_gzip_bytes": 372465,
+  "core_index_bytes": 90263179,
+  "samples": 5,
+  "membership_index_bytes": 18014172,
+  "supplements": [],
+  "core_sha256": "30b06229e39903c0a625b6ddd5215efc5fc038bff9303fdb60ff83b133518e16",
+  "membership_sha256": "6dbcaa758f7dc959f9a465e8447ba0ab905e840ee2e149f2a61169085bc11cb6",
+  "index_filesystem": "Docker volume",
+  "scope": "One CPU, 256 MiB, persistent Rust process. No result cache. Each measured count request evaluates and materialises the full ordinal set. Five seeded shuffled batches by default; p95 describes this corpus only. Complete enumeration is checked once outside warm count timings. A local-file startup does not measure object-storage download, provider cold start or full-ECL index costs.",
+  "container_start_and_first_request_ms": 809.2200000537559,
+  "warm_batch_wall": {
+    "samples_ms": [
+      1720.7379000028595,
+      1682.544199982658,
+      1674.5575000531971,
+      1692.6237000152469,
+      1700.7104998920113
+    ],
+    "median_ms": 1692.6237000152469,
+    "p95_ms": 1720.7379000028595
+  },
+  "status_counts": {
+    "evaluated": 840,
+    "unsupported": 160
+  },
+  "warm_batch_engine_ms": [
+    981.0321679999992,
+    966.2513869999993,
+    966.0627409999995,
+    970.3954600000005,
+    970.0188379999996
+  ],
+  "resources": {
+    "container_charged_peak_bytes": 133578752,
+    "peak_scope": "Container lifetime; includes any earlier queries since this container was created",
+    "memory_limit_bytes": 268435456,
+    "memory_and_swap_limit_bytes": 268435456,
+    "nano_cpus": 1000000000,
+    "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31"
+  },
+  "startup_log": "Store opened in 0.327 seconds",
+  "exit_code": 0,
+  "raw_local_report_sha256": "21509bee8c2f0d1f15df740b895ec8805805cda5169cb3d8dec948bc85ff4e13",
+  "prior_evaluated_digests_unchanged": 800,
+  "corpus_membership_onelondon_matches": 40,
+  "onelondon_membership_checks": 45,
+  "rf2_membership": {
+    "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+    "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+    "refset_rows_scanned": 15151501,
+    "scope": "Independent active RF2 member rows and all concept IDs; complete code sets",
+    "results": [
+      {
+        "ecl": "^51971000001109",
+        "expected_total": 102,
+        "observed_total": 102,
+        "matches": true,
+        "expected_sha256": "8ae38c442d8336837150fe1e380aff53570ddc152a243efeacdffd25f7e2ec5b",
+        "observed_sha256": "8ae38c442d8336837150fe1e380aff53570ddc152a243efeacdffd25f7e2ec5b"
+      },
+      {
+        "ecl": "^723562003",
+        "expected_total": 127,
+        "observed_total": 127,
+        "matches": true,
+        "expected_sha256": "f0e6f7bc803b1470695898f8ebf5b42e6c44076cee23f126f1a65d34e2ba0cbb",
+        "observed_sha256": "f0e6f7bc803b1470695898f8ebf5b42e6c44076cee23f126f1a65d34e2ba0cbb"
+      },
+      {
+        "ecl": "^900000000000508004",
+        "expected_total": 0,
+        "observed_total": 0,
+        "matches": true,
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "ecl": "^999002271000000101",
+        "expected_total": 128748,
+        "observed_total": 128748,
+        "matches": true,
+        "expected_sha256": "c6296b158aac9bd9c64283971865015a4b95a053ffed657d955ce28ca0180792",
+        "observed_sha256": "c6296b158aac9bd9c64283971865015a4b95a053ffed657d955ce28ca0180792"
+      },
+      {
+        "ecl": "^R195967001",
+        "expected_total": 11,
+        "observed_total": 11,
+        "matches": true,
+        "expected_sha256": "a404f61c01cd2e926c79b538f56f1ba72342148d708ab38052b643b40551c2cd",
+        "observed_sha256": "a404f61c01cd2e926c79b538f56f1ba72342148d708ab38052b643b40551c2cd"
+      },
+      {
+        "ecl": "^R404684003",
+        "expected_total": 5,
+        "observed_total": 5,
+        "matches": true,
+        "expected_sha256": "d463852f7c4da0581ad07c498b8fe75b026db692511725823b14aa19866d3603",
+        "observed_sha256": "d463852f7c4da0581ad07c498b8fe75b026db692511725823b14aa19866d3603"
+      }
+    ]
+  },
+  "rf2_basic_default": {
+    "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+    "elapsed_seconds": 47.171331999939866,
+    "scope": "Exact set differences against a separate Python RF2 reader. Wildcard uses all concept rows; descendant/ancestor wildcard uses inferred is-a source/destination sets; finding uses an independent graph traversal. Timings are single observations, not a latency benchmark.",
+    "results": [
+      {
+        "id": "large-result",
+        "ecl": "<< 404684003",
+        "total": 137834,
+        "sha256": "3aa4b32701e74976d6b196367bb93e86564c36c5c80b51bc6b89c1d85766d222",
+        "matches_rf2": true,
+        "only_rust": 0,
+        "only_rf2": 0,
+        "rust_eval_ms": 7.606272
+      },
+      {
+        "id": "wildcard",
+        "ecl": "*",
+        "total": 1151519,
+        "sha256": "7678bb207642dc0edc14bda6e6192b9d8270a1bd3edc1ca68a34923796058db8",
+        "matches_rf2": true,
+        "only_rust": 0,
+        "only_rf2": 0,
+        "rust_eval_ms": 0.690105
+      },
+      {
+        "id": "wildcard-descendants",
+        "ecl": "< *",
+        "total": 838954,
+        "sha256": "3554d820ae0e65283fb68a7ac60af1a159b6c2d2b189532be1cf5fbacb49f30e",
+        "matches_rf2": true,
+        "only_rust": 0,
+        "only_rf2": 0,
+        "rust_eval_ms": 21.521239
+      },
+      {
+        "id": "wildcard-ancestors",
+        "ecl": "> *",
+        "total": 209537,
+        "sha256": "dadfaf30ffa8a0e0809e06815d593a076a977602fb70b783c9b836c9f8421a73",
+        "matches_rf2": true,
+        "only_rust": 0,
+        "only_rf2": 0,
+        "rust_eval_ms": 22.265694999999997
+      },
+      {
+        "id": "large-exclusion",
+        "ecl": "* MINUS (<< 404684003)",
+        "total": 1013685,
+        "sha256": "62acdb7958fbdd0a3d347eb2a2af3d1d2523e6cc06983f8fe3717efa10f4d5ea",
+        "matches_rf2": true,
+        "only_rust": 0,
+        "only_rf2": 0,
+        "rust_eval_ms": 10.498906
+      }
+    ]
+  },
+  "official_examples": {
+    "parsed": 73,
+    "reference_commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",
+    "scope": "Syntax classification only. Unsupported examples remain required; parsing does not establish semantic correctness.",
+    "unexpected_errors": 0,
+    "unsupported": 48
+  },
+  "tests": {
+    "default": 27,
+    "no_default_features": 17,
+    "clippy_both_configurations": true
+  },
+  "performance_note": "Rust-only development measurement, with no Snowstorm or RF2 audit running during this final sample. Different supported workload from the earlier Snowstorm comparison; no speedup claim.",
+  "pcd": {
+    "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+    "supplement_sha256": "672f4ee9ffa6f385a3620129b968d42031bd68bc157c47a93565392dd635db60",
+    "snapshot_rows": 129004,
+    "active_rows": 124480,
+    "refsets": 1039,
+    "scope": "Complete code sets for every simple refset in the supplement; active member rows may reference inactive concepts.",
+    "complete_set_matches": 1039,
+    "result_digests_sha256": "e4a9528d2e8e977fec99fc5f91a4c2d7114f1a030b399ab58b04a0f3c941c083",
+    "observed_import_seconds": 9.85,
+    "added_file_bytes": {
+      "core": 42292,
+      "membership": 506232,
+      "display": 215958
+    },
+    "exact_module_versions_verified": false
+  }
+}

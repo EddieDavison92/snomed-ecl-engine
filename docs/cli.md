@@ -10,7 +10,7 @@ snomed-rust-ecl-engine expand data/compact-store/v1 '404684003' --display
 snomed-rust-ecl-engine expand data/compact-store/v1 '<< 404684003' --count
 ```
 
-Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports six stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
+Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports seven stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
 
 ## Select output for scripts
 
@@ -18,6 +18,7 @@ Terminal output has an index summary, a code/display table with `--display`, and
 |---|---|---|
 | `stats` | Manifest JSON | Manifest JSON |
 | `import` | Manifest and elapsed time JSON | Same |
+| `add-refsets` | Combined manifest JSON | Same |
 | `expand` | One code per line | One code object per line |
 | `expand --display` | Code/display JSONL | Same |
 | `expand --count` | Integer | Object with `total` |
@@ -30,3 +31,5 @@ Terminal output has an index summary, a code/display table with `--display`, and
 `batch STORE` loads the index once and reads newline-delimited JSON from stdin. It always emits JSONL, including in a terminal. Individual query errors return an error object and do not stop the batch. An empty successful expansion has total zero. See [the agent batch workflow](../SKILL.md#reuse-the-index-for-many-queries) for schemas and process handling.
 
 The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](conformance.md) tracks the outstanding work.
+
+Use `add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256` for supplementary simple refsets, including PCD. Read [refset loading](refsets.md) for supported definitions, collision handling and release provenance.

@@ -47,7 +47,34 @@ fn run() -> Result<()> {
     }
     match args.first().map(String::as_str) {
         #[cfg(not(feature = "import"))]
-        Some("import") => bail!("Import support was excluded; rebuild with --features import"),
+        Some("import" | "add-refsets") => {
+            bail!("Import support was excluded; rebuild with --features import")
+        }
+        #[cfg(feature = "import")]
+        Some("add-refsets") => {
+            ensure!(
+                args.len() == 6,
+                "Usage: add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256"
+            );
+            let start = Instant::now();
+            eprintln!("  Verifying and adding supplementary refsets...");
+            let manifest = snomed_rust_ecl_engine::import::add_refsets_snapshot(
+                Path::new(&args[1]),
+                Path::new(&args[2]),
+                Path::new(&args[3]),
+                &args[4],
+                &args[5],
+            )?;
+            if human {
+                presentation::manifest(&manifest);
+            } else {
+                println!("{}", serde_json::to_string_pretty(&manifest)?);
+            }
+            eprintln!(
+                "  Supplement complete in {:.2}s",
+                start.elapsed().as_secs_f64()
+            );
+        }
         #[cfg(feature = "import")]
         Some("import") => {
             ensure!(
@@ -75,7 +102,7 @@ fn run() -> Result<()> {
                 |message| {
                     stage += 1;
                     eprintln!(
-                        "  [{stage}/6] {message}  ({:.1}s elapsed)",
+                        "  [{stage}/7] {message}  ({:.1}s elapsed)",
                         start.elapsed().as_secs_f64()
                     );
                 },
@@ -208,7 +235,7 @@ fn run() -> Result<()> {
                 }
                 ensure!(line.len() <= 524288, "Batch request exceeds 512 KiB");
                 match serde_json::from_slice::<BatchRequest>(&line) {
-                    Ok(request) => batch_response(&store, &manifest.edition, &request, &mut out)?,
+                    Ok(request) => batch_response(&store, &manifest, &request, &mut out)?,
                     Err(_) => writeln!(out, "{{\"error\":\"InvalidRequest\"}}")?,
                 }
                 out.flush()?;
@@ -292,6 +319,8 @@ impl serde::Serialize for Codes<'_> {
 #[derive(serde::Serialize)]
 struct BatchResponse<'a> {
     edition: &'a str,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    supplements: Vec<&'a str>,
     total: usize,
     parse_ms: f64,
     eval_ms: f64,
@@ -301,7 +330,7 @@ struct BatchResponse<'a> {
 
 fn batch_response(
     store: &NumericStore,
-    edition: &str,
+    manifest: &Manifest,
     request: &BatchRequest,
     out: &mut impl Write,
 ) -> Result<()> {
@@ -330,7 +359,12 @@ fn batch_response(
     serde_json::to_writer(
         &mut *out,
         &BatchResponse {
-            edition,
+            edition: &manifest.edition,
+            supplements: manifest
+                .supplements
+                .iter()
+                .map(|s| s.archive_sha256.as_str())
+                .collect(),
             total: ordinals.len(),
             parse_ms,
             eval_ms,

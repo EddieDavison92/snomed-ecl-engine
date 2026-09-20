@@ -5,6 +5,8 @@ use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::Path;
+mod membership;
+pub use membership::{MembershipIndex, MembershipManifest};
 
 pub const FORMAT: u32 = 1;
 const CORE_MAGIC: &[u8; 8] = b"SNECL001";
@@ -29,6 +31,22 @@ pub struct Manifest {
     pub displays_selected: usize,
     pub module_dependencies: serde_json::Value,
     pub capabilities: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub membership: Option<MembershipManifest>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub supplements: Vec<RefsetSupplement>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RefsetSupplement {
+    pub archive_sha256: String,
+    pub release_date: u32,
+    pub base_core_sha256: String,
+    pub refset_ids: Vec<String>,
+    pub added_concepts: usize,
+    pub module_dependencies: serde_json::Value,
+    #[serde(default)]
+    pub exact_module_versions_verified: bool,
 }
 
 impl Manifest {
@@ -175,6 +193,8 @@ pub struct NumericStore {
     pub attributes: Attributes,
     pub concrete: Attributes,
     pub concrete_values: Vec<ConcreteValue>,
+    /// Active refset member rows referencing concepts. None means the index was not built.
+    pub membership: Option<MembershipIndex>,
 }
 
 impl NumericStore {
@@ -185,7 +205,7 @@ impl NumericStore {
         self.flags[ordinal as usize] & 1 != 0
     }
 
-    /// Returns numeric-sorted active SCTIDs. Direct and transitive queries share the same graph.
+    /// Returns numeric-sorted SCTIDs through active edges, including an inactive self if requested.
     pub fn hierarchy(
         &self,
         sctid: u64,
@@ -193,7 +213,7 @@ impl NumericStore {
         direct: bool,
         include_self: bool,
     ) -> Vec<u64> {
-        let Some(start) = self.ordinal(sctid).filter(|&i| self.is_active(i)) else {
+        let Some(start) = self.ordinal(sctid) else {
             return Vec::new();
         };
         let edges = if ancestors {
@@ -225,6 +245,9 @@ impl NumericStore {
 
     pub fn validate(&self) -> Result<()> {
         let n = self.ids.len();
+        if let Some(membership) = &self.membership {
+            membership.validate(n)?;
+        }
         ensure!(n > 0 && n < u32::MAX as usize, "Invalid concept count");
         ensure!(
             self.ids.windows(2).all(|w| w[0] < w[1]),
@@ -395,6 +418,11 @@ impl NumericStore {
             attributes: attributes_index,
             concrete,
             concrete_values,
+            membership: manifest
+                .membership
+                .as_ref()
+                .map(|metadata| MembershipIndex::open(directory, metadata, count))
+                .transpose()?,
         };
         store.validate()?;
         ensure!(
@@ -436,6 +464,22 @@ pub struct DisplayStore {
 }
 
 impl DisplayStore {
+    #[cfg(feature = "import")]
+    pub(crate) fn into_labels(mut self) -> Result<Vec<Option<String>>> {
+        self.input.seek(SeekFrom::Start(self.start))?;
+        let mut labels = Vec::with_capacity(self.offsets.len() - 1);
+        for offsets in self.offsets.windows(2) {
+            let mut bytes = vec![0; (offsets[1] - offsets[0]) as usize];
+            self.input.read_exact(&mut bytes)?;
+            labels.push(if bytes.is_empty() {
+                None
+            } else {
+                Some(String::from_utf8(bytes)?)
+            });
+        }
+        Ok(labels)
+    }
+
     pub fn write(path: &Path, labels: &[Option<String>]) -> Result<()> {
         let mut offsets = Vec::with_capacity(labels.len() + 1);
         offsets.push(0u32);

@@ -50,6 +50,7 @@ def main():
     parser.add_argument("--binary", default="target/linux-core/release/snomed-rust-ecl-engine")
     parser.add_argument("--samples", type=int, default=5)
     parser.add_argument("--store-volume", help="Optional Docker volume holding core.bin and manifest.json")
+    parser.add_argument("--store-directory", type=Path, default=Path("data/compact-store/v1"), help="Store within this checkout; also supplies the manifest when using a Docker volume")
     parser.add_argument("--snowstorm", help="Optional loopback full Snowstorm URL; requires a completed, release-matched MAIN import")
     parser.add_argument("--import-id", help="Completed local Snowstorm import job ID")
     parser.add_argument("--import-report", type=Path, help="Prior report with completed import evidence and the unchanged MAIN head, for a serving-only restart")
@@ -61,7 +62,15 @@ def main():
         parser.error("Only local comparison servers are allowed")
     corpus_path = ROOT / "validation/ecl-1000.json"
     corpus = json.loads(corpus_path.read_text())
-    manifest = json.loads((ROOT / "data/compact-store/v1/manifest.json").read_text())
+    store_directory = (ROOT / args.store_directory).resolve()
+    try:
+        store = store_directory.relative_to(ROOT).as_posix()
+    except ValueError:
+        parser.error("Store directory must be within the mounted checkout")
+    manifest = json.loads((store_directory / "manifest.json").read_text())
+    supplements = [s["archive_sha256"] for s in manifest.get("supplements", [])]
+    if args.snowstorm and supplements:
+        parser.error("Snowstorm comparison cannot yet verify supplementary packages; use the base store")
     assert corpus["archive_sha256"].lower() == manifest["archive_sha256"].lower()
     binary = (ROOT / args.binary).read_bytes()
     rows = {case["id"]: dict(case) for case in corpus["cases"]}
@@ -71,6 +80,10 @@ def main():
               "binary_sha256": hashlib.sha256(binary).hexdigest(), "binary_bytes": len(binary),
               "binary_gzip_bytes": len(gzip.compress(binary, mtime=0)),
               "core_index_bytes": manifest["core_bytes"], "samples": args.samples,
+              "membership_index_bytes": (manifest.get("membership") or {}).get("bytes", 0),
+              "supplements": supplements,
+              "core_sha256": manifest["core_sha256"],
+              "membership_sha256": (manifest.get("membership") or {}).get("sha256"),
               "index_filesystem": "Docker volume" if args.store_volume else "Windows bind mount",
               "scope": "One CPU, 256 MiB, persistent Rust process. No result cache. Each measured count request evaluates and materialises the full ordinal set. Five seeded shuffled batches by default; p95 describes this corpus only. Complete enumeration is checked once outside warm count timings. A local-file startup does not measure object-storage download, provider cold start or full-ECL index costs.",
               "results": list(rows.values())}
@@ -103,7 +116,6 @@ def main():
             if http(args.snowstorm, "/MAIN/concepts", {"ecl": ecl, "returnIdOnly": "true", "limit": 1})["total"] != expected:
                 raise ValueError("Snowstorm release sentinel differs")
     command = ["docker", "run", "--rm", "-i", "--name", "snomed-ecl-corpus", "--cpus", "1", "--memory", "256m", "--memory-swap", "256m", "--mount", f"type=bind,source={ROOT},target=/work,readonly", "-w", "/work"]
-    store = "data/compact-store/v1"
     if args.store_volume:
         if any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-" for c in args.store_volume):
             parser.error("Invalid Docker volume name")
@@ -126,6 +138,8 @@ def main():
         result = json.loads(line)
         if "error" not in result and result["edition"] != manifest["edition"]:
             raise ValueError("Wrong Rust edition")
+        if "error" not in result and result.get("supplements", []) != supplements:
+            raise ValueError("Wrong Rust supplements")
         return result
 
     def save():

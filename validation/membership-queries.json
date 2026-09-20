@@ -1,0 +1,227 @@
+[
+  {
+    "id": "membership-01",
+    "ecl": "(<< 824004) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-02",
+    "ecl": "(<< 911003) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-03",
+    "ecl": "(<< 1239002) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-04",
+    "ecl": "(<< 1545006) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-05",
+    "ecl": "(<< 3162001) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-06",
+    "ecl": "(<< 4348005) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-07",
+    "ecl": "(<< 5282006) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-08",
+    "ecl": "(<< 11486001) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-09",
+    "ecl": "(<< 12062007) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-10",
+    "ecl": "(<< 12191008) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-11",
+    "ecl": "(<< 12446006) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-12",
+    "ecl": "(<< 12479006) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-13",
+    "ecl": "(<< 15847003) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-14",
+    "ecl": "(<< 18197001) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-15",
+    "ecl": "(<< 18202008) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-16",
+    "ecl": "(<< 18268005) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-17",
+    "ecl": "(<< 19445006) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-18",
+    "ecl": "(<< 20480004) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-19",
+    "ecl": "(<< 21249000) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-20",
+    "ecl": "(<< 22558005) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-21",
+    "ecl": "(<< 23827009) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-22",
+    "ecl": "(<< 25721003) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-23",
+    "ecl": "(<< 26624006) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-24",
+    "ecl": "(<< 27970007) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-25",
+    "ecl": "(<< 31117002) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-26",
+    "ecl": "(<< 32379001) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-27",
+    "ecl": "(<< 32801008) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-28",
+    "ecl": "(<< 33545008) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-29",
+    "ecl": "(<< 38549000) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-30",
+    "ecl": "(<< 40528000) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-31",
+    "ecl": "(<< 42526005) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-32",
+    "ecl": "(<< 46523000) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-33",
+    "ecl": "(<< 46603009) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-34",
+    "ecl": "(<< 47526003) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-35",
+    "ecl": "(<< 51371005) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-36",
+    "ecl": "(<< 52390004) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-37",
+    "ecl": "(<< 53386008) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-38",
+    "ecl": "(<< 55849004) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-39",
+    "ecl": "(<< 56367006) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "membership-40",
+    "ecl": "(<< 56564003) AND (^ 999002271000000101)",
+    "probe": true
+  },
+  {
+    "id": "language-gb",
+    "ecl": "^900000000000508004",
+    "probe": true
+  },
+  {
+    "id": "language-clinical",
+    "ecl": "^999001261000000100",
+    "probe": true
+  },
+  {
+    "id": "wildcard-membership",
+    "ecl": "(<<195967001) AND (^*)",
+    "probe": true
+  },
+  {
+    "id": "direct-refset-1",
+    "ecl": "^723562003",
+    "probe": true
+  },
+  {
+    "id": "direct-refset-2",
+    "ecl": "^51971000001109",
+    "probe": true
+  }
+]

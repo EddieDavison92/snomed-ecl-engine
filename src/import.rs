@@ -9,6 +9,9 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use zip::ZipArchive;
+mod membership;
+mod supplement;
+pub use supplement::add_refsets_snapshot;
 
 const ISA: u64 = 116680003;
 const INFERRED: u64 = 900000000000011006;
@@ -323,6 +326,11 @@ pub fn import_snapshot_with_progress(
     drop(values);
     store.validate()?;
 
+    progress("Indexing concept reference set membership");
+    let (membership, non_concept_rows, refset_files) =
+        membership::read(&mut archive, &lookup, edition_date)?;
+    store.membership = Some(membership);
+
     progress("Selecting displays in a separate pass");
     let mut preferred: HashMap<u64, u16> = HashMap::new();
     rows(
@@ -420,6 +428,14 @@ pub fn import_snapshot_with_progress(
     let display_path = staging.join("display.bin");
     store.write(&core_path)?;
     DisplayStore::write(&display_path, &labels)?;
+    let membership_path = staging.join("membership.bin");
+    let membership = store
+        .membership
+        .as_ref()
+        .context("Missing built membership index")?;
+    membership.write(&membership_path)?;
+    let membership_manifest =
+        membership.manifest(&membership_path, non_concept_rows, refset_files)?;
     let manifest = Manifest {
         format: FORMAT,
         edition: options.edition.clone(),
@@ -443,7 +459,10 @@ pub fn import_snapshot_with_progress(
             "grouped-relationship-storage".into(),
             "exact-concrete-value-storage".into(),
             "separate-english-display-lookup".into(),
+            "concept-refset-membership".into(),
         ],
+        membership: Some(membership_manifest),
+        supplements: Vec::new(),
     };
     let mut manifest_file = File::create_new(staging.join("manifest.json"))?;
     serde_json::to_writer_pretty(&mut manifest_file, &manifest)?;

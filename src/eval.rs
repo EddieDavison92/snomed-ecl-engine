@@ -3,6 +3,7 @@ use crate::ecl::{Expr, Hierarchy, MAX_DEPTH, MAX_NODES};
 use crate::store::NumericStore;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error::Error, fmt};
+mod membership;
 mod refinement;
 
 #[derive(Clone, Copy)]
@@ -98,6 +99,13 @@ impl Context<'_> {
             return Err(EvalError::InvalidAst);
         }
         match expr {
+            Expr::MemberOf(inner) | Expr::RefsetContainingAny(inner) => {
+                let candidates = self.eval(inner, depth + 1)?;
+                let result =
+                    self.membership(&candidates, matches!(expr, Expr::RefsetContainingAny(_)))?;
+                self.release(candidates);
+                Ok(result)
+            }
             Expr::Refined(focus, refinement) => {
                 let candidates = self.eval(focus, depth + 1)?;
                 let prepared = self.prepare(refinement, depth + 1, false)?;
@@ -138,26 +146,16 @@ impl Context<'_> {
                 Ok(result)
             }
             Expr::Concept(code) => {
-                let ordinal = self
-                    .store
-                    .ordinal(*code)
-                    .filter(|&i| self.store.is_active(i));
+                let ordinal = self.store.ordinal(*code);
                 let mut result = self.reserve(usize::from(ordinal.is_some()))?;
                 result.extend(ordinal);
                 Ok(result)
             }
             Expr::All => {
                 self.tick(self.store.ids.len())?;
-                let count = self.store.flags.iter().filter(|&&f| f & 1 != 0).count();
+                let count = self.store.ids.len();
                 let mut result = self.reserve(count)?;
-                result.extend(
-                    self.store
-                        .flags
-                        .iter()
-                        .enumerate()
-                        .filter(|(_, f)| **f & 1 != 0)
-                        .map(|(i, _)| i as u32),
-                );
+                result.extend(0..count as u32);
                 Ok(result)
             }
             Expr::Hierarchy(op, inner) => {

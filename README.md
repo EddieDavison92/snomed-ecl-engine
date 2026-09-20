@@ -6,7 +6,7 @@ This repository owns the reusable engine library and its import, CLI and validat
 
 Full ECL 2.3 support is a core requirement. The project is complete only when the full language has implementation and conformance evidence; subsets are intermediate milestones.
 
-The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested attribute refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact decimal comparisons and top/bottom selection. Displays are optional lookups in a separate file. Membership, filters, history, typed projections and other conformance gaps remain required work. Hosting, FHIR, authoring and classification are outside the current implementation scope.
+The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested attribute refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact decimal comparisons, top/bottom selection and concept refset membership in both directions. Displays are optional lookups in a separate file. Filters, history, typed projections and other conformance gaps remain required work. Hosting, FHIR, authoring and classification are outside the current implementation scope.
 
 - [Implementation plan](docs/plan.md)
 - [Agent skill: build, import RF2 and query ECL](SKILL.md)
@@ -14,6 +14,8 @@ The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested 
 - [Compact store prototype and commands](docs/compact-store.md)
 - [Basic ECL commands and validation](docs/basic-ecl.md)
 - [Refinements and the 1,000-expression corpus](docs/refinements.md)
+- [Refsets and supplementary PCD loading](docs/refsets.md)
+- [Performance review and next experiments](docs/performance-plan.md)
 - [Full Snowstorm comparison results](docs/full-snowstorm.md)
 - [Serverless runtime requirements and measurements](docs/serverless.md)
 - [Full ECL acceptance checklist](docs/conformance.md)

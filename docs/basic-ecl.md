@@ -1,6 +1,6 @@
 # Basic ECL milestone
 
-The library now parses and evaluates concept literals, wildcard, eight hierarchy operators, parentheses, conjunction, disjunction and exclusion. It accepts symbolic operators, their long-syntax names, case-insensitive Boolean keywords, comma conjunctions, comments and optional concept terms. Results are distinct active concept IDs in numeric order.
+The library now parses and evaluates concept literals, wildcard, eight hierarchy operators, parentheses, conjunction, disjunction and exclusion. It accepts symbolic operators, their long-syntax names, case-insensitive Boolean keywords, comma conjunctions, comments and optional concept terms. Results are distinct concept IDs in numeric order.
 
 Full ECL 2.3 remains mandatory. Refinements, refsets, filters, history, projections, alternate identifiers and top/bottom are still pending. Recognised unsupported constructs produce an explicit error before evaluation. The parser does not validate the entire grammar of an unsupported construct, so that error is not proof that the rest of the query is valid.
 
@@ -30,7 +30,7 @@ The implementation follows the [pinned grammar](references.json) and [syntax spe
 
 Hierarchy operators accept a parenthesised expression as their input. For strict descendants of a set, an input concept can still appear in the result if it descends from another input concept. Traversal therefore tracks visited vertices separately from selected results.
 
-Absent and inactive concept literals return empty sets under the active default. Concept terms are annotations and do not change the identified concept. The parser checks identifier shape, not the Verhoeff checksum or whether the supplied term belongs to that concept.
+Absent concept literals return empty sets. Inactive literals return themselves; hierarchy traverses active edges. Concept terms are annotations and do not change the identified concept. The parser checks identifier shape, not the Verhoeff checksum or whether the supplied term belongs to that concept.
 
 The evaluator uses sorted `u32` ordinal vectors and linear set merges. A hierarchy traversal visits each reachable vertex once for the whole input set. It does not build every concept's transitive closure or use a query cache.
 
@@ -80,7 +80,9 @@ Rust evaluation time excludes parsing and output. The transport measurements inc
 
 The captured container peak covers its entire lifetime and includes charged filesystem cache. Host-side Python memory, shared host cache and the rest of the Docker VM are not included. Startup is a new process against an uncontrolled file cache, not a cold-cache measurement.
 
-## Recorded outcome
+## Recorded outcome before the default-substrate correction
+
+These are historical results. The membership milestone corrected our earlier active-only concept default. ECL includes all concepts by default. The old Python check shared that assumption, so agreement with it did not prove the default correct. See [the correction and current evidence](refsets.md#concept-status-defaults).
 
 The [recorded results](basic-ecl-results.json) show 17 complete OneLondon matches and five broad complete-set matches against an independent Python reader of the original RF2 archive. All 22 workload cases therefore have independent expected results. Ten Rust integration tests pass. The pinned official examples classify as 11 supported parses, 110 unsupported features and zero unexpected syntax errors.
 
@@ -95,7 +97,7 @@ Snowstorm Lite matches 18 cases. Four wildcard cases differ:
 
 The initial `*` comparison retrieved both full sets. Lite contained every active concept plus 312,564 inactive concepts. A subsequent count preflight avoided repeatedly enumerating known mismatches. The comparison script deliberately exits non-zero when results differ; this baseline does not give an all-green conformance run.
 
-The pinned Lite source explains these results: [`SSubExpressionConstraint.doAddQuery`](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/src/main/java/org/snomed/snowstormlite/service/ecl/constraint/SSubExpressionConstraint.java) uses a match-all query for wildcard and bypasses its hierarchy operator. [`ValueSetProvider`](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/src/main/java/org/snomed/snowstormlite/fhir/ValueSetProvider.java) accepts an `activeOnly` argument but does not pass it into expansion. Keep the standard's active default in this engine. Use full Snowstorm for another comparison as the suite grows.
+The pinned Lite source explains these results: [`SSubExpressionConstraint.doAddQuery`](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/src/main/java/org/snomed/snowstormlite/service/ecl/constraint/SSubExpressionConstraint.java) uses a match-all query for wildcard and bypasses its hierarchy operator. [`ValueSetProvider`](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/src/main/java/org/snomed/snowstormlite/fhir/ValueSetProvider.java) accepts an `activeOnly` argument but does not pass it into expansion. The active-only claim in the original analysis was incorrect for concepts. The wildcard and wildcard-exclusion differences came from our default; the hierarchy-wildcard shortcut is a separate issue.
 
 The query container completed the workload under one CPU and a 256 MiB cap. Its charged lifetime peak was 106.6 MiB. That is a basic evaluator measurement, not the full engine's future memory requirement. Small hierarchy queries had median internal evaluation times around 0.6 to 0.7 ms. The 137,834-concept finding expansion took 7.7 ms in its single timed sample. Separate RF2 validation observed the broad wildcard hierarchy queries around 23 ms. These observations need larger, isolated runs before setting performance guarantees.
 

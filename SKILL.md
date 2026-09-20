@@ -27,7 +27,7 @@ Run `./target/release/snomed-rust-ecl-engine --help` or `COMMAND --help` for arg
 
 Use an RF2 archive the caller is entitled to access. Data and indexes are not included in the clone. Keep them under ignored `data/` or another private local directory.
 
-The current importer requires **one self-contained Snapshot ZIP**, including its dependencies, package metadata, concepts, inferred relationships, concrete relationships, descriptions, language refsets and module dependencies. UK Monolith is the validated input. Separate extension/base packages, Full, Delta and arbitrary extracted RF2 files are not supported. Do not concatenate them or imply that any RF2 archive will work.
+The current importer requires **one self-contained Snapshot ZIP**, including its dependencies, package metadata, concepts, inferred relationships, concrete relationships, descriptions, language refsets and module dependencies. UK Monolith is the validated input. General extension/base merging, Full, Delta and arbitrary extracted RF2 files are not supported. The separate `add-refsets` command supports simple refset supplements such as PCD. Do not concatenate them or imply that any RF2 archive will work.
 
 Use a versioned edition URI and the SHA-256 supplied by the release distributor. A hash computed only from the downloaded file does not establish its provenance. Do not reuse the pinned release's URI or checksum for a newer release.
 
@@ -42,9 +42,9 @@ This reproducible example uses the release pinned in [docs/release.json](docs/re
 ./target/release/snomed-rust-ecl-engine stats data/compact-store/v1 --json
 ```
 
-The destination must not exist. Import verifies the archive checksum, validates the supported content and writes `manifest.json`, `core.bin` and `display.bin`. It reports stage starts to stderr and returns the completed manifest on stdout. Existing destinations are rejected, so reuse a matching index or choose a new directory rather than deleting it automatically. Failed writes can leave a sibling `.store-building-*` directory; do not query that partial directory.
+The destination must not exist. Import verifies the archive checksum, validates the supported content and writes `manifest.json`, `core.bin`, `membership.bin` and `display.bin`. It reports stage starts to stderr and returns the completed manifest on stdout. Existing destinations are rejected, so reuse a matching index or choose a new directory rather than deleting it automatically. Failed writes can leave a sibling `.store-building-*` directory; do not query that partial directory.
 
-Check the manifest's `edition`, `archive_sha256` and counts before reusing an index. `stats` reads metadata only. Opening an index for a query verifies the core checksum and structure. The pinned UK release has 1,151,519 concepts, including 838,955 active concepts.
+Check the manifest's `edition`, `archive_sha256` and counts before reusing an index. `stats` reads metadata only. Opening an index for a query verifies the core and declared membership checksums and structure. The pinned UK release has 1,151,519 concepts, including 838,955 active concepts.
 
 Default display selection prefers NHS clinical realm, NHS pharmacy realm, then GB English. An optional final positional argument supplies ordered, comma-separated refset IDs. See [display selection](docs/compact-store.md#display-selection) when another display policy is needed.
 
@@ -84,10 +84,23 @@ Treat any response with `error` as failure, not an empty expansion. Parse errors
 
 Requests are limited to 512 KiB per line; ECL itself is limited to 65,536 bytes, depth 64 and 4,096 parser nodes. Count-only requests still evaluate the expression; they avoid serialising the code list. Warm `eval_ms` excludes index loading, parsing, output and process startup.
 
+## Add supplementary refsets
+
+Use a verified simple RF2 Snapshot supplement such as PCD:
+
+```sh
+./target/release/snomed-rust-ecl-engine add-refsets BASE_STORE PCD_ZIP NEW_STORE YYYYMMDD TRUSTED_SHA256
+./target/release/snomed-rust-ecl-engine expand NEW_STORE '^REFSET_SCTID' --count
+```
+
+Substitute the real date, checksum and refset SCTID. The base needs its display and membership files. The loader adds new refset definitions and inferred is-a edges without rereading the base RF2. It rejects collisions, unknown concepts and existing definitions. For a newer supplement, start from the original base store and use a new destination.
+
+Inspect `supplements` in the combined manifest. Batch responses include supplement archive checksums; the edition URI still identifies the base. Exact module versions are not yet fully resolved. Other supplementary maps, language rows and typed fields are outside this command's current scope. Read [refsets](docs/refsets.md) before importing a different extension format.
+
 ## Recognise current limits
 
-Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact concrete comparisons and top/bottom are implemented. Membership, filters, history, alternate identifiers and typed projections still have gaps. Consult [conformance](docs/conformance.md) and [refinements](docs/refinements.md) before claiming support for a query category.
+Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact concrete comparisons, top/bottom and concept refset membership (`^` and `^R`) are implemented. Filters, history, alternate identifiers and typed projections still have gaps. Consult [conformance](docs/conformance.md) and [refinements](docs/refinements.md) before claiming support for a query category.
 
-Do not simplify unsupported ECL silently. Ordinary evaluation uses active concepts and published inferred relationships. Do not interpret an empty result as proof that a concept does not exist: it may be inactive or absent from this edition. For external correctness checks, pin the same edition and compare complete code sets. The optional OneLondon helper in [local setup](docs/setup.md#refresh-the-onelondon-probes) needs a separately configured credential helper; it is not required to use this engine.
+Do not simplify unsupported ECL silently. Ordinary ECL includes active and inactive concepts, active inferred relationships and active refset member rows. An inactive concept can be returned by a literal or membership query. An unknown literal returns an empty set. For external correctness checks, pin the same edition and supplement checksums and compare complete code sets. The optional OneLondon helper in [local setup](docs/setup.md#refresh-the-onelondon-probes) needs a separately configured credential helper; it is not required to use this engine.
 
-For direct Rust integration, use `NumericStore::open`, `ecl::parse` and `eval::evaluate_with_limits`; resolve returned ordinals through `store.ids`. Keep the opened store for repeated queries. `DisplayStore` is a separate optional lookup. The default importer API is silent; `import_snapshot_with_progress` accepts a stage callback. Hosting and deployment belong to a separate application repository.
+For direct Rust integration, use `NumericStore::open`, `ecl::parse` and `eval::evaluate_with_limits`; resolve returned ordinals through `store.ids`. Keep the opened store for repeated queries. `DisplayStore` is a separate optional lookup. The library exposes `add_refsets_snapshot` for supplementary simple refsets. The default importer API is silent; `import_snapshot_with_progress` accepts a stage callback. Hosting and deployment belong to a separate application repository.
