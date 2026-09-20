@@ -21,6 +21,7 @@ fn fixture() -> NumericStore {
     let edges = vec![(1, 0), (2, 1), (4, 0), (5, 0), (7, 6), (8, 10), (9, 10)];
     NumericStore {
         descriptions: Default::default(),
+        search: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),

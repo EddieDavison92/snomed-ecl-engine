@@ -22,6 +22,7 @@ fn fixture() -> NumericStore {
     membership.non_concept_refsets = Some(vec![1011000]);
     NumericStore {
         descriptions: Default::default(),
+        search: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
@@ -204,6 +205,7 @@ fn generated_memberships_match_independent_pair_scan() {
         .collect();
     let store = NumericStore {
         descriptions: Default::default(),
+        search: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),

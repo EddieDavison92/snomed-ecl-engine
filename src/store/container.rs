@@ -36,6 +36,21 @@ pub(crate) struct Section {
     sha256: String,
 }
 impl Section {
+    /// A whole uncompressed file as one section, for tests that write a
+    /// section on its own rather than packing a container around it.
+    #[cfg(test)]
+    pub(super) fn for_test(path: &Path, length: u64, sha256: String) -> Self {
+        Self {
+            path: path.into(),
+            offset: 0,
+            length,
+            encoded_length: length,
+            codec: 0,
+            file_length: length,
+            sha256,
+        }
+    }
+
     pub(super) fn reader(&self) -> Result<SectionReader> {
         let mut file = File::open(&self.path)?;
         ensure!(
@@ -285,6 +300,9 @@ fn specs(manifest: &Manifest) -> Result<Vec<(String, u64, String)>> {
     if let Some(m) = &manifest.descriptions {
         specs.push(("descriptions.bin".into(), m.bytes, m.sha256.clone()));
     }
+    if let Some(m) = &manifest.search {
+        specs.push(("search.bin".into(), m.bytes, m.sha256.clone()));
+    }
     if manifest.display_bytes > 0 {
         specs.push((
             "display.bin".into(),
@@ -448,6 +466,7 @@ pub struct Verification {
     pub descriptions: usize,
     pub member_rows: usize,
     pub identifiers: usize,
+    pub search_words: usize,
 }
 
 /// Exhaustively verifies checksums and structure, loading each cold section separately.
@@ -468,6 +487,7 @@ pub fn verify(path: &Path) -> Result<Verification> {
         descriptions: 0,
         member_rows: 0,
         identifiers: 0,
+        search_words: 0,
     };
     if let Some(meta) = &manifest.descriptions {
         result.descriptions =
@@ -486,6 +506,10 @@ pub fn verify(path: &Path) -> Result<Verification> {
     }
     if manifest.display_bytes > 0 {
         DisplayStore::open(path)?.verify_text()?;
+    }
+    if let Some(index) = store.search.get()? {
+        index.validate_order()?;
+        result.search_words = index.word_count();
     }
     Ok(result)
 }

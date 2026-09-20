@@ -406,6 +406,44 @@ fn run() -> Result<()> {
                 );
             }
         }
+        "build-search" => {
+            ensure!(args.len() == 2, "Usage: build-search STORE_DIRECTORY");
+            let path = Path::new(&args[1]);
+            ensure!(
+                path.is_dir(),
+                "build-search needs an unpacked store directory; pack it again afterwards"
+            );
+            let start = Instant::now();
+            let store = NumericStore::open(path)?;
+            let mut manifest = Manifest::read(path)?;
+            let descriptions = store
+                .descriptions
+                .get()?
+                .context("This index has no descriptions to index words from")?;
+            let pairs =
+                snomed_ecl_engine::store::search_pairs(descriptions, manifest.concept_count)?;
+            let index = snomed_ecl_engine::store::SearchIndex::build(pairs)?;
+            manifest.search = Some(index.write(&path.join("search.bin"))?);
+            serde_json::to_writer(
+                std::io::BufWriter::new(std::fs::File::create(path.join("manifest.json"))?),
+                &manifest,
+            )?;
+            let summary = serde_json::json!({
+                "words": index.word_count(),
+                "postings": index.posting_count(),
+                "elapsed_seconds": start.elapsed().as_secs_f64(),
+            });
+            if human {
+                println!(
+                    "Indexed {} words over {} postings in {:.1}s",
+                    presentation::number(index.word_count()),
+                    presentation::number(index.posting_count()),
+                    start.elapsed().as_secs_f64()
+                );
+            } else {
+                println!("{summary}");
+            }
+        }
         "verify" => {
             ensure!(args.len() <= 2, "Usage: verify [STORE]");
             let (store, _) = workspace::resolve(args.get(1).map(String::as_str))?;
@@ -658,7 +696,18 @@ fn run() -> Result<()> {
 #[derive(serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 struct BatchRequest {
-    ecl: String,
+    /// An expression to evaluate. Omitted when `concept` asks for a lookup.
+    #[serde(default)]
+    ecl: Option<String>,
+    /// An SCTID to describe instead of evaluating an expression.
+    #[serde(default)]
+    concept: Option<String>,
+    /// Text to look up in the word index instead of evaluating an expression.
+    #[serde(default)]
+    search: Option<String>,
+    /// Include inactive concepts in search results. Off by default.
+    #[serde(default)]
+    include_inactive: bool,
     #[serde(default)]
     count_only: bool,
     /// Resolve a display label for every concept in the result.
@@ -667,6 +716,12 @@ struct BatchRequest {
     /// that only wants codes should not pay for them.
     #[serde(default)]
     display: bool,
+    /// First result to return. `total` still counts the whole answer.
+    #[serde(default)]
+    offset: Option<usize>,
+    /// How many results to return from `offset`. Absent means all of them.
+    #[serde(default)]
+    limit: Option<usize>,
 }
 
 struct Codes<'a> {
@@ -716,6 +771,9 @@ struct BatchResponse<'a> {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     supplements: Vec<&'a str>,
     total: usize,
+    /// Index of the first returned result, when the request asked for a window.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    offset: Option<usize>,
     parse_ms: f64,
     eval_ms: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -730,6 +788,166 @@ struct BatchResponse<'a> {
     result_type: Option<&'static str>,
 }
 
+/// How many candidates are read and scored on their text. Everything above
+/// this is discarded on label length alone, which is free.
+const SEARCH_CANDIDATES: usize = 400;
+
+/// Finds concepts by name through the word index.
+///
+/// Ranking happens in two stages because reading a label costs a seek. The
+/// whole candidate set is ordered by label length, which the display offsets
+/// already know, and only the shortest few hundred are read and scored on how
+/// well they actually match.
+fn search_response(
+    store: &NumericStore,
+    displays: &mut Option<DisplayStore>,
+    display_path: &Path,
+    text: &str,
+    request: &BatchRequest,
+    out: &mut impl Write,
+) -> Result<()> {
+    let start = Instant::now();
+    let Some(index) = store.search.get()? else {
+        writeln!(
+            out,
+            "{}",
+            serde_json::json!({"error":"Unsupported","message":"This index has no word index; run build-search"})
+        )?;
+        return Ok(());
+    };
+    let mut candidates = index.matches(text);
+    if !request.include_inactive {
+        candidates.retain(|&ordinal| store.is_active(ordinal));
+    }
+    let total = candidates.len();
+
+    if displays.is_none() {
+        *displays = Some(DisplayStore::open(display_path)?);
+    }
+    let labels = displays.as_mut().expect("just opened");
+    // Shortest labels first: the canonical name for a concept is almost always
+    // shorter than the compound terms that also contain the same words.
+    candidates.sort_by_key(|&ordinal| (labels.label_bytes(ordinal).unwrap_or(u32::MAX), ordinal));
+    candidates.truncate(SEARCH_CANDIDATES);
+
+    let mut query_words = Vec::new();
+    snomed_ecl_engine::store::words(text, &mut query_words);
+    let mut scored = Vec::with_capacity(candidates.len());
+    for ordinal in candidates {
+        let label = labels.get(ordinal)?;
+        let score = label
+            .as_deref()
+            .map_or(i32::MIN, |label| score(label, text, &query_words));
+        scored.push((score, label, store.ids[ordinal as usize]));
+    }
+    // Best score first, then shortest, then by code so ties are stable.
+    scored.sort_by(|a, b| {
+        b.0.cmp(&a.0)
+            .then_with(|| {
+                a.1.as_ref()
+                    .map_or(0, |l| l.len())
+                    .cmp(&b.1.as_ref().map_or(0, |l| l.len()))
+            })
+            .then_with(|| a.2.cmp(&b.2))
+    });
+    let limit = request.limit.unwrap_or(50);
+    scored.truncate(limit);
+
+    let concepts: Vec<_> = scored
+        .into_iter()
+        .map(|(_, display, code)| serde_json::json!({"code": code.to_string(), "display": display}))
+        .collect();
+    serde_json::to_writer(
+        &mut *out,
+        &serde_json::json!({
+            "total": total,
+            "concepts": concepts,
+            "search_ms": start.elapsed().as_secs_f64() * 1000.0,
+        }),
+    )?;
+    writeln!(out)?;
+    Ok(())
+}
+
+/// Ranks one label against the query. Higher is better.
+fn score(label: &str, query: &str, query_words: &[String]) -> i32 {
+    let mut label_words = Vec::new();
+    snomed_ecl_engine::store::words(label, &mut label_words);
+    let mut score = 0;
+    // The whole query is the whole label.
+    if label.eq_ignore_ascii_case(query.trim()) {
+        score += 1000;
+    }
+    // The label opens with what was typed, so it reads as a continuation.
+    if label.to_ascii_lowercase().starts_with(&query.trim().to_ascii_lowercase()) {
+        score += 200;
+    }
+    for (position, word) in query_words.iter().enumerate() {
+        match label_words.iter().position(|w| w == word) {
+            // A whole-word hit, worth more when it lands where it was typed.
+            Some(at) => {
+                score += 60;
+                if at == position {
+                    score += 20;
+                }
+            }
+            // Otherwise the word index matched a longer word starting with it.
+            None if label_words.iter().any(|w| w.starts_with(word)) => score += 25,
+            None => {}
+        }
+    }
+    // Prefer labels that are mostly the query rather than mostly other words.
+    score -= i32::try_from(label_words.len().saturating_sub(query_words.len())).unwrap_or(0) * 3;
+    score
+}
+
+/// Describes one concept, for a browser rather than an expansion.
+fn concept_response(
+    store: &NumericStore,
+    displays: &mut Option<DisplayStore>,
+    display_path: &Path,
+    sctid: &str,
+    out: &mut impl Write,
+) -> Result<()> {
+    let Ok(sctid) = sctid.parse::<u64>() else {
+        writeln!(
+            out,
+            "{}",
+            serde_json::json!({"error":"InvalidRequest","message":"Concept must be an SCTID"})
+        )?;
+        return Ok(());
+    };
+    if displays.is_none() {
+        *displays = Some(DisplayStore::open(display_path)?);
+    }
+    let index = displays.as_mut().expect("just opened");
+    let start = Instant::now();
+    match snomed_ecl_engine::detail::describe(store, index, sctid)? {
+        Some(detail) => {
+            let mut value = serde_json::to_value(&detail)?;
+            value["lookup_ms"] = serde_json::json!(start.elapsed().as_secs_f64() * 1000.0);
+            serde_json::to_writer(&mut *out, &value)?;
+        }
+        None => serde_json::to_writer(
+            &mut *out,
+            &serde_json::json!({"error":"NotFound","concept":sctid.to_string()}),
+        )?,
+    }
+    writeln!(out)?;
+    Ok(())
+}
+
+/// The slice of a result a request asked for. `total` still reports the whole
+/// answer, so a caller can show "200 of 838,955" without fetching the rest.
+fn window<'a>(ordinals: &'a [u32], request: &BatchRequest) -> &'a [u32] {
+    let start = request.offset.unwrap_or(0).min(ordinals.len());
+    let end = match request.limit {
+        Some(limit) => start.saturating_add(limit).min(ordinals.len()),
+        None => ordinals.len(),
+    };
+    &ordinals[start..end]
+}
+
 fn batch_response(
     store: &NumericStore,
     manifest: &Manifest,
@@ -739,8 +957,22 @@ fn batch_response(
     display_path: &Path,
     out: &mut impl Write,
 ) -> Result<()> {
+    if let Some(sctid) = &request.concept {
+        return concept_response(store, displays, display_path, sctid, out);
+    }
+    if let Some(text) = &request.search {
+        return search_response(store, displays, display_path, text, request, out);
+    }
     let start = Instant::now();
-    let expression = match ecl::parse(&request.ecl) {
+    let Some(ecl_text) = &request.ecl else {
+        writeln!(
+            out,
+            "{}",
+            serde_json::json!({"error":"InvalidRequest","message":"Give either ecl or concept"})
+        )?;
+        return Ok(());
+    };
+    let expression = match ecl::parse(ecl_text) {
         Ok(expression) => expression,
         Err(error) => {
             writeln!(
@@ -766,6 +998,7 @@ fn batch_response(
     let mut labelled = None;
     if request.display && !request.count_only {
         if let eval::QueryResult::Concepts(ordinals) = &result {
+            let ordinals = window(ordinals, request);
             if displays.is_none() {
                 *displays = Some(DisplayStore::open(display_path)?);
             }
@@ -793,13 +1026,17 @@ fn batch_response(
                 .map(|s| s.archive_sha256.as_str())
                 .collect(),
             total: result.len(),
+            offset: request.offset.filter(|_| !request.count_only),
             parse_ms,
             eval_ms,
             codes: match &result {
                 eval::QueryResult::Concepts(ordinals)
                     if !request.count_only && labelled.is_none() =>
                 {
-                    Some(Codes { store, ordinals })
+                    Some(Codes {
+                        store,
+                        ordinals: window(ordinals, request),
+                    })
                 }
                 _ => None,
             },
