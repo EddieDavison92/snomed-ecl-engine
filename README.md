@@ -33,6 +33,29 @@ No HTTP server lives here, by design. This repository owns the library, index
 format, importer, CLI, conformance tests and benchmarks. A deployment
 application depends on it and owns hosting.
 
+## What it is good for
+
+Terminology servers answer *how many* and *show me a page*. Handing back every
+code costs this engine 2.29 ms. Counting costs 2.20 ms. The two are the same
+because evaluating the expression already produced the whole set. Snowstorm goes
+from 13.19 ms to 36.40 ms on those same expressions, because it serialises and
+pages the result over HTTP.
+
+That flat cost changes which jobs are worth doing.
+
+- **Expand hundreds of codelists at once.** Turning a directory of static code
+  lists into ECL definitions means enumerating every one and diffing it against
+  the original. At about 2 ms each that is a loop. Against a paged HTTP API it is
+  a batch job you schedule.
+- **Check a codelist against a new release.** `diff` runs one expression across
+  two indexes and reports what the release added and removed.
+- **Put it in CI.** A two-megabyte binary and an index file let a pipeline assert
+  that every definition in a repository still resolves.
+- **Work offline.** Mobile, air-gapped or field use. No service, no network at
+  query time, and the index checks its own checksums when opened.
+- **Give an agent a terminology.** One persistent JSONL process answers thousands
+  of expressions without reopening the index.
+
 ## Get started
 
 ```sh
@@ -64,29 +87,6 @@ content, and `import` verifies the checksum you supply before reading anything.
 | `diff` | Compare one expression across two indexes |
 
 The [CLI guide](docs/cli.md) is the full reference.
-
-## What it is good for
-
-Terminology servers answer *how many* and *show me a page*. Handing back every
-code costs this engine 2.29 ms. Counting costs 2.20 ms. The two are the same
-because evaluating the expression already produced the whole set. Snowstorm goes
-from 13.19 ms to 36.40 ms on those same expressions, because it serialises and
-pages the result over HTTP.
-
-That flat cost changes which jobs are worth doing.
-
-- **Expand hundreds of codelists at once.** Turning a directory of static code
-  lists into ECL definitions means enumerating every one and diffing it against
-  the original. At about 2 ms each that is a loop. Against a paged HTTP API it is
-  a batch job you schedule.
-- **Check a codelist against a new release.** `diff` runs one expression across
-  two indexes and reports what the release added and removed.
-- **Put it in CI.** A two-megabyte binary and an index file let a pipeline assert
-  that every definition in a repository still resolves.
-- **Work offline.** Mobile, air-gapped or field use. No service, no network at
-  query time, and the index checks its own checksums when opened.
-- **Give an agent a terminology.** One persistent JSONL process answers thousands
-  of expressions without reopening the index.
 
 ## Measurements
 
