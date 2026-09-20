@@ -16,6 +16,10 @@ The official example classification parses 63 of 121 files. The other 58 return 
 
 ## Corpus and timings
 
+The workload below records an earlier development stage. The current
+[10,000-expression corpus](corpus.md) preserves all its cases and adds broader
+coverage. The benchmark now defaults to that larger workload.
+
 [The corpus](../validation/ecl-1000.json) contains exactly 1,000 unique expressions, with 40 in each of 25 categories. `scripts/generate_corpus.py` samples active inferred rows from the checksum-pinned archive using seed `20260826`, with distinct source concepts. It was generated with Python 3.11.9. Query expressions are tracked; RF2 rows and indexes remain ignored.
 
 The current engine evaluates 800 cases. The 200 cases for membership, concept filters, description filters, history and member projections remain explicit coverage gaps. Generated expressions are not a clinical workload distribution. Among the 800 evaluated cases, 117 return no concepts, 368 return one, and the largest returns 65,043.
@@ -23,8 +27,8 @@ The current engine evaluates 800 cases. The 200 cases for membership, concept fi
 `scripts/benchmark_corpus.py` enumerates each supported result once and records a canonical full-set digest. It then runs five seeded shuffled batches in one loaded process, with no result cache. Count requests still evaluate and materialise the complete ordinal set. The local full Snowstorm option checks all returned IDs before timing Rust cases; mismatches are excluded from successful timings and remain in the report.
 
 ```sh
-python scripts/benchmark_corpus.py --output data/validation/ecl-1000.json
-python scripts/benchmark_corpus.py --store-volume snomed-ecl-runtime-index --output data/validation/ecl-1000-linux.json
+python scripts/benchmark_corpus.py --corpus validation/ecl-1000.json --output data/validation/ecl-1000.json
+python scripts/benchmark_corpus.py --corpus validation/ecl-1000.json --store-volume snomed-ecl-runtime-index --output data/validation/ecl-1000-linux.json
 ```
 
 The optional volume must contain `core.bin` and `manifest.json` for the pinned edition. The [recorded diagnostic run](refinement-results.json) includes raw samples, digests, unsupported cases and resource context. Other runs stay in ignored `data/validation/` until reviewed.
@@ -46,7 +50,7 @@ The comparison requests IDs only, pages with `searchAfter`, and checks every cod
 For a serving-only restart, use a prior report as completed-import evidence because Snowstorm's in-memory import job has disappeared. The runner checks the edition, archive checksum, complete MAIN branch response and live release sentinels before comparison:
 
 ```sh
-python scripts/benchmark_corpus.py --store-volume snomed-ecl-runtime-index --snowstorm http://127.0.0.1:18082 --import-report data/validation/ecl-1000-full-snowstorm.json --output data/validation/ecl-1000-full-snowstorm-rerun.json
+python scripts/benchmark_corpus.py --corpus validation/ecl-1000.json --store-volume snomed-ecl-runtime-index --snowstorm http://127.0.0.1:18082 --import-report data/validation/ecl-1000-full-snowstorm.json --output data/validation/ecl-1000-full-snowstorm-rerun.json
 ```
 
 The output path must be new. Restart the saved Elasticsearch volume and start Snowstorm without `--import`; retain the original container for its import logs. Stop both services after the run. Do not use a report for a different edition or a branch changed since that report.

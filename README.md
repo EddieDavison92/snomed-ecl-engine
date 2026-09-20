@@ -11,13 +11,14 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 | Workload | Measured result |
 |---|---|
 | 880 numeric-index expressions, one CPU and 256 MiB | 1.82 seconds per warm batch |
-| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 3.05 seconds per warm batch; 1.87 ms median request |
+| Original 1,000 expressions, one CPU and 256 MiB | 2.71 seconds per warm batch; 1.65 ms median request |
+| Expanded 10,000-expression corpus across 45 categories, one CPU and 256 MiB | 36.98 seconds per warm batch; 1.93 ms median request |
 | Measured numeric query-only Linux executable, without Unicode | 0.83 MiB, 0.39 MiB gzipped |
 | Numeric and concept-membership indexes | 103.3 MiB |
 | Complete current UK index, with descriptions, displays and typed members | 289.5 MiB packed, down from 1,110.8 MiB |
-| RF2 import, including descriptions, displays and typed members | 110.5 seconds with two CPUs and 3 GiB |
+| RF2 import, including descriptions, displays and typed members | 119.8 seconds with two CPUs and 3 GiB |
 
-Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [packed-index benchmark](validation/packed-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 12.75 ms; container-charged peak memory was 543 MiB. The same binary using the original directory returned a 1.81 ms median request and a 2.97-second batch. These figures measure the fixed corpus, not full ECL conformance or hosted cold starts.
+Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [1,000-case benchmark](validation/combined-ecl-corpus-results.json) and [10,000-case baseline](validation/ecl-10000-baseline-results.json) pin the release, binary, resource limits and result digests. The larger corpus preserves all 1,000 original expressions and complete results. Its request p95 was 14.56 ms and container-charged peak memory was 236.35 MiB. An independent RF2 check matches 3,920 of its complete result sets. These figures measure the fixed workloads, not full ECL conformance or hosted cold starts. See [corpus construction and measurement conditions](docs/corpus.md).
 
 The packed store opened in 1.13 seconds; container start through the first response took 1.72 seconds. Checksums and structural validation remain enabled, and description and member data load on demand. Filesystem caches were not dropped. Earlier [startup measurements](validation/startup-results.json) identified and fixed an unbuffered manifest read.
 
@@ -89,7 +90,7 @@ The [CLI guide](docs/cli.md) covers commands and output formats. The repository 
 
 Full ECL 2.3 support is the acceptance requirement. Current capabilities include hierarchy and Boolean operations, nested refinements, groups and cardinalities, exact concrete comparisons, top/bottom, concept refsets, concept filters and description filters. The optional Unicode backend evaluates term prefixes, wildcards and term sets.
 
-The 1,000-expression corpus now evaluates all 1,000 cases, including history supplements, with all previous 960 result sets unchanged. This measures coverage of that workload, not percentage conformance to the language. History profiles, alternate identifiers and configurable dialect aliases are implemented. General custom member types and remaining semantic details are still in progress. Unsupported expressions fail explicitly. The [conformance checklist](docs/conformance.md) tracks the remaining work.
+The 10,000-expression corpus evaluates all cases, with all 1,000 original result sets unchanged. This measures coverage of that workload, not percentage conformance to the language. History profiles, alternate identifiers, typed member projections and configurable dialect aliases are implemented. Remaining semantic details are still in progress. Unsupported expressions fail explicitly. The [conformance checklist](docs/conformance.md) tracks the remaining work.
 
 The engine is intended to power embedded tools, low-resource servers and serverless applications. An HTTP or deployment wrapper belongs in a separate application that consumes the library. Cloud cold starts and the complete engine's final resource footprint still need measurement.
 

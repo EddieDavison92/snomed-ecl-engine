@@ -48,6 +48,7 @@ def snowstorm(base, ecl):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--corpus", type=Path, default=Path("validation/ecl-10000.json"))
     parser.add_argument("--binary", default="target/linux-core/release/snomed-ecl-engine")
     parser.add_argument("--samples", type=int, default=5)
     parser.add_argument("--memory-mib", type=int, default=256, help="Container memory and swap limit; record larger semantic-index runs separately")
@@ -62,8 +63,11 @@ def main():
         parser.error("Choose a new report path and positive sample count")
     if args.snowstorm and urllib.parse.urlparse(args.snowstorm).hostname not in ("127.0.0.1", "localhost", "::1"):
         parser.error("Only local comparison servers are allowed")
-    corpus_path = ROOT / "validation/ecl-1000.json"
-    corpus = json.loads(corpus_path.read_text())
+    corpus_path = ROOT / args.corpus
+    corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
+    if (not corpus['cases'] or len({r['id'] for r in corpus['cases']}) != len(corpus['cases'])
+            or len({r['ecl'] for r in corpus['cases']}) != len(corpus['cases'])):
+        parser.error("Corpus must contain distinct case IDs and expressions")
     store_directory = (ROOT / args.store_directory).resolve()
     try:
         store = store_directory.relative_to(ROOT).as_posix()
