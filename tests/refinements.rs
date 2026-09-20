@@ -89,6 +89,8 @@ fn cardinality_and_inequality_preserve_absence_and_reverse_identity() {
     assert_query("(1000000 OR 1004000) : [0..0] 1005000 = *", &[4]);
     assert_query("* : 1006000 != 1009000", &[3]);
     assert_query("* : [4..4] R 1005000 = *", &[8]);
+    assert_query("* : [4..4] r 1005000 = *", &[8]);
+    assert_query("* : [4..4] r1005000 = *", &[8]);
     assert_query("* : [5..5] R 1005000 = *", &[]);
     assert_query("* : R 1005000 != 1000000", &[8]);
     assert_query("* : 116680003 = 1008000", &[9]);
@@ -198,9 +200,52 @@ fn nested_names_values_projection_and_extrema() {
         evaluate(&fixture(), &parse("1000000 . 1007000").unwrap()),
         Err(EvalError::TypeMismatch)
     ));
+}
+
+#[test]
+fn reverse_flags_inside_groups_or_with_concrete_values_are_semantic_errors() {
+    use snomed_ecl_engine::ecl::{
+        AttributeConstraint, AttributeValue, Cardinality, Comparison, Expr, Refinement,
+    };
+    for (query, offset) in [
+        ("* : { R 1005000 = * }", 6),
+        ("* : {R 1005000 = *}", 5),
+        ("* : { reverseOf 1005000 = * }", 6),
+        ("* : { r 1005000 = * }", 6),
+        ("* : {r1005000 = *}", 5),
+        ("* : { 1006000 = *, R 1005000 = * }", 19),
+        ("* : { (1006000 = * OR R 1005000 = *) }", 22),
+        ("* : [1..1] { [2..*] R 1005000 = * }", 20),
+        ("* : 1006000 = *, { R 1005000 = * }", 19),
+        ("* : R 1007000 = #1", 4),
+        ("* : r 1007000 = #1", 4),
+        ("* : R 1007000 = \"A\"", 4),
+        ("* : R 1007000 = true", 4),
+    ] {
+        let error = parse(query).unwrap_err();
+        assert_eq!(error.kind, ParseErrorKind::Semantic, "{query}");
+        assert_eq!(error.offset, offset, "{query}");
+    }
+    // The ungrouped forms remain valid; the group boundary alone decides.
+    assert_query("* : R 1005000 = * OR { 1006000 = * }", &[0, 1, 3, 8]);
+    assert_query("* : (R 1005000 = 1000000) AND 1005000 = *", &[]);
+    // A constructed AST receives the same ruling at evaluation.
+    let grouped = Expr::Refined(
+        Box::new(Expr::All),
+        Box::new(Refinement::Group(
+            Cardinality::default(),
+            Box::new(Refinement::Attribute(AttributeConstraint {
+                cardinality: Cardinality::default(),
+                reverse: true,
+                name: Box::new(Expr::Concept(1005000)),
+                comparison: Comparison::Eq,
+                value: AttributeValue::Concepts(Box::new(Expr::All)),
+            })),
+        )),
+    );
     assert!(matches!(
-        evaluate(&fixture(), &parse("* : { R 1005000 = * }").unwrap()),
-        Err(EvalError::Unsupported(_))
+        evaluate(&fixture(), &grouped),
+        Err(EvalError::Semantic(_))
     ));
 }
 
@@ -293,7 +338,6 @@ fn malformed_refinements_fail_and_long_syntax_agrees() {
         "* : 1007000 = #--1",
         "* : 1007000 = wild:\"*B\"",
         "* : 1007000 = match:\"A\"",
-        "* : R 1007000 = #1",
         "* : { { 1005000 = * } }",
         "* : [1..*] (1005000 = *)",
         "* : 1005000 = * OR 1006000 = * AND 1007000 = *",

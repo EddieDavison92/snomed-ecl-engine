@@ -82,6 +82,11 @@ impl Schemas {
         Ok(schemas)
     }
 
+    /// Reference sets with their own active descriptor rows.
+    pub fn declared_refsets(&self) -> impl Iterator<Item = u64> + '_ {
+        self.0.keys().copied()
+    }
+
     fn insert(&mut self, refset: u64, position: u32, kind: u64) -> Result<()> {
         ensure!(
             self.0
@@ -182,7 +187,7 @@ pub(super) fn column(
     })
 }
 
-fn ancestors(id: u64, store: &NumericStore) -> BTreeSet<u64> {
+pub(super) fn ancestors(id: u64, store: &NumericStore) -> BTreeSet<u64> {
     let mut seen = BTreeSet::new();
     let mut todo = vec![id];
     while let Some(id) = todo.pop() {

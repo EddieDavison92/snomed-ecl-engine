@@ -18,6 +18,14 @@ const LEAF: u64 = 1000004;
 const INACTIVE: u64 = 1000005;
 const KIND: u64 = 9000001;
 const TARGET: u64 = 9000002;
+/// A reference set whose only Snapshot row is an inactive description member.
+const INACTIVE_DESCRIPTION_REFSET: u64 = 9000003;
+/// A reference set with no rows whose descriptor declares description members.
+const DECLARED_DESCRIPTION_REFSET: u64 = 9000004;
+/// A reference set whose only Snapshot row is an inactive concept member.
+const INACTIVE_CONCEPT_REFSET: u64 = 9000005;
+const DESCRIPTOR_REFSET: u64 = 900000000000456007;
+const DESCRIPTION_TYPE: u64 = 900000000000462002;
 const ISA: u64 = 116680003;
 
 #[test]
@@ -340,6 +348,11 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
         INACTIVE,
         KIND,
         TARGET,
+        INACTIVE_DESCRIPTION_REFSET,
+        DECLARED_DESCRIPTION_REFSET,
+        INACTIVE_CONCEPT_REFSET,
+        DESCRIPTOR_REFSET,
+        DESCRIPTION_TYPE,
         ISA,
         900000000000508004,
         999001261000000100,
@@ -354,6 +367,8 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
             u8::from(code != INACTIVE)
         ));
     }
+    // The descriptor declares one reference set as description-based without any member rows.
+    add("Snapshot/Refset/der2_cciRefset_RefsetDescriptorSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tattributeDescription\tattributeType\tattributeOrder\n00000000-0000-4000-8000-000000000101\t20260826\t1\t{ROOT}\t{DESCRIPTOR_REFSET}\t{DECLARED_DESCRIPTION_REFSET}\t{ROOT}\t{DESCRIPTION_TYPE}\t0\n"));
     if duplicate {
         concepts.push_str(&format!(
             "{LEAF}\t20260826\t1\t{ROOT}\t900000000000074008\n"
@@ -382,9 +397,9 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
     );
     add("Snapshot/Terminology/sct2_RelationshipConcreteValues_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tsourceId\tvalue\trelationshipGroup\ttypeId\tcharacteristicTypeId\tmodifierId\n4000001\t20260826\t1\t{ROOT}\t{LEAF}\t#0.100000000000000001\t2\t{KIND}\t900000000000011006\t900000000000451002\n4000002\t20260826\t1\t{ROOT}\t{LEAF}\t\"synthetic value\"\t3\t{KIND}\t900000000000011006\t900000000000451002\n"));
     add("Snapshot/Refset/der2_ssRefset_ModuleDependencySnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime\n00000000-0000-4000-8000-000000000001\t20260826\t1\t{ROOT}\t900000000000534007\t{LEFT}\t20260826\t20260826\n"));
-    add("Snapshot/Refset/der2_cRefset_LanguageSnapshot.txt", "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tacceptabilityId\nsynthetic-gb\t20260826\t1\t1000001\t900000000000508004\t6000012\t900000000000548007\nsynthetic-realm\t20260826\t1\t1000001\t999001261000000100\t6000013\t900000000000548007\n".into());
+    add("Snapshot/Refset/der2_cRefset_LanguageSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tacceptabilityId\nsynthetic-gb\t20260826\t1\t1000001\t900000000000508004\t6000012\t900000000000548007\nsynthetic-realm\t20260826\t1\t1000001\t999001261000000100\t6000013\t900000000000548007\nsynthetic-retired\t20260826\t0\t1000001\t{INACTIVE_DESCRIPTION_REFSET}\t6000015\t900000000000548007\n"));
     add("Snapshot/Terminology/sct2_Description_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000011\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic synonym\t900000000000448009\n6000012\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic GB label\t900000000000448009\n6000013\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic realm label\t900000000000448009\n6000014\t20260826\t1\t{ROOT}\t{ROOT}\ten\t900000000000003001\tSynthetic root (test)\t900000000000448009\n6000015\t20260826\t0\t{ROOT}\t{LEAF}\ten\t900000000000013009\tInactive label\t900000000000448009\n"));
-    add("Snapshot/Refset/der2_Refset_SimpleSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\n00000000-0000-4000-8000-000000000002\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000003\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000004\t20260826\t1\t{ROOT}\t{ROOT}\t{LEAF}\n00000000-0000-4000-8000-000000000005\t20260826\t1\t{ROOT}\t{ROOT}\t{INACTIVE}\n00000000-0000-4000-8000-000000000006\t20260826\t0\t{ROOT}\t{ROOT}\t{RIGHT}\n"));
+    add("Snapshot/Refset/der2_Refset_SimpleSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\n00000000-0000-4000-8000-000000000002\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000003\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000004\t20260826\t1\t{ROOT}\t{ROOT}\t{LEAF}\n00000000-0000-4000-8000-000000000005\t20260826\t1\t{ROOT}\t{ROOT}\t{INACTIVE}\n00000000-0000-4000-8000-000000000006\t20260826\t0\t{ROOT}\t{ROOT}\t{RIGHT}\n00000000-0000-4000-8000-000000000007\t20260826\t0\t{ROOT}\t{INACTIVE_CONCEPT_REFSET}\t{RIGHT}\n"));
     add("Snapshot/Terminology/sct2_TextDefinition_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000016\t20260826\t1\t{ROOT}\t{RIGHT}\ten\t900000000000550004\tSynthetic definition\t900000000000448009\n"));
     archive.finish().unwrap();
 }
@@ -420,7 +435,6 @@ fn descriptor_fixture_with(path: &Path, invalid_decimal: bool, integers: &[&str]
                 800001u64,
                 800002,
                 1119403002,
-                900000000000456007,
                 900000000000461009,
                 900000000000474003,
                 900000000000475002,
@@ -435,7 +449,7 @@ fn descriptor_fixture_with(path: &Path, invalid_decimal: bool, integers: &[&str]
         files.push((name, body));
     }
     drop(original);
-    let mut descriptors = "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tattributeDescription\tattributeType\tattributeOrder\n".to_owned();
+    let mut descriptors = String::new();
     for (position, kind) in [
         900000000000461009u64,
         1119403002,
@@ -454,10 +468,12 @@ fn descriptor_fixture_with(path: &Path, invalid_decimal: bool, integers: &[&str]
     {
         descriptors.push_str(&format!("00000000-0000-4000-8000-00000000110{position}\t20260826\t1\t{ROOT}\t900000000000456007\t{KIND}\t{ROOT}\t{kind}\t{position}\n"));
     }
-    files.push((
-        "Synthetic/Snapshot/Refset/der2_cciRefset_RefsetDescriptorSnapshot.txt".into(),
-        descriptors,
-    ));
+    files
+        .iter_mut()
+        .find(|(name, _)| name.contains("RefsetDescriptor"))
+        .unwrap()
+        .1
+        .push_str(&descriptors);
     let amount = if invalid_decimal {
         "NaN"
     } else {
@@ -622,7 +638,7 @@ fn roundtrip_preserves_groups_precision_and_separate_displays() {
     let destination = temp.path().join("store");
     fixture(&archive, false, false);
     let manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
-    assert_eq!(manifest.active_concept_count, 14);
+    assert_eq!(manifest.active_concept_count, 19);
     let store = NumericStore::open(&destination).unwrap();
     assert_eq!(store.identifiers.get().unwrap().unwrap().rows.len(), 4);
     assert_eq!(
@@ -1008,7 +1024,7 @@ fn cli_import_progress_and_presentation_keep_machine_output_parseable() {
         .unwrap();
     assert!(imported.status.success(), "{:?}", imported);
     let manifest: serde_json::Value = serde_json::from_slice(&imported.stdout).unwrap();
-    assert_eq!(manifest["manifest"]["active_concept_count"], 14);
+    assert_eq!(manifest["manifest"]["active_concept_count"], 19);
     assert!(!imported.stderr.is_empty());
     assert!(!imported.stdout.contains(&0x1b));
     for options in [vec!["--count", "--json"], vec!["--json"], vec!["--plain"]] {
@@ -1052,19 +1068,124 @@ fn membership_import_distinguishes_component_types_and_old_stores() {
     let mut manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
     let metadata = manifest.membership.as_ref().unwrap();
     assert_eq!(metadata.active_non_concept_rows, 2);
-    assert_eq!(metadata.snapshot_files, 3);
-    let store = NumericStore::open(&destination).unwrap();
-    let result = evaluate(&store, &parse(&format!("^{ROOT}")).unwrap()).unwrap();
+    assert_eq!(metadata.snapshot_files, 4);
+    // The domain comes from descriptors and rows of every status: the declared and the
+    // inactive-only description sets are outside it, the inactive-only concept set is inside.
     assert_eq!(
-        result
-            .iter()
-            .map(|&i| store.ids[i as usize])
-            .collect::<Vec<_>>(),
+        metadata.non_concept_refsets,
+        Some(vec![
+            INACTIVE_DESCRIPTION_REFSET,
+            DECLARED_DESCRIPTION_REFSET,
+            900000000000508004,
+            999001261000000100
+        ])
+    );
+    assert_eq!(
+        metadata.concept_refsets,
+        Some(vec![
+            ROOT,
+            INACTIVE_CONCEPT_REFSET,
+            DESCRIPTOR_REFSET,
+            900000000000534007
+        ])
+    );
+    let store = NumericStore::open(&destination).unwrap();
+    let codes = |query: &str| {
+        evaluate(&store, &parse(query).unwrap()).map(|result| {
+            result
+                .iter()
+                .map(|&i| store.ids[i as usize])
+                .collect::<Vec<_>>()
+        })
+    };
+    assert_eq!(codes(&format!("^{ROOT}")).unwrap(), [LEFT, LEAF, INACTIVE]);
+    // Section 6.1 excludes description-based reference sets from memberOf; the specified
+    // `^ *` query and mixed selections keep returning the concept-based members.
+    for query in [
+        "^900000000000508004".to_owned(),
+        "^(900000000000508004 OR 999001261000000100)".into(),
+        format!("^(900000000000508004 OR {LEFT})"),
+        "^[referencedComponentId]900000000000508004".into(),
+        "^900000000000508004 {{M active=1}}".into(),
+        format!("^{INACTIVE_DESCRIPTION_REFSET}"),
+        format!("^{INACTIVE_DESCRIPTION_REFSET} {{{{M active=0}}}}"),
+        format!("^{DECLARED_DESCRIPTION_REFSET}"),
+        format!("^({INACTIVE_DESCRIPTION_REFSET} OR {DECLARED_DESCRIPTION_REFSET}) {{{{M active=\"*\"}}}}"),
+    ] {
+        assert!(
+            matches!(codes(&query), Err(EvalError::Semantic(_))),
+            "{query}"
+        );
+    }
+    assert_eq!(
+        codes("^*").unwrap(),
+        [LEFT, LEAF, INACTIVE, DECLARED_DESCRIPTION_REFSET]
+    );
+    assert_eq!(
+        codes(&format!("^(900000000000508004 OR {ROOT})")).unwrap(),
         [LEFT, LEAF, INACTIVE]
     );
-    assert!(evaluate(&store, &parse("^900000000000508004").unwrap())
-        .unwrap()
-        .is_empty());
+    // A concept-based set whose rows are all inactive stays in the domain, alone and beside
+    // a description-based set, so its inactive members remain reachable.
+    assert_eq!(
+        codes(&format!("^{INACTIVE_CONCEPT_REFSET}")).unwrap(),
+        Vec::<u64>::new()
+    );
+    assert_eq!(
+        codes(&format!("^{INACTIVE_CONCEPT_REFSET} {{{{M active=0}}}}")).unwrap(),
+        [RIGHT]
+    );
+    assert_eq!(
+        codes(&format!(
+            "^({INACTIVE_DESCRIPTION_REFSET} OR {INACTIVE_CONCEPT_REFSET}) {{{{M active=\"*\"}}}}"
+        ))
+        .unwrap(),
+        [RIGHT]
+    );
+    assert_eq!(
+        codes(&format!(
+            "^({INACTIVE_DESCRIPTION_REFSET} OR {INACTIVE_CONCEPT_REFSET})"
+        ))
+        .unwrap(),
+        Vec::<u64>::new()
+    );
+    assert_eq!(
+        codes(&format!("^R {RIGHT} {{{{M active=0}}}}")).unwrap(),
+        [ROOT, INACTIVE_CONCEPT_REFSET]
+    );
+    assert_eq!(
+        codes(&format!(
+            "^(900000000000508004 OR {ROOT}) {{{{M active=0}}}}"
+        ))
+        .unwrap(),
+        [RIGHT]
+    );
+    assert_eq!(codes("^R 900000000000508004").unwrap(), Vec::<u64>::new());
+    assert_eq!(
+        codes(&format!("^R {LEFT}")).unwrap(),
+        [ROOT, 900000000000534007]
+    );
+    // A manifest without the classification behaves like the earlier format.
+    let mut legacy = Manifest::read(&destination).unwrap();
+    let membership = legacy.membership.as_mut().unwrap();
+    membership.concept_refsets = None;
+    membership.non_concept_refsets = None;
+    serde_json::to_writer(
+        File::create(destination.join("manifest.json")).unwrap(),
+        &legacy,
+    )
+    .unwrap();
+    let legacy_store = NumericStore::open(&destination).unwrap();
+    assert!(
+        evaluate(&legacy_store, &parse("^900000000000508004").unwrap())
+            .unwrap()
+            .is_empty()
+    );
+    serde_json::to_writer(
+        File::create(destination.join("manifest.json")).unwrap(),
+        &manifest,
+    )
+    .unwrap();
     fs::rename(
         destination.join("membership.bin"),
         destination.join("membership.saved"),
@@ -1178,6 +1299,22 @@ fn supplementary_refsets_preserve_base_semantics_and_provenance() {
     };
     assert_eq!(codes("^2000001"), [LEAF, INACTIVE]);
     assert_eq!(codes("^2000001 {{M active=0}}"), [RIGHT]);
+    let (base_membership, merged) = (
+        original.membership.as_ref().unwrap(),
+        combined.membership.as_ref().unwrap(),
+    );
+    assert_eq!(
+        merged.non_concept_refsets,
+        base_membership.non_concept_refsets
+    );
+    let mut expected = base_membership.concept_refsets.clone().unwrap();
+    expected.push(2000001);
+    expected.sort_unstable();
+    assert_eq!(merged.concept_refsets, Some(expected));
+    assert!(matches!(
+        evaluate(&store, &parse("^900000000000508004").unwrap()),
+        Err(snomed_ecl_engine::eval::EvalError::Semantic(_))
+    ));
     assert_eq!(codes("^900000000000534007 {{M active=1}}"), [ROOT, LEFT]);
     assert_eq!(
         codes("^900000000000534007 {{M sourceEffectiveTime=\"20260820\"}}"),

@@ -3,6 +3,43 @@
   "reference_commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",
   "complete": false,
   "status_meaning": "Development coverage only. Production coverage does not prove semantic conformance. Partial includes untested lexical edges and alternatives. Every pending rule remains required.",
+  "semantic_rulings": [
+    {
+      "form": "reverse flag inside an attribute group",
+      "example": "* : { R 363698007 = X }",
+      "normative_status": "open",
+      "error": "ParseErrorKind::Semantic",
+      "evidence": "docs/conformance.md#open-grammar-forms; tests/refinements.rs; IHTSDO/snomed-expression-constraint-language#11 open"
+    },
+    {
+      "form": "member filter without a refset operator",
+      "example": "900000000000527005 {{M active=1}}",
+      "normative_status": "open",
+      "error": "ParseErrorKind::Semantic",
+      "evidence": "docs/conformance.md#open-grammar-forms; tests/lexical.rs; logical model 4; IHTSDO/snomed-expression-constraint-language#10 open"
+    },
+    {
+      "form": "reverse flag with a concrete value",
+      "example": "* : R 1142135004 = #10",
+      "normative_status": "open: reversal is defined through destination concepts; scalar reversal remains unresolved",
+      "error": "ParseErrorKind::Semantic",
+      "evidence": "docs/conformance.md#open-grammar-forms; tests/refinements.rs"
+    },
+    {
+      "form": "memberOf over reference sets outside the concept domain only",
+      "example": "^ 900000000000508004",
+      "normative_status": "specified: 6.1 limits memberOf to concept-referencing reference sets and defines ^ *",
+      "error": "EvalError::Semantic",
+      "evidence": "docs/conformance.md#open-grammar-forms; tests/membership.rs; tests/member_filters.rs; tests/compact_store.rs; scripts/check_membership_rf2.py"
+    },
+    {
+      "form": "tuple projection inside a subquery",
+      "example": "<< (^[referencedComponentId,mapTarget] X)",
+      "normative_status": "specified: 6.1 final-operation rule",
+      "error": "EvalError::TypeMismatch",
+      "evidence": "docs/conformance.md#open-grammar-forms; tests/member_filters.rs"
+    }
+  ],
   "grammars": [
     {
       "file": "abnf-brief.txt",

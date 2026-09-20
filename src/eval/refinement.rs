@@ -33,7 +33,11 @@ impl Context<'_> {
         match refinement {
             Refinement::Attribute(attribute) => {
                 if grouped && attribute.reverse {
-                    return Err(EvalError::Unsupported("Reverse attributes inside groups"));
+                    // The parser rejects this form; a constructed AST gets the same ruling.
+                    return Err(EvalError::Semantic(
+                        "Reverse flag inside an attribute group has no defined ECL semantics"
+                            .into(),
+                    ));
                 }
                 let names = self.eval(&attribute.name, depth + 1)?;
                 let range = match &attribute.value {

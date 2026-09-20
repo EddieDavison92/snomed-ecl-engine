@@ -1,0 +1,104 @@
+{
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "memory_limit_mib": 2048,
+  "includes_inactive_reverse": true,
+  "refset_rows_scanned": 15151501,
+  "scope": "Independent RF2 member rows of every status and all concept IDs; complete code sets",
+  "results": [
+    {
+      "ecl": "^51971000001109",
+      "expected_total": 102,
+      "observed_total": 102,
+      "matches": true,
+      "expected_sha256": "8ae38c442d8336837150fe1e380aff53570ddc152a243efeacdffd25f7e2ec5b",
+      "observed_sha256": "8ae38c442d8336837150fe1e380aff53570ddc152a243efeacdffd25f7e2ec5b"
+    },
+    {
+      "ecl": "^723562003",
+      "expected_total": 127,
+      "observed_total": 127,
+      "matches": true,
+      "expected_sha256": "f0e6f7bc803b1470695898f8ebf5b42e6c44076cee23f126f1a65d34e2ba0cbb",
+      "observed_sha256": "f0e6f7bc803b1470695898f8ebf5b42e6c44076cee23f126f1a65d34e2ba0cbb"
+    },
+    {
+      "ecl": "^900000000000508004",
+      "expected": "Semantic error (description-based reference set)",
+      "observed": "Semantic(\"memberOf applies only to reference sets whose referenced components are concepts; 900000000000508004 references descriptions or relationships\")",
+      "matches": true
+    },
+    {
+      "ecl": "^999002271000000101",
+      "expected_total": 128748,
+      "observed_total": 128748,
+      "matches": true,
+      "expected_sha256": "c6296b158aac9bd9c64283971865015a4b95a053ffed657d955ce28ca0180792",
+      "observed_sha256": "c6296b158aac9bd9c64283971865015a4b95a053ffed657d955ce28ca0180792"
+    },
+    {
+      "ecl": "^R195967001",
+      "expected_total": 11,
+      "observed_total": 11,
+      "matches": true,
+      "expected_sha256": "a404f61c01cd2e926c79b538f56f1ba72342148d708ab38052b643b40551c2cd",
+      "observed_sha256": "a404f61c01cd2e926c79b538f56f1ba72342148d708ab38052b643b40551c2cd"
+    },
+    {
+      "ecl": "^R404684003",
+      "expected_total": 5,
+      "observed_total": 5,
+      "matches": true,
+      "expected_sha256": "d463852f7c4da0581ad07c498b8fe75b026db692511725823b14aa19866d3603",
+      "observed_sha256": "d463852f7c4da0581ad07c498b8fe75b026db692511725823b14aa19866d3603"
+    },
+    {
+      "ecl": "^900000000000527005 {{M active=0}}",
+      "expected_total": 29351,
+      "observed_total": 29351,
+      "matches": true,
+      "expected_sha256": "c49d52995eef743d90b789ffd9710d414613c2cf092c201706dc312ce616d879",
+      "observed_sha256": "c49d52995eef743d90b789ffd9710d414613c2cf092c201706dc312ce616d879"
+    },
+    {
+      "ecl": "^900000000000527005 {{M active=\"*\"}}",
+      "expected_total": 135808,
+      "observed_total": 135808,
+      "matches": true,
+      "expected_sha256": "fb2bbb6554fd6911f70b379576ecd1b587ba939575448412590fa3c05a0a0531",
+      "observed_sha256": "fb2bbb6554fd6911f70b379576ecd1b587ba939575448412590fa3c05a0a0531"
+    },
+    {
+      "ecl": "^900000000000531004 {{M active=0}}",
+      "expected_total": 10,
+      "observed_total": 10,
+      "matches": true,
+      "expected_sha256": "92dfeb046e0a776d00b88b925de326a237b1f3b3303bb3202d01fc787d603871",
+      "observed_sha256": "92dfeb046e0a776d00b88b925de326a237b1f3b3303bb3202d01fc787d603871"
+    },
+    {
+      "ecl": "^900000000000531004 {{M active=\"*\"}}",
+      "expected_total": 10,
+      "observed_total": 10,
+      "matches": true,
+      "expected_sha256": "92dfeb046e0a776d00b88b925de326a237b1f3b3303bb3202d01fc787d603871",
+      "observed_sha256": "92dfeb046e0a776d00b88b925de326a237b1f3b3303bb3202d01fc787d603871"
+    },
+    {
+      "ecl": "^900000000000531004",
+      "expected_total": 0,
+      "observed_total": 0,
+      "matches": true,
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ecl": "^R (^900000000000531004 {{M active=0}}) {{M active=0}}",
+      "expected_total": 14,
+      "observed_total": 14,
+      "matches": true,
+      "expected_sha256": "e488726001210b4b1883100e73e71beba8e79dc2667d4734447bc9a9062d27ed",
+      "observed_sha256": "e488726001210b4b1883100e73e71beba8e79dc2667d4734447bc9a9062d27ed"
+    }
+  ]
+}

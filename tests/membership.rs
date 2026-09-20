@@ -4,11 +4,22 @@ use snomed_ecl_engine::store::{Adjacency, Attributes, MembershipIndex, NumericSt
 use std::collections::BTreeSet;
 use std::sync::atomic::AtomicBool;
 
+// Ordinal 11 (1011000) is a description-based reference set with no concept members.
+// Ordinal 7 (1007000) is a concept-based reference set whose rows are all inactive, so it is
+// in the memberOf domain although the active index holds nothing for it. Ordinal 10 is an
+// inactive concept whose refset has active members.
 fn fixture() -> NumericStore {
     let n = 12;
     let mut flags = vec![1; n];
     flags[2] = 0;
     flags[10] = 0;
+    let mut membership = MembershipIndex::build(
+        n,
+        vec![(8, 0), (8, 0), (8, 1), (8, 2), (9, 1), (9, 3), (10, 4)],
+    )
+    .unwrap();
+    membership.concept_refsets = Some(vec![1007000, 1008000, 1009000, 1010000]);
+    membership.non_concept_refsets = Some(vec![1011000]);
     NumericStore {
         descriptions: Default::default(),
         member_tables: Default::default(),
@@ -23,13 +34,7 @@ fn fixture() -> NumericStore {
         attributes: Attributes::build(n, vec![]).unwrap(),
         concrete: Attributes::build(n, vec![]).unwrap(),
         concrete_values: vec![],
-        membership: Some(
-            MembershipIndex::build(
-                n,
-                vec![(8, 0), (8, 0), (8, 1), (8, 2), (9, 1), (9, 3), (10, 4)],
-            )
-            .unwrap(),
-        ),
+        membership: Some(membership),
     }
 }
 
@@ -48,18 +53,74 @@ fn membership_composes_with_hierarchy_sets_and_reverse_lookup() {
         ("^R 1001000", vec![8, 9]),
         ("refsetContainingAny (1000000 OR 1003000)", vec![8, 9]),
         ("^r 1001000", vec![8, 9]),
+        ("REFSETCONTAININGANY 1001000", vec![8, 9]),
         ("^R*", vec![8, 9, 10]),
         ("^ 1010000", vec![4]),
         ("^R 1004000", vec![10]),
         ("^R 1002000", vec![8]),
         ("^ 9990000", vec![]),
         ("^ (1008000 MINUS 1008000)", vec![]),
+        // Mixed selections keep the concept members of concept-based reference sets.
+        ("^ (1011000 OR 1008000)", vec![0, 1, 2]),
+        ("^ (>> 1011000 OR 1010000)", vec![4]),
+        ("^ (* MINUS 1008000)", vec![1, 3, 4]),
+        // A concept-based set with no active members is still in the domain.
+        ("^ 1007000", vec![]),
+        ("^ (1011000 OR 1007000)", vec![]),
+        ("^R 1011000", vec![]),
+        ("^R (1011000 OR 1000000)", vec![8]),
     ] {
         assert_eq!(
             evaluate(&store, &parse(query).unwrap()).unwrap(),
             expected,
             "{query}"
         );
+    }
+}
+
+#[test]
+fn member_of_a_description_based_reference_set_is_a_semantic_error_not_an_empty_set() {
+    let store = fixture();
+    for query in [
+        "^ 1011000",
+        "memberOf 1011000 |Synthetic language refset|",
+        "<< (^ 1011000)",
+        "(^ 1011000) OR 1000000",
+        "1000000 MINUS (^ 1011000)",
+        "^ (1011000 OR 9990000)",
+        "^ (1011000 OR 1006000)",
+        "^ (1011000 MINUS 1008000)",
+        "^ (<< 1011000)",
+        "* : 1005000 = (^ 1011000)",
+    ] {
+        assert!(
+            matches!(
+                evaluate(&store, &parse(query).unwrap()),
+                Err(EvalError::Semantic(message)) if message.contains("1011000")
+            ),
+            "{query}"
+        );
+    }
+    // Indexes built before the classification existed keep returning the empty set.
+    let mut legacy = fixture();
+    let index = legacy.membership.as_mut().unwrap();
+    index.concept_refsets = None;
+    index.non_concept_refsets = None;
+    legacy.validate().unwrap();
+    assert!(evaluate(&legacy, &parse("^ 1011000").unwrap())
+        .unwrap()
+        .is_empty());
+    for (concept, non_concept) in [
+        (Some(vec![1008000]), Some(vec![1011000, 1011000])),
+        (Some(vec![1008000, 1011000]), Some(vec![1011000])),
+        (None, Some(vec![1011000])),
+        (Some(vec![1009000, 1008000]), Some(vec![])),
+    ] {
+        let mut invalid = fixture();
+        let index = invalid.membership.as_mut().unwrap();
+        index.concept_refsets = concept;
+        index.non_concept_refsets = non_concept;
+        assert!(invalid.validate().is_err());
     }
 }
 

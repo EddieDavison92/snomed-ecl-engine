@@ -71,7 +71,10 @@ pub enum Expr {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ParseErrorKind {
     Syntax,
+    /// The engine does not implement this valid ECL form yet.
     Unsupported,
+    /// A recognised combination is refused because of its semantic rules or unresolved meaning.
+    Semantic,
     Limit,
 }
 
@@ -347,6 +350,8 @@ impl Parser<'_> {
                 "Unary operators require a parenthesised operand",
             ));
         }
+        // ABNF quoted strings are case-insensitive (RFC 5234 2.3) and the parsing guidance
+        // says keywords are case-insensitive, so "^R" admits ^r; only ECL.g4 restricts it to CAP_R.
         let refset_operator = if self.take("^R") || self.take("^r") {
             Some(true)
         } else if self.take("^") {
@@ -407,9 +412,10 @@ impl Parser<'_> {
         let mut member_filters = Vec::new();
         while self.starts_member_filter()? {
             if refset_operator.is_none() {
+                // Logical model 4: member filters apply to results of the memberOf function.
                 return Err(self.error(
-                    ParseErrorKind::Unsupported,
-                    "Member filters without an explicit refset operator are not implemented",
+                    ParseErrorKind::Semantic,
+                    "Member filters require a refset operator (^ or ^R); ECL defines them only over memberOf rows",
                 ));
             }
             member_filters.extend(self.member_filters(depth + 1)?);

@@ -57,6 +57,11 @@ impl Context<'_> {
             ));
         }
         let candidates = self.eval(&query.source, depth + 1)?;
+        if !query.reverse {
+            if let Some(membership) = &self.store.membership {
+                self.check_member_domain(membership, &candidates)?;
+            }
+        }
         let selected: Vec<_> = index
             .refsets()
             .filter(|id| {

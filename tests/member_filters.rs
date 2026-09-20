@@ -415,7 +415,7 @@ fn member_errors_are_explicit_and_store_tables_are_validated() {
     let store = fixture();
     assert_eq!(
         parse("200001 {{M active=1}}").unwrap_err().kind,
-        snomed_ecl_engine::ecl::ParseErrorKind::Unsupported
+        snomed_ecl_engine::ecl::ParseErrorKind::Semantic
     );
     for query in ["^[missing]200001", "^200001 {{M missing=#1}}"] {
         assert!(matches!(
@@ -854,6 +854,214 @@ fn component_fields_keep_non_concept_identifiers_out_of_concept_sets() {
     assert_eq!(
         serde_json::to_string(&rows[2]["targetComponentId"]).unwrap(),
         r#"{"type":"component","value":"400021"}"#
+    );
+}
+
+#[test]
+fn tuple_projections_are_rejected_in_every_subquery_position() {
+    let store = fixture();
+    let tuple = "(^[referencedComponentId,mapGroup]200001)";
+    for query in [
+        format!("{tuple} AND {tuple}"),
+        format!("{tuple} OR 300001"),
+        format!("300001 MINUS {tuple}"),
+        format!("{tuple} MINUS {tuple}"),
+        format!("< {tuple}"),
+        format!(">> {tuple}"),
+        format!("!!> {tuple}"),
+        format!("^ {tuple}"),
+        format!("^R {tuple}"),
+        format!("^[mapGroup] {tuple}"),
+        format!("^200001 {{{{M referencedComponentId = {tuple}}}}}"),
+        format!("* : 100001 = {tuple}"),
+        format!("* : {tuple} = *"),
+        format!("{tuple} : 100001 = *"),
+        format!("{tuple} . 100001"),
+        format!("300001 . {tuple}"),
+        format!("{tuple} {{{{C active = 1}}}}"),
+        format!("{tuple} {{{{ +HISTORY }}}}"),
+        format!("^[*] {tuple}"),
+        "(^[*]200001) AND *".to_owned(),
+    ] {
+        assert_eq!(
+            evaluate_result(&store, &parse(&query).unwrap()),
+            Err(EvalError::TypeMismatch),
+            "{query}"
+        );
+    }
+    // A single projected field is a plain value set and composes normally.
+    assert_eq!(
+        codes(
+            &store,
+            "(^[targetComponentId]200001 {{M mapGroup=#1}}) AND *"
+        ),
+        vec![400001]
+    );
+}
+
+#[test]
+fn field_and_predicate_type_combinations_fail_with_type_mismatch() {
+    let store = fixture();
+    for query in [
+        "^200001 {{M active=#1}}",
+        "^200001 {{M active=300001}}",
+        "^200001 {{M effectiveTime=#20260826}}",
+        "^200001 {{M effectiveTime=true}}",
+        "^200001 {{M effectiveTime=300001}}",
+        "^200001 {{M moduleId=#1}}",
+        "^200001 {{M moduleId=true}}",
+        "^200001 {{M referencedComponentId=\"20260826\"}}",
+        "^200001 {{M referencedComponentId=#300001}}",
+        "^200001 {{M mapGroup=\"20260826\"}}",
+        "^200001 {{M mapGroup=300001}}",
+        "^200001 {{M mapGroup=false}}",
+        "^200001 {{M mapTarget=#1}}",
+        "^200001 {{M mapTarget=300001}}",
+        "^200001 {{M mapTarget=true}}",
+        "^200001 {{M mapTarget=\"\"}}",
+        "^200001 {{M targetComponentId=#1}}",
+        "^200001 {{M grouped=#1}}",
+        "^200001 {{M grouped=\"20260826\"}}",
+        "^200001 {{M grouped=300001}}",
+        "^200001 {{M sourceEffectiveTime=true}}",
+        "^200001 {{M sourceEffectiveTime=#2026}}",
+        "^200001 {{M sourceEffectiveTime=300001}}",
+        "^200001 {{M id=#1}}",
+        "^200001 {{M id=true}}",
+        "^200001 {{M id=300001}}",
+        "^200001 {{M refsetId=#1}}",
+        "^200001 {{M mapGroup=#1, mapTarget=#1}}",
+        // The wrong type fails even when an earlier predicate already excludes every row.
+        "^200001 {{M mapGroup=#99}} {{M mapTarget=#1}}",
+    ] {
+        assert_eq!(
+            evaluate_result(&store, &parse(query).unwrap()),
+            Err(EvalError::TypeMismatch),
+            "{query}"
+        );
+    }
+    // Non-date quoted text is a string predicate, which needs the Unicode backend before
+    // its column type is checked. With that backend, the column type decides.
+    let concepts = |codes: &[u64]| {
+        Ok(QueryResult::Concepts(
+            codes
+                .iter()
+                .map(|code| store.ids.binary_search(code).unwrap() as u32)
+                .collect(),
+        ))
+    };
+    for (query, with_unicode) in [
+        (
+            "^200001 {{M mapTarget=\"A12\"}}",
+            concepts(&[300001, 300003]),
+        ),
+        (
+            "^200001 {{M mapTarget=wild:\"A*\"}}",
+            concepts(&[300001, 300003]),
+        ),
+        (
+            "^200001 {{M id=\"01010101-0101-0101-0101-010101010101\"}}",
+            concepts(&[300001]),
+        ),
+        ("^200001 {{M id=wild:\"0101*\"}}", concepts(&[300001])),
+        ("^200001 {{M id=wild:\"*0101\"}}", concepts(&[300001])),
+        (
+            "^200001 {{M effectiveTime=wild:\"2026*\"}}",
+            Err(EvalError::TypeMismatch),
+        ),
+        (
+            "^200001 {{M targetComponentId=\"J45\"}}",
+            Err(EvalError::TypeMismatch),
+        ),
+        (
+            "^200001 {{M mapGroup=match:\"1\"}}",
+            Err(EvalError::TypeMismatch),
+        ),
+        (
+            "^200001 {{M grouped=\"yes\"}}",
+            Err(EvalError::TypeMismatch),
+        ),
+    ] {
+        let result = evaluate_result(&store, &parse(query).unwrap());
+        if cfg!(feature = "unicode") {
+            assert_eq!(result, with_unicode, "{query}");
+        } else {
+            assert!(
+                matches!(result, Err(EvalError::Unsupported(_))),
+                "{query}: {result:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn member_queries_on_description_based_reference_sets_are_semantic_errors() {
+    use snomed_ecl_engine::store::MembershipIndex;
+    let mut store = fixture();
+    // 200001 has concept members; 100001 stands in for a language reference set; 400002 is a
+    // concept-based reference set whose rows are all inactive.
+    let mut inactive = table();
+    inactive.refset = 400002;
+    inactive.columns[0] = C::Uuid((5..=8).map(|i| [i; 16]).collect());
+    inactive.columns[2] = C::Boolean(vec![0; 4]);
+    inactive.columns[4] = C::Id(vec![400002; 4]);
+    store.member_tables = MemberStore::loaded(vec![table(), inactive]).unwrap();
+    let mut membership = MembershipIndex::build(store.ids.len(), vec![(1, 2), (1, 4)]).unwrap();
+    membership.concept_refsets = Some(vec![200001, 400002]);
+    membership.non_concept_refsets = Some(vec![100001]);
+    membership.validate(store.ids.len()).unwrap();
+    store.membership = Some(membership);
+    for query in [
+        "^100001",
+        "^[referencedComponentId]100001",
+        "^[*]100001",
+        "^100001 {{M active=0}}",
+        "^100001 {{M active=\"*\"}}",
+        "^[mapTarget,mapGroup]100001 {{M active=\"*\"}}",
+        "^(100001 OR 400001) {{M active=1}}",
+    ] {
+        assert!(
+            matches!(
+                evaluate_result(&store, &parse(query).unwrap()),
+                Err(EvalError::Semantic(message)) if message.contains("100001")
+            ),
+            "{query}"
+        );
+    }
+    // Wildcard and mixed selections still return the concept-based rows.
+    assert_eq!(codes(&store, "^* {{M mapGroup=#1}}"), vec![300001]);
+    assert_eq!(
+        codes(&store, "^(100001 OR 200001) {{M mapGroup=#1}}"),
+        vec![300001]
+    );
+    assert_eq!(
+        codes(&store, "^[targetComponentId]*"),
+        vec![400001, 400002, 400003]
+    );
+    assert_eq!(codes(&store, "^R (300001 OR 100001)"), vec![200001]);
+    assert_eq!(codes(&store, "^R * {{M active=0}}"), vec![200001, 400002]);
+    // Inactive members of a concept-based set stay reachable through the active predicate,
+    // alone and beside a description-based set; the domain does not depend on active rows.
+    assert_eq!(codes(&store, "^400002"), Vec::<u64>::new());
+    assert_eq!(
+        codes(&store, "^400002 {{M active=0}}"),
+        vec![300001, 300002, 300003]
+    );
+    assert_eq!(
+        codes(&store, "^400002 {{M active=\"*\"}}"),
+        vec![300001, 300002, 300003]
+    );
+    assert_eq!(
+        codes(&store, "^(100001 OR 400002) {{M active=0}}"),
+        vec![300001, 300002, 300003]
+    );
+    assert_eq!(codes(&store, "^(100001 OR 400002)"), Vec::<u64>::new());
+    assert_eq!(
+        codes(
+            &store,
+            "^[targetComponentId](100001 OR 400002) {{M active=0, mapGroup=#2}}"
+        ),
+        vec![400002, 400003]
     );
 }
 

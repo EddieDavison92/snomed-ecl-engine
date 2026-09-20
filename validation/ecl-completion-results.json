@@ -1,0 +1,81 @@
+{
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "binary_sha256": "0b09d2503d037ab554556498e76fb62fdbb00def7e819901f4775969340098e7",
+  "scope": "Reviewed ECL compatibility changes and all-state refset classification. Full ECL 2.3 conformance remains incomplete.",
+  "full_ecl_23_conformance": false,
+  "tests": {
+    "unicode_passed": 89,
+    "no_default_features_passed": 65,
+    "official_examples_parsed": 121,
+    "python_tests_passed": 11,
+    "fmt": "passed",
+    "clippy_unicode": "passed with warnings denied",
+    "clippy_no_default": "passed with warnings denied"
+  },
+  "corpus": {
+    "report": "validation/ecl-10000-completion-results.json",
+    "cases": 10000,
+    "previous_complete_sets_preserved": 10000,
+    "independent_rf2_sets_preserved": 3920,
+    "independent_rf2_reference": "validation/ecl-10000-rf2-results.json"
+  },
+  "independent_checks": [
+    {
+      "report": "validation/completion-membership-results.json",
+      "cases": 11,
+      "passed": 11,
+      "source_sha256": "0ece36125f39a630d7790e34cdd6c5e9c124a4c17195dafd1b57ddcb5816c7c7",
+      "memory_limit_mib": 256
+    },
+    {
+      "report": "validation/completion-membership-reverse-results.json",
+      "cases": 12,
+      "passed": 12,
+      "source_sha256": "829ec9b1e165d9411f51ea01305f60399dd0844d609040a848641a81871643ec",
+      "memory_limit_mib": 2048
+    },
+    {
+      "report": "validation/completion-pcd-active-results.json",
+      "cases": 1039,
+      "passed": 1039,
+      "source_sha256": "932d6273ddc2b52eceea0abf6472c9d9e33f3cdd1d8fdb3fd4a455608af05c4d",
+      "memory_limit_mib": 256
+    },
+    {
+      "report": "validation/completion-pcd-inactive-results.json",
+      "cases": 1039,
+      "passed": 1039,
+      "source_sha256": "02fcb9d836668f28268073e636cd82506b88862705be11c4da9c4d913b75980a",
+      "memory_limit_mib": 256
+    }
+  ],
+  "fresh_import": {
+    "success": true,
+    "cpus": 2,
+    "memory_limit_mib": 3072,
+    "existing_component_payloads_unchanged": true,
+    "pcd_existing_component_payloads_unchanged": true,
+    "classified_concept_refset_ids": 669,
+    "classified_non_concept_refset_ids": 13
+  },
+  "container": {
+    "bytes": 303579136,
+    "sha256": "dc9e6793951f3384f73fdaa25fe904033be595eb4d1ad657047d554d470c8ef0",
+    "increase_from_previous_bytes": 12288,
+    "verification": {
+      "sections": 587,
+      "component_bytes": 1164530911,
+      "concepts": 1151519,
+      "descriptions": 3562700,
+      "member_rows": 7177107,
+      "identifiers": 0
+    }
+  },
+  "limits": [
+    "Grouped reverse attributes and member filters without a refset operator remain unresolved; Semantic errors do not close those items.",
+    "Reverse concrete values and absent concept identifiers still need settled normative treatment.",
+    "The all-table inactive reverse-membership check used 2 GiB. This is a correctness allocation, not a measured minimum; it does not establish 256 MiB support for that path.",
+    "Old indexes without domain metadata retain their earlier non-concept-refset behaviour. Reimport for the new diagnostics."
+  ]
+}

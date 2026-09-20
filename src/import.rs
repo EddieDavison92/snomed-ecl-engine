@@ -332,7 +332,7 @@ pub fn import_snapshot_with_progress(
 
     progress("Indexing concept reference set membership");
     let (membership, non_concept_rows, refset_files) =
-        membership::read(&mut archive, &lookup, edition_date)?;
+        membership::read(&mut archive, &lookup, &store, edition_date)?;
     store.membership = Some(membership);
 
     progress("Selecting displays in a separate pass");

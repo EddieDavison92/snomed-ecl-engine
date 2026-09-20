@@ -12,13 +12,13 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 |---|---|
 | 880 numeric-index expressions, one CPU and 256 MiB | 1.82 seconds per warm batch |
 | Original 1,000 expressions, one CPU and 256 MiB | 2.71 seconds per warm batch; 1.65 ms median request |
-| Expanded 10,000-expression corpus across 45 categories, one CPU and 256 MiB | 36.98 seconds per warm batch; 1.93 ms median request |
+| Expanded 10,000-expression corpus across 45 categories, one CPU and 256 MiB | 35.05 seconds per warm batch; 1.75 ms median request |
 | Measured numeric query-only Linux executable, without Unicode | 0.83 MiB, 0.39 MiB gzipped |
 | Numeric and concept-membership indexes | 103.3 MiB |
 | Complete current UK index, with descriptions, displays and typed members | 289.5 MiB packed, down from 1,110.8 MiB |
 | RF2 import, including descriptions, displays and typed members | 119.8 seconds with two CPUs and 3 GiB |
 
-Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [1,000-case benchmark](validation/combined-ecl-corpus-results.json) and [10,000-case baseline](validation/ecl-10000-baseline-results.json) pin the release, binary, resource limits and result digests. The larger corpus preserves all 1,000 original expressions and complete results. Its request p95 was 14.56 ms and container-charged peak memory was 236.35 MiB. An independent RF2 check matches 3,920 of its complete result sets. These figures measure the fixed workloads, not full ECL conformance or hosted cold starts. See [corpus construction and measurement conditions](docs/corpus.md).
+Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [1,000-case benchmark](validation/combined-ecl-corpus-results.json) and [10,000-case benchmark](validation/ecl-10000-completion-results.json) pin the release, binary, resource limits and result digests. The larger corpus preserves all 1,000 original expressions and complete results. All 10,000 sets remain unchanged after the latest compatibility fixes. Request p95 was 13.79 ms and container-charged peak memory was 227.15 MiB. An independent RF2 check matches 3,920 of its complete result sets. These figures measure the fixed workloads, not full ECL conformance or hosted cold starts. See [corpus construction and measurement conditions](docs/corpus.md).
 
 The packed store opened in 1.13 seconds; container start through the first response took 1.72 seconds. Checksums and structural validation remain enabled, and description and member data load on demand. Filesystem caches were not dropped. Earlier [startup measurements](validation/startup-results.json) identified and fixed an unbuffered manifest read.
 

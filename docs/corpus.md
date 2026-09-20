@@ -17,19 +17,20 @@ non-matches in the remainder. The final run contains 75 non-empty results in
 each term category and 280 non-empty member projections. The original 40 empty
 projection cases remain regression cases.
 
-## Baseline measurements
+## Measurements
 
-The [baseline report](../validation/ecl-10000-baseline-results.json) records
-the engine before the next ECL compatibility changes. All 10,000 cases evaluated,
-and all 1,000 previous complete result sets are unchanged.
+The [initial baseline](../validation/ecl-10000-baseline-results.json) records
+the engine before the latest ECL compatibility changes. The
+[subsequent run](../validation/ecl-10000-completion-results.json) preserves all
+10,000 complete result sets, including every original case. Its measurements are:
 
 | Measurement | Result |
 |---|---:|
 | CPU and memory limits | One CPU, 256 MiB, no additional swap |
-| Median request | 1.93 ms |
-| Request p95 | 14.56 ms |
-| Median 10,000-request batch | 36.98 seconds |
-| Container-charged peak memory | 236.35 MiB |
+| Median request | 1.75 ms |
+| Request p95 | 13.79 ms |
+| Median 10,000-request batch | 35.05 seconds |
+| Container-charged peak memory | 227.15 MiB |
 | Empty / singleton / larger result sets | 2,158 / 5,375 / 2,467 |
 | Largest result set | 111,171 concepts |
 
@@ -42,8 +43,10 @@ The index is the complete current UK packed index, with descriptions, displays
 and typed members. Queries load data as needed. This workload does not touch
 every possible member table or prove that every valid ECL query fits 256 MiB.
 The Windows bind mount retained filesystem caches. Corpus regeneration and a
-separate development build shared the host during this run. These measurements
-are a development baseline, not an isolated comparison with a terminology server.
+separate development build shared the host during the initial baseline. The
+subsequent benchmark ran after this task's builds and other checks finished.
+The runs do not establish a performance improvement attributable to the code
+changes or an isolated comparison with a terminology server.
 
 ## Independent correctness checks
 
@@ -66,7 +69,7 @@ Unicode-enabled Linux executable available:
 ```sh
 python scripts/generate_corpus.py
 python scripts/benchmark_corpus.py --binary target/linux-unicode/release/snomed-ecl-engine --store-directory data/compact-store/v2-uk-64.ecl --output data/validation/new-10000-run.json
-python scripts/summarise_corpus.py --report data/validation/new-10000-run.json --prior validation/ecl-10000-baseline-results.json --output validation/new-10000-results.json
+python scripts/summarise_corpus.py --report data/validation/new-10000-run.json --prior validation/ecl-10000-completion-results.json --output validation/new-10000-results.json
 python scripts/check_corpus_rf2.py --archive data/rf2/uk_sct2mo_42.5.0_20260826000001Z.zip --report data/validation/new-10000-run.json --output validation/new-10000-rf2-results.json
 ```
 

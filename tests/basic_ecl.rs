@@ -43,7 +43,6 @@ fn invalid_tokens_report_syntax_errors_and_unicode_lexemes_follow_abnf() {
         "* OR ^ ^ 1001000",
         "* {{C active = }}",
         "* : * = match:\"abc\"",
-        "* : r 1001000 = *",
         "/* \u{7f} */ *",
         "\"demo#a\u{7f}\"",
     ] {
@@ -64,6 +63,10 @@ fn invalid_tokens_report_syntax_errors_and_unicode_lexemes_follow_abnf() {
     assert_eq!(
         parse("* : R 1001000 = *").unwrap(),
         parse("* : rEvErSeOf 1001000 = *").unwrap()
+    );
+    assert_eq!(
+        parse("* : R 1001000 = *").unwrap(),
+        parse("* : r 1001000 = *").unwrap()
     );
     assert_eq!(
         parse(r#"* : 1007000 = "A\*B""#).unwrap(),

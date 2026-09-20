@@ -31,7 +31,10 @@ pub enum EvalError {
     MemoryLimit,
     Cancelled,
     InvalidAst,
+    /// The engine does not implement this valid ECL form yet.
     Unsupported(&'static str),
+    /// The requested combination has no supported semantic interpretation.
+    Semantic(String),
     Index(String),
     Text(String),
     InvalidField(String),

@@ -4,7 +4,19 @@ The finished engine must implement the complete ECL 2.3 language. The [productio
 
 Production names provide a coverage inventory, not a conformance score. Every production needs positive and negative syntax evidence. Each semantic rule also needs an independent expected result, including cases not supported by comparison servers. A final release cannot retain an unsupported standard feature or an unexplained mismatch.
 
-The latest [combined evaluation](../validation/combined-ecl-results.json) passes
+Membership imports now retain reference set component types across active and inactive rows. Additional tests cover typed predicates, tuple restrictions and case-insensitive reverse operators. The [open forms](#open-grammar-forms) remain required work; diagnostics do not close them.
+
+The [latest validation](../validation/ecl-completion-results.json) passes 89
+Unicode-enabled tests, 65 tests without default features and all 121 official
+syntax examples. All 10,000 corpus result sets are unchanged on a freshly
+imported and verified packed UK index. Independent membership checks cover
+inactive REFERS TO rows, and every PCD refset matches its active and inactive RF2
+members. The broad inactive reverse-membership check uses a separate 2 GiB
+allocation because it loads every typed table; it does not establish that path
+at 256 MiB. Full-language resource limits and the open semantic forms remain
+acceptance work.
+
+The earlier [combined evaluation](../validation/combined-ecl-results.json) passes
 84 Unicode-enabled tests, 60 tests without default features and all 121 official
 syntax examples. All 1,000 preceding corpus sets are unchanged at one CPU and
 256 MiB. Independent RF2 checks pass for 17 scalar cases, nine member queries and
@@ -20,12 +32,12 @@ with streamed descriptions; it does not close the semantic gaps below.
 | Alternate identifiers | Identifier components, scheme aliases and resolution | Implemented with lazy RF2 Identifier storage, configured aliases, exact codes and synthetic import/CLI checks. See [aliases](aliases.md) |
 | Nested refinements | Attribute type/value expressions and comparisons | Implemented; synthetic fixtures and OneLondon's Ontoserver comparisons |
 | Cardinalities and groups | Exact multiplicity, group zero, group identity, zero/finite/unbounded ranges | Published inferred rows evaluated; adversarial group/absence fixtures. Does not normalise arbitrary redundant relationship input |
-| Reverse and dotted attributes | Reverse relationships and successive value projections | Ungrouped reverse counts distinct sources. Concept-valued dot chains and terminal concrete projections are implemented; concrete numbers retain exact precision. A reverse flag inside an attribute group is an [open grammar form](#open-grammar-forms) |
+| Reverse and dotted attributes | Reverse relationships and successive value projections | Ungrouped reverse counts distinct sources. Concept-valued dot chains and terminal concrete projections are implemented; concrete numbers retain exact precision. A reverse flag inside an attribute group or with a concrete value is an [open semantic form](#open-grammar-forms) |
 | Concrete values | Exact numeric comparison, strings, sets and Boolean semantics | Exact decimals without floating point; exact case-sensitive strings/sets and Booleans tested. ECL 2.3 removed concrete prefix/wildcard matching; regression tests reject the former syntax |
 | Membership and containing-any | Concept membership and reverse membership | Implemented for active concept-referencing rows, including inactive concepts; synthetic tests, 45 matches against OneLondon's Ontoserver, independent RF2 scans and PCD checks. Member filters can select inactive rows |
 | Concept filters | Active status, definition status, module and effective time | Implemented with metadata already in the core; synthetic fixtures and 50 complete matches against OneLondon's Ontoserver. Three reference rejections are recorded separately |
 | Description filters | All descriptions, language memberships, term matching, wildcards, type, dialect, acceptability, IDs and metadata | Metadata predicates have 18 independent RF2 matches. The optional ICU backend evaluates word prefixes, wildcard sets and negation, with synthetic Unicode checks and ten independent RF2 matches. Standard and configured dialect aliases are implemented; broader collation/lexical coverage remains required |
-| Member filters and projections | Typed fields, metadata, comparisons and non-concept result types | Descriptor-driven decimal/date/UUID fields and configurable member collation have synthetic checks. Standard predicates, concept projections and terminal typed rows are implemented. Identifiers naming no substrate concept, `component` values, integer lexeme validation with exact promotion beyond 64 bits and grammar-valid predicate lexemes have synthetic tests, an independent row-scan evaluator and [RF2 orphan checks](../validation/orphan-member-results.json). The treatment of absent identifiers is a documented interpretation, and `^` on a description-based reference set still returns an empty set rather than an explicit error. Member filters without `^` or `^R` are an [open grammar form](#open-grammar-forms). See [member filters](member-filters.md) |
+| Member filters and projections | Typed fields, metadata, comparisons and non-concept result types | Descriptor-driven decimal/date/UUID fields and configurable member collation have synthetic checks. Standard predicates, concept projections and terminal typed rows are implemented. Identifiers naming no substrate concept, `component` values, integer lexeme validation with exact promotion beyond 64 bits and grammar-valid predicate lexemes have synthetic tests, an independent row-scan evaluator and [RF2 orphan checks](../validation/orphan-member-results.json). The treatment of absent identifiers is a documented interpretation. `^` on a description-based reference set and member filters without `^` or `^R` are discussed under [restrictions and open forms](#open-grammar-forms). See [member filters](member-filters.md) |
 | History supplements | Historical association members, defined profiles and explicit subsets | Implemented with one-hop profile/subset evaluation and reversed MOVED FROM handling. See [history](history.md) |
 | Resource behaviour | Bounded work and memory, cancellation, complete results and concurrency policy | Sequential limits tested; full-language resource and concurrency measurements pending |
 
@@ -39,15 +51,59 @@ Cardinality bounds may exceed machine integer ranges. The parser checks their or
 
 Nested typed sets now feed concept operations when every remaining value is a concept, including the empty set. Regression cases cover hierarchy, extrema, refinements, filters, member predicates, dotted attributes, numeric output order and limits. The parser accepts adjacent member markers such as `{{Mactive=0}}`, as permitted by the grammar's optional whitespace. The quoted `active="*"` form shown in the [description-filter examples](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.8-description-filters) is accepted consistently in concept, description and member filters, alongside the grammar's unquoted wildcard.
 
-The [nested-query evaluation round](../validation/nested-results.json) passes 67 Unicode-enabled tests, 47 tests without default features and 17 independent RF2 checks. All 121 official examples still parse. The [new corpus run](../validation/nested-corpus-results.json) preserves all 1,000 previous complete sets. Grouped reverse, member filters without a refset operator and the other open conformance items below remain unresolved.
+The [nested-query evaluation round](../validation/nested-results.json) passes 67 Unicode-enabled tests, 47 tests without default features and 17 independent RF2 checks. All 121 official examples still parse. The [new corpus run](../validation/nested-corpus-results.json) preserves all 1,000 previous complete sets.
 
 ## Open grammar forms
 
-Two forms parse under both pinned grammars but have no published semantics. The engine rejects them explicitly instead of guessing; each needs a rule from SNOMED International before it can be evaluated.
+`Semantic` errors distinguish unresolved or disallowed combinations from missing
+engine capabilities (`Unsupported`). Changing that diagnostic does not establish
+conformance. Grouped reverse attributes and member filters without a refset
+operator remain open ECL 2.3 acceptance items.
 
-**Reverse flag inside an attribute group.** `eclAttribute` (brief ABNF line 49) admits `[reverseFlag ws]`, and `eclAttributeGroup` (line 48) wraps any `eclAttributeSet`, so `{ R 363698007 = X }` is syntactically valid. The prose defines the reverse flag only for a whole refinement: it selects "the destination concept of a relationship and constrain[s] the source concept to a given attribute value" (6.2), and a reverse cardinality "constrains the number of source concepts ... for which each destination concept may be [the] relevant attribute value" (6.3). Attribute groups count "non-redundant attribute groups that match the given attribute group criteria" (6.3), where the groups belong to the concept being tested. A reversed relationship belongs to a relationship group of its source concept, never of the destination concept under test, so the two definitions do not compose: read literally the criterion can never hold inside a group, while the intended reading would have to name whose group is meant. The [boundary probes](../validation/semantic-boundary-queries.json) show OneLondon's Ontoserver 6.25.4 rejecting the form with "Cannot reverse an attribute inside a group"; the pinned Snowstorm source applies a reversed attribute as a destination filter and then matches the group against the concept's own attributes, which is neither reading. The evaluator returns `Unsupported("Reverse attributes inside groups")`; the ungrouped control succeeds and matches Ontoserver.
+**Grouped reverse attributes.** Both pinned ABNF grammars admit a reverse flag
+inside a group. The specification defines reversal through relationship source
+and destination concepts, while groups belong to the source. It does not explain
+how those group identities compose when selecting destinations. The logical
+model permits reverse attribute-name modifiers without resolving that question.
+The parser and evaluator return `Semantic`; this remains an unresolved normative
+gap. See [refinements](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.2-refinements)
+and [cardinalities](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.3-cardinality).
+The [local boundary probes](../validation/semantic-boundary-queries.json) record
+comparison-server behaviour, which does not define the language.
 
-**Member filters without a refset operator.** `subExpressionConstraint` (line 9) makes `refsetOperator` optional in the branch that carries `memberFilterConstraint`, so `900000000000527005 {{M referencedComponentId=67415000}}` is syntactically valid. Section 6.10 defines member filters as filtering "the rows of a reference set", and every example and result statement uses `^` or `^R`; only `memberOf` maps rows to concepts. Ontoserver rejects the form during parsing, and Snowstorm ignores the filters unless the operator is `memberOf`. The parser returns an unsupported error at the filter; the [member-filter notes](member-filters.md#supported-queries) record the evidence.
+**Member filters without an operator.** The ABNF permits member filters when the
+refset operator is absent. The logical model describes filters on memberOf
+results, without defining the operator-free form. The parser returns `Semantic`.
+The upstream [question about this grammar form](https://github.com/IHTSDO/snomed-expression-constraint-language/issues/10)
+remains unresolved. This is still a conformance item, not an implemented operator.
+
+**Reverse concrete values.** The grammar admits reversal with scalar values,
+but reversal is described in terms of destination concepts. Such combinations
+return `Semantic`. The [upstream reverse-value question](https://github.com/IHTSDO/snomed-expression-constraint-language/issues/11)
+has no settled rule; the engine does not invent scalar relationship sources.
+
+**Concept-based membership.** Section 6.1 limits membership to concept-referencing
+refsets and also defines wildcard selection across refsets. New imports record
+`concept_refsets` and `non_concept_refsets` in the membership manifest. RF2
+descriptors supply declared component types; otherwise rows of every active
+state provide the evidence. A selection containing only known non-concept
+refsets returns `Semantic`. Mixed and wildcard selections retain concept members.
+In particular, inactive concept rows remain queryable when a refset also has
+description rows. Older manifests still open but cannot diagnose non-concept
+refsets without the new metadata. See [simple constraints](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.1-simple-expression-constraints)
+and [member filters](member-filters.md).
+
+**Tuple projections.** Section 6.1 restricts multiple-field projections to the
+final operation. Tuple operands inside other operators return `TypeMismatch`.
+Synthetic checks cover Boolean sets, hierarchy, refinements, member predicates,
+filters, dotted attributes and history. This is a stated restriction, unlike the
+unresolved grouped-reverse semantics above.
+
+**Operator spelling.** Both `^R` and `^r` are accepted. Reverse attributes accept
+`R`, `r` and case-insensitive `reverseOf`, including adjacent concept IDs. The
+ABNF terminals and [official parsing guidance](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/implementation-considerations/7.2-parsing)
+permit case-insensitive spelling. The pinned ANTLR grammar restricts `^R` to a
+capital R, so it disagrees with the ABNF on this point.
 
 The [packed-index evaluation round](../validation/packed-results.json) preserves
 all 1,000 complete corpus sets across the directory, raw container and compressed
@@ -56,7 +112,7 @@ container. It passes 72 Unicode-enabled tests, 49 tests without default features
 description and PCD checks. These checks show that compression preserves current
 semantics. They do not close the grouped-reverse or implicit-member-filter forms above.
 
-The [member semantics round](../validation/orphan-member-results.json) decides the orphan-reference and non-concept component cases: `^` and `^[referencedComponentId]` return only concepts of the substrate, other projected fields return their identifiers exactly and refuse concept operations with `MissingReference`, tuples keep every row, and description or relationship identifiers surface as `component` values. The specification does not address identifiers outside the substrate, so the first rule is an interpretation recorded in [member filters](member-filters.md#identifiers-that-name-no-concept), not a settled conformance point. Integer member fields validate the RF2 signed-integer lexeme on every row and promote beyond 64 bits without losing that rule. `tests/lexical.rs` adds lexical forms, and the generated member queries in `tests/member_filters.rs` compare the evaluator with an independent row scan over orphan, inactive and multi-refset fixtures. All 1,000 corpus digests from the packed run are unchanged with these changes. Full ECL remains incomplete: the two open grammar forms above, `^` on description-based reference sets (empty set instead of an explicit error), tuple set operations (unspecified and rejected) and collation beyond the English and Swedish member-string checks still lack normative evidence or implementation.
+The [member semantics round](../validation/orphan-member-results.json) records how absent identifiers and non-concept values behave. Default membership returns concepts present in the indexed release; other projections preserve identifiers, and concept operations reject missing references. This remains a documented interpretation. Integer fields retain exact lexical validation after numeric promotion. Grouped reverse, operator-free member filters and the other unresolved semantic questions above still prevent a full ECL 2.3 claim. The ICU backend has English, Swedish and Danish checks; broader collation evidence remains separate from the generated corpus.
 
 The [concept-filter probes](../validation/ontoserver-concept-filters.json) compare complete sets for every expression OneLondon's Ontoserver accepted. Its HTTP 422 responses for a nested module expression and two empty-date predicates are not successful comparisons. Synthetic fixtures cover these valid forms, predicate combinations, inactive concepts, missing indexes and evaluation limits. Concept filters add no persistent index bytes.
 

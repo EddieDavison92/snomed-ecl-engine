@@ -15,6 +15,17 @@ pub struct MembershipManifest {
     pub concept_pairs: usize,
     pub active_non_concept_rows: u64,
     pub snapshot_files: usize,
+    /// Reference sets inside the memberOf domain, as sorted SCTIDs: their descriptor declares
+    /// a concept referencedComponentId, or a generic/missing declaration has concept rows
+    /// of any status (or no rows). Absent in older indexes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub concept_refsets: Option<Vec<u64>>,
+    /// Reference sets outside that domain: their descriptor declares a description or
+    /// relationship referencedComponentId, or, without a descriptor, every Snapshot row of
+    /// any status references a non-concept. Absent in older indexes, which then cannot
+    /// report memberOf over such sets as an error.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub non_concept_refsets: Option<Vec<u64>>,
 }
 
 /// Sparse refset keys and sorted, unique concept ordinals for each key.
@@ -24,6 +35,12 @@ pub struct MembershipIndex {
     pub refsets: Vec<u32>,
     pub offsets: Vec<u32>,
     pub members: Vec<u32>,
+    /// Sorted SCTIDs of reference sets whose declared or observed referenced components
+    /// include concepts. None when the index predates this metadata.
+    pub concept_refsets: Option<Vec<u64>>,
+    /// Sorted SCTIDs of reference sets whose referenced components are only descriptions or
+    /// relationships. None when the index predates this metadata.
+    pub non_concept_refsets: Option<Vec<u64>>,
 }
 
 impl MembershipIndex {
@@ -60,6 +77,28 @@ impl MembershipIndex {
 
     pub fn validate(&self, count: usize) -> Result<()> {
         validate_offsets(&self.offsets, self.refsets.len(), self.members.len())?;
+        ensure!(
+            self.concept_refsets.is_some() == self.non_concept_refsets.is_some(),
+            "Reference set domain lists must be recorded together"
+        );
+        for refsets in [&self.concept_refsets, &self.non_concept_refsets]
+            .into_iter()
+            .flatten()
+        {
+            ensure!(
+                refsets.windows(2).all(|w| w[0] < w[1])
+                    && refsets
+                        .iter()
+                        .all(|&id| id > 0 && id < 1_000_000_000_000_000_000),
+                "Invalid reference set domain list"
+            );
+        }
+        if let (Some(concept), Some(other)) = (&self.concept_refsets, &self.non_concept_refsets) {
+            ensure!(
+                concept.iter().all(|id| other.binary_search(id).is_err()),
+                "Reference set listed in both domain lists"
+            );
+        }
         ensure!(
             self.refsets.windows(2).all(|w| w[0] < w[1])
                 && self
@@ -102,6 +141,8 @@ impl MembershipIndex {
             concept_pairs: self.members.len(),
             active_non_concept_rows,
             snapshot_files,
+            concept_refsets: self.concept_refsets.clone(),
+            non_concept_refsets: self.non_concept_refsets.clone(),
         })
     }
 
@@ -115,6 +156,8 @@ impl MembershipIndex {
             refsets: input.u32s()?,
             offsets: input.u32s()?,
             members: input.u32s()?,
+            concept_refsets: metadata.concept_refsets.clone(),
+            non_concept_refsets: metadata.non_concept_refsets.clone(),
         };
         ensure!(input.remaining == 0, "Trailing membership bytes");
         ensure!(

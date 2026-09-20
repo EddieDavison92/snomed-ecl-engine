@@ -169,8 +169,36 @@ impl Parser<'_> {
             }
         }
     }
-    fn attribute(&mut self, depth: usize, cardinality: Cardinality) -> Result<Refinement> {
-        let reverse = !self.starts_alternate() && (self.keyword("reverseof") || self.take("R"));
+    fn attribute(
+        &mut self,
+        depth: usize,
+        cardinality: Cardinality,
+        grouped: bool,
+    ) -> Result<Refinement> {
+        let flag = self.pos;
+        // Whitespace after a flag is optional, including before a long-form name operator.
+        let reverse = if self.starts_alternate() {
+            false
+        } else if self.text[self.pos..]
+            .get(..9)
+            .is_some_and(|prefix| prefix.eq_ignore_ascii_case("reverseof"))
+        {
+            self.pos += 9;
+            true
+        } else if self.word().eq_ignore_ascii_case("refsetcontainingany") {
+            false
+        } else {
+            self.take("R") || self.take("r")
+        };
+        if reverse && grouped {
+            // 6.2 and 6.3 define the reverse flag for whole refinements only; a reversed
+            // relationship belongs to the source concept's group, never to the tested concept's.
+            self.pos = flag;
+            return Err(self.error(
+                ParseErrorKind::Semantic,
+                "Reverse flag inside an attribute group has no defined ECL semantics",
+            ));
+        }
         self.ws()?;
         let name = Box::new(self.subexpression(depth + 1)?);
         let comparison = self.comparison()?;
@@ -238,7 +266,13 @@ impl Parser<'_> {
             ));
         }
         if reverse && !matches!(value, AttributeValue::Concepts(_)) {
-            return Err(self.error(ParseErrorKind::Syntax, "Concrete values cannot be reversed"));
+            // The grammar admits R with a concrete value; 6.2 defines reversal only over
+            // destination concepts, so no concrete value can be a reversed source.
+            self.pos = flag;
+            return Err(self.error(
+                ParseErrorKind::Semantic,
+                "Reverse flag with a concrete value has no defined ECL semantics",
+            ));
         }
         Ok(Refinement::Attribute(AttributeConstraint {
             cardinality,
@@ -274,7 +308,8 @@ impl Parser<'_> {
             return Ok(Refinement::Group(cardinality, Box::new(inner)));
         }
         let (saved, nodes) = (self.pos, self.nodes);
-        let attribute = self.attribute(depth, cardinality);
+        // `groups` is false only inside an attribute group, where nesting is forbidden.
+        let attribute = self.attribute(depth, cardinality, !groups);
         if attribute.is_ok() || !self.text[saved..].starts_with('(') {
             return attribute;
         }

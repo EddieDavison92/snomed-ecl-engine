@@ -4,7 +4,7 @@ The evaluator now supports nested attribute names and concept values, attribute 
 
 Group zero stays outside relationship groups. An inequality requires a matching attribute with a value outside the constraint; absence alone does not satisfy it. Reverse cardinality counts distinct source concepts. Decimal comparison preserves precision beyond machine integer and floating-point ranges.
 
-The evaluator consumes the published inferred distribution form. It does not remove redundant relationships or perform classification. Concrete dotted projections now return typed values. Reverse attributes inside an attribute group still fail explicitly; see the [conformance notes](conformance.md#open-grammar-forms) for the evidence.
+The evaluator consumes the published inferred distribution form. It does not remove redundant relationships or perform classification. Concrete dotted projections now return typed values. A reverse flag inside an attribute group or with a concrete value is a semantic error at parse time; see the [conformance rulings](conformance.md#open-grammar-forms) for the evidence.
 
 ## Validation
 

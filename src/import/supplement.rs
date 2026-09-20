@@ -339,7 +339,21 @@ pub fn add_refsets_snapshot(
             },
         )?;
     }
-    store.membership = Some(MembershipIndex::build(n, pairs)?);
+    let mut membership_index = MembershipIndex::build(n, pairs)?;
+    // Supplements add only concept-referencing rows, so their reference sets join the base
+    // memberOf domain and the base classification otherwise carries over.
+    membership_index.non_concept_refsets = existing.non_concept_refsets.clone();
+    membership_index.concept_refsets = existing.concept_refsets.as_ref().map(|base| {
+        let mut all: Vec<u64> = base
+            .iter()
+            .copied()
+            .chain(refsets.iter().copied())
+            .collect();
+        all.sort_unstable();
+        all.dedup();
+        all
+    });
+    store.membership = Some(membership_index);
     let mut labels = vec![None; n];
     for (label, &new) in DisplayStore::open(base)?
         .into_labels()?

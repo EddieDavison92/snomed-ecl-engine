@@ -48,12 +48,17 @@ fn member_fields_and_filters_accept_grammar_whitespace_and_comments() {
         "^[mapTarget]",
         "^R[mapTarget]200001",
         "^ R 200001",
+        "^ r 200001",
+        "^r[mapTarget]200001",
         "^200001 {{M}}",
         "^200001 {{M mapGroup=#1,}}",
         "^200001 {{M mapGroup=#1 mapTarget=\"x\"}}",
         "^200001 {{M map1Group=#1}}",
         "^200001 {{ M mapGroup=#1 }",
         "^200001 {{M mapGroup==#1}}",
+        // Member filters precede concept and description filters in subExpressionConstraint.
+        "^200001 {{C active=1}} {{M active=1}}",
+        "^200001 {{D active=1}} {{M active=1}}",
     ] {
         syntax_error(invalid);
     }
@@ -130,6 +135,21 @@ fn member_field_values_follow_numeric_time_string_and_boolean_lexemes() {
     ] {
         syntax_error(invalid);
     }
+    // Member filters are defined over memberOf rows; the grammar's optional operator is a
+    // semantic error, not a syntax error, wherever the filter appears.
+    for undefined in [
+        "200001 {{M active=1}}",
+        "<< 200001 {{M mapGroup=#1}}",
+        "(200001 OR 200002) {{M active=1}}",
+        "* {{M active=1}}",
+        "^200001 AND (200002 {{M active=1}})",
+        "* : 1000001 = (200001 {{M active=1}})",
+    ] {
+        match parse(undefined) {
+            Err(e) if e.kind == ParseErrorKind::Semantic => {}
+            other => panic!("{undefined}: expected a semantic error, got {other:?}"),
+        }
+    }
     // The grammar's generic field filter also parses these; their types fail at evaluation.
     for typed_at_evaluation in [
         "^200001 {{M active=#1}}",
@@ -205,6 +225,39 @@ fn operators_keywords_cardinalities_and_comments_follow_whitespace_rules() {
     same("* : 1000001 != *", "* : 1000001 NOT= *");
     same("* : 1000001 != *", "* : 1000001 <> *");
     same("* : R 1000001 = *", "* : reverseOf 1000001 = *");
+    // ABNF terminals are case-insensitive (RFC 5234 2.3) and ECL.g4 writes (CAP_R | R).
+    same("* : R 1000001 = *", "* : r 1000001 = *");
+    same("* : R 1000001 = *", "* : r1000001 = *");
+    same("* : R 1000001 = *", "* : R1000001 = *");
+    same("* : R < 1000001 = *", "* : RdescendantOf 1000001 = *");
+    same("* : R < 1000001 = *", "* : rdescendantOf 1000001 = *");
+    same(
+        "* : R < 1000001 = *",
+        "* : reverseOfdescendantOf 1000001 = *",
+    );
+    same(
+        "* : R ^R 1000001 = *",
+        "* : RrefsetContainingAny 1000001 = *",
+    );
+    same("* : R 1000001 = *", "* : REVERSEOF 1000001 = *");
+    same("* : R 1000001 = *", "* : reverseOf1000001 = *");
+    same("* : R (1000001) = *", "* : r(1000001) = *");
+    same("^R 1000001", "^r 1000001");
+    same("^R 1000001", "refsetContainingAny 1000001");
+    same("^R (1000001)", "REFSETCONTAININGANY(1000001)");
+    same("* : R ^R 1000001 = *", "* : r ^r 1000001 = *");
+    // A single r is a flag; longer r-initial words are attribute names or aliases.
+    same("* : refsetContainingAny 1000001 = *", "* : ^R 1000001 = *");
+    assert_eq!(
+        parse("* : r#A = *").unwrap(),
+        parse("* : \"r#A\" = *").unwrap()
+    );
+    assert!(matches!(
+        parse("* : r r#A = *").unwrap(),
+        Expr::Refined(_, refinement)
+            if matches!(*refinement, snomed_ecl_engine::ecl::Refinement::Attribute(ref a)
+                if a.reverse && matches!(*a.name, Expr::AlternateIdentifier { .. }))
+    ));
     same("*", "/* * / */ *");
     same("*", "/**/*/**/");
     same("*", "/* \u{e9} */ *");
@@ -227,7 +280,8 @@ fn operators_keywords_cardinalities_and_comments_follow_whitespace_rules() {
         "* : 1000001 =! *",
         "* : 1000001 < > *",
         "* : reverse 1000001 = *",
-        "* : r 1000001 = *",
+        "* : rr 1000001 = *",
+        "* : R R 1000001 = *",
         "/* a /* b */ c */ *",
         "/* unclosed * / *",
         "*/ *",

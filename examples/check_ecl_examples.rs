@@ -15,7 +15,7 @@ fn visit(root: &Path, directory: &Path, results: &mut Vec<serde_json::Value>) ->
             let result = parse(query.trim_start_matches('\u{feff}'));
             results.push(serde_json::json!({
                 "file": path.strip_prefix(root)?.to_string_lossy().replace('\\', "/"),
-                "status": match &result { Ok(_) => "parsed", Err(e) if e.kind == ParseErrorKind::Unsupported => "unsupported", Err(_) => "unexpected_error" },
+                "status": match &result { Ok(_) => "parsed", Err(e) if e.kind == ParseErrorKind::Unsupported => "unsupported", Err(e) if e.kind == ParseErrorKind::Semantic => "semantic", Err(_) => "unexpected_error" },
                 "error": result.err().map(|e| e.to_string()),
             }));
         }

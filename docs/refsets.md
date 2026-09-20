@@ -8,7 +8,7 @@ snomed-ecl-engine expand STORE '^R195967001' --display
 snomed-ecl-engine expand STORE '(<<195967001) AND (^*)' --count
 ```
 
-`membership.bin` contains sparse refset keys and sorted, deduplicated concept ordinals. Only active RF2 member rows contribute. Description-referencing language rows are not converted into their owning concepts. The file has its own version, bounds checks and checksum. Old stores still open, but membership queries fail explicitly if their manifest has no membership index. Reimport the base Snapshot to build it.
+`membership.bin` contains sparse refset keys and sorted, deduplicated concept ordinals. Only active RF2 member rows contribute. Description-referencing language rows are not converted into their owning concepts; their reference sets are classified in the manifest using `concept_refsets` and `non_concept_refsets`, based on descriptors and rows of every status, and `^` over only such sets is a semantic error as 6.1 requires (see [member filters](member-filters.md#identifiers-that-name-no-concept)). The file has its own version, bounds checks and checksum. Old stores still open, but membership queries fail explicitly if their manifest has no membership index. Reimport the base Snapshot to build it.
 
 The current numeric loader opens membership with the core. Preferred display text remains separate. The later [description index](descriptions.md) retains descriptions, definitions and active language memberships. The [typed member index](member-filters.md) retains member fields and historical associations. Include all these components in storage measurements.
 
