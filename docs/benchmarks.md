@@ -27,7 +27,7 @@ Use the same Linux host/runtime, CPU allocation and memory accounting for every 
 
 Use two resource comparisons: equal-resource performance and the minimum allocation at which each implementation completes the workload. Keep offline import allocation separate from serving allocation. If Snowstorm needs a larger serving allocation, state that rather than quietly changing limits.
 
-Do not benchmark OneLondon's shared remote server. Its network latency and shared load are unsuitable, and repeated load adds no useful correctness evidence.
+Do not benchmark OneLondon's shared Ontoserver. Its network latency and shared load are unsuitable, and repeated load adds no useful correctness evidence.
 
 ## Initial baseline attempt
 

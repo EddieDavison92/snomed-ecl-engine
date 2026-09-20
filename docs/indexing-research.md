@@ -23,7 +23,7 @@ Test two representations in Rust:
 
 The second option is a specific indexing experiment, not a promise to support all refinements with bitmaps. Keep group zero separate under the specification's rules. Attribute counts, group counts, missing attributes, inequality, nested disjunctions and concrete comparisons still need exact semantics. Preserve relationship multiplicities and typed values. Do not substitute concept-level intersection for same-group matching.
 
-Measure extra index size against candidate reduction and query latency. Selective queries may favour simply inspecting a few compact relationship rows. Broad grouped queries may justify the extra group index. Lite rejects groups and non-default cardinality, so compare this work against full Snowstorm and version-pinned OneLondon results.
+Measure extra index size against candidate reduction and query latency. Selective queries may favour simply inspecting a few compact relationship rows. Broad grouped queries may justify the extra group index. Lite rejects groups and non-default cardinality, so compare this work against full Snowstorm and version-pinned results from OneLondon's Ontoserver.
 
 ## Other experiments
 
@@ -46,7 +46,7 @@ The completed Lite index occupies 506,801,604 bytes. Standalone `.fdt` stored-fi
 
 A separate pass over the ordinary RF2 relationship snapshot found 4,568,005 active rows, all with the inferred characteristic type. Of these, 1,607,583 are `is a` links and 2,960,422 are other attributes across 127 attribute types. There are 1,029,225 attribute rows with a nonzero group. These figures exclude the separate concrete-value relationship file. They count rows, not distinct groups or validated unique tuples.
 
-The local smoke run matched OneLondon on all eight probes. This establishes only that small shared subset on one release. It does not exercise grouped refinements, compare Rust performance or establish serving-memory requirements.
+The local smoke run matched OneLondon's Ontoserver on all eight probes. This establishes only that small shared subset on one release. It does not exercise grouped refinements, compare Rust performance or establish serving-memory requirements.
 
 ## Next decision
 

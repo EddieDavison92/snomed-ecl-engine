@@ -53,7 +53,7 @@ The conformance inventory includes all 180 productions from each of the official
 
 The synthetic evaluator tests compare against an independent per-seed graph search and `BTreeSet` operations. They cover overlapping inputs, inactive and absent concepts, Boolean expressions, empty results, malformed syntax, unsupported branches, limits and cancellation. CLI tests verify no partial output on a query error and continued batch operation afterwards.
 
-Refresh the small OneLondon probes through the existing credential helper:
+Refresh the small probes against OneLondon's Ontoserver through the existing credential helper:
 
 ```powershell
 ./scripts/Test-Ontoserver.ps1 -QueryPath validation/basic-ecl-queries.json -Destination data/validation/basic-ecl
@@ -84,7 +84,7 @@ The captured container peak covers its entire lifetime and includes charged file
 
 These are historical results. The membership milestone corrected our earlier active-only concept default. ECL includes all concepts by default. The old Python check shared that assumption, so agreement with it did not prove the default correct. See [the correction and current evidence](refsets.md#concept-status-defaults).
 
-The [recorded results](basic-ecl-results.json) show 17 complete OneLondon matches and five broad complete-set matches against an independent Python reader of the original RF2 archive. All 22 workload cases therefore have independent expected results. Ten Rust integration tests pass. The pinned official examples classify as 11 supported parses, 110 unsupported features and zero unexpected syntax errors.
+The [recorded results](basic-ecl-results.json) show 17 complete matches against OneLondon's Ontoserver and five broad complete-set matches against an independent Python reader of the original RF2 archive. All 22 workload cases therefore have independent expected results. Ten Rust integration tests pass. The pinned official examples classify as 11 supported parses, 110 unsupported features and zero unexpected syntax errors.
 
 Snowstorm Lite matches 18 cases. Four wildcard cases differ:
 

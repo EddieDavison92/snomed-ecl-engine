@@ -53,7 +53,7 @@ Evaluate constant subexpressions once per query. Intersect selective candidates 
 
 | Stage | Work | Evidence required to move on |
 |---|---|---|
-| 0. Preparation | Pin release, references, grammar and comparison servers | Verified archive, inventory, version-pinned OneLondon results, local baseline attempt |
+| 0. Preparation | Pin release, references, grammar and comparison servers | Verified archive, inventory, version-pinned results from OneLondon's Ontoserver, local baseline attempt |
 | 1. Import and storage experiment | Stream the snapshot, validate dependencies and graph, compare adjacency and bitmap layouts | Reproducible component counts; no dangling required references or unexplained cycles; measured peak memory and index sizes |
 | 2. Basic ECL | Literals, wildcard, all eight hierarchy operators, parentheses, conjunction, disjunction and exclusion | Official syntax examples, synthetic semantics, exact release-matched result sets and first comparative timings |
 | 3. Membership and refinement | Concept refsets, nested attribute names/values, comparison, attribute cardinality, groups, group cardinality, reverse and dotted attributes, concrete values | Adversarial fixtures plus exact comparisons against a server that supports each feature |
@@ -76,7 +76,7 @@ Create small synthetic RF2 fixtures for a diamond hierarchy, an inactive concept
 
 Keep a deliberately simple evaluator in the test code. Compare optimised answers with that evaluator before comparing with external servers. Check all result IDs and both set differences. Matching totals are insufficient.
 
-Use OneLondon only for modest correctness requests. Pin `http://snomed.info/sct/83821000000107/version/20260826`, verify the returned edition, page to completion, deduplicate and compare numeric-sorted code sets. Do not stress-test a shared server. Use local Snowstorm for timing and unsupported-in-Lite semantics. If two servers disagree, reduce the query to a fixture and resolve it against the standard.
+Use OneLondon's Ontoserver only for modest correctness requests. Pin `http://snomed.info/sct/83821000000107/version/20260826`, verify the returned edition, page to completion, deduplicate and compare numeric-sorted code sets. Do not stress-test a shared server. Use local Snowstorm for timing and unsupported-in-Lite semantics. If two servers disagree, reduce the query to a fixture and resolve it against the standard.
 
 ## Initial performance goals
 

@@ -17,7 +17,7 @@ These are file row counts, not yet validated unique-component counts. The detail
 
 The composition module is dated 26 August 2026. Its dependency rows identify International core/model content dated 1 February 2026 and clinical extension content dated 29 July 2026. Do not substitute a newer International release when reconstructing this edition.
 
-## OneLondon
+## OneLondon's Ontoserver
 
 Eight complete, version-pinned probes succeeded against Ontoserver 6.25.4. They cover a literal, descendants, descendants-or-self, ancestors, children, parents, exclusion and an attribute refinement. Counts and SHA-256 digests are tracked in [ontoserver-baseline.json](../validation/ontoserver-baseline.json); actual code lists remain local.
 
@@ -27,7 +27,7 @@ Snowstorm Lite 2.7.0 started with the same verified archive and exact edition UR
 
 Import completed at 22:39:10 UTC. Snowstorm Lite reported 1,057.257 seconds for the import, about 17.6 minutes, under this preparation run's settings. The index occupies 506,801,604 bytes. The watcher ran the local comparison successfully and stopped the container at 22:39 UTC.
 
-The eight-query report is `data/validation/snowstorm-lite-smoke.json`. All eight complete result sets matched the version-pinned OneLondon baseline. The report contains small warm HTTP samples, not a controlled benchmark. Later Rust comparisons are recorded in [basic ECL](basic-ecl.md) and [refinements](refinements.md).
+The eight-query report is `data/validation/snowstorm-lite-smoke.json`. All eight complete result sets matched the version-pinned baseline from OneLondon's Ontoserver. The report contains small warm HTTP samples, not a controlled benchmark. Later Rust comparisons are recorded in [basic ECL](basic-ecl.md) and [refinements](refinements.md).
 
 ## Full Snowstorm update, 20 September 2026
 
@@ -37,8 +37,8 @@ The 1,000-expression comparison stopped after five HTTP 400 responses. All five 
 
 The partial report is `data/validation/ecl-1000-full-snowstorm.json`. Both containers stopped after the failed comparison; the Elasticsearch volume remains available. Resume with a serving-only Snowstorm container, not the original container's `--import` command. At that point the benchmark needed to distinguish comparison-server language rejections from transport failures and complete the remaining corpus.
 
-The subsequent [full-corpus run](full-snowstorm.md) processed all 1,000 expressions and completed five timing batches. It recorded 719 complete matches, one concrete inequality discrepancy confirmed against OneLondon in Rust's favour, 80 Snowstorm parser rejections and 200 Rust coverage gaps. Both services stopped after the run; no reimport was needed.
+The subsequent [full-corpus run](full-snowstorm.md) processed all 1,000 expressions and completed five timing batches. It recorded 719 complete matches, one concrete inequality discrepancy confirmed against OneLondon's Ontoserver in Rust's favour, 80 Snowstorm parser rejections and 200 Rust coverage gaps. Both services stopped after the run; no reimport was needed.
 
 ## Checks completed
 
-The downloader ran successfully against TRUD and verified the archive. The inventory script processed all snapshot files. The OneLondon wrapper retrieved and checked all probe results, including the exact returned edition. Python scripts compiled and PowerShell scripts passed syntax parsing. The local benchmark runner completed all eight probes with matching results.
+The downloader ran successfully against TRUD and verified the archive. The inventory script processed all snapshot files. The Ontoserver wrapper retrieved and checked all probe results, including the exact returned edition. Python scripts compiled and PowerShell scripts passed syntax parsing. The local benchmark runner completed all eight probes with matching results.

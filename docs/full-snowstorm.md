@@ -7,7 +7,7 @@ On 20 September 2026, all 1,000 corpus expressions were processed against the sa
 | Outcome | Expressions |
 |---|---:|
 | Complete Rust/Snowstorm code sets match | 719 |
-| Concrete inequality disagreement, checked against OneLondon | 1 |
+| Concrete inequality disagreement, checked against OneLondon's Ontoserver | 1 |
 | Top/bottom rejected by Snowstorm's parser | 80 |
 | ECL features still unsupported by Rust | 200 |
 
@@ -50,6 +50,6 @@ The mismatching expression was:
 
 Rust returned `377442002`; Snowstorm returned no concepts. The RF2 Snapshot has two active inferred values of attribute `1142138002` on that concept: `#20` in group 1 and `#10` in group 2. An inequality can match the `#20` relationship even when a different relationship equals `#10`. The ECL specification distinguishes this from prohibiting any equal value, which uses a zero cardinality. See [Exclusion and Not Equals](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/examples/6.5-exclusion-and-not-equals).
 
-Version-pinned OneLondon Ontoserver 6.25.4 returned the same complete singleton set as Rust. The related equality and greater-than probes also returned that singleton. Their [validation record](../validation/ontoserver-concrete-inequality.json) contains the edition and digests. This evidence supports a Snowstorm concrete-inequality defect; it does not justify changing Rust to reproduce the omission. A synthetic two-value regression test covers existential inequality, equality, grouping and cardinality without copying release data into the fixture.
+OneLondon's Ontoserver 6.25.4, queried at the same pinned edition, returned the same complete singleton set as Rust. The related equality and greater-than probes also returned that singleton. Their [validation record](../validation/ontoserver-concrete-inequality.json) contains the edition and digests. This evidence supports a Snowstorm concrete-inequality defect; it does not justify changing Rust to reproduce the omission. A synthetic two-value regression test covers existential inequality, equality, grouping and cardinality without copying release data into the fixture.
 
 The raw report deliberately retains `mismatch`, and the benchmark runner exited with status 1. Its `exit_code` field records the Rust child process, which exited normally with status 0. All five timing batches completed. Both services were stopped afterwards and their indexes retained.

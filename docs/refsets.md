@@ -18,7 +18,7 @@ ECL includes all concepts by default, with active relationships and active refse
 
 The current [simple-expression specification](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.1-simple-expression-constraints) explicitly permits inactive concepts in membership results. The [quick reference](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/appendices/appendix-d-ecl-quick-reference) defines the default concept population. Older syntax prose still describes an active-component default; use the current behaviour rules when checking this distinction.
 
-The release-matched query `^51971000001109` returns 102 concepts, including five inactive concepts. Both the independent RF2 scan and OneLondon agree. Our earlier result of 97 was wrong. Old benchmark artefacts are retained as historical measurements, with the correction recorded in [basic ECL](basic-ecl.md).
+The release-matched query `^51971000001109` returns 102 concepts, including five inactive concepts. Both the independent RF2 scan and OneLondon's Ontoserver agree. Our earlier result of 97 was wrong. Old benchmark artefacts are retained as historical measurements, with the correction recorded in [basic ECL](basic-ecl.md).
 
 ## Add PCD or another simple refset supplement
 
@@ -54,7 +54,7 @@ PCD adds 764,482 bytes across these files, about 0.73 MiB. Its observed import t
 
 ## Evidence and reproduction
 
-All 45 [OneLondon probes](../validation/ontoserver-membership.json) match complete code-set digests at the pinned edition. Six independent monolith RF2 scans cover direct and reverse membership. Every one of the 1,039 PCD refsets matches its full independent RF2 set, including inactive referenced concepts. Synthetic tests cover composition, absent indexes, limits, corruption, collisions and supplementary ordinal remapping.
+All 45 [probes against OneLondon's Ontoserver](../validation/ontoserver-membership.json) match complete code-set digests at the pinned edition. Six independent monolith RF2 scans cover direct and reverse membership. Every one of the 1,039 PCD refsets matches its full independent RF2 set, including inactive referenced concepts. Synthetic tests cover composition, absent indexes, limits, corruption, collisions and supplementary ordinal remapping.
 
 ```sh
 python scripts/check_membership_rf2.py --archive BASE_RF2 --store BASE_STORE --output data/validation/membership-check.json
@@ -62,4 +62,4 @@ python scripts/check_supplement_rf2.py --archive PCD_RF2 --store COMBINED_STORE 
 python scripts/benchmark_corpus.py --store-directory BASE_STORE --output data/validation/new-corpus-run.json
 ```
 
-The 1,000-expression corpus now evaluates 840 cases and rejects 160 unsupported cases. All 800 previously evaluated code-set digests are unchanged. Its 40 membership cases match OneLondon. The pinned official examples parse 73 of 121 files, with 48 unsupported and no unexpected syntax errors. These are development coverage counts, not a language-conformance percentage. [Validation summary](../validation/membership-validation.json) records the measurements; [full conformance](conformance.md) records what remains.
+The 1,000-expression corpus now evaluates 840 cases and rejects 160 unsupported cases. All 800 previously evaluated code-set digests are unchanged. Its 40 membership cases match OneLondon's Ontoserver. The pinned official examples parse 73 of 121 files, with 48 unsupported and no unexpected syntax errors. These are development coverage counts, not a language-conformance percentage. [Validation summary](../validation/membership-validation.json) records the measurements; [full conformance](conformance.md) records what remains.

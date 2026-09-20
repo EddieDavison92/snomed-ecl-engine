@@ -36,7 +36,7 @@ The [recorded checks](../validation/description-metadata-results.json) use UK Mo
 
 The import time is one local Windows/Docker run. Core, display and concept-membership checksums are unchanged from the preceding import. The RF2 checker independently traverses active inferred relationships and scans descriptions, definitions and language rows. Rust query validation used one CPU and 1 GiB; its first query includes loading the description file. This is not evidence that description queries fit in 256 MiB.
 
-OneLondon rejected all 18 metadata probes. The first diagnostic confirmed `TypeFilter not supported`. The [rejection record](../validation/ontoserver-description-metadata.json) claims no external matches. Synthetic tests cover shared-description semantics, inactive rows, value sets, nested expressions, dialect acceptability, limits, lazy loading, corruption and supplementary remapping.
+OneLondon's Ontoserver rejected all 18 metadata probes. The first diagnostic confirmed `TypeFilter not supported`. The [rejection record](../validation/ontoserver-description-metadata.json) claims no external matches. Synthetic tests cover shared-description semantics, inactive rows, value sets, nested expressions, dialect acceptability, limits, lazy loading, corruption and supplementary remapping.
 
 Adding PCD 63.0.0 to this base took 20.82 seconds in a separate local run. The combined description file is 394,688,869 bytes, with 3,564,824 descriptions and 5,608,984 language memberships. The loader remaps base ordinals and validates new descriptions before publishing the combined store.
 

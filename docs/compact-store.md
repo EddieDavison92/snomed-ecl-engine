@@ -72,7 +72,7 @@ The core contains 1,151,519 concepts, 1,607,583 hierarchy edges, 2,960,422 ordin
 
 The import used two CPUs and a 2 GiB container limit. The numeric probe used one CPU and a 256 MiB limit with swap disabled. Container charged memory includes the wrapper and charged filesystem cache; it excludes the rest of the Docker VM and host. The initial import measurement did not capture a container peak.
 
-Five complete hierarchy results matched the version-pinned OneLondon digests. Four synthetic integration tests passed, including all eight hierarchy variants against a slow graph evaluator, group and decimal preservation, separate displays, invalid imports and corrupt stores. A real-release display lookup also succeeded within the 256 MiB container limit.
+Five complete hierarchy results matched version-pinned digests from OneLondon's Ontoserver. Four synthetic integration tests passed, including all eight hierarchy variants against a slow graph evaluator, group and decimal preservation, separate displays, invalid imports and corrupt stores. A real-release display lookup also succeeded within the 256 MiB container limit.
 
 Two smoke runs took 2.6 and 3.5 seconds to load, checksum and validate the core through the Windows bind mount. Warm p95 timings for the five small queries ranged from 0.05 to 0.15 ms across those runs. These are preliminary observations, not controlled cold-start or throughput benchmarks.
 
@@ -110,4 +110,4 @@ docker run --rm --cpus 1 --memory 256m --memory-swap 256m --mount $mount -w /wor
 
 Omit `--display` for one numeric SCTID per line. The displayed form uses decimal strings for JSON codes. These operators are accepted: `<`, `<<`, `<!`, `<<!`, `>`, `>>`, `>!`, `>>!`.
 
-The probe compares complete, numeric-sorted result digests with the saved OneLondon baseline. It reports load time separately from 100 warm iterations per query. The iterations include traversal, result allocation and sorting. These small asthma queries do not establish performance for broad expansions or refinements.
+The probe compares complete, numeric-sorted result digests with the saved baseline from OneLondon's Ontoserver. It reports load time separately from 100 warm iterations per query. The iterations include traversal, result allocation and sorting. These small asthma queries do not establish performance for broad expansions or refinements.

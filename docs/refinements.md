@@ -10,7 +10,7 @@ The evaluator consumes the published inferred distribution form. It does not rem
 
 `tests/refinements.rs` covers cross-group false matches, group zero, zero and bounded cardinality, reverse source identity, absence versus inequality, nested expressions, exact decimals, strings, Booleans and malformed syntax. Existing independent hierarchy/set tests still pass with and without the importer feature.
 
-All 20 small OneLondon probes matched complete code sets for the pinned UK edition. See [probe results](../validation/ontoserver-refinements.json). This is targeted correctness evidence, not proof of all refinement semantics.
+All 20 small probes against OneLondon's Ontoserver matched complete code sets for the pinned UK edition. See [probe results](../validation/ontoserver-refinements.json). This is targeted correctness evidence, not proof of all refinement semantics.
 
 The official example classification parses 63 of 121 files. The other 58 return unsupported errors. No valid example fails with an unexpected syntax error.
 

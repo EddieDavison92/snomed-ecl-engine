@@ -28,7 +28,7 @@ foreach ($reference in (Get-Content docs/references.json -Raw | ConvertFrom-Json
 }
 ```
 
-## Refresh the OneLondon probes
+## Refresh the Ontoserver probes
 
 The local Windows Credential Manager setup used by the terminology-server skill must already work. This helper is machine-specific and is not included in the repository.
 

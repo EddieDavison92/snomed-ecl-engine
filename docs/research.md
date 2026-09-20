@@ -4,7 +4,7 @@ Checked on 19 September 2026. Exact reference commits are in [references.json](r
 
 ## Release choice
 
-TRUD item 1799 provides the UK Monolith RF2 Snapshot. The authenticated API returned release 42.5.0, effective 26 August and published 2 September 2026. Item 101, the Clinical Edition with Full/Snapshot/Delta, returned 42.4.0, published 5 August. Use the Monolith for the primary dataset because the goal is the current combined UK content and OneLondon exposes the matching composition edition. Keep archive publication date distinct from edition effective date. [TRUD API documentation](https://isd.digital.nhs.uk/trud/user/guest/group/0/api)
+TRUD item 1799 provides the UK Monolith RF2 Snapshot. The authenticated API returned release 42.5.0, effective 26 August and published 2 September 2026. Item 101, the Clinical Edition with Full/Snapshot/Delta, returned 42.4.0, published 5 August. Use the Monolith for the primary dataset because the goal is the current combined UK content and OneLondon's Ontoserver exposes the matching composition edition. Keep archive publication date distinct from edition effective date. [TRUD API documentation](https://isd.digital.nhs.uk/trud/user/guest/group/0/api)
 
 The Monolith download is 609,629,807 bytes. Its verified checksum is in [release.json](release.json). The raw TRUD API response is not retained because its download URLs contain the API key. RF2 contents and detailed inventory remain local.
 
@@ -36,7 +36,7 @@ Roaring's Rust implementation provides compressed sets of 32-bit integers and op
 
 The main risk is index amplification: precomputing every descendant set or every attribute/value combination may cost more memory than it saves in latency. The main semantic risk is flattening relationship groups to accelerate attribute matching. Preserve exact relationships first and optimise candidate selection around them.
 
-## OneLondon validation
+## OneLondon's Ontoserver validation
 
 The connected service reported Ontoserver 6.25.4 and FHIR 4.0.1. Discovery returned the required UK composition edition. Eight small queries completed with explicit edition confirmation and complete code lists. The tracked [baseline](../validation/ontoserver-baseline.json) contains counts and digests; the lists stay local.
 
