@@ -1,0 +1,435 @@
+{
+ "recorded_at": "2026-09-20T20:17:22.218122+00:00",
+ "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+ "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+ "binary_sha256": "99a5e85e3e8493d30afffda16d9ec4737441c15d85ada09798800262b8c28a00",
+ "manifest_sha256": "3211405dd60f87bd75fe1b7dd31666ea6784d6e663be27026e6e34b09adf1c9c",
+ "import_evidence_sha256": "cf86e8f3141e986c0dd33883382bcc5084ba975144781cf4066f09cccbab4456",
+ "memory_limit_mib": 256,
+ "repeats": 4,
+ "ladder_sha256": "f717e727d9e47cb572c5dffd013ff5e087b25923a60a18b686ae8fe408e963aa",
+ "scope": "Complete expansion of every rung by both engines, repeated and timed end to end. This engine runs in a container with one CPU and the stated memory, answering over JSONL to the parent process. Snowstorm answers over loopback HTTP, returnIdOnly, at its maximum page size of 10,000, using searchAfter pagination. Timings include transport on both sides, which is the cost of obtaining the code set rather than of evaluation alone.",
+ "rungs": [
+  {
+   "ecl": "<< 824004",
+   "expected_total": 1,
+   "engine_ms": [
+    1982.486099936068,
+    2.2486000088974833,
+    2.140299999155104,
+    2.0854000467807055
+   ],
+   "snowstorm_ms": [
+    35.96000000834465,
+    31.849700026214123,
+    29.758700053207576,
+    54.26520004402846
+   ],
+   "total": 1,
+   "sha256": "a3c8260286025f3dff4f00189a32271d5607c50bbd48c29c0be11446222d5e13",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 1982.486099936068,
+   "engine_warm_ms": 2.140299999155104,
+   "snowstorm_cold_ms": 35.96000000834465,
+   "snowstorm_warm_ms": 31.849700026214123,
+   "cold_ratio": 0.01813884092781498,
+   "warm_ratio": 14.880951286635975
+  },
+  {
+   "ecl": "<! 1239002",
+   "expected_total": 3,
+   "engine_ms": [
+    2.076999982818961,
+    2.0855999318882823,
+    1.9727000035345554,
+    2.2372999228537083
+   ],
+   "snowstorm_ms": [
+    31.423000036738813,
+    27.95520005747676,
+    26.24250005465001,
+    51.032799994573
+   ],
+   "total": 3,
+   "sha256": "f94684f2cd7db1eef4157ab193225db877577dff41d68221615ac0bc61738547",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 2.076999982818961,
+   "engine_warm_ms": 2.0855999318882823,
+   "snowstorm_cold_ms": 31.423000036738813,
+   "snowstorm_warm_ms": 27.95520005747676,
+   "cold_ratio": 15.129032400900966,
+   "warm_ratio": 13.40391300845814
+  },
+  {
+   "ecl": "<! 15847003",
+   "expected_total": 10,
+   "engine_ms": [
+    2.0122999558225274,
+    2.1077999845147133,
+    1.9636000506579876,
+    1.9335999386385083
+   ],
+   "snowstorm_ms": [
+    35.22319998592138,
+    29.45249993354082,
+    28.936699964106083,
+    27.005700045265257
+   ],
+   "total": 10,
+   "sha256": "72726e48fdea69ba19c3111a05c2a3f5a0af485df5172f368038f4c45c01999b",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 2.0122999558225274,
+   "engine_warm_ms": 1.9636000506579876,
+   "snowstorm_cold_ms": 35.22319998592138,
+   "snowstorm_warm_ms": 28.936699964106083,
+   "cold_ratio": 17.503951080456048,
+   "warm_ratio": 14.736554908118693
+  },
+  {
+   "ecl": "> 27970007",
+   "expected_total": 30,
+   "engine_ms": [
+    2.2462999913841486,
+    1.9409999949857593,
+    1.8223999068140984,
+    1.8762999679893255
+   ],
+   "snowstorm_ms": [
+    69.14299994241446,
+    22.479400038719177,
+    23.560800007544458,
+    23.1025000102818
+   ],
+   "total": 30,
+   "sha256": "deea1b89aa9c9dfc394176fd21925724f8e4b313e574fe85c437e8de964de382",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 2.2462999913841486,
+   "engine_warm_ms": 1.8762999679893255,
+   "snowstorm_cold_ms": 69.14299994241446,
+   "snowstorm_warm_ms": 23.1025000102818,
+   "cold_ratio": 30.780839695329032,
+   "warm_ratio": 12.312796676662968
+  },
+  {
+   "ecl": "(<< 60095008) MINUS (<< 52069002)",
+   "expected_total": 104,
+   "engine_ms": [
+    2.9064000118523836,
+    3.2158999238163233,
+    2.9829000122845173,
+    2.944999956525862
+   ],
+   "snowstorm_ms": [
+    89.37719999812543,
+    30.26340005453676,
+    28.33120001014322,
+    31.64549998473376
+   ],
+   "total": 104,
+   "sha256": "84eae16a62989acf5d4ce82c223da8b2ee2d073ba5b4b2d6c65a1546cfc7c638",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 2.9064000118523836,
+   "engine_warm_ms": 2.9829000122845173,
+   "snowstorm_cold_ms": 89.37719999812543,
+   "snowstorm_warm_ms": 30.26340005453676,
+   "cold_ratio": 30.751857842569027,
+   "warm_ratio": 10.145630068021923
+  },
+  {
+   "ecl": "(<< 36228007) MINUS (<< 66902005)",
+   "expected_total": 305,
+   "engine_ms": [
+    3.9550000801682472,
+    3.2674999674782157,
+    4.883900051936507,
+    3.130400087684393
+   ],
+   "snowstorm_ms": [
+    114.46800001431257,
+    30.087699997238815,
+    32.0950000314042,
+    29.926499933935702
+   ],
+   "total": 305,
+   "sha256": "5eaaa49dbd4fbbc78a2fd320606f304c40802679c45091b41a5ab0891b945f07",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 3.9550000801682472,
+   "engine_warm_ms": 3.2674999674782157,
+   "snowstorm_cold_ms": 114.46800001431257,
+   "snowstorm_warm_ms": 30.087699997238815,
+   "cold_ratio": 28.94260371530588,
+   "warm_ratio": 9.208171475655694
+  },
+  {
+   "ecl": "(<< 710955000) MINUS (<< 42526005)",
+   "expected_total": 1020,
+   "engine_ms": [
+    3.5969000309705734,
+    3.627500031143427,
+    3.882399993017316,
+    3.8716000271961093
+   ],
+   "snowstorm_ms": [
+    146.8938000034541,
+    36.60130000207573,
+    32.440399983897805,
+    47.034200048074126
+   ],
+   "total": 1020,
+   "sha256": "6c1fdd48b0fb7834a1d7aa1296348df0d61e06ed56a292e67ed8ac08e32423ce",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 3.5969000309705734,
+   "engine_warm_ms": 3.8716000271961093,
+   "snowstorm_cold_ms": 146.8938000034541,
+   "snowstorm_warm_ms": 36.60130000207573,
+   "cold_ratio": 40.83899989953761,
+   "warm_ratio": 9.453791648147893
+  },
+  {
+   "ecl": "(<< 12479006) OR (<< 844005)",
+   "expected_total": 2803,
+   "engine_ms": [
+    4.160800017416477,
+    4.88800008315593,
+    3.8180999690666795,
+    4.374300013296306
+   ],
+   "snowstorm_ms": [
+    298.06220007594675,
+    28.109700069762766,
+    26.456499937921762,
+    28.224200010299683
+   ],
+   "total": 2803,
+   "sha256": "f4206a48a57a06c0a56712a3e5db09865e3bdfd3819b7ceae876c31cb60cbac9",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 4.160800017416477,
+   "engine_warm_ms": 4.374300013296306,
+   "snowstorm_cold_ms": 298.06220007594675,
+   "snowstorm_warm_ms": 28.109700069762766,
+   "cold_ratio": 71.63579091239752,
+   "warm_ratio": 6.4261024585234985
+  },
+  {
+   "ecl": "(<< 26600511000001104) OR (<< 33001311000001104)",
+   "expected_total": 9301,
+   "engine_ms": [
+    5.875900038518012,
+    6.487100035883486,
+    6.948699941858649,
+    7.088699960149825
+   ],
+   "snowstorm_ms": [
+    821.286499965936,
+    38.3229999570176,
+    36.1698999768123,
+    37.550500012002885
+   ],
+   "total": 9301,
+   "sha256": "85c5713651865528f28b3676ddba6995a7fc465a3c1e80aa29da7399e8023f9f",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 5.875900038518012,
+   "engine_warm_ms": 6.948699941858649,
+   "snowstorm_cold_ms": 821.286499965936,
+   "snowstorm_warm_ms": 37.550500012002885,
+   "cold_ratio": 139.77203400027147,
+   "warm_ratio": 5.403960499977902
+  },
+  {
+   "ecl": "<< 105590001",
+   "expected_total": 29978,
+   "engine_ms": [
+    12.342299916781485,
+    11.585100088268518,
+    13.516300008632243,
+    13.309299945831299
+   ],
+   "snowstorm_ms": [
+    995.0646000215784,
+    86.56600001268089,
+    86.33029996417463,
+    72.6398000260815
+   ],
+   "total": 29978,
+   "sha256": "c28b6cae54a6adb47c2bf4515a3d0133e368e0425e427b7a7473f8fa3f6806f0",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 12.342299916781485,
+   "engine_warm_ms": 13.309299945831299,
+   "snowstorm_cold_ms": 995.0646000215784,
+   "snowstorm_warm_ms": 86.33029996417463,
+   "cold_ratio": 80.6222994685631,
+   "warm_ratio": 6.486464375702552
+  },
+  {
+   "ecl": "<< 123037004",
+   "expected_total": 43647,
+   "engine_ms": [
+    17.7034999942407,
+    15.181700000539422,
+    18.248400068841875,
+    19.54649994149804
+   ],
+   "snowstorm_ms": [
+    1609.6949999919161,
+    166.31859994959086,
+    132.85380008164793,
+    116.55569996219128
+   ],
+   "total": 43647,
+   "sha256": "1aaff67b9d4db5ef09d06614e1aed668e9d6765353115b502c83c692e064ab2a",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 17.7034999942407,
+   "engine_warm_ms": 18.248400068841875,
+   "snowstorm_cold_ms": 1609.6949999919161,
+   "snowstorm_warm_ms": 132.85380008164793,
+   "cold_ratio": 90.925240800722,
+   "warm_ratio": 7.280298523731315
+  },
+  {
+   "ecl": "<< 71388002",
+   "expected_total": 71560,
+   "engine_ms": [
+    28.90350006055087,
+    22.72360003553331,
+    29.42479995545,
+    24.174400023184717
+   ],
+   "snowstorm_ms": [
+    2455.9730999171734,
+    204.6810999745503,
+    200.04489994607866,
+    204.55089991446584
+   ],
+   "total": 71560,
+   "sha256": "ef4d842323ac51e5599d213eb4be4f4363f34a275aa257738e2c42bd1f69ae8c",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 28.90350006055087,
+   "engine_warm_ms": 24.174400023184717,
+   "snowstorm_cold_ms": 2455.9730999171734,
+   "snowstorm_warm_ms": 204.55089991446584,
+   "cold_ratio": 84.97147732184949,
+   "warm_ratio": 8.46146749115962
+  },
+  {
+   "ecl": "<< 64572001",
+   "expected_total": 92718,
+   "engine_ms": [
+    32.708700047805905,
+    38.00639999099076,
+    39.89319992251694,
+    34.3906000489369
+   ],
+   "snowstorm_ms": [
+    3280.472100013867,
+    229.88350002560765,
+    222.42170001845807,
+    230.65299994777888
+   ],
+   "total": 92718,
+   "sha256": "7a4e888391d11d81bf9d5afca04f6bfe859379d588ebc98b2ef0aa1a84e948c3",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 32.708700047805905,
+   "engine_warm_ms": 38.00639999099076,
+   "snowstorm_cold_ms": 3280.472100013867,
+   "snowstorm_warm_ms": 229.88350002560765,
+   "cold_ratio": 100.29356395146375,
+   "warm_ratio": 6.048547088913985
+  },
+  {
+   "ecl": "<< 373873005",
+   "expected_total": 232007,
+   "engine_ms": [
+    77.18599995132536,
+    82.62359991203994,
+    112.63920005876571,
+    90.62609996180981
+   ],
+   "snowstorm_ms": [
+    8210.199100081809,
+    555.1827000454068,
+    510.3370000142604,
+    593.5878000454977
+   ],
+   "total": 232007,
+   "sha256": "b437b9493b5c66483a78ac3c4ec5d37156c31a2db945ae2d0891757f93dc632e",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 77.18599995132536,
+   "engine_warm_ms": 90.62609996180981,
+   "snowstorm_cold_ms": 8210.199100081809,
+   "snowstorm_warm_ms": 555.1827000454068,
+   "cold_ratio": 106.36901906121943,
+   "warm_ratio": 6.126079576185701
+  },
+  {
+   "ecl": "<< 138875005",
+   "expected_total": 838955,
+   "engine_ms": [
+    322.56530004087836,
+    385.2276001125574,
+    435.3777999058366,
+    408.28309999778867
+   ],
+   "snowstorm_ms": [
+    30174.327700049616,
+    1916.8017000192776,
+    2064.5138999680057,
+    1959.7817999310791
+   ],
+   "total": 838955,
+   "sha256": "89600eab71752964b5eb72214a7830884d8d57ee1f64d48791ee59fc3d693189",
+   "matches": true,
+   "only_engine": 0,
+   "only_snowstorm": 0,
+   "engine_cold_ms": 322.56530004087836,
+   "engine_warm_ms": 408.28309999778867,
+   "snowstorm_cold_ms": 30174.327700049616,
+   "snowstorm_warm_ms": 1959.7817999310791,
+   "cold_ratio": 93.54486578756504,
+   "warm_ratio": 4.800056137375496
+  }
+ ],
+ "snowstorm_resources": {
+  "container_charged_peak_bytes": 1451028480,
+  "peak_scope": "Container lifetime; includes any earlier queries since this container was created",
+  "memory_limit_bytes": 6442450944,
+  "memory_and_swap_limit_bytes": 6442450944,
+  "nano_cpus": 4000000000,
+  "image": "snomedinternational/snowstorm@sha256:fa9cce11ce3f25bdc98c67d8f93ccd6c96665fbeaab7cb42f273f0118fbc222e"
+ },
+ "elasticsearch_resources": {
+  "container_charged_peak_bytes": 6268657664,
+  "peak_scope": "Container lifetime; includes any earlier queries since this container was created",
+  "memory_limit_bytes": 6442450944,
+  "memory_and_swap_limit_bytes": 6442450944,
+  "nano_cpus": 4000000000,
+  "image": "docker.elastic.co/elasticsearch/elasticsearch@sha256:1b6a877f18352510860ee065f01472bd37d33ac5eb1d943e0b9ed366b149638c"
+ }
+}

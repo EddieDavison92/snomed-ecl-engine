@@ -121,22 +121,66 @@ Timings include transport: JSONL to a child process for the engine, loopback
 HTTP with paging for the servers. Five seeded shuffled batches, no result cache,
 caches not dropped. p95 describes this corpus, not a general workload.
 
+### How the cost grows with the answer
+
+A single multiple depends on which expressions you picked, so this walks a
+ladder of 15 expressions chosen to be log-spaced by result size, from one
+concept to every active concept in the release. Every rung returned identical
+code sets from both engines.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/expansion-scaling-dark.svg">
+  <img alt="Cost of a complete expansion against concepts returned, both axes logarithmic. This engine runs from 2 ms at one concept to 0.4 s at 839,000. Snowstorm asked for the first time runs from 31 ms to 30 s; once cached, from 28 ms to 2 s." src="images/expansion-scaling-light.svg">
+</picture>
+
+| Concepts returned | This engine | Snowstorm, first ask | Snowstorm, cached | First-ask ratio |
+|---:|---:|---:|---:|---:|
+| 1 | 2.1 ms | 0.04 s | 0.03 s | 0x |
+| 3 | 2.1 ms | 0.03 s | 0.03 s | 15x |
+| 10 | 2.0 ms | 0.04 s | 0.03 s | 18x |
+| 30 | 1.9 ms | 0.07 s | 0.02 s | 31x |
+| 104 | 3.0 ms | 0.09 s | 0.03 s | 31x |
+| 305 | 3.3 ms | 0.11 s | 0.03 s | 29x |
+| 1,020 | 3.9 ms | 0.15 s | 0.04 s | 41x |
+| 2,803 | 4.4 ms | 0.30 s | 0.03 s | 72x |
+| 9,301 | 6.9 ms | 0.82 s | 0.04 s | 140x |
+| 29,978 | 13.3 ms | 1.00 s | 0.09 s | 81x |
+| 43,647 | 18.2 ms | 1.61 s | 0.13 s | 91x |
+| 71,560 | 24.2 ms | 2.46 s | 0.20 s | 85x |
+| 92,718 | 38.0 ms | 3.28 s | 0.23 s | 100x |
+| 232,007 | 90.6 ms | 8.21 s | 0.56 s | 106x |
+| 838,955 | 408.3 ms | 30.17 s | 1.96 s | 94x |
+
+Snowstorm caches an expansion once it has been asked for, and the cache is
+effective: about 15 times quicker on the second ask. Measuring without
+separating the two conflates them, which is what an earlier version of this
+ladder did. The run behind this table restarts Snowstorm first so that every
+rung's first sample is genuinely cold, and it excludes `<< 404684003` because
+the provenance gate queries it as a sentinel and would warm that rung.
+
+This engine has no result cache. Its cold and warm figures differ by a factor of
+0.98 across the ladder, so the column above is simply what a query costs.
+
+Which column applies depends on your workload. Expanding many different
+definitions once each, as a codelist conversion does, pays the first-ask cost
+every time. Re-expanding the same definitions pays the cached cost.
+
 ### The 10,000-expression corpus
 
-Treat this one as a torture test for the enumeration path rather than as a
-representative workload. The [10,000-expression corpus](../validation/ecl-10000.json)
-holds 107 expressions whose results run past 50,000 concepts, against two in the
-1,000. Both corpora have the same median result size: one concept. The tail is
-the whole difference.
+A full comparison run over the [10,000-expression corpus](../validation/ecl-10000.json)
+was started and abandoned after 3,301 expressions. It was on course for roughly
+six hours, and the ladder above answers the same question better, because it
+shows the shape rather than one ratio. The partial results are kept in
+[`snowstorm-10000-results.json`](../validation/snowstorm-10000-results.json) and
+are labelled as partial: 2,612 agreeing complete code sets, one disagreement,
+433 expressions Snowstorm could not parse or return, and 255 it refused because
+they name a concept inactive on its branch.
 
-That tail is what an HTTP API struggles with. A 111,171-concept result takes
-about 49 seconds to page out of Snowstorm at its maximum 10,000 per page; this
-engine returns the same set in roughly 35 ms. Snowstorm is not slow at the work
-it is built for, and its count latency above is 13.19 ms. The cost here is
-serialising and paging very large result sets, thousands of times over.
-
-If your expansions are small, none of this applies to you and the count figures
-are the ones to read.
+That corpus holds 107 expressions returning more than 50,000 concepts, against
+two in the 1,000. Both have the same median result size of one concept. Treat it
+as a torture test for the enumeration path rather than a representative
+workload. If your expansions are small, the count figures above are the ones to
+read.
 
 ## How much of the language each engine ran
 
@@ -256,6 +300,12 @@ library timings without transport. The CLI is sequential.
 ## Reproducing
 
 ```sh
+# How the cost grows with the size of the answer.
+python scripts/benchmark_expansion_size.py --output OUT.json \
+  --snowstorm http://127.0.0.1:18082 \
+  --import-report validation/snowstorm-import-evidence.json
+
+# Correctness and latency across a fixed corpus.
 python scripts/benchmark_corpus.py --output OUT.json \
   --corpus validation/ecl-1000.json \
   --store-directory data/compact-store/v1-ecl-completion \
@@ -266,8 +316,10 @@ python scripts/benchmark_corpus.py --output OUT.json \
   --lite http://127.0.0.1:18081/fhir
 ```
 
-One server per run: running both at once distorts the timings, and the harness
-refuses it. Starting the containers is in [developer setup](setup.md#comparison-servers).
+Restart Snowstorm before a scaling run so its ECL cache is empty, or every rung
+after the first measures the cache rather than the work. One server per run:
+running both at once distorts the timings, and the corpus harness refuses it.
+Starting the containers is in [developer setup](setup.md#comparison-servers).
 
 The harness pins the release, executable, resource limits and complete result
 digests, and will not compare unless the server advertises the same edition and

@@ -211,12 +211,108 @@ def latency_svg(theme_name, title, subtitle, rows, note):
     return "\n".join(out)
 
 
+def scaling_svg(theme_name, title, subtitle, series, note):
+    """Log-log lines: cost against the number of concepts returned."""
+    import math
+    t = THEMES[theme_name]
+    left, right, top = 64, 168, 74
+    plot_w = WIDTH - left - right
+    plot_h = 290
+    plot_bottom = top + plot_h
+    note_lines = wrap(note)
+    # Room under the plot for tick labels, the axis title and the note.
+    height = plot_bottom + 52 + 13 * len(note_lines)
+    xs = [x for s in series for x, _ in s["points"]]
+    ys = [y for s in series for _, y in s["points"]]
+    x0, x1 = 0.0, math.ceil(math.log10(max(xs)))
+    y0, y1 = math.floor(math.log10(min(ys))), math.ceil(math.log10(max(ys)))
+
+    def px(v):
+        return left + plot_w * (math.log10(v) - x0) / (x1 - x0)
+
+    def py(v):
+        return top + plot_h * (1 - (math.log10(v) - y0) / (y1 - y0))
+
+    def ms(v):
+        return f"{v:g} ms" if v < 1000 else f"{v / 1000:g} s"
+
+    out = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{height}" '
+        f'viewBox="0 0 {WIDTH} {height}" font-family="{FONT}" '
+        f'role="img" aria-label="{esc(title)}">',
+        f'<rect width="{WIDTH}" height="{height}" fill="{t["surface"]}"/>',
+        f'<text x="24" y="28" font-size="16" font-weight="600" '
+        f'fill="{t["primary"]}">{esc(title)}</text>',
+        f'<text x="24" y="48" font-size="12" fill="{t["secondary"]}">{esc(subtitle)}</text>',
+    ]
+    for decade in range(int(y0), int(y1) + 1):
+        y = py(10 ** decade)
+        out.append(f'<line x1="{left}" y1="{y:.1f}" x2="{left + plot_w}" y2="{y:.1f}" '
+                   f'stroke="{t["grid"]}" stroke-width="1"/>')
+        out.append(f'<text x="{left - 8}" y="{y + 4:.1f}" font-size="10" text-anchor="end" '
+                   f'fill="{t["secondary"]}">{ms(10 ** decade)}</text>')
+    for decade in range(int(x0), int(x1) + 1):
+        x = px(10 ** decade)
+        label = f"{10 ** decade:,}" if decade < 6 else "1M"
+        out.append(f'<text x="{x:.1f}" y="{plot_bottom + 16}" font-size="10" '
+                   f'text-anchor="middle" fill="{t["secondary"]}">{label}</text>')
+    out.append(f'<text x="{left + plot_w / 2:.0f}" y="{plot_bottom + 34}" font-size="11" '
+               f'text-anchor="middle" fill="{t["secondary"]}">concepts returned</text>')
+
+    for index, s in enumerate(series):
+        colour = t["series"][index]
+        points = " ".join(f"{px(x):.1f},{py(y):.1f}" for x, y in s["points"])
+        out.append(f'<polyline points="{points}" fill="none" stroke="{colour}" '
+                   f'stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>')
+        for x, y in s["points"]:
+            out.append(f'<circle cx="{px(x):.1f}" cy="{py(y):.1f}" r="4" fill="{colour}" '
+                       f'stroke="{t["surface"]}" stroke-width="2"/>')
+        last_x, last_y = s["points"][-1]
+        out.append(f'<text x="{px(last_x) + 12:.1f}" y="{py(last_y) + 4:.1f}" font-size="11" '
+                   f'font-weight="600" fill="{t["primary"]}">{esc(s["label"])}</text>')
+
+    for offset, line in enumerate(note_lines):
+        out.append(f'<text x="24" y="{plot_bottom + 54 + 13 * offset}" font-size="11" '
+                   f'fill="{t["secondary"]}">{esc(line)}</text>')
+    out.append("</svg>")
+    return "\n".join(out)
+
+
 def write(name, builder, *args, **options):
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in THEMES:
         path = OUT / f"{name}-{theme}.svg"
         path.write_text(builder(theme, *args, **options) + "\n", encoding="utf-8")
         print("wrote", path.relative_to(OUT.parent.parent))
+
+
+def expansion_scaling():
+    """Read the ladder results so the chart cannot drift from the measurements."""
+    import json
+    path = OUT.parent.parent / "validation" / "expansion-size-results.json"
+    if not path.exists():
+        print("skipping scaling chart:", path, "not found")
+        return
+    rungs = json.loads(path.read_text(encoding="utf-8"))["rungs"]
+    # The engine has no result cache, so its warm figure is its steady state.
+    # Taking it also excludes the one-off index open from the first rung.
+    write(
+        "expansion-scaling",
+        scaling_svg,
+        "What a complete expansion costs as the result grows",
+        "Every concept returned, one CPU and 256 MiB for the engine. Both axes are logarithmic.",
+        [
+            {"label": "This engine",
+             "points": [(r["total"], r["engine_warm_ms"]) for r in rungs]},
+            {"label": "Snowstorm, first ask",
+             "points": [(r["total"], r["snowstorm_cold_ms"]) for r in rungs]},
+            {"label": "Snowstorm, cached",
+             "points": [(r["total"], r["snowstorm_warm_ms"]) for r in rungs]},
+        ],
+        "Snowstorm caches an expansion once asked, so its second answer is far quicker than "
+        "its first. This engine has no result cache; every ask costs the same. Opening the "
+        "index is a separate one-off of 285 to 525 ms.",
+    )
 
 
 if __name__ == "__main__":
@@ -262,3 +358,4 @@ if __name__ == "__main__":
         "transport: JSONL to a child process, or loopback HTTP with paging.",
         allocations=True,
     )
+    expansion_scaling()

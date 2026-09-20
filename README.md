@@ -45,36 +45,28 @@ deployment application depends on it and owns the hosting.
 Here is the number that matters. Counting how many concepts an expression
 selects takes 2.20 ms. Getting every one of those concepts back takes 2.29 ms.
 
-Those are nearly the same, and they are the same for a reason: evaluating the
-expression already built the whole set, so handing it to you is a write. Ask
-Snowstorm the same two questions and you get 13.19 ms and 36.40 ms, because it
-has to serialise the concepts and page them back over HTTP.
+Those are nearly the same, and for a reason: evaluating the expression already
+built the whole set, so handing it to you is a write. An HTTP API has to
+serialise those concepts and page them back, and that cost grows with the answer.
 
-None of this is an argument for replacing a terminology server. Snowstorm does a
-great deal this does not, and the only job both do is batch-expanding ECL. On
-that job it is roughly **6 times faster for a count and 16 times for a full
-expansion**. Against Snowstorm Lite, 2 and 3 times. All medians over the
-expressions both engines answered, and the tail is wider than the middle: the
-slowest 5% take 9.97 ms here and 41.63 ms through Snowstorm.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/expansion-scaling-dark.svg">
+  <img alt="Cost of a complete expansion against the number of concepts returned, both axes logarithmic. This engine runs from 2 ms at one concept to 0.4 s at 839,000. Snowstorm asked for the first time runs from 31 ms to 30 s; once cached, from 28 ms to 2 s." src="docs/images/expansion-scaling-light.svg">
+</picture>
 
-It is worth saying what each side was given. This engine had one CPU and
-256 MiB. Snowstorm had eight CPUs and 12 GiB across its service and
-Elasticsearch, and Snowstorm Lite one CPU and 2 GiB. Snowstorm was asked for its
-cheapest response at its own maximum page size, and only expressions where both
-engines returned identical code sets were timed. Where the comparison is and is
-not fair is [set out in full](docs/benchmarks.md#is-this-a-fair-comparison).
+Ask for ten concepts and a terminology server is a few times slower. Ask for
+839,000 and this engine takes 0.4 seconds against Snowstorm's 30 the first time,
+or 2 seconds once Snowstorm has cached it. This engine has no result cache and
+does not need one.
 
-Two paths are slower here than on either server, and you should know about them
-before you rely on this. The first description-filter query in a process loads
-the description index and takes about six seconds; every one after that takes
-roughly a millisecond, which stings most in a serverless function where every
-invocation is a fresh process. History supplements take about 16 ms, because
-evaluating one scans reference set member rows. Both are
-[open work](docs/roadmap.md).
+None of which is an argument for replacing a terminology server. Snowstorm does
+a great deal this does not, and the only job both do is expanding ECL. Two paths
+here are slower than on either server: the first description-filter query in a
+process, and history supplements. Both are
+[open work](docs/roadmap.md). Where the comparison is and is not fair is
+[set out in full](docs/benchmarks.md#is-this-a-fair-comparison).
 
-So what changes? Expanding a definition in full stops being something you do
-sparingly. Across the 879 expressions both engines could answer, the full
-expansions took 9.0 seconds here and 101.6 seconds through Snowstorm.
+So expanding a definition in full stops being something you do sparingly.
 
 - **Expand hundreds of codelists at once.** Turning a directory of static code
   lists into ECL definitions means expanding every one in full and diffing it
@@ -94,16 +86,11 @@ it from a clone to a working index and a first query.
 
 That is what makes interactive terminology work practical. Replacing a static
 code list with an ECL definition means walking up the hierarchy from every code
-in the list, sizing each ancestor that could subsume them, then comparing what
-each candidate returns against the list you started with. A five-code list takes
-about thirty expansions. A hundred-code list takes about five hundred. At
-roughly 2 ms each that is a tenth of a second at one end and just over a second
-at the other, so an assistant can propose a definition, show you exactly which
-concepts it adds and which it drops, and try another.
-
-Run that same loop through a hosted terminology server and it is hundreds of
-HTTP requests per suggestion, on a shared service, under someone else's rate
-limit.
+in it, sizing each ancestor that could subsume them, then comparing what each
+candidate returns against the list you started with. A five-code list takes about
+thirty expansions and a hundred-code list about five hundred, so an assistant can
+propose a definition, show you exactly which concepts it adds and drops, and try
+another, in about a second.
 
 ## Measurements
 
@@ -114,27 +101,12 @@ Against the UK Monolith release, 1.15 million concepts.
   <img alt="Index on disk: this engine 290 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.0, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
 </picture>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/latency-dark.svg">
-  <img alt="Warm count median: this engine 2.20 ms on 1 CPU and 256 MiB, Snowstorm Lite 4.56 ms on 1 CPU and 2 GiB, Snowstorm 13.19 ms on 8 CPUs and 12 GiB. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms on the same allocations." src="docs/images/latency-light.svg">
-</picture>
-
 Speed only counts if the answers match, so the corpus compares complete code
 sets rather than totals. This engine evaluated all 1,000 expressions and
-returned a complete set for every one. Snowstorm could answer 879, and agreed
-with us on all 879. Its parser rejected 80, its concept endpoint could not
-return 40, and it answered 1 differently.
-
-That one is `(<< 377442002) : 1142138002 != #10`, and the RF2 rows settle it. In
-this release the concept carries two active values for that attribute, 20 in one
-relationship group and 10 in another, so `!= #10` selects it: one of its values
-is not 10. We return it and Ontoserver returns it. Snowstorm returns nothing,
-reading the test as "has no value equal to 10".
-
-Snowstorm Lite could answer 587. It reported 320 as using ECL features it does
-not implement, rejected 80 at the parser, and answered 13 differently. All 13
-are attribute inequalities where Lite returns an empty set, and Snowstorm agrees
-with us on every one.
+returned a complete set for every one. Snowstorm answered 879 and agreed on all
+879; its parser rejected 80, its concept endpoint could not return 40, and it
+answered 1 differently, where the RF2 rows support our answer. Snowstorm Lite
+answered 587 and reported 320 as using features it does not implement.
 
 | | |
 |---|---:|
@@ -144,8 +116,8 @@ with us on every one.
 | Open a packed index | 525 ms |
 | Open an uncompressed index | 285 ms |
 
-[Benchmarks](docs/benchmarks.md) has the method, the raw samples, the
-disagreements and the limits of these numbers.
+[Benchmarks](docs/benchmarks.md) has the method, the disagreements, where this
+engine is slower and what these numbers are not.
 
 ## What it supports
 

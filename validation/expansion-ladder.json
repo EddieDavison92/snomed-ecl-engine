@@ -1,0 +1,67 @@
+{
+ "purpose": "Measure how the cost of a complete expansion grows with the number of concepts returned, for this engine and for a terminology server API.",
+ "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+ "cases": [
+  {
+   "ecl": "<< 824004",
+   "expected_total": 1
+  },
+  {
+   "ecl": "<! 1239002",
+   "expected_total": 3
+  },
+  {
+   "ecl": "<! 15847003",
+   "expected_total": 10
+  },
+  {
+   "ecl": "> 27970007",
+   "expected_total": 30
+  },
+  {
+   "ecl": "(<< 60095008) MINUS (<< 52069002)",
+   "expected_total": 104
+  },
+  {
+   "ecl": "(<< 36228007) MINUS (<< 66902005)",
+   "expected_total": 305
+  },
+  {
+   "ecl": "(<< 710955000) MINUS (<< 42526005)",
+   "expected_total": 1020
+  },
+  {
+   "ecl": "(<< 12479006) OR (<< 844005)",
+   "expected_total": 2803
+  },
+  {
+   "ecl": "(<< 26600511000001104) OR (<< 33001311000001104)",
+   "expected_total": 9301
+  },
+  {
+   "ecl": "<< 105590001",
+   "expected_total": 29978
+  },
+  {
+   "ecl": "<< 123037004",
+   "expected_total": 43647
+  },
+  {
+   "ecl": "<< 71388002",
+   "expected_total": 71560
+  },
+  {
+   "ecl": "<< 64572001",
+   "expected_total": 92718
+  },
+  {
+   "ecl": "<< 373873005",
+   "expected_total": 232007
+  },
+  {
+   "ecl": "<< 138875005",
+   "expected_total": 838955
+  }
+ ],
+ "note": "<< 404684003 is deliberately absent: the provenance gate queries it as a release sentinel, which would warm the server's cache for that rung."
+}
