@@ -1,6 +1,8 @@
 # Serverless query runtime
 
-The engine must run without an always-on API, Redis or database server. Import and index construction run offline. Vercel is the owner's preferred hosting platform. Its HTTP wrapper can live in another repository and depend on this library.
+The engine must run without an always-on API, Redis or database server. This repository owns the reusable library, index format and offline tooling. The HTTP wrapper must live in a separate application repository and depend on this library. That application owns authentication, index acquisition and bundling, cloud dependencies and deployment configuration. Vercel is its preferred hosting platform.
+
+The deployment design below records requirements for that separate application. Serverless compatibility guides the engine's footprint and file interfaces; it does not add hosting code to this repository.
 
 ## Deployment model
 

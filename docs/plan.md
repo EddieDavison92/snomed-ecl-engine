@@ -2,11 +2,11 @@
 
 ## Decision
 
-Build an embedded Rust query engine for one immutable, versioned RF2 snapshot. Start with a library and a CLI that imports, inspects, counts and expands ECL. Keep query execution independent of storage construction and any future HTTP service.
+Build an embedded Rust query engine for one immutable, versioned RF2 snapshot. Start with a library and a CLI that imports, inspects, counts and expands ECL. Keep query execution independent of storage construction and any future HTTP service. A separate application repository must own the HTTP wrapper, authentication, index delivery and deployment configuration; it consumes this library as a dependency.
 
 Full ECL 2.3 syntax and semantics are a core acceptance requirement. Partial implementations are development milestones, not the finished engine. Compact storage must accommodate the data needed by the complete language; low resource use cannot justify omitted operators or altered results.
 
-Serverless execution is also a design requirement. The query library must not require continuously running compute, Redis or a database service. Offline import can have a larger footprint. Keep importer dependencies separable from the runtime, publish immutable versioned indexes to external storage, and allow warm instances to reuse local index files. Measure the query package size, cold index acquisition/open time, peak memory and warm execution separately. A provider-specific hosting wrapper can live in another repository. Object-storage latency, local disk and memory limits must inform that later choice; the current resident-store measurements do not prove suitable cold-start behaviour.
+Serverless execution is also a design requirement. The query library must not require continuously running compute, Redis or a database service. Offline import can have a larger footprint. Keep importer dependencies separable from the runtime and produce immutable versioned indexes. The separate application handles external storage, build-time bundling or startup acquisition, and warm-instance reuse. Measure the query package size, cold index acquisition/open time, peak memory and warm execution separately. Vercel is the preferred host for that application. Object-storage latency, local disk and memory limits must inform its packaging; the current resident-store measurements do not prove suitable cold-start behaviour.
 
 The proposed advantage is low memory use and predictable query latency on UK-scale data. Neither is proven yet. The first implementation milestone must measure the alternatives before we commit to a storage format.
 

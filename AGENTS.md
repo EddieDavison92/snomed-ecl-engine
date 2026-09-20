@@ -11,6 +11,7 @@
 - Report unsupported ECL explicitly. Never return a partial answer as a successful expansion.
 - Full ECL 2.3 syntax and semantics are mandatory for completion. Unsupported-feature errors are temporary development behaviour, not an acceptable final substitute. Measure final resource use with all required semantic indexes included.
 - Keep the core independent of FHIR, HTTP, cloud services and authoring. Do not add a reasoner to evaluate published inferred RF2 relationships.
+- This repository owns the engine library, index format, offline importer, CLI, conformance tests and benchmarks. The deployment wrapper must live in a separate repository that consumes this library. Keep API handlers, authentication, cloud SDKs, index distribution and deployment configuration there. Vercel is the preferred host for that separate application.
 - Keep offline import dependencies optional. Serverless execution must not require always-on compute. Measure the complete engine's package, index acquisition, process startup and memory separately from warm queries.
 - Preserve relationship groups and typed concrete values. Do not flatten groups or compare decimals as binary floating point.
 - Build a slow, clear test evaluator before optimising. Use synthetic fixtures in Git and licensed release tests locally.
