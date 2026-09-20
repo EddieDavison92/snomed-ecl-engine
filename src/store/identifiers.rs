@@ -39,7 +39,7 @@ impl IdentifierIndex {
         );
         for row in &self.rows {
             ensure!(
-                !row.code.is_empty() && !row.code.chars().any(char::is_control),
+                !row.code.is_empty() && !row.code.chars().any(|c| c.is_ascii_control()),
                 "Invalid alternate identifier code"
             );
             ensure!(

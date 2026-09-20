@@ -35,7 +35,7 @@ impl Parser<'_> {
                 if c == '"' {
                     break;
                 }
-                if c == '\\' || c.is_control() && !matches!(c, '\t' | '\r' | '\n') {
+                if c == '\\' || c.is_ascii_control() && !matches!(c, '\t' | '\r' | '\n') {
                     return Err(self.unexpected());
                 }
             } else if !(c.is_ascii_alphanumeric() || matches!(c, '-' | '.' | '_')) {

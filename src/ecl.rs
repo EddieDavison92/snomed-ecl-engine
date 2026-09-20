@@ -160,7 +160,7 @@ impl Parser<'_> {
                 .ok_or_else(|| self.error(ParseErrorKind::Syntax, "Unclosed comment"))?;
             if self.rest()[..end]
                 .chars()
-                .any(|c| c.is_control() && !matches!(c, '\t' | '\r' | '\n'))
+                .any(|c| c.is_ascii_control() && !matches!(c, '\t' | '\r' | '\n'))
             {
                 return Err(self.error(ParseErrorKind::Syntax, "Invalid comment character"));
             }
@@ -462,37 +462,9 @@ impl Parser<'_> {
         Ok(expression)
     }
     fn unexpected(&self) -> ParseError {
-        let word = self.word().to_ascii_lowercase();
-        let feature = if self.rest().starts_with(':') {
-            Some("Attribute refinements are not implemented")
-        } else if self.rest().starts_with('.') {
-            Some("Dotted attributes are not implemented")
-        } else if self.rest().starts_with('^')
-            || matches!(word.as_str(), "memberof" | "refsetcontainingany")
-        {
-            Some("Refset operations are not implemented")
-        } else if self.rest().starts_with('{') {
-            Some("Filters and history supplements are not implemented")
-        } else if self.rest().starts_with("!!") || matches!(word.as_str(), "top" | "bottom") {
-            Some("Top and bottom are not implemented")
-        } else if self.rest().starts_with('"')
-            || self
-                .rest()
-                .split_whitespace()
-                .next()
-                .is_some_and(|s| s.contains('#'))
-        {
-            Some("Alternate identifiers are not implemented")
-        } else {
-            None
-        };
         self.error(
-            if feature.is_some() {
-                ParseErrorKind::Unsupported
-            } else {
-                ParseErrorKind::Syntax
-            },
-            feature.unwrap_or("Unexpected token or missing operand"),
+            ParseErrorKind::Syntax,
+            "Unexpected token or missing operand",
         )
     }
 }

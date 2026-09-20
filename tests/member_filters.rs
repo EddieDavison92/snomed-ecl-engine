@@ -185,7 +185,7 @@ fn terminal_tuples_have_typed_values_and_fail_in_concept_subqueries() {
     );
     assert_eq!(evaluate(&store, &query), Err(EvalError::TypeMismatch));
     for query in [
-        "* AND (^[mapTarget]200001)",
+        "<< (^[mapTarget]200001)",
         "* AND (^[mapTarget,mapGroup]200001 {{M mapGroup=#99}})",
     ] {
         assert_eq!(
@@ -263,7 +263,6 @@ fn scalar_projections_form_exact_typed_sets() {
     );
     for query in [
         "(^[*]200001 {{M mapGroup=#99}}) OR (*)",
-        "(^[mapGroup]200001) OR (*)",
         "<< (^[mapGroup]200001)",
     ] {
         assert_eq!(
@@ -282,6 +281,67 @@ fn scalar_projections_form_exact_typed_sets() {
             None
         ),
         Err(EvalError::MemoryLimit)
+    );
+}
+
+#[test]
+fn heterogeneous_sets_preserve_types_and_empty_dot_sets_are_neutral() {
+    let store = fixture();
+    assert_eq!(
+        evaluate_result(&store, &parse("300001 OR (^[mapGroup]200001)").unwrap()).unwrap(),
+        QueryResult::Values(vec![
+            MemberValue::Concept("300001".into()),
+            MemberValue::Number("1".into()),
+            MemberValue::Number("2".into())
+        ])
+    );
+    assert_eq!(
+        evaluate_result(&store, &parse("* AND (^[mapGroup]200001)").unwrap()).unwrap(),
+        QueryResult::Values(vec![])
+    );
+    assert_eq!(
+        evaluate_result(&store, &parse("(^[mapGroup]200001) MINUS *").unwrap()).unwrap(),
+        QueryResult::Values(vec![
+            MemberValue::Number("1".into()),
+            MemberValue::Number("2".into())
+        ])
+    );
+    let mut complete = store;
+    complete.attributes =
+        snomed_ecl_engine::store::Attributes::build(complete.ids.len(), vec![]).unwrap();
+    complete.concrete =
+        snomed_ecl_engine::store::Attributes::build(complete.ids.len(), vec![]).unwrap();
+    assert_eq!(
+        evaluate_result(
+            &complete,
+            &parse("(300001 . 400001) OR (^[mapGroup]200001)").unwrap()
+        )
+        .unwrap(),
+        QueryResult::Values(vec![
+            MemberValue::Number("1".into()),
+            MemberValue::Number("2".into())
+        ])
+    );
+}
+
+#[test]
+fn field_projection_across_refsets_keeps_each_columns_type() {
+    let mut first = table();
+    first.names[6] = "target".into();
+    first.columns[6] = C::Id(vec![300001; 4]);
+    let mut second = first.clone();
+    second.refset = 400001;
+    second.columns[0] = C::Uuid((5..=8).map(|i| [i; 16]).collect());
+    second.columns[4] = C::Id(vec![400001; 4]);
+    second.columns[6] = C::Integer(vec![300001; 4]);
+    let mut store = fixture();
+    store.member_tables = MemberStore::loaded(vec![first, second]).unwrap();
+    assert_eq!(
+        evaluate_result(&store, &parse("^[target](200001 OR 400001)").unwrap()).unwrap(),
+        QueryResult::Values(vec![
+            MemberValue::Concept("300001".into()),
+            MemberValue::Number("300001".into())
+        ])
     );
 }
 #[test]

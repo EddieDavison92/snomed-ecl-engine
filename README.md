@@ -11,12 +11,12 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 | Workload | Measured result |
 |---|---|
 | 880 numeric-index expressions, one CPU and 256 MiB | 1.82 seconds per warm batch |
-| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 2.68 seconds per warm batch; 1.63 ms median request |
+| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 3.02 seconds per warm batch; 1.93 ms median request |
 | Measured numeric query-only Linux executable, without Unicode | 0.83 MiB, 0.39 MiB gzipped |
 | Numeric and concept-membership indexes | 103.3 MiB |
 | RF2 import, including descriptions, displays and typed members | 110.5 seconds with two CPUs and 3 GiB |
 
-Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/schema-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 10.60 ms; container-charged peak memory was 543 MiB. This measures the fixed corpus, not full ECL conformance or hosted cold starts.
+Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/types-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 12.19 ms; container-charged peak memory was 542 MiB. The [earlier run](validation/schema-corpus-results.json) measured 1.63 ms median requests and 2.68-second batches; the timing difference has not been isolated. These figures measure the fixed corpus, not full ECL conformance or hosted cold starts.
 
 ## Compared with Snowstorm
 

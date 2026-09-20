@@ -36,6 +36,42 @@ mod support;
 use support::slow;
 
 #[test]
+fn invalid_tokens_report_syntax_errors_and_unicode_lexemes_follow_abnf() {
+    for query in [
+        "1000001 : :",
+        "* . . 1000001",
+        "* OR ^ ^ 1000001",
+        "* {{C active = }}",
+        "* : * = match:\"abc\"",
+        "* : r 1000001 = *",
+        "/* \u{7f} */ *",
+        "\"demo#a\u{7f}\"",
+    ] {
+        assert_eq!(
+            parse(query).unwrap_err().kind,
+            ParseErrorKind::Syntax,
+            "{query}"
+        );
+    }
+    assert_eq!(parse("/* \u{85} */ *").unwrap(), Expr::All);
+    assert_eq!(
+        parse("\"demo#a\u{85}\"").unwrap(),
+        Expr::AlternateIdentifier {
+            scheme: "demo".into(),
+            code: "a\u{85}".into()
+        }
+    );
+    assert_eq!(
+        parse("* : R 1000001 = *").unwrap(),
+        parse("* : rEvErSeOf 1000001 = *").unwrap()
+    );
+    assert_eq!(
+        parse(r#"* : 1000007 = "A\*B""#).unwrap(),
+        parse(r#"* : 1000007 = "A*B""#).unwrap()
+    );
+}
+
+#[test]
 fn generated_refinements_groups_cardinalities_and_membership_match_slow_scans() {
     use snomed_ecl_engine::store::{Attribute, MembershipIndex};
     let mut store = store(13);

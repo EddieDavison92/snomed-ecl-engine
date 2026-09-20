@@ -33,7 +33,7 @@ The [member-filter specification](https://docs.snomed.org/snomed-ct-specificatio
 
 `MemberValue` distinguishes `concept`, `number`, `boolean`, `time` and `string`. JSON encodes concept IDs and exact numbers as strings. Scalar sets support `AND`, `OR` and `MINUS`. Numbers use a canonical exact decimal spelling, so `1.00` and `1` are one value. Strings preserve case and text. Multi-field rows preserve original field spellings and duplicate rows.
 
-The existing `evaluate` functions accept concept-valued results only. A tuple in a subquery returns `TypeMismatch`, even when no member could match. Hierarchy operators and successive dot steps require concept inputs. A dot step selecting both concrete and concept attributes returns a `Values` set with both tagged types. Combining a scalar result with a concept-only result currently returns `TypeMismatch`; further cross-type conformance checks remain required.
+The existing `evaluate` functions accept concept-valued results only. A tuple in a subquery returns `TypeMismatch`, even when no member could match. Hierarchy operators and successive dot steps require concept inputs. A dot step selecting both concrete and concept attributes returns a `Values` set with both tagged types. Set operations between scalar and concept results preserve those tags: a numeric value cannot equal a concept ID with the same spelling. Selecting a field with different types across refsets also preserves each value's type.
 
 ```text
 ^[referencedComponentId,mapTarget,mapGroup]999002271000000101 {{M mapGroup=#1,mapPriority=#1,mapTarget=wild:"J459"}}

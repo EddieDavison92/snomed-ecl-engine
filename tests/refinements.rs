@@ -89,6 +89,25 @@ fn cardinality_and_inequality_preserve_absence_and_reverse_identity() {
 }
 
 #[test]
+fn cardinality_bounds_beyond_machine_integers_preserve_finite_store_semantics() {
+    for bound in [
+        "4294967296",
+        "18446744073709551616",
+        "99999999999999999999999999999999999999999",
+    ] {
+        assert_query(&format!("* : [1..{bound}] 1000005 = *"), &[0, 1, 2, 3]);
+        assert_query(&format!("* : [{bound}..*] 1000005 = *"), &[]);
+        assert_query(&format!("* : [1..{bound}] {{ 1000005 = * }}"), &[0, 1, 3]);
+    }
+    for query in [
+        "* : [18446744073709551617..18446744073709551616] 1000005 = *",
+        "* : [18446744073709551616..4294967296] 1000005 = *",
+    ] {
+        assert_eq!(parse(query).unwrap_err().kind, ParseErrorKind::Syntax);
+    }
+}
+
+#[test]
 fn concrete_values_compare_exactly_and_keep_their_types() {
     assert_query("* : 1000007 > #0.1", &[0]);
     assert_query("* : 1000007 = #+0.100", &[1]);
@@ -232,7 +251,6 @@ fn malformed_refinements_fail_and_long_syntax_agrees() {
         "* : 1000007 = #--1",
         "* : 1000007 = wild:\"*B\"",
         "* : 1000007 = match:\"A\"",
-        r#"* : 1000007 = "A\*B""#,
         "* : R 1000007 = #1",
         "* : { { 1000005 = * } }",
         "* : [1..*] (1000005 = *)",

@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-09-20T05:50:25.2851713Z",
+  "software": "Ontoserver\u00ae",
+  "softwareVersion": "6.25.4",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "digestFormat": "Numeric SCTID sort; UTF-8; LF separated; final LF for non-empty sets; no BOM.",
+  "results": [
+    {
+      "id": "reverse-group-boundary",
+      "ecl": "(195967001 . 363698007) : { R 363698007 = 195967001 }",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded.",
+      "reference_detail": "Cannot reverse an attribute inside a group"
+    },
+    {
+      "id": "reverse-ungrouped-control",
+      "ecl": "(195967001 . 363698007) : R 363698007 = 195967001",
+      "total": 1,
+      "sha256": "1c73debf72eebd03ee0a25b976e017a1ec2c372be2f438805df3b7de21ee64cb",
+      "complete": true,
+      "reportedVersions": [
+        "http://snomed.info/sct/83821000000107/version/20260826"
+      ]
+    },
+    {
+      "id": "member-without-operator",
+      "ecl": "900000000000527005 {{M referencedComponentId=67415000}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded.",
+      "reference_detail": "Parser rejected member filter without a refset operator"
+    }
+  ],
+  "scope": "Boundary investigation, not proof that these grammar forms are outside ECL. Rejected queries are not matches."
+}

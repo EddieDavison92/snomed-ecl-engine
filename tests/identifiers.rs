@@ -14,6 +14,7 @@ fn fixture() -> NumericStore {
         (200001, "desc", 100011, true),
         (300001, "A.1", 100003, true),
         (200001, "café + test", 100003, true),
+        (200001, "a\u{85}", 100001, true),
     ] {
         rows.push(Identifier {
             scheme,
@@ -50,6 +51,7 @@ fn alternate_identifiers_resolve_schemes_exact_codes_and_active_associations() {
         ("< demo#A.1", vec![100002]),
         ("\"demo#café + test\"", vec![100003]),
         ("demo#\"café + test\"", vec![100003]),
+        ("\"demo#a\u{85}\"", vec![100001]),
         (
             "demo#A.1 |Ignored label| OR other#A.1",
             vec![100001, 100003],

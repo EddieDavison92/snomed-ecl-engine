@@ -4,8 +4,8 @@ use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Cardinality {
-    pub min: u32,
-    pub max: Option<u32>,
+    pub min: u64,
+    pub max: Option<u64>,
 }
 impl Default for Cardinality {
     fn default() -> Self {
@@ -14,7 +14,7 @@ impl Default for Cardinality {
 }
 impl Cardinality {
     pub fn contains(self, count: usize) -> bool {
-        count >= self.min as usize && self.max.is_none_or(|max| count <= max as usize)
+        count as u64 >= self.min && self.max.is_none_or(|max| count as u64 <= max)
     }
 }
 
@@ -71,23 +71,23 @@ impl Parser<'_> {
             false
         }
     }
-    fn natural(&mut self) -> Result<u32> {
+    fn natural(&mut self) -> Result<(u64, std::ops::Range<usize>)> {
         let start = self.pos;
         while self.rest().starts_with(|c: char| c.is_ascii_digit()) {
             self.pos += 1;
         }
         let text = &self.text[start..self.pos];
-        if text.len() > 1 && text.starts_with('0') {
+        if text.is_empty() || text.len() > 1 && text.starts_with('0') {
             return Err(self.error(ParseErrorKind::Syntax, "Leading zero in cardinality"));
         }
-        text.parse()
-            .map_err(|_| self.error(ParseErrorKind::Syntax, "Invalid cardinality"))
+        // Every stored row/group count fits u32. Larger bounds remain above that domain.
+        Ok((text.parse().unwrap_or(u64::MAX), start..self.pos))
     }
     fn cardinality(&mut self) -> Result<Cardinality> {
         if !self.take("[") {
             return Ok(Cardinality::default());
         }
-        let min = self.natural()?;
+        let (min, min_text) = self.natural()?;
         if !self.take("..") {
             self.required_ws()?;
             if !self.keyword("to") {
@@ -100,11 +100,19 @@ impl Parser<'_> {
         } else {
             Some(self.natural()?)
         };
-        if !self.take("]") || max.is_some_and(|max| min > max) {
+        let reversed = max.as_ref().is_some_and(|(_, max_text)| {
+            let min = &self.text[min_text];
+            let max = &self.text[max_text.clone()];
+            min.len().cmp(&max.len()).then_with(|| min.cmp(max)).is_gt()
+        });
+        if !self.take("]") || reversed {
             return Err(self.error(ParseErrorKind::Syntax, "Invalid cardinality range"));
         }
         self.ws()?;
-        Ok(Cardinality { min, max })
+        Ok(Cardinality {
+            min,
+            max: max.map(|(value, _)| value),
+        })
     }
     pub(super) fn comparison(&mut self) -> Result<Comparison> {
         self.ws()?;
@@ -148,7 +156,8 @@ impl Parser<'_> {
                 let Some(escaped) = self.rest().chars().next() else {
                     return Err(self.unexpected());
                 };
-                if !matches!(escaped, '\\' | '"') {
+                // The brief 2.3 grammar also permits an escaped literal asterisk.
+                if !matches!(escaped, '\\' | '"' | '*') {
                     return Err(self.error(ParseErrorKind::Syntax, "Invalid string escape"));
                 }
                 self.pos += escaped.len_utf8();
@@ -161,7 +170,7 @@ impl Parser<'_> {
         }
     }
     fn attribute(&mut self, depth: usize, cardinality: Cardinality) -> Result<Refinement> {
-        let reverse = !self.starts_alternate() && (self.keyword("r") || self.keyword("reverseof"));
+        let reverse = !self.starts_alternate() && (self.keyword("reverseof") || self.take("R"));
         self.ws()?;
         let name = Box::new(self.subexpression(depth + 1)?);
         let comparison = self.comparison()?;

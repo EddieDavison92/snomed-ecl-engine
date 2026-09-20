@@ -17,10 +17,7 @@ impl Parser<'_> {
         self.take("{{");
         self.ws()?;
         if !(self.take("C") || self.take("c")) {
-            return Err(self.error(
-                ParseErrorKind::Unsupported,
-                "Description/member filters and history supplements are not implemented",
-            ));
+            return Err(self.unexpected());
         }
         self.ws()?;
         let mut filters = Vec::new();

@@ -79,7 +79,12 @@ impl Context<'_> {
                 self.release(right);
                 Ok(QueryResult::Concepts(result))
             }
-            (QueryResult::Values(left), QueryResult::Values(right)) => {
+            (left, right)
+                if !matches!(left, QueryResult::Rows(_))
+                    && !matches!(right, QueryResult::Rows(_)) =>
+            {
+                let left = self.scalar_values(left)?;
+                let right = self.scalar_values(right)?;
                 let old_cost: usize = left.iter().chain(&right).map(value_cost).sum();
                 let mut result = Vec::new();
                 let mut a = left.into_iter().peekable();
@@ -110,6 +115,30 @@ impl Context<'_> {
                 Ok(QueryResult::Values(result))
             }
             _ => Err(EvalError::TypeMismatch),
+        }
+    }
+
+    fn scalar_values(&mut self, result: QueryResult) -> Result<Vec<MemberValue>> {
+        match result {
+            QueryResult::Values(values) => Ok(values),
+            QueryResult::Concepts(ordinals) => {
+                self.tick(
+                    ordinals
+                        .len()
+                        .saturating_mul(20)
+                        .saturating_mul(ordinals.len().checked_ilog2().unwrap_or(0) as usize + 1),
+                )?;
+                let mut values = Vec::new();
+                for &ordinal in &ordinals {
+                    let value = MemberValue::Concept(self.store.ids[ordinal as usize].to_string());
+                    self.claim(value_cost(&value))?;
+                    values.push(value);
+                }
+                self.release(ordinals);
+                values.sort_unstable();
+                Ok(values)
+            }
+            QueryResult::Rows(_) => Err(EvalError::TypeMismatch),
         }
     }
 }

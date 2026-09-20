@@ -162,7 +162,7 @@ impl Context<'_> {
         let mut marked = self.reserve(words)?;
         marked.resize(words, 0);
         let row_result = terminal && query.fields.as_ref().is_some_and(|f| f.len() != 1);
-        let mut scalar_concepts = None;
+        let mut has_scalar_values = false;
         let active_explicit = query
             .filters
             .iter()
@@ -193,10 +193,7 @@ impl Context<'_> {
             let concepts =
                 query.reverse || columns.len() == 1 && matches!(columns[0], MemberColumn::Id(_));
             if requested.len() == 1 {
-                if scalar_concepts.is_some_and(|prior| prior != concepts) {
-                    return Err(EvalError::TypeMismatch);
-                }
-                scalar_concepts = Some(concepts);
+                has_scalar_values |= !concepts;
             }
             for (column, predicate) in filter_columns.iter().zip(&prepared) {
                 validate_type(column, predicate)?;
@@ -295,15 +292,22 @@ impl Context<'_> {
             }
         }
         self.release(candidates);
-        if scalar_concepts == Some(false) && !row_result {
+        if has_scalar_values && !row_result {
+            for (word, &bits) in marked.iter().enumerate() {
+                let mut bits = bits;
+                while bits != 0 {
+                    self.tick(1)?;
+                    let ordinal = word * 32 + bits.trailing_zeros() as usize;
+                    let value = MemberValue::Concept(self.store.ids[ordinal].to_string());
+                    self.claim(super::values::value_cost(&value))?;
+                    values.insert(value);
+                    bits &= bits - 1;
+                }
+            }
             self.release(marked);
             return Ok(QueryResult::Values(values.into_iter().collect()));
         }
         if row_result {
-            // A field with mixed types across refsets must not silently drop earlier concept values.
-            if marked.iter().any(|&bits| bits != 0) {
-                return Err(EvalError::TypeMismatch);
-            }
             self.release(marked);
             return Ok(QueryResult::Rows(rows));
         }
