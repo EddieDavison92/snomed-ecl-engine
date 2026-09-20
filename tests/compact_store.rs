@@ -1232,6 +1232,186 @@ fn membership_reader_rejects_corruption_and_invalid_ordinals() {
     assert!(NumericStore::open(&destination).is_err());
 }
 
+/// Runs the CLI with an isolated selection file, so tests never read or write
+/// the developer's own selected index.
+fn cli(config: &Path, arguments: &[&str]) -> std::process::Output {
+    std::process::Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .args(arguments)
+        .env("XDG_CONFIG_HOME", config)
+        .env("APPDATA", config)
+        .env_remove("SNOMED_ECL_STORE")
+        .output()
+        .unwrap()
+}
+
+#[test]
+fn cli_remembers_a_selected_index_and_finds_the_indexes_on_disk() {
+    let temp = TempDir::new().unwrap();
+    let config = temp.path().join("config");
+    let archive = temp.path().join("fixture.zip");
+    let store = temp.path().join("store");
+    let other = temp.path().join("other");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &store, &options(&archive)).unwrap();
+    import_snapshot(&archive, &other, &options(&archive)).unwrap();
+    let store_text = store.to_str().unwrap();
+    let other_text = other.to_str().unwrap();
+
+    // Without a selection the store cannot be guessed, and no partial result is
+    // written to stdout.
+    let unselected = cli(&config, &["expand", "<< 1000001", "--count"]);
+    assert!(!unselected.status.success());
+    assert!(unselected.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&unselected.stderr).contains("No index selected"));
+
+    // A path that is not an index is refused before anything is recorded.
+    assert!(!cli(&config, &["use", archive.to_str().unwrap()])
+        .status
+        .success());
+    assert!(!cli(&config, &["expand", "<< 1000001", "--count"])
+        .status
+        .success());
+
+    assert!(cli(&config, &["use", store_text]).status.success());
+    let selected = cli(&config, &["expand", "<< 1000001", "--count"]);
+    assert!(selected.status.success());
+    let total = String::from_utf8_lossy(&selected.stdout).trim().to_owned();
+    assert_eq!(
+        total,
+        String::from_utf8_lossy(
+            &cli(&config, &["expand", store_text, "<< 1000001", "--count"]).stdout
+        )
+        .trim()
+    );
+
+    // The environment overrides the selection, and an explicit path overrides
+    // both.
+    let overridden = std::process::Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .args(["expand", "<< 1000001", "--count"])
+        .env("XDG_CONFIG_HOME", &config)
+        .env("APPDATA", &config)
+        .env("SNOMED_ECL_STORE", temp.path().join("absent"))
+        .output()
+        .unwrap();
+    assert!(!overridden.status.success());
+    let explicit = std::process::Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .args(["expand", other_text, "<< 1000001", "--count"])
+        .env("XDG_CONFIG_HOME", &config)
+        .env("APPDATA", &config)
+        .env("SNOMED_ECL_STORE", temp.path().join("absent"))
+        .output()
+        .unwrap();
+    assert!(explicit.status.success());
+    assert_eq!(String::from_utf8_lossy(&explicit.stdout).trim(), total);
+
+    // Discovery reports both indexes, marks the selected one and ignores the
+    // archive sitting beside them.
+    let listed = cli(&config, &["stores", temp.path().to_str().unwrap()]);
+    assert!(listed.status.success());
+    let rows: Vec<serde_json::Value> = String::from_utf8_lossy(&listed.stdout)
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows.iter().filter(|row| row["selected"] == true).count(), 1);
+    assert!(rows
+        .iter()
+        .all(|row| row["edition"] == options(&archive).edition && row["packed"] == false));
+
+    assert!(cli(&config, &["use", "--clear"]).status.success());
+    assert!(!cli(&config, &["expand", "<< 1000001", "--count"])
+        .status
+        .success());
+}
+
+#[test]
+fn cli_diffs_one_expression_between_two_indexes() {
+    use snomed_ecl_engine::import::add_refsets_snapshot;
+    let temp = TempDir::new().unwrap();
+    let config = temp.path().join("config");
+    let archive = temp.path().join("fixture.zip");
+    let base = temp.path().join("base");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &base, &options(&archive)).unwrap();
+    let extra = temp.path().join("extra.zip");
+    supplement_fixture(&extra, LEAF, false);
+    let combined = temp.path().join("combined");
+    let hash = sha256(&extra).unwrap();
+    add_refsets_snapshot(&base, &extra, &combined, "20260820", &hash).unwrap();
+    let (base_text, combined_text) = (base.to_str().unwrap(), combined.to_str().unwrap());
+
+    let forward = cli(
+        &config,
+        &["diff", base_text, combined_text, "<< 1000001", "--json"],
+    );
+    assert!(forward.status.success());
+    let report: serde_json::Value = serde_json::from_slice(&forward.stdout).unwrap();
+    // The supplement's new concept is a descendant of the root; its module is
+    // not, so exactly one concept joins the expansion.
+    assert_eq!(report["added"], serde_json::json!(["2000001"]));
+    assert_eq!(report["removed"], serde_json::json!([]));
+    assert_eq!(
+        report["unchanged"].as_u64().unwrap(),
+        report["old"]["total"].as_u64().unwrap()
+    );
+    assert_eq!(
+        report["new"]["total"].as_u64().unwrap(),
+        report["old"]["total"].as_u64().unwrap() + 1
+    );
+
+    // Reversing the indexes reports the same concept as removed.
+    let backward = cli(
+        &config,
+        &["diff", combined_text, base_text, "<< 1000001", "--json"],
+    );
+    let reversed: serde_json::Value = serde_json::from_slice(&backward.stdout).unwrap();
+    assert_eq!(reversed["removed"], serde_json::json!(["2000001"]));
+    assert_eq!(reversed["added"], serde_json::json!([]));
+
+    // A projection returning values has nothing to compare as concepts, and
+    // says so rather than reporting an empty difference.
+    let projection = cli(
+        &config,
+        &[
+            "diff",
+            base_text,
+            combined_text,
+            "^[sourceEffectiveTime]900000000000534007",
+        ],
+    );
+    assert!(!projection.status.success());
+    assert!(projection.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&projection.stderr).contains("concept results"));
+}
+
+#[test]
+fn cli_points_at_the_text_a_parse_error_rejected() {
+    let temp = TempDir::new().unwrap();
+    let config = temp.path().join("config");
+    let archive = temp.path().join("fixture.zip");
+    let store = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &store, &options(&archive)).unwrap();
+    let failed = cli(
+        &config,
+        &[
+            "expand",
+            store.to_str().unwrap(),
+            "<< 1000001 : 1000002 = = 1000003",
+        ],
+    );
+    assert!(!failed.status.success());
+    let message = String::from_utf8_lossy(&failed.stderr);
+    // The caret sits under the offset the parser reported, on its own line.
+    let (line, caret) = message
+        .lines()
+        .zip(message.lines().skip(1))
+        .find(|(_, next)| next.trim_start().starts_with('^'))
+        .unwrap();
+    assert!(line.contains("<< 1000001 : 1000002 = = 1000003"));
+    assert_eq!(caret.find('^'), Some(line.find("= =").unwrap() + 2));
+}
+
 fn supplement_fixture(path: &Path, member: u64, duplicate: bool) {
     let mut archive = zip::ZipWriter::new(File::create(path).unwrap());
     let mut add = |name: &str, content: String| {

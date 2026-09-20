@@ -7,17 +7,78 @@ Add `--features unicode` to build or install term matching. Its ICU4C prerequisi
 The executable is `target/release/snomed-ecl-engine` (`.exe` on Windows). Run `--help`, `COMMAND --help` or `--version`. Agents can follow the repository [SKILL.md](../SKILL.md) for the complete import and query workflow.
 
 ```sh
-snomed-ecl-engine stats data/compact-store/v1
-snomed-ecl-engine expand data/compact-store/v1 '404684003' --display
-snomed-ecl-engine expand data/compact-store/v1 '<< 404684003' --count
+snomed-ecl-engine stores
+snomed-ecl-engine use data/compact-store/v1
+snomed-ecl-engine stats
+snomed-ecl-engine expand '404684003' --display
+snomed-ecl-engine expand '<< 404684003' --count
 ```
 
-Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports nine stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
+## Choose an index once
+
+`stores` lists the indexes it finds in the working directory and
+`data/compact-store`, or in the paths given to it. Directories holding
+`manifest.json` and packed index files are both listed; anything else is
+skipped. `use PATH` checks a path and records it as an absolute path in
+`state.json` under the platform's config directory, outside the repository.
+`use --clear` forgets it.
+
+`stats`, `verify`, `expand`, `query`, `batch` and `hierarchy` then take no path.
+Each resolves the index from its own argument first, then `SNOMED_ECL_STORE`,
+then the recorded selection, and says which of the three it used. Give the path
+explicitly in scripts and CI, where a developer's selection should not apply.
+
+`diff` always takes both paths, because comparing an index with itself has no
+use.
+
+## Query interactively
+
+`query` opens and verifies one index, then evaluates expressions until `:quit`:
+
+```text
+ecl> << 195967001 |Asthma|
+  129 concepts in 0.935 ms
+```
+
+`:display` toggles terms, `:count` toggles totals only, `:stats` prints the
+manifest. Parse and evaluation errors print and return to the prompt rather than
+ending the session. Results are listed in pages of 40 with the full total beside
+them; `expand` redirected to a file, or `--json`, returns every code.
+
+## Compare two indexes
+
+`diff OLD_STORE NEW_STORE ECL` evaluates one expression against both and reports
+what the definition gained and lost. Use it to see what a release or a refset
+supplement changed:
+
+```sh
+snomed-ecl-engine diff data/compact-store/v1 data/compact-store/v1-pcd '< 900000000000455006' --display
+```
+
+Each index is opened, evaluated and closed in turn, so only one is resident at a
+time. Terms come from the index each code belongs to, so a concept the newer
+release dropped still shows the term the older index held. Redirected output and
+`--json` give the complete added and removed sets; a terminal lists the first 40
+of each with the totals. Member projections returning values or rows are refused
+rather than compared as concepts.
+
+## Prepare an archive for import
+
+`checksum ARCHIVE` prints an archive's SHA-256. That confirms a download is
+intact; it does not establish where the file came from, so take the expected
+value from the release distributor and pass it to `import`, which verifies it
+before reading any content.
+
+Running the executable with no command lists the commands, names the selected index and gives the next step. Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports nine stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
 
 ## Select output for scripts
 
 | Command | Redirected default or `--plain` | Explicit `--json` |
 |---|---|---|
+| `stores` | One index object per line | Same |
+| `use` | Store and edition JSON | Same |
+| `checksum` | Checksum and path JSON | Same |
+| `diff` | Comparison JSON | Same |
 | `stats` | Manifest JSON | Manifest JSON |
 | `import` | Manifest and elapsed time JSON | Same |
 | `add-refsets` | Combined manifest JSON | Same |

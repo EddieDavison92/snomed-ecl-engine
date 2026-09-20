@@ -60,6 +60,16 @@ Quote the complete ECL expression so the shell preserves operators and spaces:
 ./target/release/snomed-ecl-engine expand data/compact-store/v1 '(< 404684003 : 363698007 = << 39057004)' --json
 ```
 
+`use PATH` records one index so later commands need no path, and `stores` lists
+the indexes it can find. Agents should keep passing the path explicitly: the
+selection belongs to the calling user, and `SNOMED_ECL_STORE` overrides it.
+People working at a terminal can use `query` for an interactive prompt over one
+open index.
+
+`diff OLD_STORE NEW_STORE ECL --json` evaluates one expression against two
+indexes and returns `added`, `removed` and `unchanged`, for comparing releases
+or refset supplements. It accepts concept results only.
+
 `--count --json` returns `{"total":...}`. Ordinary `--json` expansion emits one `{"code":"..."}` object per line. `--display --json` adds `display`, which can be null. Codes are decimal strings; preserve them as strings in JavaScript and JSON consumers. All matches are returned, including an empty stream for an empty expansion. Use `--count` to distinguish an empty success when that is all the caller needs.
 
 Numeric queries need only the manifest and core. Displays are resolved after evaluation and require `display.bin`. Missing displays must not be replaced with invented clinical labels. Without explicit output flags, a terminal shows readable summaries and display tables; redirected output preserves the original code-line or JSON formats. Prefer explicit `--json` for agent automation.

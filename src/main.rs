@@ -4,9 +4,22 @@ use snomed_ecl_engine::import::{import_snapshot_with_progress, ImportOptions, UK
 use snomed_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
 use snomed_ecl_engine::{ecl, eval};
 use std::io::{self, BufRead, Read, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 mod presentation;
+mod workspace;
+
+/// Parses ECL, reporting the offending text under the expression rather than a
+/// byte offset alone.
+fn parse(expression: &str) -> Result<ecl::Expr> {
+    ecl::parse(expression).map_err(|error| {
+        anyhow::anyhow!(
+            "{error}\n{}\nECL byte offset: {}. See docs/conformance.md for current support.",
+            presentation::caret(expression, error.offset),
+            error.offset
+        )
+    })
+}
 
 fn main() {
     if let Err(error) = run() {
@@ -16,7 +29,10 @@ fn main() {
         {
             return;
         }
-        eprintln!("Error: {}", presentation::clean(&format!("{error:#}")));
+        eprintln!(
+            "Error: {}",
+            presentation::clean_message(&format!("{error:#}"))
+        );
         std::process::exit(1);
     }
 }
@@ -58,8 +74,246 @@ fn run() -> Result<()> {
         println!("snomed-ecl-engine {}", env!("CARGO_PKG_VERSION"));
         return Ok(());
     }
-    match args.first().map(String::as_str) {
-        Some("pack") => {
+    let command = args.first().cloned().unwrap_or_default();
+    match command.as_str() {
+        "use" => {
+            ensure!(args.len() == 2, "Usage: use STORE | use --clear");
+            if args[1] == "--clear" {
+                workspace::save(&workspace::State::default())?;
+                println!("Cleared the selected index.");
+                return Ok(());
+            }
+            // Store an absolute path so the selection survives a change of
+            // working directory, and reject anything that is not an index.
+            let path = std::fs::canonicalize(&args[1])
+                .with_context(|| format!("No such path: {}", args[1]))?;
+            let manifest = Manifest::read(&path).with_context(|| {
+                format!(
+                    "{} is not an index. `stores` lists the indexes it can find",
+                    path.display()
+                )
+            })?;
+            workspace::save(&workspace::State {
+                store: Some(path.clone()),
+            })?;
+            if human {
+                let location = format!("{} (now selected)", path.display());
+                presentation::manifest(&manifest, Some(&location));
+            } else {
+                println!(
+                    "{}",
+                    serde_json::json!({"store": path, "edition": manifest.edition})
+                );
+            }
+        }
+        "stores" => {
+            let roots: Vec<_> = if args.len() > 1 {
+                args[1..].iter().map(PathBuf::from).collect()
+            } else {
+                workspace::default_roots()
+            };
+            let selected = workspace::load().store;
+            let found = workspace::discover(&roots, selected.as_deref());
+            if human {
+                presentation::stores(&found);
+            } else {
+                for entry in &found {
+                    println!(
+                        "{}",
+                        serde_json::json!({
+                            "store": entry.path,
+                            "edition": entry.edition,
+                            "active_concepts": entry.active_concepts,
+                            "concepts": entry.concepts,
+                            "bytes": entry.bytes,
+                            "packed": entry.packed,
+                            "selected": entry.selected,
+                        })
+                    );
+                }
+            }
+        }
+        "checksum" => {
+            ensure!(args.len() == 2, "Usage: checksum ARCHIVE");
+            let digest = file_sha256(Path::new(&args[1]))?;
+            if human {
+                println!("{digest}  {}", presentation::clean(&args[1]));
+                println!(
+                    "\n  Compare this with the checksum the release distributor published.\n  \
+                     A checksum taken from the downloaded file alone proves nothing about its origin."
+                );
+            } else {
+                println!("{}", serde_json::json!({"sha256": digest, "path": args[1]}));
+            }
+        }
+        "query" => {
+            let mut style = Style::take(&mut args, human, json)?;
+            ensure!(args.len() <= 2, "Usage: query [STORE] [--display|--count]");
+            let (path, source) = workspace::resolve(args.get(1).map(String::as_str))?;
+            let open_start = Instant::now();
+            let mut store = NumericStore::open(&path)?;
+            if let Some(config) = &query_config {
+                store.config = config.clone();
+            }
+            let manifest = Manifest::read(&path)?;
+            let mut display = None;
+            println!("{}\n", presentation::heading("SNOMED ECL / query"));
+            println!("  Index    {} ({})", path.display(), source.describe());
+            println!("  Edition  {}", presentation::clean(&manifest.edition));
+            println!(
+                "  Opened   {:.2}s, {} active concepts",
+                open_start.elapsed().as_secs_f64(),
+                presentation::number(manifest.active_concept_count)
+            );
+            println!("\n  Type an ECL expression, or :help for commands. :quit exits.\n");
+            let mut input = io::stdin().lock();
+            let mut line = String::new();
+            loop {
+                print!("ecl> ");
+                io::stdout().flush()?;
+                line.clear();
+                if input.read_line(&mut line)? == 0 {
+                    println!();
+                    break;
+                }
+                let text = line.trim();
+                if text.is_empty() {
+                    continue;
+                }
+                match text {
+                    ":quit" | ":q" | ":exit" => break,
+                    ":help" | ":h" => {
+                        println!(
+                            "  :display  toggle result terms (currently {})\n  \
+                             :count    toggle totals only (currently {})\n  \
+                             :stats    show the index manifest\n  \
+                             :quit     leave\n\n  \
+                             Anything else is evaluated as ECL. Results list {} at a time.",
+                            if style.display { "on" } else { "off" },
+                            if style.count { "on" } else { "off" },
+                            QUERY_LIMIT
+                        );
+                        continue;
+                    }
+                    ":display" => {
+                        style.display = !style.display;
+                        style.count &= !style.display;
+                        println!("  Terms {}.", if style.display { "on" } else { "off" });
+                        continue;
+                    }
+                    ":count" => {
+                        style.count = !style.count;
+                        style.display &= !style.count;
+                        println!("  Totals only {}.", if style.count { "on" } else { "off" });
+                        continue;
+                    }
+                    ":stats" => {
+                        presentation::manifest(&manifest, Some(&path.display().to_string()));
+                        continue;
+                    }
+                    _ => {}
+                }
+                // One bad expression must not end the session, so parse and
+                // evaluation errors are reported and the prompt returns.
+                let start = Instant::now();
+                let outcome = parse(text)
+                    .and_then(|expression| Ok(eval::evaluate_result(&store, &expression)?));
+                let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+                match outcome {
+                    Ok(result) => {
+                        println!("  {} in {elapsed:.3} ms", presentation::total(&result));
+                        let mut out = io::BufWriter::new(io::stdout().lock());
+                        let shown = emit(
+                            &store,
+                            &path,
+                            &mut display,
+                            &result,
+                            &style,
+                            Some(QUERY_LIMIT),
+                            &mut out,
+                        );
+                        out.flush()?;
+                        if let Err(error) = shown {
+                            println!("  {}", presentation::clean_message(&format!("{error:#}")));
+                        }
+                    }
+                    Err(error) => {
+                        println!("{}", presentation::clean_message(&format!("{error:#}")))
+                    }
+                }
+                println!();
+            }
+        }
+        "diff" => {
+            let style = Style::take(&mut args, human, json)?;
+            ensure!(
+                args.len() == 4,
+                "Usage: diff OLD_STORE NEW_STORE ECL [--display|--count]"
+            );
+            let expression = parse(&args[3])?;
+            let (old, new) = (PathBuf::from(&args[1]), PathBuf::from(&args[2]));
+            // Each index is opened, evaluated and dropped in turn so only one is
+            // resident at a time.
+            let (old_edition, old_codes) = evaluate_for_diff(&old, &expression, &query_config)?;
+            let (new_edition, new_codes) = evaluate_for_diff(&new, &expression, &query_config)?;
+            let removed: Vec<_> = old_codes
+                .iter()
+                .filter(|(code, _)| new_codes.binary_search_by_key(code, |(c, _)| *c).is_err())
+                .copied()
+                .collect();
+            let added: Vec<_> = new_codes
+                .iter()
+                .filter(|(code, _)| old_codes.binary_search_by_key(code, |(c, _)| *c).is_err())
+                .copied()
+                .collect();
+            let unchanged = old_codes.len() - removed.len();
+            if !human {
+                let mut out = io::BufWriter::new(io::stdout().lock());
+                writeln!(
+                    out,
+                    "{}",
+                    serde_json::json!({
+                        "ecl": args[3],
+                        "old": {"store": old, "edition": old_edition, "total": old_codes.len()},
+                        "new": {"store": new, "edition": new_edition, "total": new_codes.len()},
+                        "unchanged": unchanged,
+                        "added": added.iter().map(|(c, _)| c.to_string()).collect::<Vec<_>>(),
+                        "removed": removed.iter().map(|(c, _)| c.to_string()).collect::<Vec<_>>(),
+                    })
+                )?;
+                out.flush()?;
+                return Ok(());
+            }
+            println!("{}\n", presentation::heading("SNOMED ECL / diff"));
+            println!("  Expression  {}", presentation::clean(&args[3]));
+            println!(
+                "  Old         {} ({}), {} results",
+                old.display(),
+                presentation::clean(&old_edition),
+                presentation::number(old_codes.len())
+            );
+            println!(
+                "  New         {} ({}), {} results",
+                new.display(),
+                presentation::clean(&new_edition),
+                presentation::number(new_codes.len())
+            );
+            println!(
+                "\n  {} unchanged, {} added, {} removed",
+                presentation::number(unchanged),
+                presentation::number(added.len()),
+                presentation::number(removed.len())
+            );
+            if style.count {
+                return Ok(());
+            }
+            print_diff_side("Added", &added, &new, style.display)?;
+            print_diff_side("Removed", &removed, &old, style.display)?;
+            if added.is_empty() && removed.is_empty() {
+                println!("\n  The expression selects the same concepts in both indexes.");
+            }
+        }
+        "pack" => {
             ensure!(
                 (3..=5).contains(&args.len()),
                 "Usage: pack STORE DESTINATION_FILE [--uncompressed|--block-kib 16|64]"
@@ -96,10 +350,11 @@ fn run() -> Result<()> {
                 );
             }
         }
-        Some("verify") => {
-            ensure!(args.len() == 2, "Usage: verify STORE");
+        "verify" => {
+            ensure!(args.len() <= 2, "Usage: verify [STORE]");
+            let (store, _) = workspace::resolve(args.get(1).map(String::as_str))?;
             let start = Instant::now();
-            let result = snomed_ecl_engine::store::verify(Path::new(&args[1]))?;
+            let result = snomed_ecl_engine::store::verify(&store)?;
             if human {
                 println!(
                     "Verified {} sections and {} concepts in {:.2}s",
@@ -112,11 +367,11 @@ fn run() -> Result<()> {
             }
         }
         #[cfg(not(feature = "import"))]
-        Some("import" | "add-refsets") => {
+        "import" | "add-refsets" => {
             bail!("Import support was excluded; rebuild with --features import")
         }
         #[cfg(feature = "import")]
-        Some("add-refsets") => {
+        "add-refsets" => {
             ensure!(
                 args.len() == 6,
                 "Usage: add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256"
@@ -131,7 +386,7 @@ fn run() -> Result<()> {
                 &args[5],
             )?;
             if human {
-                presentation::manifest(&manifest);
+                presentation::manifest(&manifest, Some(&args[3]));
             } else {
                 println!("{}", serde_json::to_string_pretty(&manifest)?);
             }
@@ -141,7 +396,7 @@ fn run() -> Result<()> {
             );
         }
         #[cfg(feature = "import")]
-        Some("import") => {
+        "import" => {
             ensure!(
                 args.len() == 5 || args.len() == 6,
                 "Usage: import ARCHIVE DESTINATION EDITION_URI SHA256 [DISPLAY_REFSET_IDS]"
@@ -173,7 +428,7 @@ fn run() -> Result<()> {
                 },
             )?;
             if human {
-                presentation::manifest(&manifest);
+                presentation::manifest(&manifest, Some(&args[2]));
                 eprintln!(
                     "\n  Import complete in {:.2}s",
                     start.elapsed().as_secs_f64()
@@ -187,38 +442,36 @@ fn run() -> Result<()> {
                 );
             }
         }
-        Some("stats") => {
-            ensure!(args.len() == 2, "Usage: stats STORE");
-            let manifest = Manifest::read(Path::new(&args[1]))?;
+        "stats" => {
+            ensure!(args.len() <= 2, "Usage: stats [STORE]");
+            let (store, source) = workspace::resolve(args.get(1).map(String::as_str))?;
+            let manifest = Manifest::read(&store)
+                .with_context(|| format!("Cannot read the index at {}", store.display()))?;
             if human {
-                presentation::manifest(&manifest);
+                let location = format!("{} ({})", store.display(), source.describe());
+                presentation::manifest(&manifest, Some(&location));
             } else {
                 println!("{}", serde_json::to_string_pretty(&manifest)?);
             }
         }
-        Some("expand") => {
+        "expand" => {
+            let style = Style::take(&mut args, human, json)?;
             ensure!(
-                args.len() == 3 || args.len() == 4,
-                "Usage: expand STORE ECL [--display|--count]"
+                args.len() == 2 || args.len() == 3,
+                "Usage: expand [STORE] ECL [--display|--count]"
             );
-            let option = args.get(3).map(String::as_str);
-            ensure!(
-                matches!(option, None | Some("--display" | "--count")),
-                "Unknown expansion option"
-            );
+            // The expression is always last; a preceding argument names the index.
+            let text = args[args.len() - 1].clone();
+            let explicit = (args.len() == 3).then(|| args[1].as_str());
+            let (path, _) = workspace::resolve(explicit)?;
             let parse_start = Instant::now();
-            let expression = ecl::parse(&args[2]).map_err(|error| {
-                anyhow::anyhow!(
-                    "{error}. ECL byte offset: {}. See docs/conformance.md for current support.",
-                    error.offset
-                )
-            })?;
+            let expression = parse(&text)?;
             let parse_ms = parse_start.elapsed().as_secs_f64() * 1000.0;
             if human {
                 eprintln!("  Opening and verifying index...");
             }
             let open_start = Instant::now();
-            let mut store = NumericStore::open(Path::new(&args[1]))?;
+            let mut store = NumericStore::open(&path)?;
             if let Some(config) = &query_config {
                 store.config = config.clone();
             }
@@ -226,138 +479,32 @@ fn run() -> Result<()> {
             let eval_start = Instant::now();
             let result = eval::evaluate_result(&store, &expression)?;
             let eval_ms = eval_start.elapsed().as_secs_f64() * 1000.0;
-            let ordinals = match result {
-                eval::QueryResult::Concepts(ordinals) => ordinals,
-                eval::QueryResult::Values(values) => {
-                    ensure!(option != Some("--display"), "--display requires a concept result; this projection returns scalar values");
-                    if human {
-                        eprintln!(
-                            "  {} values | query {:.3} ms | parse {:.3} ms | index {:.3} s",
-                            presentation::number(values.len()),
-                            eval_ms,
-                            parse_ms,
-                            open_seconds
-                        );
-                    }
-                    if option == Some("--count") {
-                        if json {
-                            println!(
-                                "{}",
-                                serde_json::json!({"total": values.len(), "result_type":"values"})
-                            );
-                        } else {
-                            println!("{}", values.len());
-                        }
-                    } else {
-                        let mut out = io::BufWriter::new(io::stdout().lock());
-                        for value in values {
-                            serde_json::to_writer(&mut out, &value)?;
-                            writeln!(out)?;
-                        }
-                        out.flush()?;
-                    }
-                    return Ok(());
-                }
-                eval::QueryResult::Rows(rows) => {
-                    ensure!(
-                        option != Some("--display"),
-                        "--display requires a concept result; this projection returns rows"
-                    );
-                    if human {
-                        eprintln!(
-                            "  {} rows | query {:.3} ms | parse {:.3} ms | index {:.3} s",
-                            presentation::number(rows.len()),
-                            eval_ms,
-                            parse_ms,
-                            open_seconds
-                        );
-                    }
-                    if option == Some("--count") {
-                        if json {
-                            println!(
-                                "{}",
-                                serde_json::json!({"total": rows.len(), "result_type":"rows"})
-                            );
-                        } else {
-                            println!("{}", rows.len());
-                        }
-                    } else {
-                        let mut out = io::BufWriter::new(io::stdout().lock());
-                        for row in rows {
-                            serde_json::to_writer(&mut out, &row)?;
-                            writeln!(out)?;
-                        }
-                        out.flush()?;
-                    }
-                    return Ok(());
-                }
-            };
             if human {
                 eprintln!(
-                    "  {} concepts | query {:.3} ms | parse {:.3} ms | index {:.3} s",
-                    presentation::number(ordinals.len()),
+                    "  {} | query {:.3} ms | parse {:.3} ms | index {:.3} s",
+                    presentation::total(&result),
                     eval_ms,
                     parse_ms,
                     open_seconds
                 );
             }
-            if option == Some("--count") {
-                if json {
-                    println!("{}", serde_json::json!({"total": ordinals.len()}));
-                } else {
-                    println!("{}", ordinals.len());
-                }
-            } else {
-                let mut display = if option == Some("--display") {
-                    Some(DisplayStore::open(Path::new(&args[1]))?)
-                } else {
-                    None
-                };
-                let mut out = io::BufWriter::new(io::stdout().lock());
-                if human && display.is_some() {
-                    writeln!(out, "\n{}\n", presentation::heading("SNOMED ECL / results"))?;
-                    writeln!(out, "{:<20}  DISPLAY", "CODE")?;
-                    writeln!(out, "{}", "-".repeat(64))?;
-                }
-                for ordinal in ordinals {
-                    let code = store.ids[ordinal as usize];
-                    if let Some(display) = &mut display {
-                        let label = display.get(ordinal)?;
-                        if human {
-                            writeln!(
-                                out,
-                                "{code:<20}  {}",
-                                label
-                                    .as_deref()
-                                    .map(presentation::clean)
-                                    .as_deref()
-                                    .unwrap_or("(no display)")
-                            )?;
-                        } else {
-                            writeln!(
-                                out,
-                                "{}",
-                                serde_json::json!({"code": code.to_string(), "display": label})
-                            )?;
-                        }
-                    } else if json {
-                        writeln!(out, "{}", serde_json::json!({"code": code.to_string()}))?;
-                    } else {
-                        writeln!(out, "{code}")?;
-                    }
-                }
-                out.flush()?;
-            }
+            let mut display = None;
+            let mut out = io::BufWriter::new(io::stdout().lock());
+            emit(&store, &path, &mut display, &result, &style, None, &mut out)?;
+            out.flush()?;
         }
-        Some("batch") => {
-            ensure!(args.len() == 2, "Usage: batch STORE (JSON lines on stdin)");
-            let directory = Path::new(&args[1]);
+        "batch" => {
+            ensure!(
+                args.len() <= 2,
+                "Usage: batch [STORE] (JSON lines on stdin)"
+            );
+            let (directory, _) = workspace::resolve(args.get(1).map(String::as_str))?;
             let start = Instant::now();
-            let mut store = NumericStore::open(directory)?;
+            let mut store = NumericStore::open(&directory)?;
             if let Some(config) = &query_config {
                 store.config = config.clone();
             }
-            let manifest = Manifest::read(directory)?;
+            let manifest = Manifest::read(&directory)?;
             let config_sha256 = store.config.fingerprint()?;
             eprintln!(
                 "Store opened in {:.3} seconds",
@@ -381,15 +528,17 @@ fn run() -> Result<()> {
                 out.flush()?;
             }
         }
-        Some("hierarchy") => {
+        "hierarchy" => {
+            let with_display = args.iter().any(|s| s == "--display");
+            args.retain(|s| s != "--display");
             ensure!(
-                args.len() == 4 || args.len() == 5,
-                "Usage: hierarchy STORE OPERATOR SCTID [--display]"
+                args.len() == 3 || args.len() == 4,
+                "Usage: hierarchy [STORE] OPERATOR SCTID [--display]"
             );
-            if args.len() == 5 {
-                ensure!(args[4] == "--display", "Unknown hierarchy option");
-            }
-            let (ancestors, direct, include_self) = match args[2].as_str() {
+            // The operator and SCTID are always last; a preceding argument names
+            // the index.
+            let (operator, sctid) = (&args[args.len() - 2], &args[args.len() - 1]);
+            let (ancestors, direct, include_self) = match operator.as_str() {
                 "<" => (false, false, false),
                 "<<" => (false, false, true),
                 "<!" => (false, true, false),
@@ -400,10 +549,12 @@ fn run() -> Result<()> {
                 ">>!" => (true, true, true),
                 _ => bail!("Unsupported hierarchy operator; this command is not an ECL parser"),
             };
-            let store = NumericStore::open(Path::new(&args[1]))?;
-            let codes = store.hierarchy(args[3].parse()?, ancestors, direct, include_self);
-            let mut displays = if args.len() == 5 {
-                Some(DisplayStore::open(Path::new(&args[1]))?)
+            let explicit = (args.len() == 4).then(|| args[1].as_str());
+            let (path, _) = workspace::resolve(explicit)?;
+            let store = NumericStore::open(&path)?;
+            let codes = store.hierarchy(sctid.parse()?, ancestors, direct, include_self);
+            let mut displays = if with_display {
+                Some(DisplayStore::open(&path)?)
             } else {
                 None
             };
@@ -539,5 +690,245 @@ fn batch_response(
         },
     )?;
     writeln!(out)?;
+    Ok(())
+}
+
+/// Codes listed per result in the interactive loop. The total is always
+/// printed, so this caps the listing only.
+const QUERY_LIMIT: usize = 40;
+
+/// Codes listed per side of a terminal diff, for the same reason.
+const DIFF_LIMIT: usize = 40;
+
+fn file_sha256(path: &Path) -> Result<String> {
+    use sha2::{Digest, Sha256};
+    let mut file =
+        std::fs::File::open(path).with_context(|| format!("Cannot read {}", path.display()))?;
+    let mut hasher = Sha256::new();
+    let mut buffer = vec![0; 1 << 20];
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+/// Evaluates one expression against one index and returns its edition with the
+/// result as sorted (code, ordinal) pairs. The ordinal is kept so terms can be
+/// resolved later without reopening the numeric index.
+fn evaluate_for_diff(
+    path: &Path,
+    expression: &ecl::Expr,
+    config: &Option<snomed_ecl_engine::config::QueryConfig>,
+) -> Result<(String, Vec<(u64, u32)>)> {
+    let mut store = NumericStore::open(path)
+        .with_context(|| format!("Cannot open the index at {}", path.display()))?;
+    if let Some(config) = config {
+        store.config = config.clone();
+    }
+    let manifest = Manifest::read(path)?;
+    let result = eval::evaluate_result(&store, expression)?;
+    let eval::QueryResult::Concepts(ordinals) = result else {
+        bail!("diff compares concept results; this projection returns values or rows")
+    };
+    let mut codes: Vec<_> = ordinals
+        .into_iter()
+        .map(|ordinal| (store.ids[ordinal as usize], ordinal))
+        .collect();
+    codes.sort_unstable();
+    Ok((manifest.edition, codes))
+}
+
+/// Prints one side of a diff, resolving terms from the index that side came
+/// from. A concept removed by a release exists only in the older index.
+fn print_diff_side(
+    label: &str,
+    codes: &[(u64, u32)],
+    path: &Path,
+    with_display: bool,
+) -> Result<()> {
+    if codes.is_empty() {
+        return Ok(());
+    }
+    println!(
+        "\n  {} ({})",
+        presentation::heading(label),
+        presentation::number(codes.len())
+    );
+    let mut display = if with_display {
+        Some(DisplayStore::open(path)?)
+    } else {
+        None
+    };
+    let shown = codes.len().min(DIFF_LIMIT);
+    for &(code, ordinal) in &codes[..shown] {
+        match display.as_mut() {
+            Some(display) => println!(
+                "    {code:<20}  {}",
+                display
+                    .get(ordinal)?
+                    .as_deref()
+                    .map(presentation::clean)
+                    .as_deref()
+                    .unwrap_or("(no display)")
+            ),
+            None => println!("    {code}"),
+        }
+    }
+    if shown < codes.len() {
+        println!(
+            "    ... {} more. Use --json for every code.",
+            presentation::number(codes.len() - shown)
+        );
+    }
+    Ok(())
+}
+
+/// Output flags shared by `expand`, `query` and `diff`.
+struct Style {
+    display: bool,
+    count: bool,
+    json: bool,
+    human: bool,
+}
+
+impl Style {
+    /// Removes the output flags so the remaining arguments are positional.
+    fn take(args: &mut Vec<String>, human: bool, json: bool) -> Result<Self> {
+        let display = args.iter().any(|s| s == "--display");
+        let count = args.iter().any(|s| s == "--count");
+        ensure!(!(display && count), "Choose either --display or --count");
+        args.retain(|s| s != "--display" && s != "--count");
+        if let Some(unknown) = args.iter().skip(1).find(|s| s.starts_with("--")) {
+            bail!("Unknown option {unknown}. Run `{} --help`", args[0]);
+        }
+        Ok(Self {
+            display,
+            count,
+            json,
+            human,
+        })
+    }
+}
+
+/// Writes one query result. `limit` caps the codes listed in a terminal; the
+/// full total is always reported alongside, so a capped listing is never
+/// mistaken for the complete set.
+fn emit(
+    store: &NumericStore,
+    path: &Path,
+    display: &mut Option<DisplayStore>,
+    result: &eval::QueryResult,
+    style: &Style,
+    limit: Option<usize>,
+    out: &mut impl Write,
+) -> Result<()> {
+    let ordinals = match result {
+        eval::QueryResult::Concepts(ordinals) => ordinals,
+        eval::QueryResult::Values(values) => {
+            ensure!(
+                !style.display,
+                "--display requires a concept result; this projection returns scalar values"
+            );
+            if style.count {
+                if style.json {
+                    writeln!(
+                        out,
+                        "{}",
+                        serde_json::json!({"total": values.len(), "result_type":"values"})
+                    )?;
+                } else {
+                    writeln!(out, "{}", values.len())?;
+                }
+            } else {
+                for value in values {
+                    serde_json::to_writer(&mut *out, value)?;
+                    writeln!(out)?;
+                }
+            }
+            return Ok(());
+        }
+        eval::QueryResult::Rows(rows) => {
+            ensure!(
+                !style.display,
+                "--display requires a concept result; this projection returns rows"
+            );
+            if style.count {
+                if style.json {
+                    writeln!(
+                        out,
+                        "{}",
+                        serde_json::json!({"total": rows.len(), "result_type":"rows"})
+                    )?;
+                } else {
+                    writeln!(out, "{}", rows.len())?;
+                }
+            } else {
+                for row in rows {
+                    serde_json::to_writer(&mut *out, row)?;
+                    writeln!(out)?;
+                }
+            }
+            return Ok(());
+        }
+    };
+    if style.count {
+        if style.json {
+            writeln!(out, "{}", serde_json::json!({"total": ordinals.len()}))?;
+        } else {
+            writeln!(out, "{}", ordinals.len())?;
+        }
+        return Ok(());
+    }
+    if style.display && display.is_none() {
+        *display = Some(DisplayStore::open(path)?);
+    }
+    let shown = limit.unwrap_or(ordinals.len()).min(ordinals.len());
+    if style.human && style.display {
+        writeln!(out, "\n{}\n", presentation::heading("SNOMED ECL / results"))?;
+        writeln!(out, "{:<20}  DISPLAY", "CODE")?;
+        writeln!(out, "{}", "-".repeat(64))?;
+    }
+    for &ordinal in &ordinals[..shown] {
+        let code = store.ids[ordinal as usize];
+        if style.display {
+            let label = display
+                .as_mut()
+                .context("Display index was not opened")?
+                .get(ordinal)?;
+            if style.human {
+                writeln!(
+                    out,
+                    "{code:<20}  {}",
+                    label
+                        .as_deref()
+                        .map(presentation::clean)
+                        .as_deref()
+                        .unwrap_or("(no display)")
+                )?;
+            } else {
+                writeln!(
+                    out,
+                    "{}",
+                    serde_json::json!({"code": code.to_string(), "display": label})
+                )?;
+            }
+        } else if style.json {
+            writeln!(out, "{}", serde_json::json!({"code": code.to_string()}))?;
+        } else {
+            writeln!(out, "{code}")?;
+        }
+    }
+    if shown < ordinals.len() {
+        writeln!(
+            out,
+            "\n  Listed {} of {}. Redirect output or use --json for every code.",
+            presentation::number(shown),
+            presentation::number(ordinals.len())
+        )?;
+    }
     Ok(())
 }
