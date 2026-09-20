@@ -9,6 +9,7 @@ import zipfile
 
 from benchmark_ecl import ROOT, IMAGE, digest
 from check_membership_rf2 import rows
+from index_artifact import read_manifest
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
     args = parser.parse_args()
     if args.output.exists():
         parser.error('Choose a new report path')
-    manifest = json.loads((args.store / 'manifest.json').read_text())
+    manifest = read_manifest(args.store)
     with args.archive.open('rb') as file:
         assert hashlib.file_digest(file, 'sha256').hexdigest() == manifest['archive_sha256']
     queries = json.loads((ROOT / 'validation/member-field-queries.json').read_text())

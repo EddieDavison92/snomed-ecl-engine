@@ -9,6 +9,7 @@ import subprocess
 import zipfile
 
 from benchmark_ecl import ROOT, IMAGE, digest
+from index_artifact import read_manifest
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Choose a new output path")
-    manifest = json.loads((args.store / "manifest.json").read_text())
+    manifest = read_manifest(args.store)
     with args.archive.open("rb") as source:
         archive_hash = hashlib.file_digest(source, "sha256").hexdigest()
     assert any(s["archive_sha256"] == archive_hash for s in manifest["supplements"])

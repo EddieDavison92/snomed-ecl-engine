@@ -21,6 +21,8 @@ Terminal output has an index summary, a code/display table with `--display`, and
 | `stats` | Manifest JSON | Manifest JSON |
 | `import` | Manifest and elapsed time JSON | Same |
 | `add-refsets` | Combined manifest JSON | Same |
+| `pack` | File size and elapsed time JSON | Same |
+| `verify` | Verified section and component counts JSON | Same |
 | `expand` | One code per line | One code object per line |
 | `expand --display` | Code/display JSONL | Same |
 | `expand --count` | Integer | Object with `total` |
@@ -37,3 +39,8 @@ Terminal output has an index summary, a code/display table with `--display`, and
 The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](conformance.md) tracks the outstanding work.
 
 Use `add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256` for supplementary simple refsets, including PCD. Read [refset loading](refsets.md) for supported definitions, collision handling and release provenance.
+
+Use `pack STORE NEW_FILE` to create a compressed single-file index, then
+`verify NEW_FILE` to check every component. Every query command accepts that file
+as its store argument. See [single-file indexes](container.md) for compression
+options, temporary disk requirements and the current memory limits.

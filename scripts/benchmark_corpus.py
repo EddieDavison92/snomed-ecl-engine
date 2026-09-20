@@ -13,6 +13,7 @@ import urllib.parse
 import urllib.error
 
 from benchmark_ecl import ROOT, IMAGE, digest, http, resource_snapshot, summary
+from index_artifact import manifest_bytes, read_manifest
 
 
 def known_language_rejection(ecl, status, body):
@@ -68,7 +69,9 @@ def main():
         store = store_directory.relative_to(ROOT).as_posix()
     except ValueError:
         parser.error("Store directory must be within the mounted checkout")
-    manifest = json.loads((store_directory / "manifest.json").read_text())
+    if args.store_volume and store_directory.is_file():
+        parser.error("Docker-volume measurements currently require a directory index")
+    manifest = read_manifest(store_directory)
     supplements = [s["archive_sha256"] for s in manifest.get("supplements", [])]
     if args.snowstorm and supplements:
         parser.error("Snowstorm comparison cannot yet verify supplementary packages; use the base store")
@@ -87,13 +90,19 @@ def main():
               "identifier_index_bytes": (manifest.get("identifiers") or {}).get("bytes", 0),
               "display_index_bytes": manifest.get("display_bytes", 0),
               "member_index_bytes": sum(t['bytes'] for t in manifest.get('member_tables') or []),
-              "manifest_sha256": hashlib.sha256((store_directory / 'manifest.json').read_bytes()).hexdigest(),
+              "manifest_sha256": hashlib.sha256(manifest_bytes(store_directory)).hexdigest(),
               "supplements": supplements,
               "core_sha256": manifest["core_sha256"],
               "membership_sha256": (manifest.get("membership") or {}).get("sha256"),
               "index_filesystem": "Docker volume" if args.store_volume else "Windows bind mount",
               "scope": f"One CPU, {args.memory_mib} MiB, persistent Rust process. No result cache. Each measured count request evaluates and materialises the full ordinal set. Five seeded shuffled batches by default; p95 describes this corpus only. Complete enumeration is checked once outside warm count timings. A local-file startup does not measure object-storage download, provider cold start or full-ECL index costs.",
               "results": list(rows.values())}
+    report['index_layout'] = 'directory' if store_directory.is_dir() else 'container-v2'
+    if store_directory.is_file():
+        report['container_bytes'] = store_directory.stat().st_size
+        with store_directory.open('rb') as file:
+            report['container_sha256'] = hashlib.file_digest(file, 'sha256').hexdigest()
+        report['manifest_hash_encoding'] = 'Embedded manifest, canonical Python JSON with sorted keys'
     if args.snowstorm:
         if bool(args.import_id) == bool(args.import_report):
             parser.error("--snowstorm requires exactly one of --import-id or --import-report")

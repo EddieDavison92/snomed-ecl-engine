@@ -22,7 +22,7 @@ pub fn add_refsets_snapshot(
         archive_hash.eq_ignore_ascii_case(expected_sha256),
         "RF2 archive checksum mismatch"
     );
-    let mut manifest = Manifest::read(base)?;
+    let (mut manifest, base_source) = crate::store::IndexSource::open(base)?;
     ensure!(
         manifest.membership.is_some(),
         "Base membership index is absent; reimport the base RF2 first"
@@ -435,13 +435,10 @@ pub fn add_refsets_snapshot(
         )?;
         tables.retain(|old| !additional.iter().any(|new| new.refset == old.refset));
         for table in tables.iter() {
-            let relative = Path::new("members").join(format!("{}.bin", table.refset));
-            let source = base.join(&relative);
-            ensure!(
-                source.metadata()?.len() == table.bytes && sha256(&source)? == table.sha256,
-                "Base member table checksum differs"
-            );
-            fs::copy(&source, staging.join(&relative))?;
+            let relative = format!("members/{}.bin", table.refset);
+            base_source
+                .section(&relative)?
+                .copy_to(&staging.join(&relative))?;
         }
         tables.extend(additional);
         tables.sort_by_key(|t| t.refset);

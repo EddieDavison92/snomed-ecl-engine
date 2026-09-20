@@ -21,6 +21,187 @@ const TARGET: u64 = 9000002;
 const ISA: u64 = 116680003;
 
 #[test]
+fn packed_store_preserves_lazy_sections_queries_displays_and_supplements() {
+    use snomed_ecl_engine::{
+        ecl::parse,
+        eval::evaluate_result,
+        store::{pack, verify},
+    };
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let directory = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &directory, &options(&archive)).unwrap();
+    let packed = temp.path().join("edition.ecl");
+    pack(&directory, &packed).unwrap();
+    let original_hash = sha256(&packed).unwrap();
+    assert!(pack(&directory, &packed).is_err());
+    assert_eq!(sha256(&packed).unwrap(), original_hash);
+    let source = NumericStore::open(&directory).unwrap();
+    let loaded = NumericStore::open(&packed).unwrap();
+    for query in [
+        "*",
+        "<< 1000001",
+        "* : {9000001=9000002}",
+        "1000004 . 9000001",
+        "* {{D active=\"*\"}}",
+        "^[referencedComponentId]1000001",
+        "* {{C active=0}}",
+    ] {
+        let ast = parse(query).unwrap();
+        assert_eq!(
+            evaluate_result(&loaded, &ast).unwrap(),
+            evaluate_result(&source, &ast).unwrap(),
+            "{query}"
+        );
+    }
+    let source_ids = source.identifiers.get().unwrap().unwrap();
+    let packed_ids = loaded.identifiers.get().unwrap().unwrap();
+    assert_eq!(
+        serde_json::to_value(source_ids).unwrap(),
+        serde_json::to_value(packed_ids).unwrap()
+    );
+    let mut original_display = DisplayStore::open(&directory).unwrap();
+    let mut packed_display = DisplayStore::open(&packed).unwrap();
+    for ordinal in 0..source.ids.len() as u32 {
+        assert_eq!(
+            original_display.get(ordinal).unwrap(),
+            packed_display.get(ordinal).unwrap()
+        );
+    }
+    let before = verify(&directory).unwrap();
+    let after = verify(&packed).unwrap();
+    assert_eq!(
+        serde_json::to_value(before).unwrap(),
+        serde_json::to_value(after).unwrap()
+    );
+    let repacked = temp.path().join("again.ecl");
+    pack(&packed, &repacked).unwrap();
+    assert_eq!(sha256(&repacked).unwrap(), original_hash);
+    let supplement = temp.path().join("extra.zip");
+    supplement_fixture(&supplement, LEAF, false);
+    let added = temp.path().join("added");
+    snomed_ecl_engine::import::add_refsets_snapshot(
+        &packed,
+        &supplement,
+        &added,
+        "20260820",
+        &sha256(&supplement).unwrap(),
+    )
+    .unwrap();
+    verify(&added).unwrap();
+}
+
+#[test]
+fn packed_store_rejects_corrupt_tables_offsets_and_lazy_payloads() {
+    use sha2::{Digest, Sha256};
+    use snomed_ecl_engine::store::{pack, verify};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let directory = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &directory, &options(&archive)).unwrap();
+    let packed = temp.path().join("edition.ecl");
+    pack(&directory, &packed).unwrap();
+    let original = fs::read(&packed).unwrap();
+    let table_len = u64::from_le_bytes(original[16..24].try_into().unwrap()) as usize;
+    let table: serde_json::Value = serde_json::from_slice(&original[56..56 + table_len]).unwrap();
+    let bad = temp.path().join("bad.ecl");
+    for mutate in 0..7 {
+        let mut copy = original.clone();
+        let mut metadata = table.clone();
+        match mutate {
+            0 => metadata["sections"][0]["offset"] = serde_json::json!(0),
+            1 => metadata["sections"][0]["length"] = serde_json::json!(u64::MAX),
+            2 => metadata["sections"][0]["name"] = serde_json::json!("../core.bin"),
+            3 => metadata["sections"][1]["offset"] = metadata["sections"][0]["offset"].clone(),
+            4 => {
+                metadata["sections"].as_array_mut().unwrap().pop();
+            }
+            5 => metadata["manifest"]["format"] = serde_json::json!(99),
+            _ => metadata["sections"][0]["codec"] = serde_json::json!(99),
+        }
+        let encoded = serde_json::to_vec(&metadata).unwrap();
+        assert!(56 + encoded.len() < table["sections"][0]["offset"].as_u64().unwrap() as usize);
+        copy[16..24].copy_from_slice(&(encoded.len() as u64).to_le_bytes());
+        copy[24..56].copy_from_slice(&Sha256::digest(&encoded));
+        copy[56..56 + encoded.len()].copy_from_slice(&encoded);
+        fs::write(&bad, &copy).unwrap();
+        assert!(Manifest::read(&bad).is_err(), "mutation {mutate}");
+    }
+    fs::write(&bad, &original[..original.len() - 1]).unwrap();
+    assert!(NumericStore::open(&bad).is_err());
+    let mut copy = original.clone();
+    copy[56] ^= 1;
+    fs::write(&bad, &copy).unwrap();
+    assert!(Manifest::read(&bad).is_err());
+    let section = table["sections"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["name"] == "descriptions.bin")
+        .unwrap();
+    let offset = section["offset"].as_u64().unwrap() as usize;
+    let mut copy = original;
+    copy[offset + 8] ^= 1;
+    fs::write(&bad, &copy).unwrap();
+    let lazy = NumericStore::open(&bad).unwrap();
+    assert!(lazy.descriptions.get().is_err());
+    assert!(verify(&bad).is_err());
+    let failed = temp.path().join("failed.ecl");
+    assert!(pack(&bad, &failed).is_err());
+    assert!(!failed.exists());
+    assert!(!fs::read_dir(temp.path()).unwrap().any(|p| p
+        .unwrap()
+        .file_name()
+        .to_string_lossy()
+        .contains("partial-")));
+}
+
+#[test]
+fn packed_section_readers_do_not_share_seek_positions() {
+    use snomed_ecl_engine::store::pack;
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let directory = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &directory, &options(&archive)).unwrap();
+    let packed = temp.path().join("edition.ecl");
+    pack(&directory, &packed).unwrap();
+    let store = NumericStore::open(&packed).unwrap();
+    std::thread::scope(|scope| {
+        for _ in 0..8 {
+            let (path, store) = (&packed, &store);
+            scope.spawn(move || {
+                let mut display = DisplayStore::open(path).unwrap();
+                for _ in 0..20 {
+                    assert_eq!(
+                        display
+                            .get(store.ordinal(LEAF).unwrap())
+                            .unwrap()
+                            .as_deref(),
+                        Some("Synthetic realm label")
+                    );
+                    assert_eq!(
+                        store
+                            .identifiers
+                            .get()
+                            .unwrap()
+                            .unwrap()
+                            .lookup(ROOT, "A.1"),
+                        Some(LEAF)
+                    );
+                    assert!(!store.descriptions.get().unwrap().unwrap().is_empty());
+                    for refset in store.member_tables.refsets() {
+                        assert!(store.member_tables.get(refset).unwrap().is_some());
+                    }
+                }
+            });
+        }
+    });
+}
+
+#[test]
 fn legacy_identifier_columns_resolve_the_same_codes() {
     use std::io::Read;
     let temp = TempDir::new().unwrap();

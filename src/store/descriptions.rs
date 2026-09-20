@@ -1,5 +1,4 @@
 use super::*;
-use std::path::PathBuf;
 use std::sync::OnceLock;
 
 const MAGIC: &[u8; 8] = b"SNDES001";
@@ -208,9 +207,12 @@ impl DescriptionIndex {
         })
     }
 
-    fn open(path: &Path, metadata: &DescriptionManifest, count: usize) -> Result<Self> {
-        verify_file(path, metadata.bytes, &metadata.sha256)?;
-        let mut input = Input::open(path, MAGIC)?;
+    pub(super) fn open(
+        section: &Section,
+        metadata: &DescriptionManifest,
+        count: usize,
+    ) -> Result<Self> {
+        let mut input = Input::open(section, MAGIC)?;
         let concepts = input.u32s()?;
         let n = input.count(8)?;
         let index = Self {
@@ -265,7 +267,7 @@ impl DescriptionIndex {
 /// The sidecar is opened only when requested. Numeric queries perform no text I/O.
 #[derive(Debug, Default)]
 pub struct DescriptionStore {
-    source: Option<(PathBuf, DescriptionManifest, usize)>,
+    source: Option<(Section, DescriptionManifest, usize)>,
     loaded: OnceLock<std::result::Result<DescriptionIndex, String>>,
 }
 impl DescriptionStore {
@@ -275,11 +277,15 @@ impl DescriptionStore {
             loaded: OnceLock::from(Ok(index)),
         }
     }
-    pub(super) fn lazy(directory: &Path, metadata: DescriptionManifest, count: usize) -> Self {
-        Self {
-            source: Some((directory.join("descriptions.bin"), metadata, count)),
+    pub(super) fn lazy(
+        source: &IndexSource,
+        metadata: DescriptionManifest,
+        count: usize,
+    ) -> Result<Self> {
+        Ok(Self {
+            source: Some((source.section("descriptions.bin")?, metadata, count)),
             loaded: OnceLock::new(),
-        }
+        })
     }
     pub fn get(&self) -> Result<Option<&DescriptionIndex>> {
         if self.source.is_none() && self.loaded.get().is_none() {

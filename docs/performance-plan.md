@@ -35,6 +35,14 @@ Each step needs unchanged correctness results and separate measurements for impo
 
 ## Format and candidate-selection conditions
 
+The [single-file container](container.md) now preserves current component
+encodings behind a common reader. It supports raw sections and independent
+16/64 KiB zstd blocks, including every typed member table. This isolates file
+layout and compression from evaluator semantics. Normal opening retains checksum
+and structural checks; `verify` checks all cold sections too. The reader still
+allocates the existing decoded columns. Mmap, adaptive widths, description row
+pointers and bounded term loading remain unimplemented.
+
 The independent evaluator now checks 1,000 generated combinations of refinements, groups, cardinalities and membership in `tests/basic_ecl.rs`, using separate row scans in `tests/support/mod.rs`. Concrete and typed scalar semantics have their own fixtures and independent RF2 checks. This supplies comparison evidence for later rewrites; remaining ECL semantics still need completion first.
 
 The [startup probe](../validation/startup-results.json) found a separate I/O defect before the format rewrite. Deserialising the 199,749-byte manifest directly from `File` issued 199,750 reads. `BufReader` reduces that to 26 reads and returns identical data. Direct store opening fell from 21.75 seconds to 0.91 seconds in the paired probe on the Windows Docker mount. These are single store-open samples with filesystem caches retained; manifest parsing has six samples per method. No checksum or structural validation was removed, and no index bytes changed. The latest corpus process opened in 1.24 seconds, including its second manifest read. Use this corrected baseline for subsequent container and mmap experiments.

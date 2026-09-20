@@ -35,6 +35,14 @@ The [nested-query evaluation round](../validation/nested-results.json) passes 67
 
 The [boundary probes](../validation/semantic-boundary-queries.json) isolate two remaining ambiguous forms. OneLondon's Ontoserver 6.25.4 rejects grouped reverse attributes with "Cannot reverse an attribute inside a group", and rejects member filters without a refset operator during parsing. Its ungrouped reverse control succeeds. These rejections do not settle the broader forms allowed by the published grammar, so they remain open conformance items rather than claimed matches.
 
+The [packed-index evaluation round](../validation/packed-results.json) preserves
+all 1,000 complete corpus sets across the directory, raw container and compressed
+container. It passes 72 Unicode-enabled tests, 49 tests without default features,
+121 official syntax examples and independent scalar, member, history, term,
+description and PCD checks. These checks show that compression preserves current
+semantics. They do not close the grouped-reverse, implicit-member-filter,
+custom-type, orphan-reference or broader lexical/collation gaps.
+
 The [concept-filter probes](../validation/ontoserver-concept-filters.json) compare complete sets for every expression OneLondon's Ontoserver accepted. Its HTTP 422 responses for a nested module expression and two empty-date predicates are not successful comparisons. Synthetic fixtures cover these valid forms, predicate combinations, inactive concepts, missing indexes and evaluation limits. Concept filters add no persistent index bytes.
 
 [Description predicates](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.8-description-filters) such as `< 64572001 |Disease| {{ term = (match:"gas" wild:"*itis")}}` evaluate with `--features unicode`. The [term comparison](descriptions.md#term-comparison-evidence) records definition-scope and inequality differences against OneLondon's Ontoserver. Numeric queries do not load description data. Include both text data and the Unicode backend in full-engine resource measurements.

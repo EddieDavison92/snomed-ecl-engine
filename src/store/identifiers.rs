@@ -1,7 +1,7 @@
-use super::{sha256, verify_file};
+use super::{sha256, IndexSource, Section};
 use anyhow::{bail, ensure, Result};
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::OnceLock;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -76,10 +76,9 @@ impl IdentifierIndex {
             rows: self.rows.len(),
         })
     }
-    fn open(path: &Path, manifest: &IdentifierManifest) -> Result<Self> {
-        verify_file(path, manifest.bytes, &manifest.sha256)?;
-        let index: Self =
-            serde_json::from_reader(std::io::BufReader::new(std::fs::File::open(path)?))?;
+    pub(super) fn open(section: &Section, manifest: &IdentifierManifest) -> Result<Self> {
+        section.verify()?;
+        let index: Self = serde_json::from_reader(std::io::BufReader::new(section.reader()?))?;
         index.validate()?;
         ensure!(
             index.rows.len() == manifest.rows,
@@ -90,7 +89,7 @@ impl IdentifierIndex {
 }
 #[derive(Debug, Default)]
 pub struct IdentifierStore {
-    source: Option<(PathBuf, IdentifierManifest)>,
+    source: Option<(Section, IdentifierManifest)>,
     loaded: OnceLock<std::result::Result<IdentifierIndex, String>>,
 }
 impl IdentifierStore {
@@ -101,11 +100,11 @@ impl IdentifierStore {
             loaded: OnceLock::from(Ok(index)),
         })
     }
-    pub(super) fn lazy(directory: &Path, manifest: IdentifierManifest) -> Self {
-        Self {
-            source: Some((directory.join("identifiers.json"), manifest)),
+    pub(super) fn lazy(source: &IndexSource, manifest: IdentifierManifest) -> Result<Self> {
+        Ok(Self {
+            source: Some((source.section("identifiers.json")?, manifest)),
             loaded: OnceLock::new(),
-        }
+        })
     }
     pub fn get(&self) -> Result<Option<&IdentifierIndex>> {
         if self.source.is_none() && self.loaded.get().is_none() {

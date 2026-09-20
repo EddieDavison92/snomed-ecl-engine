@@ -1,10 +1,10 @@
-use super::{put_u32, put_u32s, put_u64, sha256, verify_file, Input};
+use super::{put_u32, put_u32s, put_u64, sha256, IndexSource, Input};
 use anyhow::{bail, ensure, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{BufWriter, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::OnceLock;
 
 const MAGIC: &[u8; 8] = b"SNMEM001";
@@ -329,12 +329,11 @@ impl MemberTable {
             fields: self.names.clone(),
         })
     }
-    fn open(directory: &Path, metadata: &MemberManifest) -> Result<Self> {
-        let path = directory
-            .join("members")
-            .join(format!("{}.bin", metadata.refset));
-        verify_file(&path, metadata.bytes, &metadata.sha256)?;
-        let mut input = Input::open(&path, MAGIC)?;
+    pub(super) fn open(source: &IndexSource, metadata: &MemberManifest) -> Result<Self> {
+        let mut input = Input::open(
+            &source.section(&format!("members/{}.bin", metadata.refset))?,
+            MAGIC,
+        )?;
         let refset = input.u64()?;
         let names: Vec<String> = serde_json::from_slice(&input.bytes()?)?;
         ensure!(
@@ -407,7 +406,7 @@ pub(crate) fn valid_time(value: u32) -> bool {
 
 #[derive(Debug, Default)]
 pub struct MemberStore {
-    source: Option<PathBuf>,
+    source: Option<IndexSource>,
     tables: BTreeMap<
         u64,
         (
@@ -442,9 +441,9 @@ impl MemberStore {
         }
         Ok(result)
     }
-    pub(super) fn lazy(directory: &Path, metadata: Vec<MemberManifest>) -> Result<Self> {
+    pub(super) fn lazy(source: &IndexSource, metadata: Vec<MemberManifest>) -> Result<Self> {
         let mut store = Self {
-            source: Some(directory.into()),
+            source: Some(source.clone()),
             available: true,
             ..Self::default()
         };

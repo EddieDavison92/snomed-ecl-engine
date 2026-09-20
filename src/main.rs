@@ -59,6 +59,58 @@ fn run() -> Result<()> {
         return Ok(());
     }
     match args.first().map(String::as_str) {
+        Some("pack") => {
+            ensure!(
+                (3..=5).contains(&args.len()),
+                "Usage: pack STORE DESTINATION_FILE [--uncompressed|--block-kib 16|64]"
+            );
+            let mut options = snomed_ecl_engine::store::PackOptions::default();
+            match args.get(3).map(String::as_str) {
+                None => {}
+                Some("--uncompressed") if args.len() == 4 => options.compress = false,
+                Some("--block-kib") if args.len() == 5 => {
+                    options.block_bytes = args[4]
+                        .parse::<u32>()?
+                        .checked_mul(1024)
+                        .context("Block size overflow")?;
+                }
+                _ => bail!("Usage: pack STORE DESTINATION_FILE [--uncompressed|--block-kib 16|64]"),
+            }
+            let start = Instant::now();
+            snomed_ecl_engine::store::pack_with_options(
+                Path::new(&args[1]),
+                Path::new(&args[2]),
+                options,
+            )?;
+            let bytes = std::fs::metadata(&args[2])?.len();
+            if human {
+                println!(
+                    "Packed index: {} ({:.2} MiB)",
+                    presentation::clean(&args[2]),
+                    bytes as f64 / 1_048_576.0
+                );
+            } else {
+                println!(
+                    "{}",
+                    serde_json::json!({"bytes":bytes,"elapsed_seconds":start.elapsed().as_secs_f64()})
+                );
+            }
+        }
+        Some("verify") => {
+            ensure!(args.len() == 2, "Usage: verify STORE");
+            let start = Instant::now();
+            let result = snomed_ecl_engine::store::verify(Path::new(&args[1]))?;
+            if human {
+                println!(
+                    "Verified {} sections and {} concepts in {:.2}s",
+                    result.sections,
+                    presentation::number(result.concepts),
+                    start.elapsed().as_secs_f64()
+                );
+            } else {
+                println!("{}", serde_json::to_string(&result)?);
+            }
+        }
         #[cfg(not(feature = "import"))]
         Some("import" | "add-refsets") => {
             bail!("Import support was excluded; rebuild with --features import")

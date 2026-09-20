@@ -9,6 +9,7 @@ import zipfile
 
 from benchmark_ecl import ROOT, IMAGE, digest
 from check_membership_rf2 import rows
+from index_artifact import read_manifest
 
 SAME = '900000000000527005'
 MOD = {SAME, '900000000000526001', '900000000000528000', '1186924009'}
@@ -36,7 +37,7 @@ def main():
     args = parser.parse_args()
     if args.output.exists():
         parser.error('Choose a new report path')
-    manifest = json.loads((args.store / 'manifest.json').read_text())
+    manifest = read_manifest(args.store)
     with args.archive.open('rb') as file:
         assert hashlib.file_digest(file, 'sha256').hexdigest() == manifest['archive_sha256']
     children, associations = defaultdict(list), defaultdict(list)

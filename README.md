@@ -11,14 +11,15 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 | Workload | Measured result |
 |---|---|
 | 880 numeric-index expressions, one CPU and 256 MiB | 1.82 seconds per warm batch |
-| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 2.87 seconds per warm batch; 1.77 ms median request |
+| 1,000 expressions including description metadata, member filters and history, one CPU and 1 GiB | 3.05 seconds per warm batch; 1.87 ms median request |
 | Measured numeric query-only Linux executable, without Unicode | 0.83 MiB, 0.39 MiB gzipped |
 | Numeric and concept-membership indexes | 103.3 MiB |
+| Complete current UK index, with descriptions, displays and typed members | 289.5 MiB packed, down from 1,110.8 MiB |
 | RF2 import, including descriptions, displays and typed members | 110.5 seconds with two CPUs and 3 GiB |
 
-Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/nested-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 11.93 ms; container-charged peak memory was 547 MiB. Recent runs range from 1.63 to 1.93 ms median requests; the warm timing differences have not been isolated. These figures measure the fixed corpus, not full ECL conformance or hosted cold starts.
+Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [packed-index benchmark](validation/packed-corpus-results.json) pins the release, binary, resource limits and result digests. All 1,000 complete sets match the previous run. Request p95 was 12.75 ms; container-charged peak memory was 543 MiB. The same binary using the original directory returned a 1.81 ms median request and a 2.97-second batch. These figures measure the fixed corpus, not full ECL conformance or hosted cold starts.
 
-Buffering manifest reads removed a startup I/O bottleneck. Initial store opening took 1.24 seconds in the latest run, compared with 38.8 seconds previously on the Windows Docker mount. Container start through the first response took 1.81 seconds. Checksums and structural validation remain enabled; description and member data still load on demand. The [startup measurements](validation/startup-results.json) separate manifest reads from opening the store.
+The packed store opened in 1.13 seconds; container start through the first response took 1.72 seconds. Checksums and structural validation remain enabled, and description and member data load on demand. Filesystem caches were not dropped. Earlier [startup measurements](validation/startup-results.json) identified and fixed an unbuffered manifest read.
 
 ## Compared with Snowstorm
 
@@ -28,7 +29,7 @@ The intended advantage is fast embedded and batch expansion with a small runtime
 |---|---|---|---|
 | Query architecture | Rust library or native CLI | Java service with Lucene | Java service plus Elasticsearch |
 | Observed import time | 110.5 seconds, including typed members | 1,057 seconds, 17.6 minutes | 4,360 seconds, 72.7 minutes |
-| Current index files | 103.3 MiB numeric; 1,110.6 MiB with descriptions, displays and typed members | 483.3 MiB | 6.11 GiB Elasticsearch directory |
+| Current index files | 289.5 MiB packed with descriptions, displays and typed members; 103.3 MiB original numeric components | 483.3 MiB | 6.11 GiB Elasticsearch directory |
 | Serving allocations used | One CPU; 256 MiB numeric, 1 GiB with descriptions | One CPU, 2 GiB | Each service: four CPUs, 6 GiB |
 | Median request, 719-expression Snowstorm comparison | **2.24 ms** | Not measured on this workload | **12.66 ms** |
 | Request p95, same 719 expressions | 8.81 ms | Not measured on this workload | 38.92 ms |
@@ -37,15 +38,15 @@ The intended advantage is fast embedded and batch expansion with a small runtime
 
 Request timings include transport. Rust uses a persistent JSONL process; the servers use loopback HTTP. The Lite comparison also includes pagination and display materialisation. Latency statistics include only expressions with matching complete result sets. The Lite and full Snowstorm workloads are different, so their columns do not establish a speed ranking between the two servers.
 
-Index contents and import allocations also differ. Rust descriptions and typed member files are uncompressed, and the full language still needs more semantic data. These are observed builds, not equal-capability storage ratios or minimum serving allocations. Sources: [member import](docs/member-filters.md#release-validation), [Snowstorm comparison](docs/full-snowstorm.md), [Lite comparison](docs/basic-ecl.md) and [derived latency figures](validation/readme-comparison.json).
+Index contents and import allocations also differ. Rust now packs its existing components into independently compressed blocks; packing took a further 33.6 seconds on one CPU. The full language still has conformance gaps. These are observed builds, not equal-capability storage ratios or minimum serving allocations. Sources: [container measurements](docs/container.md), [member import](docs/member-filters.md#release-validation), [Snowstorm comparison](docs/full-snowstorm.md), [Lite comparison](docs/basic-ecl.md) and [derived latency figures](validation/readme-comparison.json).
 
 The comparison servers also have ECL coverage limits. Lite documents an ECL Core subset without attribute groups, concept/description/member filters or member-field selection in its [pinned source](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/README.md#ecl-utility-endpoints). The tested full Snowstorm parser rejected all 80 top/bottom expressions in our corpus. We also recorded a concrete-inequality disagreement where Rust matched OneLondon's Ontoserver and the RF2 evidence.
 
 OneLondon's Ontoserver 6.25.4 also rejected our [description metadata probes](validation/ontoserver-description-metadata.json), including `type` filters. These findings apply to the tested versions; full ECL 2.3 remains this project's target, not a claim that it is already complete.
 
-Description data currently adds 376 MiB and loads on demand. The description-inclusive run peaked at 537 MiB of container-charged memory; it does not fit in 256 MiB yet. Compression and bounded loading are the next storage targets. The [description measurements](docs/descriptions.md) include the failed 256 MiB run as well as successful checks.
+The packed description section occupies 66.1 MiB, but the evaluator still loads its 376 MiB decoded representation. The current corpus peaked at 543 MiB of charged memory and does not fit in 256 MiB yet. Bounded description loading is still required. The [description measurements](docs/descriptions.md) retain the earlier failed 256 MiB run.
 
-Typed member data adds 565.6 MiB on disk and loads one refset at a time. The 960-expression run peaked at 538 MiB because it does not touch every member table. The full-engine memory target still needs a compressed format and bounded loading; the [storage plan](docs/performance-plan.md) includes these costs.
+Typed member data occupies 175.6 MiB packed, compared with 565.6 MiB decoded, and loads one refset at a time. The corpus does not touch every member table. The [storage plan](docs/performance-plan.md) includes their cost when measuring the full-engine memory target.
 
 ## Use it
 
@@ -63,6 +64,10 @@ cargo build --locked --release
 ./target/release/snomed-ecl-engine expand INDEX_DIRECTORY '<< 64572001' --count
 ./target/release/snomed-ecl-engine expand INDEX_DIRECTORY '<< 195967001' --display
 
+# Pack the complete index into one file. All store arguments accept this file.
+./target/release/snomed-ecl-engine pack INDEX_DIRECTORY uk.ecl
+./target/release/snomed-ecl-engine verify uk.ecl
+
 # Reuse one process for batches of expressions.
 printf '%s\n' '{"ecl":"<< 195967001","count_only":true}' |
   ./target/release/snomed-ecl-engine batch INDEX_DIRECTORY
@@ -76,7 +81,7 @@ Use `eval::evaluate_result_with_limits` when accepting [member-field projections
 
 Description term queries need `--features unicode` and ICU4C development libraries at build time. The [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers installation and the additional executable size. Numeric queries do not require this feature.
 
-The measured CLI with import and Unicode support is 33.05 MiB, or 13.03 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#term-comparison-evidence) record their latency and correctness separately.
+The measured CLI with import, Unicode and block compression is 33.89 MiB, or 13.35 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#term-comparison-evidence) record their latency and correctness separately.
 
 The [CLI guide](docs/cli.md) covers commands and output formats. The repository [SKILL.md](SKILL.md) gives agents the build, RF2 loading and querying workflow.
 

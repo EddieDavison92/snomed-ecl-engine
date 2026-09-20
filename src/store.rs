@@ -5,10 +5,15 @@ use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::Path;
+mod blocks;
+mod container;
 mod descriptions;
 mod identifiers;
 mod members;
 mod membership;
+pub(crate) use container::IndexSource;
+pub use container::{pack, pack_with_options, verify, PackOptions, Verification};
+use container::{Section, SectionReader};
 pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
 pub use identifiers::{Identifier, IdentifierIndex, IdentifierManifest, IdentifierStore};
 pub use members::{
@@ -66,14 +71,7 @@ pub struct RefsetSupplement {
 
 impl Manifest {
     pub fn read(directory: &Path) -> Result<Self> {
-        let file = File::open(directory.join("manifest.json"))?;
-        ensure!(
-            file.metadata()?.len() < 1024 * 1024,
-            "Manifest is too large"
-        );
-        let manifest: Self = serde_json::from_reader(BufReader::new(file))?;
-        ensure!(manifest.format == FORMAT, "Unsupported store format");
-        Ok(manifest)
+        IndexSource::open(directory).map(|(manifest, _)| manifest)
     }
 }
 
@@ -386,10 +384,8 @@ impl NumericStore {
     }
 
     pub fn open(directory: &Path) -> Result<Self> {
-        let manifest = Manifest::read(directory)?;
-        let path = directory.join("core.bin");
-        verify_file(&path, manifest.core_bytes, &manifest.core_sha256)?;
-        let mut input = Input::open(&path, CORE_MAGIC)?;
+        let (manifest, source) = IndexSource::open(directory)?;
+        let mut input = Input::open(&source.section("core.bin")?, CORE_MAGIC)?;
         let count = input.count(8)?;
         let ids = (0..count)
             .map(|_| input.u64())
@@ -440,20 +436,22 @@ impl NumericStore {
             membership: manifest
                 .membership
                 .as_ref()
-                .map(|metadata| MembershipIndex::open(directory, metadata, count))
+                .map(|metadata| MembershipIndex::open(&source, metadata, count))
                 .transpose()?,
             descriptions: manifest
                 .descriptions
-                .map(|m| DescriptionStore::lazy(directory, m, count))
+                .map(|m| DescriptionStore::lazy(&source, m, count))
+                .transpose()?
                 .unwrap_or_default(),
             member_tables: manifest
                 .member_tables
-                .map(|m| MemberStore::lazy(directory, m))
+                .map(|m| MemberStore::lazy(&source, m))
                 .transpose()?
                 .unwrap_or_default(),
             identifiers: manifest
                 .identifiers
-                .map(|m| IdentifierStore::lazy(directory, m))
+                .map(|m| IdentifierStore::lazy(&source, m))
+                .transpose()?
                 .unwrap_or_default(),
             config: crate::config::QueryConfig::default(),
         };
@@ -491,12 +489,24 @@ fn validate_offsets(offsets: &[u32], count: usize, values: usize) -> Result<()> 
 
 /// Opens only the display file and its manifest; text is fetched by ordinal on demand.
 pub struct DisplayStore {
-    input: BufReader<File>,
+    input: BufReader<SectionReader>,
     offsets: Vec<u32>,
     start: u64,
 }
 
 impl DisplayStore {
+    fn verify_text(&mut self) -> Result<()> {
+        self.input.seek(SeekFrom::Start(self.start))?;
+        let mut text = String::new();
+        self.input.read_to_string(&mut text)?;
+        ensure!(
+            self.offsets
+                .iter()
+                .all(|&v| text.is_char_boundary(v as usize)),
+            "Invalid display UTF-8 offset"
+        );
+        Ok(())
+    }
     #[cfg(feature = "import")]
     pub(crate) fn into_labels(mut self) -> Result<Vec<Option<String>>> {
         self.input.seek(SeekFrom::Start(self.start))?;
@@ -538,10 +548,8 @@ impl DisplayStore {
     }
 
     pub fn open(directory: &Path) -> Result<Self> {
-        let manifest = Manifest::read(directory)?;
-        let path = directory.join("display.bin");
-        verify_file(&path, manifest.display_bytes, &manifest.display_sha256)?;
-        let mut input = Input::open(&path, DISPLAY_MAGIC)?;
+        let (manifest, source) = IndexSource::open(directory)?;
+        let mut input = Input::open(&source.section("display.bin")?, DISPLAY_MAGIC)?;
         let offsets = input.u32s()?;
         validate_offsets(&offsets, manifest.concept_count, input.remaining as usize)?;
         let start = input.reader.stream_position()?;
@@ -581,12 +589,6 @@ pub fn sha256(path: &Path) -> Result<String> {
     Ok(format!("{:x}", hash.finalize()))
 }
 
-fn verify_file(path: &Path, size: u64, expected: &str) -> Result<()> {
-    ensure!(path.metadata()?.len() == size, "Store file size mismatch");
-    ensure!(sha256(path)? == expected, "Store checksum mismatch");
-    Ok(())
-}
-
 fn put_u64(out: &mut impl Write, value: u64) -> Result<()> {
     out.write_all(&value.to_le_bytes())?;
     Ok(())
@@ -604,20 +606,20 @@ fn put_u32s(out: &mut impl Write, values: &[u32]) -> Result<()> {
 }
 
 struct Input {
-    reader: BufReader<File>,
+    reader: BufReader<SectionReader>,
     remaining: u64,
 }
 impl Input {
-    fn open(path: &Path, magic: &[u8; 8]) -> Result<Self> {
-        let file = File::open(path)?;
-        let size = file.metadata()?.len();
+    fn open(section: &Section, magic: &[u8; 8]) -> Result<Self> {
+        section.verify()?;
+        let size = section.length;
         ensure!(
             (8..=2 * 1024 * 1024 * 1024).contains(&size),
             "Unsupported store file size"
         );
         let mut result = Self {
             // Large sequential reads reduce host/filesystem round trips at startup.
-            reader: BufReader::with_capacity(1024 * 1024, file),
+            reader: BufReader::with_capacity(1024 * 1024, section.reader()?),
             remaining: size,
         };
         let mut actual = [0; 8];

@@ -1,5 +1,9 @@
 # Compact store prototype
 
+For the current compressed single-file layout and `pack`/`verify` commands, read
+[Single-file index](container.md). The measurements below describe the original
+directory format; its component bytes remain readable inside the new container.
+
 The prototype keeps expansion data in `core.bin` and selected English displays in `display.bin`. Numeric queries open the core, manifest and membership file when declared. With `--display`, the CLI resolves the code set first, then fetches labels by concept ordinal.
 
 This document records the first storage experiment. The later [basic ECL milestone](basic-ecl.md) adds a parser and set evaluator. Later milestones add [refinements](refinements.md) and [membership](refsets.md). The original `hierarchy` command still exposes the eight hierarchy variants directly for validation.

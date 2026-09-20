@@ -8,6 +8,7 @@ import subprocess
 import zipfile
 
 from benchmark_ecl import ROOT, IMAGE, digest
+from index_artifact import read_manifest
 from check_membership_rf2 import rows
 
 
@@ -16,10 +17,11 @@ def main():
     parser.add_argument('--archive', required=True, type=Path)
     parser.add_argument('--store', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--binary', default='target/linux-unicode/release/snomed-ecl-engine')
     args = parser.parse_args()
     if args.output.exists():
         parser.error('Choose a new report path')
-    manifest = json.loads((args.store / 'manifest.json').read_text())
+    manifest = read_manifest(args.store)
     with args.archive.open('rb') as file:
         assert hashlib.file_digest(file, 'sha256').hexdigest() == manifest['archive_sha256']
     descriptions = {}
@@ -87,7 +89,7 @@ def main():
                          if (predicate.startswith('active=') or d['active'] == '1') and checks[predicate](d,members[key])})
     command = ['docker','run','--rm','-i','--cpus','1','--memory','1g','--memory-swap','1g',
                '--mount',f'type=bind,source={ROOT},target=/work,readonly','-w','/work',IMAGE,
-               'target/linux/release/snomed-ecl-engine','batch',args.store.resolve().relative_to(ROOT).as_posix()]
+               args.binary,'batch',args.store.resolve().relative_to(ROOT).as_posix()]
     run = subprocess.run(command,input=''.join(json.dumps({'ecl':q['ecl']})+'\n' for q in queries),capture_output=True,text=True,encoding='utf-8',timeout=180,check=True)
     observed = [json.loads(line) for line in run.stdout.splitlines()]
     results = []
@@ -98,6 +100,7 @@ def main():
                             matches=actual == codes and len(actual) == len(response['codes']) == response['total'],
                             expected_sha256=digest(codes),observed_sha256=digest(actual),eval_ms=response['eval_ms']))
     report = dict(edition=manifest['edition'],archive_sha256=manifest['archive_sha256'],description_index=manifest['descriptions'],
+                  binary_sha256=hashlib.sha256((ROOT / args.binary).read_bytes()).hexdigest(),
                   rf2_counts=dict(counts),counts_match=all(manifest['descriptions'][k] == v for k,v in counts.items()),
                   scope='Independent active inferred RF2 hierarchy, descriptions, definitions and active language memberships. Complete result sets. One CPU and 1 GiB for Rust; first query includes lazy description loading.',results=results)
     args.output.parent.mkdir(parents=True,exist_ok=True)

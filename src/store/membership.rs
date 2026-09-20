@@ -1,4 +1,4 @@
-use super::{put_u32s, sha256, validate_offsets, verify_file, Input};
+use super::{put_u32s, sha256, validate_offsets, IndexSource, Input};
 use anyhow::{ensure, Result};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -106,13 +106,11 @@ impl MembershipIndex {
     }
 
     pub(super) fn open(
-        directory: &Path,
+        source: &IndexSource,
         metadata: &MembershipManifest,
         count: usize,
     ) -> Result<Self> {
-        let path = directory.join("membership.bin");
-        verify_file(&path, metadata.bytes, &metadata.sha256)?;
-        let mut input = Input::open(&path, MAGIC)?;
+        let mut input = Input::open(&source.section("membership.bin")?, MAGIC)?;
         let index = Self {
             refsets: input.u32s()?,
             offsets: input.u32s()?,

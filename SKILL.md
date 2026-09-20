@@ -99,6 +99,25 @@ Substitute the real date, checksum and refset SCTID. The base needs its display 
 
 Inspect `supplements` in the combined manifest. Batch responses include supplement archive checksums; the edition URI still identifies the base. Exact module versions are not yet fully resolved. Supplementary descriptions and language memberships are preserved when the base has a description index. Typed simple members and supported metadata are preserved when the base has member tables. Arbitrary supplementary maps remain outside this command's scope. Read [refsets](docs/refsets.md) before importing a different extension format.
 
+## Pack and verify an index
+
+```sh
+./target/release/snomed-ecl-engine pack INDEX_DIRECTORY uk.ecl
+./target/release/snomed-ecl-engine verify uk.ecl
+./target/release/snomed-ecl-engine expand uk.ecl '<< 64572001' --count
+```
+
+All store arguments accept either a directory or a packed file. Packing retains
+every semantic component and uses independent zstd blocks. Choose a new output
+file and allow temporary disk space for about twice its size. The output
+filesystem must support hard links. `add-refsets` accepts a packed base and
+writes a new directory. Pack that directory afterwards. Query-only builds can
+pack and verify too. See [container format and validation](docs/container.md).
+
+Compression reduces stored bytes; the current evaluator still loads complete
+description columns. Do not infer a 256 MiB full-language memory guarantee from
+the compressed file size. Keep RF2 and packed indexes outside Git.
+
 ## Recognise current limits
 
 Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, typed dotted projections, exact concrete comparisons, top/bottom, concept membership (`^` and `^R`) and concept metadata filters are implemented. Description filters include metadata and, with `unicode`, term prefixes and wildcards. Member filters support descriptor-driven fields, scalar set operations and terminal tuple projections. History profiles, alternate identifiers and configurable aliases are implemented. Custom member types and remaining semantics still have gaps. Use `--config FILE` for [identifier and dialect aliases](docs/aliases.md); [history](docs/history.md) explains profiles and association direction. Consult [conformance](docs/conformance.md) before claiming support for a category.
