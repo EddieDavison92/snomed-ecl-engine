@@ -16,18 +16,25 @@ snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 
 Most ways to evaluate ECL need a server: a process that stays up, a search
 cluster beside it, gigabytes of resident memory. That puts ECL out of reach of a
-serverless function, a shared VPS or a phone. This engine keeps the terminology
-in one file and evaluates queries inside the calling process.
+serverless function, a shared VPS or a portable device. This engine keeps the
+terminology in one file and evaluates queries inside the calling process.
 
-- **Serverless.** Compute only when a query arrives. The query-only executable is
-  2.13 MiB, under a megabyte gzipped, and the index is a single verified file.
+### Where it runs
+
+- **Serverless functions.** Compute only when a query arrives. The query-only
+  executable is 2.13 MiB, under a megabyte gzipped, and the index is a single
+  verified file.
 - **A small VPS.** One CPU and a few hundred megabytes serve the whole UK
   release, so an ECL API does not need a cluster behind it.
-- **Mobile and offline.** No network dependency at query time. An index built
-  once never changes, and checks its own checksums when opened.
+- **Portable devices.** The index sits beside the application and needs no
+  network at query time. Built once it never changes, and it checks its own
+  checksums when opened.
 - **Agents and tooling.** A persistent JSONL process answers thousands of
   expressions without reopening the index. [SKILL.md](SKILL.md) is the agent
   workflow.
+
+Those are resource requirements rather than ported builds. Everything measured
+here ran on x86-64 Linux.
 
 No HTTP server lives here, by design. This repository owns the library, index
 format, importer, CLI, conformance tests and benchmarks. A deployment
@@ -35,11 +42,14 @@ application depends on it and owns hosting.
 
 ## What it is good for
 
-Asking this engine how many concepts an expression selects takes 2.20 ms.
-Asking it for every one of those concepts takes 2.29 ms. Evaluating the
+Asking this engine how many concepts an expression selects typically takes
+2.20 ms. Asking it for every one of those concepts takes 2.29 ms. Evaluating the
 expression already built the whole set, so returning it costs almost nothing
 more. Snowstorm answers the same two requests in 13.19 ms and 36.40 ms, because
 it serialises the concepts and returns them in pages over HTTP.
+
+All four are medians over the same 1,000 expressions. The slowest 5% take
+9.97 ms here and 41.63 ms through Snowstorm.
 
 Expanding the 879 expressions that both engines could answer took 9.0 seconds
 here and 101.6 seconds through Snowstorm.
