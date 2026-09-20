@@ -1,8 +1,8 @@
 # Use the CLI
 
-Build with `cargo build --locked --release --bin snomed-ecl-engine`, or install from the checkout with `cargo install --locked --path .`. Native Windows builds need the MSVC C++ tools and Windows SDK. [Build and run](compact-store.md#build-and-run) includes the Linux Docker alternative.
+Build with `cargo build --locked --release --bin snomed-ecl-engine`, or install from the checkout with `cargo install --locked --path .`. Native Windows builds need the MSVC C++ tools and Windows SDK. [Build and run](setup.md#build-in-docker) includes the Linux Docker alternative.
 
-Add `--features unicode` to build or install term matching. Its ICU4C prerequisites and package cost are described in the [Unicode build guide](descriptions.md#build-with-unicode-term-matching).
+Add `--features unicode` to build or install term matching. Its ICU4C prerequisites and package cost are described in the [Unicode build guide](setup.md#build-with-term-matching).
 
 The executable is `target/release/snomed-ecl-engine` (`.exe` on Windows). Run `--help`, `COMMAND --help` or `--version`. Agents can follow the repository [SKILL.md](../SKILL.md) for the complete import and query workflow.
 
@@ -104,13 +104,13 @@ Running the executable with no command lists the commands, names the selected in
 
 `batch STORE` loads the index once and reads newline-delimited JSON from stdin. It always emits JSONL, including in a terminal. Individual query errors return an error object and do not stop the batch. An empty successful expansion has total zero. See [the agent batch workflow](../SKILL.md#reuse-the-index-for-many-queries) for schemas and process handling.
 
-[Member projections](member-filters.md) can return distinct typed values or rows. `expand` emits these as JSONL, and `--count` counts values or rows. `--display` requires concept results. Batch responses use `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`, instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
+[Member projections](ecl-support.md) can return distinct typed values or rows. `expand` emits these as JSONL, and `--count` counts values or rows. `--display` requires concept results. Batch responses use `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`, instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
 
-The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](conformance.md) tracks the outstanding work.
+The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](ecl-support.md) tracks the outstanding work.
 
-Use `add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256` for supplementary simple refsets, including PCD. Read [refset loading](refsets.md) for supported definitions, collision handling and release provenance.
+Use `add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256` for supplementary simple refsets, including PCD. Read [refset loading](indexes.md) for supported definitions, collision handling and release provenance.
 
 Use `pack STORE NEW_FILE` to create a compressed single-file index, then
 `verify NEW_FILE` to check every component. Every query command accepts that file
-as its store argument. See [single-file indexes](container.md) for compression
+as its store argument. See [single-file indexes](indexes.md#one-file) for compression
 options, temporary disk requirements and the current memory limits.

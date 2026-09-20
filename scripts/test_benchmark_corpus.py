@@ -5,7 +5,9 @@ import json
 from copy import deepcopy
 from unittest.mock import patch
 
-from benchmark_corpus import known_language_rejection, snowstorm
+from benchmark_corpus import (known_language_rejection, known_projection_rejection,
+                              rejected_inactive_concepts, snowstorm,
+                              declared_unsupported_feature)
 from summarise_corpus import compare_prior
 
 
@@ -17,6 +19,43 @@ class ComparisonTests(unittest.TestCase):
         self.assertFalse(known_language_rejection("!!> 1000001", 500, body))
         self.assertFalse(known_language_rejection("!!> 1000001", 400, "Invalid branch"))
         self.assertFalse(known_language_rejection("< 1000001", 400, body))
+
+    def test_projection_rejection_needs_the_message_and_the_syntax(self):
+        body = "ECL requesting specific refset member fields, can not return concept ids."
+        self.assertTrue(known_projection_rejection("^ [targetComponentId] 900000000000527005", 500, body))
+        self.assertTrue(known_projection_rejection("^[referencedComponentId]123001", 500, body))
+        self.assertTrue(known_projection_rejection("^R [id] 123001", 500, body))
+        # A server fault on any other expression must still stop the run.
+        self.assertFalse(known_projection_rejection("<< 1000001", 500, body))
+        self.assertFalse(known_projection_rejection("^ [id] 123001", 500, "Internal error"))
+        self.assertFalse(known_projection_rejection("^ [id] 123001", 400, body))
+
+    def test_inactive_rejection_reports_the_concepts_it_named(self):
+        body = ('{"error":"BAD_REQUEST","message":"Concepts in the ECL request do '
+                'not exist or are inactive on branch MAIN: 1182007."}')
+        self.assertEqual(rejected_inactive_concepts(400, body), ["1182007"])
+        self.assertEqual(
+            rejected_inactive_concepts(400, "do not exist or are inactive on branch MAIN: 12, 34."),
+            ["12", "34"],
+        )
+        self.assertIsNone(rejected_inactive_concepts(500, body))
+        self.assertIsNone(rejected_inactive_concepts(400, "Invalid branch"))
+
+    def test_declared_unsupported_feature_is_named_or_described(self):
+        def outcome(diagnostics):
+            return json.dumps({"resourceType": "OperationOutcome", "issue": [
+                {"severity": "error", "code": "not-supported", "diagnostics": diagnostics}]})
+
+        named = outcome("The 'Member filter' ECL feature is not supported by this "
+                        "implementation.")
+        self.assertEqual(declared_unsupported_feature(501, named), "Member filter")
+        # Some messages describe the gap in prose rather than naming a feature.
+        prose = outcome("ECL comparison operators other than the expression "
+                        "comparison operator are supported by this implementation.")
+        self.assertTrue(declared_unsupported_feature(501, prose).startswith("ECL comparison"))
+        # Only a 501 that declares not-supported counts.
+        self.assertIsNone(declared_unsupported_feature(500, named))
+        self.assertIsNone(declared_unsupported_feature(501, '{"code":"invalid"}'))
 
     @patch("benchmark_corpus.http")
     def test_all_pages_are_compared(self, http):

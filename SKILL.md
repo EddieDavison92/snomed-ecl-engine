@@ -17,13 +17,13 @@ cd snomed-ecl-engine
 cargo build --locked --release --bin snomed-ecl-engine
 ```
 
-Use the toolchain pinned in `rust-toolchain.toml`. With rustup installed, Cargo selects it automatically. Native Windows builds need the MSVC C++ build tools and Windows SDK. For a Linux Docker build, read [Build and run](docs/compact-store.md#build-and-run).
+Use the toolchain pinned in `rust-toolchain.toml`. With rustup installed, Cargo selects it automatically. Native Windows builds need the MSVC C++ build tools and Windows SDK. For a Linux Docker build, read [Build and run](docs/setup.md#build-in-docker).
 
 The commands below use the Linux/macOS executable path. On Windows, use `./target/release/snomed-ecl-engine.exe`. Alternatively, install from the checkout with `cargo install --locked --path .` and use `snomed-ecl-engine` on PATH. No crates.io package or prebuilt release is published yet.
 
 Run `./target/release/snomed-ecl-engine --help` or `COMMAND --help` for arguments. For an existing index and a query-only executable, build with `--no-default-features`. That executable cannot import RF2.
 
-For description term filters, build or install with `--features unicode`. This requires ICU4C static development libraries, `pkg-config` and a C compiler; the [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers the tested Linux setup. Keep this feature when also using `--no-default-features`. A build without it rejects term predicates explicitly.
+For description term filters, build or install with `--features unicode`. This requires ICU4C static development libraries, `pkg-config` and a C compiler; the [Unicode build guide](docs/setup.md#build-with-term-matching) covers the tested Linux setup. Keep this feature when also using `--no-default-features`. A build without it rejects term predicates explicitly.
 
 ## Obtain the right RF2 package
 
@@ -33,7 +33,7 @@ The current importer requires **one self-contained Snapshot ZIP**, including its
 
 Use a versioned edition URI and the SHA-256 supplied by the release distributor. A hash computed only from the downloaded file does not establish its provenance. Do not reuse the pinned release's URI or checksum for a newer release.
 
-If this user's configured 1Password/TRUD setup is available, [local setup](docs/setup.md#download-the-release) explains `scripts/Get-Rf2Release.ps1`. It can retrieve the latest UK Monolith or a specified release. Its 1Password reference is machine-specific; other users can supply a verified archive directly. Never print credentials or raw TRUD responses, whose URLs can contain the key. A missing credential is not a reason to invent one or write it into the repository.
+If this user's configured 1Password/TRUD setup is available, [local setup](docs/setup.md#get-an-rf2-release) explains `scripts/Get-Rf2Release.ps1`. It can retrieve the latest UK Monolith or a specified release. Its 1Password reference is machine-specific; other users can supply a verified archive directly. Never print credentials or raw TRUD responses, whose URLs can contain the key. A missing credential is not a reason to invent one or write it into the repository.
 
 ## Import and inspect
 
@@ -48,7 +48,7 @@ The destination must not exist. Import verifies the archive checksum, validates 
 
 Check the manifest's `edition`, `archive_sha256` and counts before reusing an index. `stats` reads metadata only. Opening an index for a query verifies the core and declared membership checksums and structure. The pinned UK release has 1,151,519 concepts, including 838,955 active concepts.
 
-Default display selection prefers NHS clinical realm, NHS pharmacy realm, then GB English. An optional final positional argument supplies ordered, comma-separated refset IDs. See [display selection](docs/compact-store.md#display-selection) when another display policy is needed.
+Default display selection prefers NHS clinical realm, NHS pharmacy realm, then GB English. An optional final positional argument supplies ordered, comma-separated refset IDs. See [display selection](docs/indexes.md#displays) when another display policy is needed.
 
 ## Expand ECL
 
@@ -107,7 +107,7 @@ Use a verified simple RF2 Snapshot supplement such as PCD:
 
 Substitute the real date, checksum and refset SCTID. The base needs its display and membership files. The loader adds new refset definitions and inferred is-a edges without rereading the base RF2. It rejects collisions, unknown concepts and existing definitions. For a newer supplement, start from the original base store and use a new destination.
 
-Inspect `supplements` in the combined manifest. Batch responses include supplement archive checksums; the edition URI still identifies the base. Exact module versions are not yet fully resolved. Supplementary descriptions and language memberships are preserved when the base has a description index. Typed simple members and supported metadata are preserved when the base has member tables. Arbitrary supplementary maps remain outside this command's scope. Read [refsets](docs/refsets.md) before importing a different extension format.
+Inspect `supplements` in the combined manifest. Batch responses include supplement archive checksums; the edition URI still identifies the base. Exact module versions are not yet fully resolved. Supplementary descriptions and language memberships are preserved when the base has a description index. Typed simple members and supported metadata are preserved when the base has member tables. Arbitrary supplementary maps remain outside this command's scope. Read [refsets](docs/indexes.md#supplementary-refsets) before importing a different extension format.
 
 ## Pack and verify an index
 
@@ -122,7 +122,7 @@ every semantic component and uses independent zstd blocks. Choose a new output
 file and allow temporary disk space for about twice its size. The output
 filesystem must support hard links. `add-refsets` accepts a packed base and
 writes a new directory. Pack that directory afterwards. Query-only builds can
-pack and verify too. See [container format and validation](docs/container.md).
+pack and verify too. See [container format and validation](docs/indexes.md#container-format).
 
 Compression reduces stored bytes; the current evaluator still loads complete
 description columns. Do not infer a 256 MiB full-language memory guarantee from
@@ -130,12 +130,29 @@ the compressed file size. Keep RF2 and packed indexes outside Git.
 
 ## Recognise current limits
 
-Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, typed dotted projections, exact concrete comparisons, top/bottom, concept membership (`^` and `^R`) and concept metadata filters are implemented. Description filters include metadata and, with `unicode`, term prefixes and wildcards. Member filters support descriptor-driven fields, scalar set operations and terminal tuple projections. History profiles, alternate identifiers and configurable aliases are implemented. Custom member types and remaining semantics still have gaps. Use `--config FILE` for [identifier and dialect aliases](docs/aliases.md); [history](docs/history.md) explains profiles and association direction. Consult [conformance](docs/conformance.md) before claiming support for a category.
+Every ECL 2.3 feature area is implemented: hierarchy and Boolean sets,
+refinements, groups and cardinalities, reverse and dotted attributes, exact
+concrete comparisons, top/bottom, membership (`^`, `^R`), concept filters,
+description filters, member filters and projections, history supplements and
+alternate identifiers. Term matching inside description filters needs
+`--features unicode`.
+
+Three grammar-valid forms have no settled meaning in the specification and
+return a `Semantic` error: a reverse flag inside an attribute group, a member
+filter without a refset operator, and a reverse flag with a concrete value. Read
+[ECL support](docs/ecl-support.md) before claiming a category is covered, and
+never present a `Semantic` error as an empty result.
+
+History supplements add the inactive **predecessors** of a result, not its
+successors. To find what replaced an inactive concept, project the association:
+`^ [targetComponentId] 900000000000527005 {{ M referencedComponentId = X }}`.
+
+Use `--config FILE` for [identifier and dialect aliases](docs/indexes.md#query-configuration).
 
 Do not simplify unsupported ECL silently. Ordinary ECL includes active and inactive concepts, active inferred relationships and active refset member rows. An inactive concept can be returned by a literal or membership query. An unknown literal returns an empty set. For external correctness checks, pin the same edition and supplement checksums and compare complete code sets. The optional helper for OneLondon's Ontoserver in [local setup](docs/setup.md#refresh-the-ontoserver-probes) needs a separately configured credential helper; it is not required to use this engine.
 
 For direct Rust integration, use `NumericStore::open`, `ecl::parse` and `eval::evaluate_with_limits`; resolve returned ordinals through `store.ids`. Use `eval::evaluate_result_with_limits` to accept typed member projections as well as concept sets. Keep the opened store for repeated queries. `DisplayStore` is a separate optional lookup. The library exposes `add_refsets_snapshot` for supplementary simple refsets. The default importer API is silent; `import_snapshot_with_progress` accepts a stage callback. Hosting and deployment belong to a separate application repository.
 
-Description queries load `descriptions.bin` on demand. Reimport older stores to build it. The first such query includes file validation and loading; `store.descriptions.get()` can preload it. Term matching needs `--features unicode`. See [description filters](docs/descriptions.md) for supported predicates and memory measurements.
+Description queries load `descriptions.bin` on demand. Reimport older stores to build it. The first such query includes file validation and loading; `store.descriptions.get()` can preload it. Term matching needs `--features unicode`. See [description filters](docs/ecl-support.md) for supported predicates and memory measurements.
 
-Member filters and projections load the needed `members/<refset>.bin` files. Reimport older indexes to build them. Typed projections can return distinct scalar values or rows instead of concept codes: batch responses then have `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`. Preserve these types; do not interpret map targets or numbers as SNOMED IDs. `--count` counts distinct values or rows, and `--display` requires concept results. Read [member filters](docs/member-filters.md) for examples, limits and remaining type gaps.
+Member filters and projections load the needed `members/<refset>.bin` files. Reimport older indexes to build them. Typed projections can return distinct scalar values or rows instead of concept codes: batch responses then have `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`. Preserve these types; do not interpret map targets or numbers as SNOMED IDs. `--count` counts distinct values or rows, and `--display` requires concept results. Read [member filters](docs/ecl-support.md) for examples, limits and remaining type gaps.

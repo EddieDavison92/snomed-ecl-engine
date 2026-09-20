@@ -7,3 +7,4 @@
 .env*
 *.log
 __pycache__/
+.playwright-mcp/

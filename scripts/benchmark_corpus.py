@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
+import re
 import subprocess
 import time
 import urllib.parse
@@ -16,11 +17,83 @@ from benchmark_ecl import ROOT, IMAGE, digest, http, resource_snapshot, summary
 from index_artifact import manifest_bytes, read_manifest
 
 
+NOT_SUPPORTED = re.compile(r"The '([^']+)' ECL feature is not supported")
+
+
+def declared_unsupported_feature(status, body):
+    # Snowstorm Lite answers an unimplemented ECL feature with 501 not-supported.
+    # Most messages name the feature in quotes; some describe it in prose. Return
+    # the name when there is one and the diagnostics otherwise, so the report can
+    # say which parts of the language the server does not implement.
+    if status != 501 or '"code":"not-supported"' not in body.replace(" ", ""):
+        return None
+    match = NOT_SUPPORTED.search(body)
+    if match:
+        return match.group(1)
+    try:
+        issues = json.loads(body).get("issue") or [{}]
+        return (issues[0].get("diagnostics") or "unnamed").strip()
+    except (ValueError, AttributeError, IndexError):
+        return "unnamed"
+
+
+INACTIVE_REJECTION = re.compile(
+    r"do not exist or are inactive on branch [^:]*: ([0-9, ]+)")
+
+
+def rejected_inactive_concepts(status, body):
+    # Snowstorm declines an expression naming a concept that is inactive on its
+    # branch. ECL places no such restriction, and history queries depend on
+    # naming inactive concepts. Returns the concept ids it named, so the caller
+    # can confirm against its own index that they exist and really are inactive
+    # rather than absent.
+    if status != 400:
+        return None
+    match = INACTIVE_REJECTION.search(body)
+    return [c.strip() for c in match.group(1).split(",") if c.strip()] if match else None
+
+
+def known_projection_rejection(ecl, status, body):
+    # Snowstorm's concept endpoint cannot serve a member-field projection: that
+    # is a different result type, not a set of concept ids. Keep this as narrow
+    # as the parser rejection below. Both the message and the projection syntax
+    # must be present, so a genuine server fault still stops the run.
+    return (status == 500
+            and "can not return concept ids" in body
+            and re.search(r"\^\s*[Rr]?\s*\[", ecl) is not None)
+
+
 def known_language_rejection(ecl, status, body):
     # This pinned Snowstorm parser rejects ECL 2.3 extrema at the first '!'.
     # Do not treat arbitrary HTTP 400s or wrong result sets as unsupported.
     return (status == 400 and ecl.lstrip().startswith(("!!>", "!!<"))
             and "mismatched input '!'" in body and "Syntax error" in body)
+
+
+def lite(base, edition, ecl, page_size=50000):
+    """Complete expansion from a FHIR ValueSet/$expand server."""
+    codes, offset, expected_total = set(), 0, None
+    while True:
+        expansion = http(base, "/ValueSet/$expand", {
+            "url": edition + "?fhir_vs=ecl/" + ecl, "count": page_size, "offset": offset,
+            "includeDesignations": "false"})["expansion"]
+        total = expansion["total"]
+        if expected_total is not None and expected_total != total:
+            raise ValueError("Lite total changed between pages")
+        expected_total = total
+        page = expansion.get("contains", [])
+        for entry in page:
+            if (entry.get("contains") or entry.get("system") != "http://snomed.info/sct"
+                    or entry.get("version", edition) != edition):
+                raise ValueError("Unexpected expansion system, version or nesting")
+            codes.add(entry["code"])
+        offset += len(page)
+        if offset >= total:
+            if len(codes) != total:
+                raise ValueError("Lite returned duplicate codes")
+            return codes
+        if not page:
+            raise ValueError("Lite pagination incomplete")
 
 
 def snowstorm(base, ecl):
@@ -55,12 +128,17 @@ def main():
     parser.add_argument("--store-volume", help="Optional Docker volume holding core.bin and manifest.json")
     parser.add_argument("--store-directory", type=Path, default=Path("data/compact-store/v1"), help="Store within this checkout; also supplies the manifest when using a Docker volume")
     parser.add_argument("--snowstorm", help="Optional loopback full Snowstorm URL; requires a completed, release-matched MAIN import")
+    parser.add_argument("--lite", help="Optional loopback Snowstorm Lite FHIR base URL, for example http://127.0.0.1:18081/fhir")
     parser.add_argument("--import-id", help="Completed local Snowstorm import job ID")
     parser.add_argument("--import-report", type=Path, help="Prior report with completed import evidence and the unchanged MAIN head, for a serving-only restart")
     parser.add_argument("--timeout-seconds", type=int, default=3600)
     args = parser.parse_args()
     if args.output.exists() or args.samples < 1 or args.timeout_seconds < 1 or args.memory_mib < 1:
         parser.error("Choose a new report path and positive sample count")
+    if args.lite and args.snowstorm:
+        parser.error("Compare one server per run; concurrent servers distort the timings")
+    if args.lite and urllib.parse.urlparse(args.lite).hostname not in ("127.0.0.1", "localhost", "::1"):
+        parser.error("This benchmark only permits loopback servers.")
     if args.snowstorm and urllib.parse.urlparse(args.snowstorm).hostname not in ("127.0.0.1", "localhost", "::1"):
         parser.error("Only local comparison servers are allowed")
     corpus_path = ROOT / args.corpus
@@ -135,6 +213,15 @@ def main():
         for ecl, expected in [("*", manifest["active_concept_count"]), ("<< 404684003", 137834)]:
             if http(args.snowstorm, "/MAIN/concepts", {"ecl": ecl, "returnIdOnly": "true", "limit": 1})["total"] != expected:
                 raise ValueError("Snowstorm release sentinel differs")
+    if args.lite:
+        systems = http(args.lite, "/CodeSystem", {"url": "http://snomed.info/sct"})
+        versions = [entry["resource"].get("version") for entry in systems.get("entry", [])]
+        if manifest["edition"] not in versions:
+            raise ValueError("Snowstorm Lite does not advertise the pinned edition")
+        report["lite_code_system_versions"] = versions
+        if len(lite(args.lite, manifest["edition"], "<< 404684003")) != 137834:
+            raise ValueError("Snowstorm Lite release sentinel differs")
+
     command = ["docker", "run", "--rm", "-i", "--name", "snomed-ecl-corpus", "--cpus", "1", "--memory", f"{args.memory_mib}m", "--memory-swap", f"{args.memory_mib}m", "--mount", f"type=bind,source={ROOT},target=/work,readonly", "-w", "/work"]
     if args.store_volume:
         if any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-" for c in args.store_volume):
@@ -170,17 +257,24 @@ def main():
         assert query("195967001")["total"] == 1
         report["container_start_and_first_request_ms"] = (time.perf_counter() - start) * 1000
         for index, row in enumerate(rows.values()):
+            # Time the complete enumeration, not just the count: returning every
+            # code is the workload a codelist or export actually needs, and it is
+            # the one that separates an in-process engine from a paged HTTP API.
+            enumeration_start = time.perf_counter()
             observed = query(row["ecl"], False)
+            enumeration_ms = (time.perf_counter() - enumeration_start) * 1000
             if "error" in observed:
                 row.update(status="unsupported" if "Unsupported" in observed["error"] or "Unsupported" in observed.get("message", "") else "error", error=observed)
                 continue
             codes = set(observed["codes"])
             assert len(codes) == len(observed["codes"]) == observed["total"]
-            row.update(status="evaluated", total=len(codes), sha256=digest(codes), evaluation_samples_ms=[], parse_samples_ms=[], rust_request_samples_ms=[], snowstorm_count_samples_ms=[])
-            if args.snowstorm:
+            row.update(status="evaluated", total=len(codes), sha256=digest(codes),
+                       rust_enumeration_ms=enumeration_ms, evaluation_samples_ms=[], parse_samples_ms=[], rust_request_samples_ms=[], snowstorm_count_samples_ms=[])
+            if args.snowstorm or args.lite:
                 try:
                     start = time.perf_counter()
-                    other = snowstorm(args.snowstorm, row["ecl"])
+                    other = (lite(args.lite, manifest["edition"], row["ecl"]) if args.lite
+                             else snowstorm(args.snowstorm, row["ecl"]))
                     row.update(snowstorm_enumeration_ms=(time.perf_counter() - start) * 1000, matches_snowstorm=codes == other, only_rust=len(codes - other), only_snowstorm=len(other - codes))
                     if codes != other:
                         row["status"] = "mismatch"
@@ -189,8 +283,22 @@ def main():
                 except Exception as error:
                     body = error.read(65536).decode("utf-8", errors="replace") if isinstance(error, urllib.error.HTTPError) else ""
                     status = getattr(error, "code", None)
-                    if known_language_rejection(row["ecl"], status, body):
+                    named = rejected_inactive_concepts(status, body)
+                    feature = declared_unsupported_feature(status, body)
+                    if feature:
+                        row.update(status="server-unsupported", comparison_http_status=status,
+                                   unsupported_feature=feature)
+                    elif (known_language_rejection(row["ecl"], status, body)
+                            or known_projection_rejection(row["ecl"], status, body)):
                         row.update(status="snowstorm-unsupported", comparison_http_status=status, comparison_error_body=body)
+                    elif named and all(
+                        query(f"{concept} {{{{ C active = false }}}}").get("total") == 1
+                        for concept in named
+                    ):
+                        # Confirmed present and inactive in this index, so the
+                        # rejection is the server's active-only policy.
+                        row.update(status="snowstorm-rejected-inactive", comparison_http_status=status,
+                                   comparison_error_body=body, rejected_concepts=named)
                     else:
                         row.update(status="comparison-error", comparison_error=str(error), comparison_http_status=status, comparison_error_body=body)
                         comparison_errors += 1
@@ -213,6 +321,14 @@ def main():
                     raise ValueError(f"Unstable result: {row['id']}")
                 row["evaluation_samples_ms"].append(result["eval_ms"])
                 row["parse_samples_ms"].append(result["parse_ms"])
+                if args.lite and row.get("matches_snowstorm"):
+                    lite_start = time.perf_counter()
+                    expansion = http(args.lite, "/ValueSet/$expand", {
+                        "url": manifest["edition"] + "?fhir_vs=ecl/" + row["ecl"],
+                        "count": 1, "offset": 0, "includeDesignations": "false"})["expansion"]
+                    row["snowstorm_count_samples_ms"].append((time.perf_counter() - lite_start) * 1000)
+                    if expansion["total"] != row["total"]:
+                        raise ValueError(f"Unstable Snowstorm Lite result: {row['id']}")
                 if args.snowstorm and row.get("matches_snowstorm"):
                     snow_start = time.perf_counter()
                     other = http(args.snowstorm, "/MAIN/concepts", {"ecl": row["ecl"], "returnIdOnly": "true", "limit": 1})
@@ -234,17 +350,21 @@ def main():
                 report["categories"][category]["snowstorm_count_http"] = summary(other_samples)
         report["warm_batch_engine_ms"] = [sum(r["evaluation_samples_ms"][i] for r in successful) for i in range(args.samples)]
         report["resources"] = resource_snapshot("snomed-ecl-corpus")
-        if args.snowstorm:
+        if args.snowstorm or args.lite:
             paired = [r for r in successful if r.get("matches_snowstorm")]
             report["paired_expressions"] = len(paired)
             report["paired_rust_engine_batch_ms"] = [sum(r["evaluation_samples_ms"][i] for r in paired) for i in range(args.samples)]
             report["paired_rust_request_batch_ms"] = [sum(r["rust_request_samples_ms"][i] for r in paired) for i in range(args.samples)]
             report["paired_snowstorm_http_batch_ms"] = [sum(r["snowstorm_count_samples_ms"][i] for r in paired) for i in range(args.samples)]
             report["comparison_scope"] = "Only expressions with matching complete code sets receive paired timings. Snowstorm-unsupported cases retain Rust-only timings. Snowstorm warm count HTTP requests return total plus at most one ID, use its default caches, and include HTTP overhead. Rust evaluates complete ordinal sets without a result cache; eval_ms excludes JSONL transport, rust_request_samples_ms includes it. Batch wall time includes both engines. This is not isolated equal-cache engine timing."
-            report["snowstorm_resources"] = resource_snapshot("snomed-ecl-snowstorm")
-            report["elasticsearch_resources"] = resource_snapshot("snomed-ecl-elasticsearch")
-            if http(args.snowstorm, "/branches/MAIN", {}) != report["snowstorm_branch_before"]:
-                raise ValueError("Snowstorm branch changed during validation")
+            report["comparison_server"] = "snowstorm-lite" if args.lite else "snowstorm"
+            if args.lite:
+                report["lite_resources"] = resource_snapshot("snomed-ecl-serving")
+            else:
+                report["snowstorm_resources"] = resource_snapshot("snomed-ecl-snowstorm")
+                report["elasticsearch_resources"] = resource_snapshot("snomed-ecl-elasticsearch")
+                if http(args.snowstorm, "/branches/MAIN", {}) != report["snowstorm_branch_before"]:
+                    raise ValueError("Snowstorm branch changed during validation")
     finally:
         process.stdin.close()
         try:

@@ -12,11 +12,11 @@ report = {
     'lite_source_sha256': hashlib.sha256(lite_path.read_bytes()).hexdigest(),
     'lite_complete_matches': len(matched),
     'lite_timed_samples_per_engine': sum(len(r['rust_transport']['samples_ms']) for r in matched),
-    'lite_scope': 'Pooled raw request samples for 18 complete-set matches; 17 small cases have three samples each and one broad case has one. Rust JSONL versus paginated FHIR HTTP with displays. The four mismatched cases are excluded; see the historical default-population correction in docs/basic-ecl.md.',
+    'lite_scope': 'Pooled raw request samples for 18 complete-set matches; 17 small cases have three samples each and one broad case has one. Rust JSONL versus paginated FHIR HTTP with displays. The four mismatched cases are excluded; see the historical default-population correction in docs/benchmarks.md.',
     'rust_lite_cohort_request_median_ms': statistics.median(v for r in matched for v in r['rust_transport']['samples_ms']),
     'lite_request_median_ms': statistics.median(v for r in matched for v in r['snowstorm_http']['samples_ms']),
     'full_snowstorm_source': 'docs/full-snowstorm-results.json',
-    'full_snowstorm_scope': 'Use the separately documented 719-expression cohort in docs/full-snowstorm.md; do not compare its latency directly with the Lite cohort.',
+    'full_snowstorm_scope': 'Use the separately documented 719-expression cohort in docs/benchmarks.md; do not compare its latency directly with the Lite cohort.',
 }
 full_path = ROOT / report['full_snowstorm_source']
 full = json.loads(full_path.read_text())

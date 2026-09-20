@@ -14,7 +14,7 @@ mod workspace;
 fn parse(expression: &str) -> Result<ecl::Expr> {
     ecl::parse(expression).map_err(|error| {
         anyhow::anyhow!(
-            "{error}\n{}\nECL byte offset: {}. See docs/conformance.md for current support.",
+            "{error}\n{}\nECL byte offset: {}. See docs/ecl-support.md for current support.",
             presentation::caret(expression, error.offset),
             error.offset
         )

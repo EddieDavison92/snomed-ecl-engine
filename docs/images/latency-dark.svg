@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="392" viewBox="0 0 720 392" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-label="Asking for a total, and asking for every code">
+<rect width="720" height="392" fill="#1a1a19"/>
+<text x="24" y="28" font-size="16" font-weight="600" fill="#ffffff">Asking for a total, and asking for every code</text>
+<text x="24" y="48" font-size="12" fill="#c3c2b7">Median over the 1,000-expression corpus, on each server's matched cohort.</text>
+<text x="24" y="74" font-size="12.5" font-weight="600" fill="#ffffff">Warm count — total only</text>
+<text x="120" y="109.0" font-size="12" text-anchor="end" fill="#c3c2b7">This engine</text>
+<path d="M132,94.0 H210.06216830932527 A4,4 0 0 1 214.06216830932527,98.0 V112.0 A4,4 0 0 1 210.06216830932527,116.0 H132 Z" fill="#3987e5"/>
+<text x="224.06216830932527" y="109.0" font-size="12" font-weight="600" fill="#ffffff">2.20 ms</text>
+<text x="120" y="143.0" font-size="12" text-anchor="end" fill="#c3c2b7">Snowstorm Lite</text>
+<path d="M132,128.0 H298.0924943138741 A4,4 0 0 1 302.0924943138741,132.0 V146.0 A4,4 0 0 1 298.0924943138741,150.0 H132 Z" fill="#d95926"/>
+<text x="312.0924943138741" y="143.0" font-size="12" font-weight="600" fill="#ffffff">4.56 ms</text>
+<text x="120" y="177.0" font-size="12" text-anchor="end" fill="#c3c2b7">Snowstorm</text>
+<path d="M132,162.0 H620.0 A4,4 0 0 1 624.0,166.0 V180.0 A4,4 0 0 1 620.0,184.0 H132 Z" fill="#199e70"/>
+<text x="634.0" y="177.0" font-size="12" font-weight="600" fill="#ffffff">13.19 ms</text>
+<line x1="132" y1="86" x2="132" y2="188" stroke="#383835" stroke-width="1"/>
+<text x="24" y="224" font-size="12.5" font-weight="600" fill="#ffffff">Complete enumeration — every code returned</text>
+<text x="120" y="259.0" font-size="12" text-anchor="end" fill="#c3c2b7">This engine</text>
+<path d="M132,244.0 H158.95274725274726 A4,4 0 0 1 162.95274725274726,248.0 V262.0 A4,4 0 0 1 158.95274725274726,266.0 H132 Z" fill="#3987e5"/>
+<text x="172.95274725274726" y="259.0" font-size="12" font-weight="600" fill="#ffffff">2.29 ms</text>
+<text x="120" y="293.0" font-size="12" text-anchor="end" fill="#c3c2b7">Snowstorm Lite</text>
+<path d="M132,278.0 H224.64285714285717 A4,4 0 0 1 228.64285714285717,282.0 V296.0 A4,4 0 0 1 224.64285714285717,300.0 H132 Z" fill="#d95926"/>
+<text x="238.64285714285717" y="293.0" font-size="12" font-weight="600" fill="#ffffff">7.15 ms</text>
+<text x="120" y="327.0" font-size="12" text-anchor="end" fill="#c3c2b7">Snowstorm</text>
+<path d="M132,312.0 H620.0 A4,4 0 0 1 624.0,316.0 V330.0 A4,4 0 0 1 620.0,334.0 H132 Z" fill="#199e70"/>
+<text x="634.0" y="327.0" font-size="12" font-weight="600" fill="#ffffff">36.40 ms</text>
+<line x1="132" y1="236" x2="132" y2="338" stroke="#383835" stroke-width="1"/>
+<text x="24" y="378" font-size="11" fill="#c3c2b7">Engine cost is flat between the two; server cost is not. Includes transport: JSONL to a child process, or loopback HTTP with paging.</text>
+</svg>
