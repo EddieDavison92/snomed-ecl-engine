@@ -1,8 +1,9 @@
 # Roadmap
 
-The engine evaluates ECL 2.3 across every feature area. What remains is depth of
-evidence, one known performance defect, and resource measurement for the
-complete engine rather than for the numeric core alone.
+The engine evaluates ECL 2.3 across every feature area, so what is left is not
+missing features. It is a handful of performance defects we can name and
+measure, test evidence that is thinner than it looks, and a resource figure that
+only covers the numeric core.
 
 ## Now
 

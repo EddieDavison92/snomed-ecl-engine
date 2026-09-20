@@ -1,11 +1,12 @@
 # SNOMED ECL engine
 
-Evaluate SNOMED CT Expression Constraint Language locally, without running a
-terminology server.
+Evaluate SNOMED CT Expression Constraint Language without running a terminology
+server.
 
-A Rust library, a CLI and an RF2 index builder sharing one implementation. Point
-it at a release, build an immutable index, and query it. No Elasticsearch, no
-JVM, no database, no service to keep alive.
+Most ways to run ECL assume a server: a JVM that stays up, a search cluster
+beside it, gigabytes of memory. This is a Rust library and a CLI instead. You
+point it at a SNOMED release, it builds an index once, and you query that index
+inside your own process.
 
 ```sh
 snomed-ecl-engine use uk.ecl
@@ -14,19 +15,20 @@ snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 
 ## Why it is small
 
-Most ways to evaluate ECL need a server: a process that stays up, a search
-cluster beside it, gigabytes of resident memory. That puts ECL out of reach of a
-serverless function, a shared VPS or a portable device. This engine keeps the
-terminology in one file and evaluates queries inside the calling process.
+Underneath, evaluating ECL is set algebra over a graph that is already sitting
+on your disk. Running a search cluster to do it is a lot of machinery, and the
+cost of that machinery is that ECL can only live where the machinery lives.
+
+Here, the terminology is one file and the query engine is a function call.
 
 ### What it is designed for
 
-- **Serverless functions.** Compute only when a query arrives. The query-only
-  executable is 2.13 MiB, under a megabyte gzipped, and the index is a single
-  file.
+- **Serverless functions.** You only pay for compute when a query arrives. The
+  query-only executable is 2.13 MiB, under a megabyte gzipped, and the index is
+  a single file.
 - **A small VPS.** One CPU and a few hundred megabytes serve the whole UK
   release, so an ECL API does not need a cluster behind it.
-- **Portable devices.** The index sits beside the application and needs no
+- **Portable devices.** The index sits beside your application and needs no
   network at query time. Built once it never changes, and it checks its own
   checksums when opened.
 - **Agents and tooling.** One persistent process reads expressions as JSONL and
@@ -34,59 +36,65 @@ terminology in one file and evaluates queries inside the calling process.
 
 Everything measured here ran on x86-64 Linux.
 
-No HTTP server lives here, by design. This repository owns the library, index
-format, importer, CLI, conformance tests and benchmarks. A deployment
-application depends on it and owns hosting.
+There is no HTTP server in this repository, on purpose. This repository owns the
+library, index format, importer, CLI, conformance tests and benchmarks. A
+deployment application depends on it and owns the hosting.
 
 ## What it is good for
 
-Asking this engine how many concepts an expression selects typically takes
-2.20 ms. Asking it for every one of those concepts takes 2.29 ms. Evaluating the
-expression already built the whole set, so returning it costs almost nothing
-more. Snowstorm answers the same two requests in 13.19 ms and 36.40 ms, because
-it serialises the concepts and returns them in pages over HTTP.
+Here is the number that matters. Counting how many concepts an expression
+selects takes 2.20 ms. Getting every one of those concepts back takes 2.29 ms.
 
-That is about 6 times faster than Snowstorm for a count and 16 times for a full
-expansion. Against Snowstorm Lite it is 2 and 3 times. All of these are medians
-over the expressions both engines answered; the slowest 5% take 9.97 ms here and
-41.63 ms through Snowstorm.
+Those are nearly the same, and they are the same for a reason: evaluating the
+expression already built the whole set, so handing it to you is a write. Ask
+Snowstorm the same two questions and you get 13.19 ms and 36.40 ms, because it
+has to serialise the concepts and page them back over HTTP.
 
-Two paths are slower here than on either server. The first description-filter
-query in a process loads the description index, which takes about six seconds;
-every one after that takes roughly a millisecond. History supplements take about
-16 ms, because evaluating one scans reference set member rows. Both are
+That is roughly **6 times faster for a count and 16 times for a full
+expansion**. Against Snowstorm Lite, 2 and 3 times. All medians over the
+expressions both engines answered, and the tail is wider than the middle: the
+slowest 5% take 9.97 ms here and 41.63 ms through Snowstorm.
+
+Two paths are slower here than on either server, and you should know about them
+before you rely on this. The first description-filter query in a process loads
+the description index and takes about six seconds; every one after that takes
+roughly a millisecond, which stings most in a serverless function where every
+invocation is a fresh process. History supplements take about 16 ms, because
+evaluating one scans reference set member rows. Both are
 [open work](docs/roadmap.md).
 
-Expanding the 879 expressions that both engines could answer took 9.0 seconds
-here and 101.6 seconds through Snowstorm.
+So what changes? Expanding a definition in full stops being something you do
+sparingly. Across the 879 expressions both engines could answer, the full
+expansions took 9.0 seconds here and 101.6 seconds through Snowstorm.
 
 - **Expand hundreds of codelists at once.** Turning a directory of static code
   lists into ECL definitions means expanding every one in full and diffing it
   against the original. At about 2 ms each, 274 lists take under a second.
 - **Check a codelist against a new release.** `diff` runs one expression across
-  two indexes and reports what the release added and removed.
-- **Put it in CI.** A two-megabyte binary and an index file let a pipeline assert
-  that every definition in a repository still resolves.
+  two indexes and tells you what the release added and removed.
+- **Put it in CI.** A two-megabyte binary and an index file let a pipeline
+  assert that every definition in your repository still resolves.
 
 ### Authoring with an assistant
 
-Giving someone ECL usually means provisioning a terminology server account or an
-API key. Here they install one binary and point it at a release they are already
-licensed for. Nothing to host, no key to issue, no rate limit and no per-seat
-provisioning. An agent can do the setup unaided: [SKILL.md](SKILL.md) takes it
-from a clone to a working index and a query.
+Today, giving someone ECL means provisioning a terminology server account or
+issuing them an API key. Here you install one binary and point it at a release
+you are already licensed for. Nothing to host, no key to issue, no rate limit
+and nobody to ask. An agent can do the setup for you: [SKILL.md](SKILL.md) takes
+it from a clone to a working index and a first query.
 
-That makes interactive terminology work practical. Replacing a static code list
-with an ECL definition means walking up the hierarchy from every code in the
-list, sizing each ancestor that could subsume them, and comparing what each
-candidate returns against the list you started with. A list of five codes takes
-about thirty expansions; a list of a hundred takes about five hundred. At
+That is what makes interactive terminology work practical. Replacing a static
+code list with an ECL definition means walking up the hierarchy from every code
+in the list, sizing each ancestor that could subsume them, then comparing what
+each candidate returns against the list you started with. A five-code list takes
+about thirty expansions. A hundred-code list takes about five hundred. At
 roughly 2 ms each that is a tenth of a second at one end and just over a second
-at the other, so an assistant can propose a definition, show exactly which
-concepts it adds and which it drops, then try a different one.
+at the other, so an assistant can propose a definition, show you exactly which
+concepts it adds and which it drops, and try another.
 
-The same loop through a hosted terminology server is those same hundreds of
-requests per suggestion, on a shared service, under someone else's rate limit.
+Run that same loop through a hosted terminology server and it is hundreds of
+HTTP requests per suggestion, on a shared service, under someone else's rate
+limit.
 
 ## Measurements
 
@@ -102,16 +110,17 @@ Against the UK Monolith release, 1.15 million concepts.
   <img alt="Warm count median: this engine 2.20 ms, Snowstorm Lite 4.56 ms, Snowstorm 13.19 ms. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms." src="docs/images/latency-light.svg">
 </picture>
 
-This engine evaluated all 1,000 expressions in the test corpus and returned a
-complete code set for every one. Snowstorm could answer 879 of them, and agreed
+Speed only counts if the answers match, so the corpus compares complete code
+sets rather than totals. This engine evaluated all 1,000 expressions and
+returned a complete set for every one. Snowstorm could answer 879, and agreed
 with us on all 879. Its parser rejected 80, its concept endpoint could not
 return 40, and it answered 1 differently.
 
-That one is `(<< 377442002) : 1142138002 != #10`. In this release the concept has
-two active values for that attribute, 20 in one relationship group and 10 in
-another, so `!= #10` selects it: one of its values is not 10. We return it and
-Ontoserver returns it. Snowstorm returns nothing, which reads the test as "has no
-value equal to 10".
+That one is `(<< 377442002) : 1142138002 != #10`, and the RF2 rows settle it. In
+this release the concept carries two active values for that attribute, 20 in one
+relationship group and 10 in another, so `!= #10` selects it: one of its values
+is not 10. We return it and Ontoserver returns it. Snowstorm returns nothing,
+reading the test as "has no value equal to 10".
 
 Snowstorm Lite could answer 587. It reported 320 as using ECL features it does
 not implement, rejected 80 at the parser, and answered 13 differently. All 13
@@ -131,11 +140,10 @@ disagreements and the limits of these numbers.
 
 ## What it supports
 
-The engine implements every ECL 2.3 feature area: hierarchy and Boolean sets,
-refinements, groups and cardinalities, reverse and dotted attributes, exact
-concrete comparisons, top and bottom, membership, concept filters, description
-filters, member filters and projections, history supplements and alternate
-identifiers.
+Every ECL 2.3 feature area: hierarchy and Boolean sets, refinements, groups and
+cardinalities, reverse and dotted attributes, exact concrete comparisons, top
+and bottom, membership, concept filters, description filters, member filters and
+projections, history supplements and alternate identifiers.
 
 Three forms are valid under the grammar but have no clear meaning in the
 specification, so the parser refuses them rather than guess:
@@ -146,7 +154,7 @@ specification, so the parser refuses them rather than guess:
 
 Two of those have questions open with SNOMED International, still unanswered.
 Everything else in ECL 2.3 evaluates. Unsupported input fails with an explicit
-error, and no query returns a partial answer as a success.
+error, and no query ever hands you a partial answer as though it were complete.
 
 Decimals keep their exact spelling, and the evaluator never compares them as
 binary floating point. Relationship groups survive import. The engine reads the
@@ -194,8 +202,8 @@ let codes = ordinals.iter().map(|&o| store.ids[o as usize]);
 ```
 
 Keep the store open across queries. Results are concept ordinals that resolve
-through `store.ids`. Display labels are a separate lookup. Use
-`eval::evaluate_result_with_limits` to accept member projections, which return
+through `store.ids`, and display labels are a separate lookup. Use
+`eval::evaluate_result_with_limits` if you want member projections, which return
 typed scalars or rows as well as concept sets. `--no-default-features` drops the
 ZIP importer for a query-only build.
 
