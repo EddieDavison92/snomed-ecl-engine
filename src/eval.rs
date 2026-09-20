@@ -3,6 +3,7 @@ use crate::ecl::{Expr, Hierarchy, MAX_DEPTH, MAX_NODES};
 use crate::store::NumericStore;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error::Error, fmt};
+mod descriptions;
 mod filters;
 mod membership;
 mod refinement;
@@ -27,6 +28,7 @@ pub enum EvalError {
     Cancelled,
     InvalidAst,
     Unsupported(&'static str),
+    Index(String),
 }
 impl fmt::Display for EvalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -100,6 +102,10 @@ impl Context<'_> {
             return Err(EvalError::InvalidAst);
         }
         match expr {
+            Expr::DescriptionFiltered(inner, filters) => {
+                let candidates = self.eval(inner, depth + 1)?;
+                self.description_filters(candidates, filters, depth + 1)
+            }
             Expr::ConceptFiltered(inner, filters) => {
                 let candidates = self.eval(inner, depth + 1)?;
                 self.concept_filters(candidates, filters, depth + 1)

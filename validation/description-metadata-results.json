@@ -1,0 +1,214 @@
+{
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "description_index": {
+    "bytes": 394241234,
+    "sha256": "c21897eb94560afc68e169c26a74434b55b43e1542d10dc4c487663f01f108e5",
+    "descriptions": 3562700,
+    "active_descriptions": 2699081,
+    "language_memberships": 5606864
+  },
+  "rf2_counts": {
+    "descriptions": 3562700,
+    "active_descriptions": 2699081,
+    "language_memberships": 5606864
+  },
+  "counts_match": true,
+  "scope": "Independent active inferred RF2 hierarchy, descriptions, definitions and active language memberships. Complete result sets. One CPU and 1 GiB for Rust; first query includes lazy description loading.",
+  "results": [
+    {
+      "id": "description-metadata-01",
+      "ecl": "<<195967001 {{D type=fsn}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 5098.36445
+    },
+    {
+      "id": "description-metadata-02",
+      "ecl": "<<195967001 {{D type=syn}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.622804
+    },
+    {
+      "id": "description-metadata-03",
+      "ecl": "<<195967001 {{D type=def}}",
+      "expected_total": 2,
+      "observed_total": 2,
+      "matches": true,
+      "expected_sha256": "748af0aeda4ac3372302273decf597330753dfa46437671df0d0b3492440c4b9",
+      "observed_sha256": "748af0aeda4ac3372302273decf597330753dfa46437671df0d0b3492440c4b9",
+      "eval_ms": 0.626487
+    },
+    {
+      "id": "description-metadata-04",
+      "ecl": "<<195967001 {{D type=(fsn syn)}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.642235
+    },
+    {
+      "id": "description-metadata-05",
+      "ecl": "<<195967001 {{D typeId=900000000000013009}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.671755
+    },
+    {
+      "id": "description-metadata-06",
+      "ecl": "<<195967001 {{D language=en}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.721453
+    },
+    {
+      "id": "description-metadata-07",
+      "ecl": "<<195967001 {{D language=sv}}",
+      "expected_total": 0,
+      "observed_total": 0,
+      "matches": true,
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eval_ms": 0.71756
+    },
+    {
+      "id": "description-metadata-08",
+      "ecl": "<<195967001 {{D language!=(en sv)}}",
+      "expected_total": 0,
+      "observed_total": 0,
+      "matches": true,
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eval_ms": 0.685441
+    },
+    {
+      "id": "description-metadata-09",
+      "ecl": "<<195967001 {{D active=0}}",
+      "expected_total": 32,
+      "observed_total": 32,
+      "matches": true,
+      "expected_sha256": "8db2c4b77da6f078b3afa8ca59e045c5c4add233ab5abf9d6ef6208bd3688cb8",
+      "observed_sha256": "8db2c4b77da6f078b3afa8ca59e045c5c4add233ab5abf9d6ef6208bd3688cb8",
+      "eval_ms": 0.723324
+    },
+    {
+      "id": "description-metadata-10",
+      "ecl": "<<195967001 {{D active=*}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.62291
+    },
+    {
+      "id": "description-metadata-11",
+      "ecl": "<<195967001 {{D moduleId=900000000000207008}}",
+      "expected_total": 127,
+      "observed_total": 127,
+      "matches": true,
+      "expected_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+      "observed_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+      "eval_ms": 0.613252
+    },
+    {
+      "id": "description-metadata-12",
+      "ecl": "<<195967001 {{D effectiveTime>=\"20200101\"}}",
+      "expected_total": 32,
+      "observed_total": 32,
+      "matches": true,
+      "expected_sha256": "b19efba585edd85d79a1cac61ad0ae905ac34c4367dd0880e25a725e4cb46b50",
+      "observed_sha256": "b19efba585edd85d79a1cac61ad0ae905ac34c4367dd0880e25a725e4cb46b50",
+      "eval_ms": 0.61869
+    },
+    {
+      "id": "description-metadata-13",
+      "ecl": "<<195967001 {{D dialect=en-gb}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.7346590000000001
+    },
+    {
+      "id": "description-metadata-14",
+      "ecl": "<<195967001 {{D dialect=en-gb (prefer)}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.617884
+    },
+    {
+      "id": "description-metadata-15",
+      "ecl": "<<195967001 {{D dialect=en-us (accept)}}",
+      "expected_total": 31,
+      "observed_total": 31,
+      "matches": true,
+      "expected_sha256": "9169d4976f99769ccf4c6728c3e83da3b12e3a1ee58810e73a5b091981ca3787",
+      "observed_sha256": "9169d4976f99769ccf4c6728c3e83da3b12e3a1ee58810e73a5b091981ca3787",
+      "eval_ms": 0.698877
+    },
+    {
+      "id": "description-metadata-16",
+      "ecl": "<<195967001 {{D dialectId=(900000000000508004 900000000000509007) (prefer)}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.836024
+    },
+    {
+      "id": "description-metadata-17",
+      "ecl": "<<195967001 {{D dialect=en-gb, dialect=en-us}}",
+      "expected_total": 127,
+      "observed_total": 127,
+      "matches": true,
+      "expected_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+      "observed_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+      "eval_ms": 0.995436
+    },
+    {
+      "id": "description-metadata-18",
+      "ecl": "<<195967001 {{D type=fsn, dialect=en-gb (prefer)}}",
+      "expected_total": 129,
+      "observed_total": 129,
+      "matches": true,
+      "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+      "eval_ms": 0.881751
+    }
+  ],
+  "import_seconds": 83.561072333,
+  "import_limits": {
+    "cpus": 2,
+    "memory_mib": 2048
+  },
+  "supplement_descriptions": {
+    "bytes": 394688869,
+    "sha256": "bee1c74c6da75b21df8bcdc546137f7db78ef4993eadc888833ac3611b0ac8a0",
+    "descriptions": 3564824,
+    "active_descriptions": 2701201,
+    "language_memberships": 5608984
+  },
+  "supplement_seconds": 20.82,
+  "numeric_files_unchanged": true
+}

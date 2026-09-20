@@ -1,6 +1,8 @@
 //! ECL 2.3 parsing. Unsupported constructs fail before evaluation.
 use std::fmt;
+mod descriptions;
 mod filters;
+pub use descriptions::{DescriptionFilter, Dialect};
 mod refinement;
 pub use filters::ConceptFilter;
 pub use refinement::{AttributeConstraint, AttributeValue, Cardinality, Comparison, Refinement};
@@ -52,6 +54,7 @@ pub enum Expr {
     MemberOf(Box<Expr>),
     RefsetContainingAny(Box<Expr>),
     ConceptFiltered(Box<Expr>, Vec<ConceptFilter>),
+    DescriptionFiltered(Box<Expr>, Vec<DescriptionFilter>),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -406,8 +409,26 @@ impl Parser<'_> {
             })?;
         }
         while self.rest().starts_with("{{") {
-            let filters = self.concept_filters(depth + 1)?;
-            expression = self.node(Expr::ConceptFiltered(Box::new(expression), filters))?;
+            let saved = self.pos;
+            self.take("{{");
+            self.ws()?;
+            let concept = self.rest().starts_with(['C', 'c']);
+            let unsupported = self.rest().starts_with('+')
+                || self.rest().starts_with(['m', 'M'])
+                    && !self.word().eq_ignore_ascii_case("moduleId");
+            self.pos = saved;
+            if concept {
+                let filters = self.concept_filters(depth + 1)?;
+                expression = self.node(Expr::ConceptFiltered(Box::new(expression), filters))?;
+            } else if unsupported {
+                return Err(self.error(
+                    ParseErrorKind::Unsupported,
+                    "Member filters and history supplements are not implemented",
+                ));
+            } else {
+                let filters = self.description_filters(depth + 1)?;
+                expression = self.node(Expr::DescriptionFiltered(Box::new(expression), filters))?;
+            }
             self.ws()?;
         }
         Ok(expression)

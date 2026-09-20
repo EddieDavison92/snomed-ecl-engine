@@ -20,6 +20,7 @@ fn fixture() -> NumericStore {
     let n = ids.len();
     let edges = vec![(1, 0), (2, 1), (4, 0), (5, 0), (7, 6), (8, 10), (9, 10)];
     NumericStore {
+        descriptions: Default::default(),
         ids,
         flags: vec![1, 3, 1, 2, 3, 1, 1, 1, 1, 1, 1],
         modules: vec![6, 6, 7, 7, 7, 6, 6, 6, 6, 6, 6],

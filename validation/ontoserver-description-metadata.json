@@ -1,0 +1,136 @@
+{
+  "checkedAt": "2026-09-20T02:56:30.4923879Z",
+  "software": "Ontoserver\u00ae",
+  "softwareVersion": "6.25.4",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "digestFormat": "Numeric SCTID sort; UTF-8; LF separated; final LF for non-empty sets; no BOM.",
+  "results": [
+    {
+      "id": "description-metadata-01",
+      "ecl": "<<195967001 {{D type=fsn}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-02",
+      "ecl": "<<195967001 {{D type=syn}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-03",
+      "ecl": "<<195967001 {{D type=def}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-04",
+      "ecl": "<<195967001 {{D type=(fsn syn)}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-05",
+      "ecl": "<<195967001 {{D typeId=900000000000013009}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-06",
+      "ecl": "<<195967001 {{D language=en}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-07",
+      "ecl": "<<195967001 {{D language=sv}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-08",
+      "ecl": "<<195967001 {{D language!=(en sv)}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-09",
+      "ecl": "<<195967001 {{D active=0}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-10",
+      "ecl": "<<195967001 {{D active=*}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-11",
+      "ecl": "<<195967001 {{D moduleId=900000000000207008}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-12",
+      "ecl": "<<195967001 {{D effectiveTime>=\"20200101\"}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-13",
+      "ecl": "<<195967001 {{D dialect=en-gb}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-14",
+      "ecl": "<<195967001 {{D dialect=en-gb (prefer)}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-15",
+      "ecl": "<<195967001 {{D dialect=en-us (accept)}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-16",
+      "ecl": "<<195967001 {{D dialectId=(900000000000508004 900000000000509007) (prefer)}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-17",
+      "ecl": "<<195967001 {{D dialect=en-gb, dialect=en-us}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    },
+    {
+      "id": "description-metadata-18",
+      "ecl": "<<195967001 {{D type=fsn, dialect=en-gb (prefer)}}",
+      "complete": false,
+      "httpStatus": 422,
+      "error": "Reference server rejected this expression; no result comparison recorded."
+    }
+  ],
+  "note": "All probes rejected. The first diagnostic confirmed TypeFilter not supported. No external matches are claimed; see the independent RF2 checks."
+}

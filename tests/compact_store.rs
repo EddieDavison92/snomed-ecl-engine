@@ -45,6 +45,10 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
         900000000000508004,
         999001261000000100,
         900000000000534007,
+        900000000000003001,
+        900000000000013009,
+        900000000000548007,
+        900000000000550004,
     ] {
         concepts.push_str(&format!(
             "{code}\t20260826\t{}\t{ROOT}\t900000000000074008\n",
@@ -81,6 +85,7 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
     add("Snapshot/Refset/der2_cRefset_LanguageSnapshot.txt", "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tacceptabilityId\nsynthetic-gb\t20260826\t1\t1000001\t900000000000508004\t6000012\t900000000000548007\nsynthetic-realm\t20260826\t1\t1000001\t999001261000000100\t6000013\t900000000000548007\n".into());
     add("Snapshot/Terminology/sct2_Description_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000011\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic synonym\t900000000000448009\n6000012\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic GB label\t900000000000448009\n6000013\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic realm label\t900000000000448009\n6000014\t20260826\t1\t{ROOT}\t{ROOT}\ten\t900000000000003001\tSynthetic root (test)\t900000000000448009\n6000015\t20260826\t0\t{ROOT}\t{LEAF}\ten\t900000000000013009\tInactive label\t900000000000448009\n"));
     add("Snapshot/Refset/der2_Refset_SimpleSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\nmember-a\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\nmember-b\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\nmember-c\t20260826\t1\t{ROOT}\t{ROOT}\t{LEAF}\nmember-d\t20260826\t1\t{ROOT}\t{ROOT}\t{INACTIVE}\nmember-e\t20260826\t0\t{ROOT}\t{ROOT}\t{RIGHT}\n"));
+    add("Snapshot/Terminology/sct2_TextDefinition_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000016\t20260826\t1\t{ROOT}\t{RIGHT}\ten\t900000000000550004\tSynthetic definition\t900000000000448009\n"));
     archive.finish().unwrap();
 }
 
@@ -99,7 +104,7 @@ fn roundtrip_preserves_groups_precision_and_separate_displays() {
     let destination = temp.path().join("store");
     fixture(&archive, false, false);
     let manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
-    assert_eq!(manifest.active_concept_count, 10);
+    assert_eq!(manifest.active_concept_count, 14);
     let store = NumericStore::open(&destination).unwrap();
     assert_eq!(
         store.hierarchy(ROOT, false, false, false),
@@ -207,6 +212,7 @@ fn hierarchy_matches_slow_edge_scan_on_generated_dag() {
         })
         .collect();
     let store = NumericStore {
+        descriptions: Default::default(),
         ids: (0..n).map(|i| ROOT + i as u64).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -346,7 +352,7 @@ fn cli_import_progress_and_presentation_keep_machine_output_parseable() {
         .unwrap();
     assert!(imported.status.success(), "{:?}", imported);
     let manifest: serde_json::Value = serde_json::from_slice(&imported.stdout).unwrap();
-    assert_eq!(manifest["manifest"]["active_concept_count"], 10);
+    assert_eq!(manifest["manifest"]["active_concept_count"], 14);
     assert!(!imported.stderr.is_empty());
     assert!(!imported.stdout.contains(&0x1b));
     for options in [vec!["--count", "--json"], vec!["--json"], vec!["--plain"]] {
@@ -505,6 +511,13 @@ fn supplementary_refsets_preserve_base_semantics_and_provenance() {
             .collect::<Vec<_>>()
     };
     assert_eq!(codes("^2000001"), [LEAF, INACTIVE]);
+    assert_eq!(codes("2000001 {{D type=fsn}}"), [2000001]);
+    assert_eq!(
+        codes(&format!("{LEAF} {{{{D dialect=en-gb (prefer)}}}}")),
+        [LEAF]
+    );
+    assert_eq!(codes("* {{D type=def}}"), [RIGHT]);
+    assert_eq!(store.descriptions.get().unwrap().unwrap().len(), 7);
     assert_eq!(codes(&format!("(^2000001) AND (<<{ROOT})")), [LEAF]);
     assert!(codes(&format!("^{ROOT}")).contains(&INACTIVE));
     assert!(codes(&format!("^R{LEAF}")).contains(&2000001));
@@ -568,4 +581,79 @@ fn supplementary_refsets_reject_invalid_snapshots_before_publishing() {
         );
         assert!(!output.exists(), "{name}");
     }
+}
+
+#[test]
+fn descriptions_load_lazily_preserve_definitions_and_reject_corruption() {
+    use snomed_rust_ecl_engine::{
+        ecl::parse,
+        eval::{evaluate, EvalError},
+    };
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    let mut manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let metadata = manifest.descriptions.as_ref().unwrap();
+    assert_eq!(
+        (
+            metadata.descriptions,
+            metadata.active_descriptions,
+            metadata.language_memberships
+        ),
+        (6, 5, 2)
+    );
+    let path = destination.join("descriptions.bin");
+    let saved = destination.join("descriptions.saved");
+    fs::rename(&path, &saved).unwrap();
+    let store = NumericStore::open(&destination).unwrap();
+    assert_eq!(
+        evaluate(&store, &parse(&ROOT.to_string()).unwrap())
+            .unwrap()
+            .len(),
+        1
+    );
+    assert!(matches!(
+        evaluate(&store, &parse("* {{D type=def}}").unwrap()),
+        Err(EvalError::Index(_))
+    ));
+    fs::rename(&saved, &path).unwrap();
+    let store = NumericStore::open(&destination).unwrap();
+    assert_eq!(
+        evaluate(&store, &parse("* {{D type=def}}").unwrap()).unwrap(),
+        [store.ordinal(RIGHT).unwrap()]
+    );
+    let descriptions = store.descriptions.get().unwrap().unwrap();
+    assert_eq!(descriptions.len(), 6);
+    assert_eq!(
+        descriptions.term(
+            descriptions
+                .for_concept(store.ordinal(RIGHT).unwrap())
+                .start
+        ),
+        "Synthetic definition"
+    );
+    assert_eq!(
+        descriptions.for_concept(store.ordinal(LEAF).unwrap()).len(),
+        4
+    );
+    let mut bytes = fs::read(&path).unwrap();
+    *bytes.last_mut().unwrap() = 255;
+    fs::write(&path, &bytes).unwrap();
+    assert!(NumericStore::open(&destination)
+        .unwrap()
+        .descriptions
+        .get()
+        .is_err());
+    manifest.descriptions.as_mut().unwrap().sha256 = sha256(&path).unwrap();
+    serde_json::to_writer(
+        File::create(destination.join("manifest.json")).unwrap(),
+        &manifest,
+    )
+    .unwrap();
+    assert!(NumericStore::open(&destination)
+        .unwrap()
+        .descriptions
+        .get()
+        .is_err());
 }

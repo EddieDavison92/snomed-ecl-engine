@@ -110,7 +110,7 @@ impl Parser<'_> {
         }
     }
 
-    fn filter_concepts(&mut self, depth: usize) -> Result<Expr> {
+    pub(super) fn filter_concepts(&mut self, depth: usize) -> Result<Expr> {
         let saved = (self.pos, self.nodes);
         if self.take("(") {
             self.ws()?;
@@ -147,7 +147,7 @@ impl Parser<'_> {
         self.subexpression(depth)
     }
 
-    fn filter_date(&mut self) -> Result<Option<u32>> {
+    pub(super) fn filter_date(&mut self) -> Result<Option<u32>> {
         if !self.take("\"") {
             return Err(self.unexpected());
         }

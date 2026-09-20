@@ -102,7 +102,7 @@ fn run() -> Result<()> {
                 |message| {
                     stage += 1;
                     eprintln!(
-                        "  [{stage}/7] {message}  ({:.1}s elapsed)",
+                        "  [{stage}/8] {message}  ({:.1}s elapsed)",
                         start.elapsed().as_secs_f64()
                     );
                 },

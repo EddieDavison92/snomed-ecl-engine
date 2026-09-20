@@ -1,0 +1,92 @@
+[
+  {
+    "id": "description-metadata-01",
+    "ecl": "<<195967001 {{D type=fsn}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-02",
+    "ecl": "<<195967001 {{D type=syn}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-03",
+    "ecl": "<<195967001 {{D type=def}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-04",
+    "ecl": "<<195967001 {{D type=(fsn syn)}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-05",
+    "ecl": "<<195967001 {{D typeId=900000000000013009}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-06",
+    "ecl": "<<195967001 {{D language=en}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-07",
+    "ecl": "<<195967001 {{D language=sv}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-08",
+    "ecl": "<<195967001 {{D language!=(en sv)}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-09",
+    "ecl": "<<195967001 {{D active=0}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-10",
+    "ecl": "<<195967001 {{D active=*}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-11",
+    "ecl": "<<195967001 {{D moduleId=900000000000207008}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-12",
+    "ecl": "<<195967001 {{D effectiveTime>=\"20200101\"}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-13",
+    "ecl": "<<195967001 {{D dialect=en-gb}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-14",
+    "ecl": "<<195967001 {{D dialect=en-gb (prefer)}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-15",
+    "ecl": "<<195967001 {{D dialect=en-us (accept)}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-16",
+    "ecl": "<<195967001 {{D dialectId=(900000000000508004 900000000000509007) (prefer)}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-17",
+    "ecl": "<<195967001 {{D dialect=en-gb, dialect=en-us}}",
+    "probe": true
+  },
+  {
+    "id": "description-metadata-18",
+    "ecl": "<<195967001 {{D type=fsn, dialect=en-gb (prefer)}}",
+    "probe": true
+  }
+]

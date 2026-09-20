@@ -70,6 +70,14 @@ pub fn manifest(m: &Manifest) {
         "  Displays    {:.2} MiB (separate file)",
         m.display_bytes as f64 / 1_048_576.0
     );
+    if let Some(descriptions) = &m.descriptions {
+        println!(
+            "  Descriptions {:.2} MiB / {} terms / {} language memberships (loaded on demand)",
+            descriptions.bytes as f64 / 1_048_576.0,
+            number(descriptions.descriptions),
+            number(descriptions.language_memberships)
+        );
+    }
     for supplement in &m.supplements {
         println!(
             "  Supplement  {} / {} refsets / {} new concepts",
@@ -78,7 +86,7 @@ pub fn manifest(m: &Manifest) {
             number(supplement.added_concepts)
         );
     }
-    println!("\n  Manifest metadata only; queries verify core and membership files.");
+    println!("\n  Manifest metadata only; each index file is verified when loaded.");
     println!("  Full ECL 2.3 is in development. See docs/conformance.md.");
 }
 

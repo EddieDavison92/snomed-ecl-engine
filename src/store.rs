@@ -5,7 +5,9 @@ use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::Path;
+mod descriptions;
 mod membership;
+pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
 pub use membership::{MembershipIndex, MembershipManifest};
 
 pub const FORMAT: u32 = 1;
@@ -33,6 +35,8 @@ pub struct Manifest {
     pub capabilities: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub membership: Option<MembershipManifest>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub descriptions: Option<DescriptionManifest>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplements: Vec<RefsetSupplement>,
 }
@@ -195,6 +199,7 @@ pub struct NumericStore {
     pub concrete_values: Vec<ConcreteValue>,
     /// Active refset member rows referencing concepts. None means the index was not built.
     pub membership: Option<MembershipIndex>,
+    pub descriptions: DescriptionStore,
 }
 
 impl NumericStore {
@@ -423,6 +428,10 @@ impl NumericStore {
                 .as_ref()
                 .map(|metadata| MembershipIndex::open(directory, metadata, count))
                 .transpose()?,
+            descriptions: manifest
+                .descriptions
+                .map(|m| DescriptionStore::lazy(directory, m, count))
+                .unwrap_or_default(),
         };
         store.validate()?;
         ensure!(

@@ -392,6 +392,20 @@ pub fn add_refsets_snapshot(
         )?;
     }
     store.concrete_values = original.concrete_values;
+    let descriptions = if let Some(index) = original.descriptions.into_index()? {
+        let mut rows = index.into_descriptions(&mapping);
+        let extra = super::descriptions::read(&mut archive, &lookup, release_date)?;
+        ensure!(
+            extra
+                .iter()
+                .all(|r| additions.contains_key(&store.ids[r.concept as usize])),
+            "Supplement would change existing concept descriptions"
+        );
+        rows.extend(extra);
+        Some(crate::store::DescriptionIndex::build(n, rows)?)
+    } else {
+        None
+    };
     store.validate()?;
     let parent = destination.parent().unwrap_or(Path::new("."));
     fs::create_dir_all(parent)?;
@@ -403,6 +417,9 @@ pub fn add_refsets_snapshot(
     let membership = staging.join("membership.bin");
     store.write(&core)?;
     DisplayStore::write(&display, &labels)?;
+    manifest.descriptions = descriptions
+        .map(|index| index.write(&staging.join("descriptions.bin")))
+        .transpose()?;
     let index = store.membership.as_ref().unwrap();
     index.write(&membership)?;
     let previous = manifest.membership.as_ref().unwrap();

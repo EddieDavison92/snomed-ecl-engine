@@ -10,6 +10,7 @@ fn fixture() -> NumericStore {
     flags[2] = 0;
     flags[10] = 0;
     NumericStore {
+        descriptions: Default::default(),
         ids: (1000000..1000012).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -135,6 +136,7 @@ fn generated_memberships_match_independent_pair_scan() {
         .flat_map(|r| (0..60).filter_map(move |m| ((r * 7 + m * 3) % 11 < 3).then_some((r, m))))
         .collect();
     let store = NumericStore {
+        descriptions: Default::default(),
         ids: (0..n).map(|i| 1000000 + i as u64).collect(),
         flags: vec![1; n],
         modules: vec![0; n],
