@@ -160,13 +160,15 @@ impl Context<'_> {
         let (op, member) = match predicate {
             #[cfg(feature = "unicode")]
             Prepared::Term(op, terms) => {
-                self.tick(terms.work(index.term(row)))?;
-                (
-                    *op,
-                    terms
-                        .matches(index.term(row), index.language(row))
-                        .map_err(|e| EvalError::Text(format!("{e:?}")))?,
-                )
+                self.tick(terms.work_bytes(index.term_bytes(row)))?;
+                let matches = index
+                    .with_term(row, |text| {
+                        terms
+                            .matches(text, index.language(row))
+                            .map_err(|e| EvalError::Text(format!("{e:?}")))
+                    })
+                    .map_err(|e| EvalError::Index(e.to_string()))??;
+                (*op, matches)
             }
             Prepared::Active(op, value) => (*op, value.is_none_or(|v| v == index.active(row))),
             Prepared::Language(op, values) => {

@@ -30,7 +30,7 @@ The intended advantage is fast embedded and batch expansion with a small runtime
 | Query architecture | Rust library or native CLI | Java service with Lucene | Java service plus Elasticsearch |
 | Observed import time | 110.5 seconds, including typed members | 1,057 seconds, 17.6 minutes | 4,360 seconds, 72.7 minutes |
 | Current index files | 289.5 MiB packed with descriptions, displays and typed members; 103.3 MiB original numeric components | 483.3 MiB | 6.11 GiB Elasticsearch directory |
-| Serving allocations used | One CPU; 256 MiB numeric, 1 GiB with descriptions | One CPU, 2 GiB | Each service: four CPUs, 6 GiB |
+| Serving allocations used | One CPU; 256 MiB for the current corpus and separate text probes | One CPU, 2 GiB | Each service: four CPUs, 6 GiB |
 | Median request, 719-expression Snowstorm comparison | **2.24 ms** | Not measured on this workload | **12.66 ms** |
 | Request p95, same 719 expressions | 8.81 ms | Not measured on this workload | 38.92 ms |
 | Median 719-request batch | 2.16 seconds | Not measured on this workload | 10.32 seconds |
@@ -44,7 +44,7 @@ The comparison servers also have ECL coverage limits. Lite documents an ECL Core
 
 OneLondon's Ontoserver 6.25.4 also rejected our [description metadata probes](validation/ontoserver-description-metadata.json), including `type` filters. These findings apply to the tested versions; full ECL 2.3 remains this project's target, not a claim that it is already complete.
 
-The packed description section occupies 66.1 MiB, but the evaluator still loads its 376 MiB decoded representation. The current corpus peaked at 543 MiB of charged memory and does not fit in 256 MiB yet. Bounded description loading is still required. The [description measurements](docs/descriptions.md) retain the earlier failed 256 MiB run.
+Description metadata now uses compact dictionaries, with term text read from disk as needed. The current 1,000-expression corpus peaked at 219.4 MiB under a 1 GiB limit, down from 542.6 MiB. A separate run at 256 MiB preserved every result, with a 2.09 ms median request and a 3.22-second median batch. Ten text probes also passed at 256 MiB. These checks do not establish that every ECL workload fits that limit. The [description measurements](docs/descriptions.md#compact-runtime-measurements) record the current results and earlier builds separately.
 
 Typed member data occupies 175.6 MiB packed, compared with 565.6 MiB decoded, and loads one refset at a time. The corpus does not touch every member table. The [storage plan](docs/performance-plan.md) includes their cost when measuring the full-engine memory target.
 
@@ -81,7 +81,7 @@ Use `eval::evaluate_result_with_limits` when accepting [member-field projections
 
 Description term queries need `--features unicode` and ICU4C development libraries at build time. The [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers installation and the additional executable size. Numeric queries do not require this feature.
 
-The measured CLI with import, Unicode and block compression is 33.89 MiB, or 13.35 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#term-comparison-evidence) record their latency and correctness separately.
+The measured CLI with import, Unicode and block compression is 33.92 MiB, or 13.36 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#compact-runtime-measurements) record their latency and correctness separately.
 
 The [CLI guide](docs/cli.md) covers commands and output formats. The repository [SKILL.md](SKILL.md) gives agents the build, RF2 loading and querying workflow.
 

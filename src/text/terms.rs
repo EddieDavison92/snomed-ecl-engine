@@ -52,17 +52,21 @@ impl<'a> Terms<'a> {
     }
 
     pub fn work(&self, target: &str) -> usize {
+        self.work_bytes(target.len())
+    }
+
+    pub fn work_bytes(&self, target_bytes: usize) -> usize {
         self.source
             .iter()
             .map(|term| match term {
                 SearchTerm::Match(words) => words
                     .iter()
-                    .map(|p| p.len().saturating_add(target.len()).saturating_add(1))
+                    .map(|p| p.len().saturating_add(target_bytes).saturating_add(1))
                     .sum::<usize>(),
                 SearchTerm::Wild(parts) => parts
                     .iter()
                     .flatten()
-                    .map(|p| p.len().saturating_add(target.len()).saturating_add(1))
+                    .map(|p| p.len().saturating_add(target_bytes).saturating_add(1))
                     .sum::<usize>()
                     .saturating_add(1),
             })

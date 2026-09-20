@@ -129,3 +129,9 @@ Independent scans matched 17 scalar cases, nine member queries and a tuple,
 PCD refsets for both active and inactive members. The term comparisons retain
 the known differences with OneLondon's Ontoserver. Full ECL compatibility still
 requires the open items in [conformance](conformance.md).
+
+The subsequent [description runtime rewrite](descriptions.md#compact-runtime-measurements)
+uses this same container without repacking. It reduces the corpus's charged peak
+to 219.4 MiB through metadata dictionaries and on-disk text access. The measurements
+above describe the preceding reader so container compression and runtime memory
+changes can be assessed separately.

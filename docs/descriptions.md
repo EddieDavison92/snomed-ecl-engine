@@ -2,13 +2,72 @@
 
 The importer retains all Snapshot descriptions and text definitions, including inactive rows. It stores description IDs, concept ordinals, module, type, effective time, active status, language, complete UTF-8 terms and active language memberships. Preferred displays remain a separate lookup.
 
-`descriptions.bin` uses format `SNDES001`. Columns hold fixed-width IDs and ordinals, per-concept row offsets, term offsets, a UTF-8 term buffer and language-member pairs. The manifest records its checksum, byte size and counts. Opening the numeric store does not open this file. The first description query loads, verifies and retains it; callers can preload it with `store.descriptions.get()`.
+`descriptions.bin` uses format `SNDES001`, either as a standalone file or inside
+the compressed container. Its component bytes and checksums remain compatible.
+Opening the numeric store does not read description data. The first description
+query verifies the section, compacts metadata and retains a reader for the text.
+Callers can preload metadata with `store.descriptions.get()`.
 
-The initial reader loads the complete description file. It is not yet a compressed search index. Missing or corrupt declared data returns an index error. Older stores without description metadata return an unsupported-feature error until reimported.
+Modules, types, dates and language/status flags use adaptive dictionaries in
+memory. Repeated dialect-membership combinations share one stored list. Columns
+with too many distinct values retain wider representations, so the UK release's
+small dictionaries do not become limits on other editions.
+
+Term text remains on disk. A shared reader fetches a 64 KiB window, extended when
+a term crosses its boundary or exceeds that size. Memory follows the largest
+requested term instead of the whole text column. The reader checks UTF-8 and
+description boundaries in a streaming pass when the index opens. Compressed
+blocks retain their checksum checks. Missing or corrupt data returns an error.
+
+`DescriptionIndex::term(row)` now returns `Result<String>` because text access
+can fail. `with_term(row, callback)` avoids allocating a separate string and is
+used by the evaluator. Its callback runs while the text-reader lock is held and
+must not re-enter that reader. Term work limits are checked before fetching the
+text. Metadata predicates do not fetch term windows after initial validation.
+
+Writing the loaded index expands these dictionaries back to the existing format
+without changing bytes. This step reduces query memory; a persistent encoding
+with compact columns and a term-posting index remains future work.
+
+## Compact runtime measurements
+
+The [runtime record](../validation/description-stream-results.json) uses the same
+303,566,848-byte complete packed UK index as the preceding container build.
+Neither component bytes nor result sets changed. The executable includes import,
+Unicode matching and block compression.
+
+| Workload | Memory limit | Charged peak | Median request | Median batch |
+|---|---:|---:|---:|---:|
+| Previous 1,000-query corpus | 1 GiB | 542.6 MiB | 1.87 ms | 3.05 s |
+| Compact runtime, same corpus | 1 GiB | 219.4 MiB | 1.96 ms | 3.10 s |
+| Compact runtime, same corpus | 256 MiB | 217.8 MiB | 2.09 ms | 3.22 s |
+
+All 1,000 complete result sets match the previous build in both new runs. The
+256 MiB run's per-request p95 is 13.77 ms. Timings include local JSONL transport;
+five seeded shuffled batches reuse one process on one CPU. Filesystem caches
+were retained and another build could run on the shared host. These observations
+establish the memory reduction, not a controlled throughput improvement.
+
+Ten separate English term probes also matched their independent RF2 sets at one
+CPU and 256 MiB, with a 217.2 MiB charged peak. The broad mixed `gas`/`*itis` query
+took 1,149 ms median warm evaluation, or 4.02 seconds for its first evaluation
+including description loading. It still scans descriptions. The known scope and
+negation differences with OneLondon's Ontoserver remain unchanged. Eighteen
+metadata probes matched the independent RF2 scan, and `verify` checked all 587
+sections, including 7,177,107 typed member rows.
+
+These workloads do not exercise every large member table or arbitrary combinations
+of text and member queries. Typed member tables still load in full when selected.
+The text window grows for long terms, and its lock serialises text callbacks on
+one shared reader. Whole-section checksums and streaming UTF-8 validation still
+run at first description access. Persistent compact columns, term postings and
+bounded member-table loading remain required work.
+
+The following sections retain the earlier build measurements for comparison.
 
 ## Supported predicates
 
-Description filters support `active`, `moduleId`, `effectiveTime`, `language`, `id`, `type`, `typeId`, `dialect` and `dialectId`, including equality, inequality and applicable value sets. Effective time supports ordered comparisons. Type and module IDs can use nested concept expressions. Dialects can constrain acceptability per refset or through a shared set. The built-in aliases are `en-gb` and `en-us`; use `dialectId` for other refsets. Configurable aliases remain required work.
+Description filters support `active`, `moduleId`, `effectiveTime`, `language`, `id`, `type`, `typeId`, `dialect` and `dialectId`, including equality, inequality and applicable value sets. Effective time supports ordered comparisons. Type and module IDs can use nested concept expressions. Dialects can constrain acceptability per refset or through a shared set. The built-in aliases are `en-gb` and `en-us`; use `dialectId` or [configured aliases](aliases.md) for other refsets.
 
 ```text
 <<195967001 {{D type=fsn}}

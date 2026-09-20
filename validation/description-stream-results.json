@@ -1,0 +1,554 @@
+{
+  "recorded_at": "2026-09-20T11:07:19.706114+00:00",
+  "binary_sha256": "b828a5db212753d676ed809b0df8b9c94dcb55c52ba2f9454a80c275e4cd6008",
+  "binary_bytes": 35568544,
+  "binary_gzip_bytes": 14013339,
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "container_bytes": 303566848,
+  "container_sha256": "f82c6b2507502ba7279a67c138fa5b56034f7965253701c3c6c9b24275959b6a",
+  "tests": {
+    "unicode": 76,
+    "no_default_features": 52
+  },
+  "verification": {
+    "sections": 587,
+    "component_bytes": 1164530911,
+    "concepts": 1151519,
+    "descriptions": 3562700,
+    "member_rows": 7177107,
+    "identifiers": 0
+  },
+  "corpus_runs": [
+    {
+      "memory_limit_mib": 1024,
+      "resources": {
+        "container_charged_peak_bytes": 230055936,
+        "peak_scope": "Container lifetime; includes any earlier queries since this container was created",
+        "memory_limit_bytes": 1073741824,
+        "memory_and_swap_limit_bytes": 1073741824,
+        "nano_cpus": 1000000000,
+        "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31"
+      },
+      "median_request_ms": 1.9566499977372587,
+      "p95_request_ms": 11.668800027109683,
+      "warm_batch_wall": {
+        "samples_ms": [
+          3364.4554999191314,
+          3060.5264001060277,
+          3115.827600006014,
+          3069.280399940908,
+          3095.0347000034526
+        ],
+        "median_ms": 3095.0347000034526,
+        "p95_ms": 3364.4554999191314
+      },
+      "prior_complete_result_sets_preserved": 1000
+    },
+    {
+      "memory_limit_mib": 256,
+      "resources": {
+        "container_charged_peak_bytes": 228388864,
+        "peak_scope": "Container lifetime; includes any earlier queries since this container was created",
+        "memory_limit_bytes": 268435456,
+        "memory_and_swap_limit_bytes": 268435456,
+        "nano_cpus": 1000000000,
+        "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31"
+      },
+      "median_request_ms": 2.0884000114165246,
+      "p95_request_ms": 13.771699974313378,
+      "warm_batch_wall": {
+        "samples_ms": [
+          3104.614300071262,
+          3711.531599983573,
+          4205.6220000376925,
+          3215.465199900791,
+          3135.132599971257
+        ],
+        "median_ms": 3215.465199900791,
+        "p95_ms": 4205.6220000376925
+      },
+      "prior_complete_result_sets_preserved": 1000
+    }
+  ],
+  "term_checks": {
+    "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+    "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+    "memory_limit_mib": 256,
+    "container_charged_peak_bytes": 227721216,
+    "description_index": {
+      "active_descriptions": 2699081,
+      "bytes": 394241234,
+      "descriptions": 3562700,
+      "language_memberships": 5606864,
+      "sha256": "c21897eb94560afc68e169c26a74434b55b43e1542d10dc4c487663f01f108e5"
+    },
+    "binary_bytes": 35568544,
+    "binary_gzip_bytes": 14013339,
+    "binary_sha256": "b828a5db212753d676ed809b0df8b9c94dcb55c52ba2f9454a80c275e4cd6008",
+    "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31",
+    "collation": "ICU4C 72.1",
+    "features": [
+      "import",
+      "unicode"
+    ],
+    "reference_sha256": "13867befa491685abb91ade2cf541ecd1874c92f11d6fd9f936017749ace4479",
+    "reference_software": "Ontoserver\u00ae",
+    "reference_version": "6.25.4",
+    "scope": "Independent RF2 inferred hierarchy and all active descriptions including definitions. Fixed unaccented English probes only; Python normalisation is not a general UCA reference. Full result sets, one CPU, 256 MiB. First query includes lazy loading; warm figures are engine evaluation only. The extra type-scoped Rust query is compared to the unscoped Ontoserver term-01 result to isolate description scope.",
+    "results": [
+      {
+        "id": "term-01",
+        "ecl": "< 64572001 |Disease| {{ term = (match:\"gas\" wild:\"*itis\")}}",
+        "expected_total": 5609,
+        "observed_total": 5609,
+        "rf2_matches": true,
+        "expected_sha256": "db049e22b8aa500b99cc0524aedf80af471924735e08647cf0cda4aa54c5f23d",
+        "observed_sha256": "db049e22b8aa500b99cc0524aedf80af471924735e08647cf0cda4aa54c5f23d",
+        "names_only_total": 5493,
+        "names_only_sha256": "3ee95f59a8c61b8317c7796eb1beed8fc1017342d787c4ac68a4865d13aff167",
+        "ontoserver_total": 5493,
+        "ontoserver_sha256": "3ee95f59a8c61b8317c7796eb1beed8fc1017342d787c4ac68a4865d13aff167",
+        "ontoserver_matches": false,
+        "rust_only": 116,
+        "ontoserver_only": 0,
+        "first_eval_ms": 4019.456012,
+        "warm_eval_ms": [
+          1211.764066,
+          1190.043555,
+          1148.55602,
+          1116.1084130000002,
+          1103.752327
+        ],
+        "median_warm_eval_ms": 1148.55602
+      },
+      {
+        "id": "term-02",
+        "ecl": "<<195967001 {{term=\"asth\"}}",
+        "expected_total": 128,
+        "observed_total": 128,
+        "rf2_matches": true,
+        "expected_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "observed_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "names_only_total": 128,
+        "names_only_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "ontoserver_total": 128,
+        "ontoserver_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 11.187752,
+        "warm_eval_ms": [
+          12.797298,
+          15.686843999999999,
+          10.433572,
+          11.121898999999999,
+          9.768959
+        ],
+        "median_warm_eval_ms": 11.121898999999999
+      },
+      {
+        "id": "term-03",
+        "ecl": "<<195967001 {{term=wild:\"*asthma*\"}}",
+        "expected_total": 128,
+        "observed_total": 128,
+        "rf2_matches": true,
+        "expected_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "observed_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "names_only_total": 128,
+        "names_only_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "ontoserver_total": 128,
+        "ontoserver_sha256": "d20f17db0f10735100c32bbfbf9ae5f62d9b1664db3648f512af398d130efd24",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 10.110597,
+        "warm_eval_ms": [
+          12.126582,
+          14.811039,
+          10.711915000000001,
+          10.631237,
+          8.663691
+        ],
+        "median_warm_eval_ms": 10.711915000000001
+      },
+      {
+        "id": "term-04",
+        "ecl": "<<195967001 {{term=\"allergic asthma\"}}",
+        "expected_total": 47,
+        "observed_total": 47,
+        "rf2_matches": true,
+        "expected_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "observed_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "names_only_total": 47,
+        "names_only_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "ontoserver_total": 47,
+        "ontoserver_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 11.876891,
+        "warm_eval_ms": [
+          13.902865,
+          13.250447,
+          11.130127,
+          11.220602,
+          9.711594
+        ],
+        "median_warm_eval_ms": 11.220602
+      },
+      {
+        "id": "term-05",
+        "ecl": "<<195967001 {{term=\"asthma allergic\"}}",
+        "expected_total": 47,
+        "observed_total": 47,
+        "rf2_matches": true,
+        "expected_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "observed_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "names_only_total": 47,
+        "names_only_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "ontoserver_total": 47,
+        "ontoserver_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 12.018841,
+        "warm_eval_ms": [
+          14.063176,
+          16.082199,
+          11.22419,
+          11.580562,
+          9.214319
+        ],
+        "median_warm_eval_ms": 11.580562
+      },
+      {
+        "id": "term-06",
+        "ecl": "<<195967001 {{term=wild:\"*itis\"}}",
+        "expected_total": 18,
+        "observed_total": 18,
+        "rf2_matches": true,
+        "expected_sha256": "ea797b9d686c0cfd8d27f52dc89b8409213a27bc7e209b29e53af89dede0c735",
+        "observed_sha256": "ea797b9d686c0cfd8d27f52dc89b8409213a27bc7e209b29e53af89dede0c735",
+        "names_only_total": 18,
+        "names_only_sha256": "ea797b9d686c0cfd8d27f52dc89b8409213a27bc7e209b29e53af89dede0c735",
+        "ontoserver_total": 18,
+        "ontoserver_sha256": "ea797b9d686c0cfd8d27f52dc89b8409213a27bc7e209b29e53af89dede0c735",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 11.171762,
+        "warm_eval_ms": [
+          14.152374,
+          16.045212,
+          10.859325,
+          11.392407,
+          9.396624
+        ],
+        "median_warm_eval_ms": 11.392407
+      },
+      {
+        "id": "term-07",
+        "ecl": "<<195967001 {{term=(\"exercise\" \"allergic\")}}",
+        "expected_total": 47,
+        "observed_total": 47,
+        "rf2_matches": true,
+        "expected_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "observed_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "names_only_total": 47,
+        "names_only_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "ontoserver_total": 47,
+        "ontoserver_sha256": "2d05a88a17d9839f12bcd9ca1c83a755a49b8516b3c01c559d6d05659c4f660e",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 11.373637,
+        "warm_eval_ms": [
+          13.469422,
+          16.54289,
+          10.657053,
+          11.426753,
+          9.799125
+        ],
+        "median_warm_eval_ms": 11.426753
+      },
+      {
+        "id": "term-08",
+        "ecl": "<<195967001 {{term!=\"allergic\"}}",
+        "expected_total": 91,
+        "observed_total": 91,
+        "rf2_matches": true,
+        "expected_sha256": "c62deb50b66f194e91156d8d47896418f7fc054387def7da466512a707d1e72e",
+        "observed_sha256": "c62deb50b66f194e91156d8d47896418f7fc054387def7da466512a707d1e72e",
+        "names_only_total": 91,
+        "names_only_sha256": "c62deb50b66f194e91156d8d47896418f7fc054387def7da466512a707d1e72e",
+        "ontoserver_total": 82,
+        "ontoserver_sha256": "4d4ebcbace001e6aa53586c0ae920b4fda14b3257915b47521c35f3ca1d6d539",
+        "ontoserver_matches": false,
+        "rust_only": 9,
+        "ontoserver_only": 0,
+        "first_eval_ms": 10.461701,
+        "warm_eval_ms": [
+          13.684167,
+          17.038353999999998,
+          10.274745,
+          10.624139,
+          8.8501
+        ],
+        "median_warm_eval_ms": 10.624139
+      },
+      {
+        "id": "term-09",
+        "ecl": "<<195967001 {{term=\"zzznomatch\"}}",
+        "expected_total": 0,
+        "observed_total": 0,
+        "rf2_matches": true,
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "names_only_total": 0,
+        "names_only_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ontoserver_total": 0,
+        "ontoserver_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 10.998114999999999,
+        "warm_eval_ms": [
+          14.242863999999999,
+          17.941248,
+          10.277219,
+          11.303683999999999,
+          9.248645
+        ],
+        "median_warm_eval_ms": 11.303683999999999
+      },
+      {
+        "id": "term-01-names",
+        "ecl": "< 64572001 |Disease| {{ term = (match:\"gas\" wild:\"*itis\"),type=(syn fsn)}}",
+        "expected_total": 5493,
+        "observed_total": 5493,
+        "rf2_matches": true,
+        "expected_sha256": "3ee95f59a8c61b8317c7796eb1beed8fc1017342d787c4ac68a4865d13aff167",
+        "observed_sha256": "3ee95f59a8c61b8317c7796eb1beed8fc1017342d787c4ac68a4865d13aff167",
+        "names_only_total": 5493,
+        "names_only_sha256": "3ee95f59a8c61b8317c7796eb1beed8fc1017342d787c4ac68a4865d13aff167",
+        "ontoserver_total": 5493,
+        "ontoserver_sha256": "3ee95f59a8c61b8317c7796eb1beed8fc1017342d787c4ac68a4865d13aff167",
+        "ontoserver_matches": true,
+        "rust_only": 0,
+        "ontoserver_only": 0,
+        "first_eval_ms": 1139.32767,
+        "warm_eval_ms": [
+          1197.3930850000002,
+          1278.6395019999998,
+          1106.977012,
+          1114.40151,
+          1094.807203
+        ],
+        "median_warm_eval_ms": 1114.40151
+      }
+    ]
+  },
+  "metadata_checks": {
+    "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+    "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+    "description_index": {
+      "active_descriptions": 2699081,
+      "bytes": 394241234,
+      "descriptions": 3562700,
+      "language_memberships": 5606864,
+      "sha256": "c21897eb94560afc68e169c26a74434b55b43e1542d10dc4c487663f01f108e5"
+    },
+    "binary_sha256": "b828a5db212753d676ed809b0df8b9c94dcb55c52ba2f9454a80c275e4cd6008",
+    "rf2_counts": {
+      "descriptions": 3562700,
+      "active_descriptions": 2699081,
+      "language_memberships": 5606864
+    },
+    "counts_match": true,
+    "scope": "Independent active inferred RF2 hierarchy, descriptions, definitions and active language memberships. Complete result sets. One CPU and 1 GiB for Rust; first query includes lazy description loading.",
+    "results": [
+      {
+        "id": "description-metadata-01",
+        "ecl": "<<195967001 {{D type=fsn}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 2761.7545489999998
+      },
+      {
+        "id": "description-metadata-02",
+        "ecl": "<<195967001 {{D type=syn}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.798503
+      },
+      {
+        "id": "description-metadata-03",
+        "ecl": "<<195967001 {{D type=def}}",
+        "expected_total": 2,
+        "observed_total": 2,
+        "matches": true,
+        "expected_sha256": "748af0aeda4ac3372302273decf597330753dfa46437671df0d0b3492440c4b9",
+        "observed_sha256": "748af0aeda4ac3372302273decf597330753dfa46437671df0d0b3492440c4b9",
+        "eval_ms": 0.879597
+      },
+      {
+        "id": "description-metadata-04",
+        "ecl": "<<195967001 {{D type=(fsn syn)}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.828082
+      },
+      {
+        "id": "description-metadata-05",
+        "ecl": "<<195967001 {{D typeId=900000000000013009}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.772972
+      },
+      {
+        "id": "description-metadata-06",
+        "ecl": "<<195967001 {{D language=en}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.754106
+      },
+      {
+        "id": "description-metadata-07",
+        "ecl": "<<195967001 {{D language=sv}}",
+        "expected_total": 0,
+        "observed_total": 0,
+        "matches": true,
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eval_ms": 1.363884
+      },
+      {
+        "id": "description-metadata-08",
+        "ecl": "<<195967001 {{D language!=(en sv)}}",
+        "expected_total": 0,
+        "observed_total": 0,
+        "matches": true,
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eval_ms": 1.464404
+      },
+      {
+        "id": "description-metadata-09",
+        "ecl": "<<195967001 {{D active=0}}",
+        "expected_total": 32,
+        "observed_total": 32,
+        "matches": true,
+        "expected_sha256": "8db2c4b77da6f078b3afa8ca59e045c5c4add233ab5abf9d6ef6208bd3688cb8",
+        "observed_sha256": "8db2c4b77da6f078b3afa8ca59e045c5c4add233ab5abf9d6ef6208bd3688cb8",
+        "eval_ms": 0.772691
+      },
+      {
+        "id": "description-metadata-10",
+        "ecl": "<<195967001 {{D active=*}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.752145
+      },
+      {
+        "id": "description-metadata-11",
+        "ecl": "<<195967001 {{D moduleId=900000000000207008}}",
+        "expected_total": 127,
+        "observed_total": 127,
+        "matches": true,
+        "expected_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+        "observed_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+        "eval_ms": 0.771233
+      },
+      {
+        "id": "description-metadata-12",
+        "ecl": "<<195967001 {{D effectiveTime>=\"20200101\"}}",
+        "expected_total": 32,
+        "observed_total": 32,
+        "matches": true,
+        "expected_sha256": "b19efba585edd85d79a1cac61ad0ae905ac34c4367dd0880e25a725e4cb46b50",
+        "observed_sha256": "b19efba585edd85d79a1cac61ad0ae905ac34c4367dd0880e25a725e4cb46b50",
+        "eval_ms": 0.763186
+      },
+      {
+        "id": "description-metadata-13",
+        "ecl": "<<195967001 {{D dialect=en-gb}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.943362
+      },
+      {
+        "id": "description-metadata-14",
+        "ecl": "<<195967001 {{D dialect=en-gb (prefer)}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.873734
+      },
+      {
+        "id": "description-metadata-15",
+        "ecl": "<<195967001 {{D dialect=en-us (accept)}}",
+        "expected_total": 31,
+        "observed_total": 31,
+        "matches": true,
+        "expected_sha256": "9169d4976f99769ccf4c6728c3e83da3b12e3a1ee58810e73a5b091981ca3787",
+        "observed_sha256": "9169d4976f99769ccf4c6728c3e83da3b12e3a1ee58810e73a5b091981ca3787",
+        "eval_ms": 0.794195
+      },
+      {
+        "id": "description-metadata-16",
+        "ecl": "<<195967001 {{D dialectId=(900000000000508004 900000000000509007) (prefer)}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.750396
+      },
+      {
+        "id": "description-metadata-17",
+        "ecl": "<<195967001 {{D dialect=en-gb, dialect=en-us}}",
+        "expected_total": 127,
+        "observed_total": 127,
+        "matches": true,
+        "expected_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+        "observed_sha256": "4c0d00d5596415546f7af4eadfc5e684957997d1a4ddc50d5fcd58108c0a758d",
+        "eval_ms": 0.769465
+      },
+      {
+        "id": "description-metadata-18",
+        "ecl": "<<195967001 {{D type=fsn, dialect=en-gb (prefer)}}",
+        "expected_total": 129,
+        "observed_total": 129,
+        "matches": true,
+        "expected_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "observed_sha256": "dec374fbdcc45e04b9df988be6c37028c89868bed7e759e29f2204d31e709953",
+        "eval_ms": 0.81334
+      }
+    ]
+  },
+  "scope": "Runtime-only rewrite; component format and packed file unchanged. One CPU, Windows bind mount, caches retained. Other builds could run on the shared host, so timings are not an isolated throughput comparison. Largest typed member tables and arbitrary mixed workloads are not covered by the 256 MiB claim. Full index verification used 1 GiB."
+}

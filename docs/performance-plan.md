@@ -39,9 +39,13 @@ The [single-file container](container.md) now preserves current component
 encodings behind a common reader. It supports raw sections and independent
 16/64 KiB zstd blocks, including every typed member table. This isolates file
 layout and compression from evaluator semantics. Normal opening retains checksum
-and structural checks; `verify` checks all cold sections too. The reader still
-allocates the existing decoded columns. Mmap, adaptive widths, description row
-pointers and bounded term loading remain unimplemented.
+and structural checks; `verify` checks all cold sections too. Description metadata
+now uses adaptive dictionaries in memory, repeated dialect combinations share
+lists, and term text uses an on-disk reader. The unchanged 1,000-query corpus
+peaked at 219.4 MiB under a 1 GiB limit, compared with 542.6 MiB before this change.
+It also passed under 256 MiB. See the [description measurements](descriptions.md#compact-runtime-measurements).
+Persistent compact columns, mmap, DFS ordinals, description row pointers, term
+postings and bounded loading of large typed member tables remain unimplemented.
 
 The independent evaluator now checks 1,000 generated combinations of refinements, groups, cardinalities and membership in `tests/basic_ecl.rs`, using separate row scans in `tests/support/mod.rs`. Concrete and typed scalar semantics have their own fixtures and independent RF2 checks. This supplies comparison evidence for later rewrites; remaining ECL semantics still need completion first.
 

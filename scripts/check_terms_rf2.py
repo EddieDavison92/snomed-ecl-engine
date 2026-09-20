@@ -29,9 +29,10 @@ def main():
     parser.add_argument('--reference', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--binary', default='target/linux-unicode/release/snomed-ecl-engine')
+    parser.add_argument('--memory-mib', type=int, default=1024)
     args = parser.parse_args()
-    if args.output.exists():
-        parser.error('Choose a new report path')
+    if args.output.exists() or args.memory_mib < 1:
+        parser.error('Choose a new report path and a positive memory limit')
     manifest = read_manifest(args.store)
     with args.archive.open('rb') as file:
         assert hashlib.file_digest(file, 'sha256').hexdigest() == manifest['archive_sha256']
@@ -94,9 +95,10 @@ def main():
     local_queries = queries + [scoped]
     expected.append(names_only[0])
     names_only.append(names_only[0])
-    command = ['docker', 'run', '--rm', '-i', '--cpus', '1', '--memory', '1g', '--memory-swap', '1g',
+    wrapper = '"$@"; status=$?; cat /sys/fs/cgroup/memory/memory.max_usage_in_bytes >&2; exit "$status"'
+    command = ['docker', 'run', '--rm', '-i', '--cpus', '1', '--memory', f'{args.memory_mib}m', '--memory-swap', f'{args.memory_mib}m',
                '--mount', f'type=bind,source={ROOT},target=/work,readonly', '-w', '/work', IMAGE,
-               args.binary, 'batch', args.store.resolve().relative_to(ROOT).as_posix()]
+               'sh', '-c', wrapper, 'terms-check', args.binary, 'batch', args.store.resolve().relative_to(ROOT).as_posix()]
     requests = [dict(ecl=q['ecl']) for q in local_queries]
     for _ in range(5):
         requests.extend(dict(ecl=q['ecl'], count_only=True) for q in local_queries)
@@ -130,12 +132,13 @@ def main():
                             first_eval_ms=response['eval_ms'], warm_eval_ms=warm, median_warm_eval_ms=statistics.median(warm)))
     binary = (ROOT / args.binary).read_bytes()
     report = dict(edition=manifest['edition'], archive_sha256=manifest['archive_sha256'],
+                  memory_limit_mib=args.memory_mib, container_charged_peak_bytes=int(run.stderr.strip().splitlines()[-1]),
                   description_index=manifest['descriptions'], binary_bytes=len(binary),
                   binary_gzip_bytes=len(gzip.compress(binary, mtime=0)), binary_sha256=hashlib.sha256(binary).hexdigest(),
                   image=IMAGE, collation='ICU4C 72.1', features=['import', 'unicode'],
                   reference_sha256=hashlib.sha256(args.reference.read_bytes()).hexdigest(),
                   reference_software=reference['software'], reference_version=reference['softwareVersion'],
-                  scope='Independent RF2 inferred hierarchy and all active descriptions including definitions. Fixed unaccented English probes only; Python normalisation is not a general UCA reference. Full result sets, one CPU, 1 GiB. First query includes lazy loading; warm figures are engine evaluation only. The extra type-scoped Rust query is compared to the unscoped Ontoserver term-01 result to isolate description scope.',
+                  scope=f'Independent RF2 inferred hierarchy and all active descriptions including definitions. Fixed unaccented English probes only; Python normalisation is not a general UCA reference. Full result sets, one CPU, {args.memory_mib} MiB. First query includes lazy loading; warm figures are engine evaluation only. The extra type-scoped Rust query is compared to the unscoped Ontoserver term-01 result to isolate description scope.',
                   results=results)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2)+'\n')

@@ -393,7 +393,7 @@ pub fn add_refsets_snapshot(
     }
     store.concrete_values = original.concrete_values;
     let descriptions = if let Some(index) = original.descriptions.into_index()? {
-        let mut rows = index.into_descriptions(&mapping);
+        let mut rows = index.into_descriptions(&mapping)?;
         let extra = super::descriptions::read(&mut archive, &lookup, release_date)?;
         ensure!(
             extra

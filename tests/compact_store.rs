@@ -21,6 +21,86 @@ const TARGET: u64 = 9000002;
 const ISA: u64 = 116680003;
 
 #[test]
+fn stored_terms_preserve_long_unicode_text_concurrency_and_failed_reads() {
+    use snomed_ecl_engine::store::{pack, Description, DescriptionIndex};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let directory = temp.path().join("store");
+    fixture(&archive, false, false);
+    let mut manifest = import_snapshot(&archive, &directory, &options(&archive)).unwrap();
+    let core = NumericStore::open(&directory).unwrap();
+    let leaf = core.ordinal(LEAF).unwrap();
+    let texts: Vec<_> = [1, 65530, 12, 131090, 70, 1, 65535]
+        .into_iter()
+        .map(|n| format!("{}é🦀", "a".repeat(n)))
+        .collect();
+    let descriptions = texts
+        .iter()
+        .enumerate()
+        .map(|(row, term)| Description {
+            id: 7000011 + row as u64 * 100,
+            concept: leaf,
+            module: core.ordinal(ROOT).unwrap(),
+            kind: core.ordinal(900000000000013009).unwrap(),
+            effective_time: 20260826,
+            active: row % 2 == 0,
+            language: *b"en",
+            term: term.clone(),
+            dialects: vec![],
+        })
+        .collect();
+    let built = DescriptionIndex::build(core.ids.len(), descriptions).unwrap();
+    let path = directory.join("descriptions.bin");
+    fs::remove_file(&path).unwrap();
+    manifest.descriptions = Some(built.write(&path).unwrap());
+    serde_json::to_writer(
+        File::create(directory.join("manifest.json")).unwrap(),
+        &manifest,
+    )
+    .unwrap();
+    let original = fs::read(&path).unwrap();
+    let packed = temp.path().join("packed.ecl");
+    pack(&directory, &packed).unwrap();
+    for source in [&directory, &packed] {
+        let store = NumericStore::open(source).unwrap();
+        let index = store.descriptions.get().unwrap().unwrap();
+        let rewritten = temp.path().join(if source == &directory {
+            "directory.bin"
+        } else {
+            "packed.bin"
+        });
+        index.write(&rewritten).unwrap();
+        assert_eq!(fs::read(rewritten).unwrap(), original);
+        std::thread::scope(|scope| {
+            for shift in 0..8 {
+                let texts = &texts;
+                scope.spawn(move || {
+                    for step in 0..80 {
+                        let row = (step * 3 + shift) % texts.len();
+                        index
+                            .with_term(row, |text| assert_eq!(text, texts[row]))
+                            .unwrap();
+                    }
+                });
+            }
+        });
+    }
+    let store = NumericStore::open(&directory).unwrap();
+    let index = store.descriptions.get().unwrap().unwrap();
+    assert_eq!(index.term(0).unwrap(), texts[0]);
+    fs::OpenOptions::new()
+        .write(true)
+        .open(&path)
+        .unwrap()
+        .set_len(8)
+        .unwrap();
+    assert!(index.term(texts.len() - 1).is_err());
+    assert!(index.term(0).is_err());
+    fs::write(&path, &original).unwrap();
+    assert_eq!(index.term(0).unwrap(), texts[0]);
+}
+
+#[test]
 fn packed_store_preserves_lazy_sections_queries_displays_and_supplements() {
     use snomed_ecl_engine::{
         ecl::parse,
@@ -1193,11 +1273,13 @@ fn descriptions_load_lazily_preserve_definitions_and_reject_corruption() {
     let descriptions = store.descriptions.get().unwrap().unwrap();
     assert_eq!(descriptions.len(), 6);
     assert_eq!(
-        descriptions.term(
-            descriptions
-                .for_concept(store.ordinal(RIGHT).unwrap())
-                .start
-        ),
+        descriptions
+            .term(
+                descriptions
+                    .for_concept(store.ordinal(RIGHT).unwrap())
+                    .start
+            )
+            .unwrap(),
         "Synthetic definition"
     );
     assert_eq!(

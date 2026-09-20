@@ -1,3 +1,5 @@
+use super::columns::{Column, RowSets};
+use super::term_storage::TermStorage;
 use super::*;
 use std::sync::OnceLock;
 
@@ -31,14 +33,13 @@ pub struct Description {
 pub struct DescriptionIndex {
     pub(super) concepts: Vec<u32>,
     ids: Vec<u64>,
-    modules: Vec<u32>,
-    kinds: Vec<u32>,
-    dates: Vec<u32>,
-    flags: Vec<u32>,
+    modules: Column,
+    kinds: Column,
+    dates: Column,
+    flags: Column,
     term_offsets: Vec<u32>,
-    terms: String,
-    dialect_offsets: Vec<u32>,
-    dialects: Vec<u32>,
+    terms: TermStorage,
+    dialects: RowSets,
 }
 
 impl DescriptionIndex {
@@ -47,32 +48,36 @@ impl DescriptionIndex {
         let mut index = Self {
             concepts: vec![0; count + 1],
             term_offsets: vec![0],
-            dialect_offsets: vec![0],
             ..Self::default()
         };
+        let (mut modules, mut kinds, mut dates, mut flags) =
+            (Vec::new(), Vec::new(), Vec::new(), Vec::new());
+        let (mut dialect_offsets, mut dialects, mut terms) = (vec![0], Vec::new(), String::new());
         let mut ids = std::collections::HashSet::new();
         for mut d in descriptions {
             ensure!(ids.insert(d.id), "Duplicate description ID");
             ensure!((d.concept as usize) < count, "Unknown description concept");
             index.concepts[d.concept as usize + 1] += 1;
             index.ids.push(d.id);
-            index.modules.push(d.module);
-            index.kinds.push(d.kind);
-            index.dates.push(d.effective_time);
-            index
-                .flags
-                .push(u16::from_le_bytes(d.language) as u32 | (u32::from(d.active) << 16));
-            index.terms.push_str(&d.term);
-            index.term_offsets.push(u32::try_from(index.terms.len())?);
+            modules.push(d.module);
+            kinds.push(d.kind);
+            dates.push(d.effective_time);
+            flags.push(u16::from_le_bytes(d.language) as u32 | (u32::from(d.active) << 16));
+            terms.push_str(&d.term);
+            index.term_offsets.push(u32::try_from(terms.len())?);
             d.dialects.sort_unstable();
             d.dialects.dedup();
             for (refset, acceptability) in d.dialects {
-                index.dialects.extend([refset, acceptability]);
+                dialects.extend([refset, acceptability]);
             }
-            index
-                .dialect_offsets
-                .push(u32::try_from(index.dialects.len())?);
+            dialect_offsets.push(u32::try_from(dialects.len())?);
         }
+        index.modules = Column::new(modules);
+        index.kinds = Column::new(kinds);
+        index.dates = Column::new(dates);
+        index.flags = Column::new(flags);
+        index.dialects = RowSets::new(dialect_offsets, dialects, index.len())?;
+        index.terms = TermStorage::Owned(terms);
         prefix_sum(&mut index.concepts)?;
         index.validate(count)?;
         Ok(index)
@@ -91,25 +96,37 @@ impl DescriptionIndex {
         self.ids[row]
     }
     pub fn module(&self, row: usize) -> u32 {
-        self.modules[row]
+        self.modules.get(row)
     }
     pub fn kind(&self, row: usize) -> u32 {
-        self.kinds[row]
+        self.kinds.get(row)
     }
     pub fn effective_time(&self, row: usize) -> u32 {
-        self.dates[row]
+        self.dates.get(row)
     }
     pub fn active(&self, row: usize) -> bool {
-        self.flags[row] & (1 << 16) != 0
+        self.flags.get(row) & (1 << 16) != 0
     }
     pub fn language(&self, row: usize) -> [u8; 2] {
-        (self.flags[row] as u16).to_le_bytes()
+        (self.flags.get(row) as u16).to_le_bytes()
     }
-    pub fn term(&self, row: usize) -> &str {
-        &self.terms[self.term_offsets[row] as usize..self.term_offsets[row + 1] as usize]
+    pub fn term(&self, row: usize) -> Result<String> {
+        self.with_term(row, str::to_owned)
+    }
+    pub fn term_bytes(&self, row: usize) -> usize {
+        (self.term_offsets[row + 1] - self.term_offsets[row]) as usize
+    }
+    /// Visits text without allocating a string. The callback must not re-enter this index's text reader.
+    pub fn with_term<T>(&self, row: usize, visit: impl FnOnce(&str) -> T) -> Result<T> {
+        self.terms.with_range(
+            self.term_offsets[row] as usize,
+            self.term_offsets[row + 1] as usize,
+            visit,
+        )
     }
     pub fn dialects(&self, row: usize) -> impl Iterator<Item = (u32, u32)> + '_ {
-        self.dialects[self.dialect_offsets[row] as usize..self.dialect_offsets[row + 1] as usize]
+        self.dialects
+            .get(row)
             .chunks_exact(2)
             .map(|pair| (pair[0], pair[1]))
     }
@@ -118,7 +135,7 @@ impl DescriptionIndex {
         let n = self.len();
         validate_offsets(&self.concepts, count, n)?;
         validate_offsets(&self.term_offsets, n, self.terms.len())?;
-        validate_offsets(&self.dialect_offsets, n, self.dialects.len())?;
+        self.dialects.validate(count, n)?;
         ensure!(
             [
                 self.modules.len(),
@@ -133,20 +150,14 @@ impl DescriptionIndex {
         ensure!(
             self.modules
                 .iter()
-                .chain(&self.kinds)
-                .chain(&self.dialects)
-                .all(|&v| (v as usize) < count),
+                .chain(self.kinds.iter())
+                .all(|v| (v as usize) < count),
             "Invalid description metadata ordinal"
         );
+        self.terms.validate(&self.term_offsets)?;
         ensure!(
-            self.term_offsets
-                .iter()
-                .all(|&v| self.terms.is_char_boundary(v as usize)),
-            "Invalid description UTF-8 offset"
-        );
-        ensure!(
-            self.dialect_offsets.iter().all(|v| v % 2 == 0),
-            "Invalid language member offset"
+            self.term_offsets.windows(2).all(|w| w[0] < w[1]),
+            "Empty description term"
         );
         let mut ids = self.ids.clone();
         ids.sort_unstable();
@@ -158,18 +169,10 @@ impl DescriptionIndex {
         );
         for row in 0..n {
             ensure!(
-                self.flags[row] >> 17 == 0 && self.language(row).iter().all(u8::is_ascii_lowercase),
+                self.flags.get(row) >> 17 == 0
+                    && self.language(row).iter().all(u8::is_ascii_lowercase),
                 "Invalid description language or flags"
             );
-            ensure!(!self.term(row).is_empty(), "Empty description term");
-            let mut previous = None;
-            for pair in self.dialects(row) {
-                ensure!(
-                    previous.is_none_or(|old| old < pair),
-                    "Unordered language members"
-                );
-                previous = Some(pair);
-            }
         }
         Ok(())
     }
@@ -183,19 +186,12 @@ impl DescriptionIndex {
         for &id in &self.ids {
             put_u64(&mut out, id)?;
         }
-        for column in [
-            &self.modules,
-            &self.kinds,
-            &self.dates,
-            &self.flags,
-            &self.term_offsets,
-            &self.dialect_offsets,
-            &self.dialects,
-        ] {
-            put_u32s(&mut out, column)?;
+        for column in [&self.modules, &self.kinds, &self.dates, &self.flags] {
+            column.write(&mut out)?;
         }
-        put_u64(&mut out, self.terms.len() as u64)?;
-        out.write_all(self.terms.as_bytes())?;
+        put_u32s(&mut out, &self.term_offsets)?;
+        self.dialects.write(&mut out)?;
+        self.terms.write(&mut out)?;
         out.flush()?;
         out.get_ref().sync_all()?;
         Ok(DescriptionManifest {
@@ -203,7 +199,7 @@ impl DescriptionIndex {
             sha256: sha256(path)?,
             descriptions: self.len(),
             active_descriptions: (0..self.len()).filter(|&i| self.active(i)).count(),
-            language_memberships: self.dialects.len() / 2,
+            language_memberships: self.dialects.entries() / 2,
         })
     }
 
@@ -215,23 +211,34 @@ impl DescriptionIndex {
         let mut input = Input::open(section, MAGIC)?;
         let concepts = input.u32s()?;
         let n = input.count(8)?;
+        let ids = (0..n).map(|_| input.u64()).collect::<Result<_>>()?;
+        let modules = Column::new(input.u32s()?);
+        let kinds = Column::new(input.u32s()?);
+        let dates = Column::new(input.u32s()?);
+        let flags = Column::new(input.u32s()?);
+        let term_offsets = input.u32s()?;
+        let dialects = RowSets::read(&mut input, n)?;
+        let length = input.count(1)?;
+        ensure!(
+            input.remaining == length as u64,
+            "Trailing description bytes"
+        );
+        let start = input.reader.stream_position()?;
         let index = Self {
             concepts,
-            ids: (0..n).map(|_| input.u64()).collect::<Result<_>>()?,
-            modules: input.u32s()?,
-            kinds: input.u32s()?,
-            dates: input.u32s()?,
-            flags: input.u32s()?,
-            term_offsets: input.u32s()?,
-            dialect_offsets: input.u32s()?,
-            dialects: input.u32s()?,
-            terms: String::from_utf8(input.bytes()?)?,
+            ids,
+            modules,
+            kinds,
+            dates,
+            flags,
+            term_offsets,
+            dialects,
+            terms: TermStorage::stored(section.clone(), start, length)?,
         };
-        ensure!(input.remaining == 0, "Trailing description bytes");
         index.validate(count)?;
         ensure!(
             index.len() == metadata.descriptions
-                && index.dialects.len() / 2 == metadata.language_memberships
+                && index.dialects.entries() / 2 == metadata.language_memberships
                 && (0..index.len()).filter(|&r| index.active(r)).count()
                     == metadata.active_descriptions,
             "Description manifest counts differ"
@@ -240,7 +247,7 @@ impl DescriptionIndex {
     }
 
     #[cfg(feature = "import")]
-    pub(crate) fn into_descriptions(self, mapping: &[u32]) -> Vec<Description> {
+    pub(crate) fn into_descriptions(self, mapping: &[u32]) -> Result<Vec<Description>> {
         let mut rows = Vec::with_capacity(self.len());
         for (concept, &new) in mapping.iter().enumerate() {
             for row in self.for_concept(concept as u32) {
@@ -252,7 +259,7 @@ impl DescriptionIndex {
                     effective_time: self.effective_time(row),
                     active: self.active(row),
                     language: self.language(row),
-                    term: self.term(row).to_owned(),
+                    term: self.term(row)?,
                     dialects: self
                         .dialects(row)
                         .map(|(r, a)| (mapping[r as usize], mapping[a as usize]))
@@ -260,7 +267,7 @@ impl DescriptionIndex {
                 });
             }
         }
-        rows
+        Ok(rows)
     }
 }
 
