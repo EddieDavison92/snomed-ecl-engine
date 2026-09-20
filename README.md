@@ -23,7 +23,7 @@ terminology in one file and evaluates queries inside the calling process.
 
 - **Serverless functions.** Compute only when a query arrives. The query-only
   executable is 2.13 MiB, under a megabyte gzipped, and the index is a single
-  verified file.
+  file.
 - **A small VPS.** One CPU and a few hundred megabytes serve the whole UK
   release, so an ECL API does not need a cluster behind it.
 - **Portable devices.** The index sits beside the application and needs no
