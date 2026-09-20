@@ -38,7 +38,10 @@ fn fixture() -> NumericStore {
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
-        ids: (1000000..1000011).chain([116680003]).collect(),
+        ids: (0..11)
+            .map(|i| 1000000 + i * 1000)
+            .chain([116680003])
+            .collect(),
         flags: vec![1; n],
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -70,26 +73,26 @@ fn assert_query(query: &str, expected: &[u32]) {
 
 #[test]
 fn groups_do_not_cross_match_or_include_group_zero() {
-    assert_query("* : 1000005 = 1000008, 1000006 = 1000009", &[0, 1, 2]);
-    assert_query("* : { 1000005 = 1000008, 1000006 = 1000009 }", &[0]);
-    assert_query("* : [2..2] { 1000005 = 1000008 }", &[3]);
-    assert_query("* : { [0..0] 1000006 = * }", &[1, 3]);
+    assert_query("* : 1005000 = 1008000, 1006000 = 1009000", &[0, 1, 2]);
+    assert_query("* : { 1005000 = 1008000, 1006000 = 1009000 }", &[0]);
+    assert_query("* : [2..2] { 1005000 = 1008000 }", &[3]);
+    assert_query("* : { [0..0] 1006000 = * }", &[1, 3]);
     assert_query(
-        "* : { (1000005 = 1000008 OR 1000006 = 1000010), 1000006 = * }",
+        "* : { (1005000 = 1008000 OR 1006000 = 1010000), 1006000 = * }",
         &[0, 3],
     );
 }
 
 #[test]
 fn cardinality_and_inequality_preserve_absence_and_reverse_identity() {
-    assert_query("* : [2..*] 1000005 = 1000008", &[3]);
-    assert_query("(1000000 OR 1000004) : [0..0] 1000005 = *", &[4]);
-    assert_query("* : 1000006 != 1000009", &[3]);
-    assert_query("* : [4..4] R 1000005 = *", &[8]);
-    assert_query("* : [5..5] R 1000005 = *", &[]);
-    assert_query("* : R 1000005 != 1000000", &[8]);
-    assert_query("* : 116680003 = 1000008", &[9]);
-    assert_query("* : R 116680003 = 1000010", &[9]);
+    assert_query("* : [2..*] 1005000 = 1008000", &[3]);
+    assert_query("(1000000 OR 1004000) : [0..0] 1005000 = *", &[4]);
+    assert_query("* : 1006000 != 1009000", &[3]);
+    assert_query("* : [4..4] R 1005000 = *", &[8]);
+    assert_query("* : [5..5] R 1005000 = *", &[]);
+    assert_query("* : R 1005000 != 1000000", &[8]);
+    assert_query("* : 116680003 = 1008000", &[9]);
+    assert_query("* : R 116680003 = 1010000", &[9]);
 }
 
 #[test]
@@ -97,15 +100,15 @@ fn cardinality_bounds_beyond_machine_integers_preserve_finite_store_semantics() 
     for bound in [
         "4294967296",
         "18446744073709551616",
-        "99999999999999999999999999999999999999999",
+        "99900009990000999000099900009990000999999",
     ] {
-        assert_query(&format!("* : [1..{bound}] 1000005 = *"), &[0, 1, 2, 3]);
-        assert_query(&format!("* : [{bound}..*] 1000005 = *"), &[]);
-        assert_query(&format!("* : [1..{bound}] {{ 1000005 = * }}"), &[0, 1, 3]);
+        assert_query(&format!("* : [1..{bound}] 1005000 = *"), &[0, 1, 2, 3]);
+        assert_query(&format!("* : [{bound}..*] 1005000 = *"), &[]);
+        assert_query(&format!("* : [1..{bound}] {{ 1005000 = * }}"), &[0, 1, 3]);
     }
     for query in [
-        "* : [18446744073709551617..18446744073709551616] 1000005 = *",
-        "* : [18446744073709551616..4294967296] 1000005 = *",
+        "* : [18446744073709551617..18446744073709551616] 1005000 = *",
+        "* : [18446744073709551616..4294967296] 1005000 = *",
     ] {
         assert_eq!(parse(query).unwrap_err().kind, ParseErrorKind::Syntax);
     }
@@ -113,19 +116,19 @@ fn cardinality_bounds_beyond_machine_integers_preserve_finite_store_semantics() 
 
 #[test]
 fn concrete_values_compare_exactly_and_keep_their_types() {
-    assert_query("* : 1000007 > #0.1", &[0]);
-    assert_query("* : 1000007 = #+0.100", &[1]);
-    assert_query("* : 1000007 < #-1.999999999999999999999", &[2]);
-    assert_query("* : 1000007 != #0.1", &[0, 2]);
-    assert_query("* : 1000007 = \"A\\\"B\"", &[3]);
-    assert_query("* : 1000007 = (\"other\" \"A\\\"B\")", &[3]);
-    assert_query("* : 1000007 = \"a\\\"b\"", &[]);
-    assert_query("* : 1000007 = \"A\"", &[]);
-    assert_query("* : 1000007 = \"*B\"", &[]);
-    assert_query("* : 1000007 != \"A\"", &[3]);
-    assert_query("* : 1000007 = true", &[4]);
-    assert_query("* : 1000007 != false", &[4]);
-    assert_query("* : { 1000007 = true }", &[]);
+    assert_query("* : 1007000 > #0.1", &[0]);
+    assert_query("* : 1007000 = #+0.100", &[1]);
+    assert_query("* : 1007000 < #-1.999000099900009990000", &[2]);
+    assert_query("* : 1007000 != #0.1", &[0, 2]);
+    assert_query("* : 1007000 = \"A\\\"B\"", &[3]);
+    assert_query("* : 1007000 = (\"other\" \"A\\\"B\")", &[3]);
+    assert_query("* : 1007000 = \"a\\\"b\"", &[]);
+    assert_query("* : 1007000 = \"A\"", &[]);
+    assert_query("* : 1007000 = \"*B\"", &[]);
+    assert_query("* : 1007000 != \"A\"", &[3]);
+    assert_query("* : 1007000 = true", &[4]);
+    assert_query("* : 1007000 != false", &[4]);
+    assert_query("* : { 1007000 = true }", &[]);
 }
 
 #[test]
@@ -167,13 +170,13 @@ fn concrete_inequality_matches_a_different_value_even_when_an_equal_value_exists
     .unwrap();
     store.validate().unwrap();
     for (query, expected) in [
-        ("* : 1000007 != #10", vec![0]),
-        ("* : 1000007 = #10", vec![0, 1]),
-        ("* : 1000007 > #10", vec![0]),
-        ("* : [1..1] 1000007 != #10", vec![0]),
-        ("* : [2..*] 1000007 != #10", vec![]),
-        ("1000000 : [0..0] 1000007 = #10", vec![]),
-        ("* : { 1000007 != #10 }", vec![0]),
+        ("* : 1007000 != #10", vec![0]),
+        ("* : 1007000 = #10", vec![0, 1]),
+        ("* : 1007000 > #10", vec![0]),
+        ("* : [1..1] 1007000 != #10", vec![0]),
+        ("* : [2..*] 1007000 != #10", vec![]),
+        ("1000000 : [0..0] 1007000 = #10", vec![]),
+        ("* : { 1007000 != #10 }", vec![0]),
     ] {
         assert_eq!(
             evaluate(&store, &parse(query).unwrap()).unwrap(),
@@ -185,18 +188,18 @@ fn concrete_inequality_matches_a_different_value_even_when_an_equal_value_exists
 
 #[test]
 fn nested_names_values_projection_and_extrema() {
-    assert_query("* : (1000005 OR 1000006) = (<< 1000009)", &[0, 1, 2, 3]);
-    assert_query("* : 1000005 = (* : R 1000005 = 1000000)", &[0, 1, 2, 3]);
-    assert_query("1000000 . (1000005 OR 1000006)", &[8, 9]);
-    assert_query("1000003 . 1000006 . 116680003", &[9]);
-    assert_query("!!> (1000008 OR 1000009 OR 1000010)", &[8]);
-    assert_query("bottom (1000008 OR 1000009 OR 1000010)", &[10]);
+    assert_query("* : (1005000 OR 1006000) = (<< 1009000)", &[0, 1, 2, 3]);
+    assert_query("* : 1005000 = (* : R 1005000 = 1000000)", &[0, 1, 2, 3]);
+    assert_query("1000000 . (1005000 OR 1006000)", &[8, 9]);
+    assert_query("1003000 . 1006000 . 116680003", &[9]);
+    assert_query("!!> (1008000 OR 1009000 OR 1010000)", &[8]);
+    assert_query("bottom (1008000 OR 1009000 OR 1010000)", &[10]);
     assert!(matches!(
-        evaluate(&fixture(), &parse("1000000 . 1000007").unwrap()),
+        evaluate(&fixture(), &parse("1000000 . 1007000").unwrap()),
         Err(EvalError::TypeMismatch)
     ));
     assert!(matches!(
-        evaluate(&fixture(), &parse("* : { R 1000005 = * }").unwrap()),
+        evaluate(&fixture(), &parse("* : { R 1005000 = * }").unwrap()),
         Err(EvalError::Unsupported(_))
     ));
 }
@@ -210,22 +213,22 @@ fn concrete_dot_preserves_exact_values_and_rejects_concept_only_operations() {
     let store = fixture();
     for (query, expected) in [
         (
-            "1000000 . 1000007",
+            "1000000 . 1007000",
             vec![V::Number("0.10000000000000000001".into())],
         ),
-        ("1000003 . 1000007", vec![V::String("A\"B".into())]),
-        ("1000004 . 1000007", vec![V::Boolean(true)]),
+        ("1003000 . 1007000", vec![V::String("A\"B".into())]),
+        ("1004000 . 1007000", vec![V::Boolean(true)]),
         (
-            "(1000000 . 1000007) OR (1000001 . 1000007)",
+            "(1000000 . 1007000) OR (1001000 . 1007000)",
             vec![
                 V::Number("0.1".into()),
                 V::Number("0.10000000000000000001".into()),
             ],
         ),
         (
-            "1000000 . (1000005 OR 1000007)",
+            "1000000 . (1005000 OR 1007000)",
             vec![
-                V::Concept("1000008".into()),
+                V::Concept("1008000".into()),
                 V::Number("0.10000000000000000001".into()),
             ],
         ),
@@ -236,7 +239,7 @@ fn concrete_dot_preserves_exact_values_and_rejects_concept_only_operations() {
             "{query}"
         );
     }
-    for query in ["1000000 . 1000007 . *", "<< (1000000 . 1000007)"] {
+    for query in ["1000000 . 1007000 . *", "<< (1000000 . 1007000)"] {
         assert_eq!(
             evaluate_result(&store, &parse(query).unwrap()),
             Err(EvalError::TypeMismatch)
@@ -246,31 +249,31 @@ fn concrete_dot_preserves_exact_values_and_rejects_concept_only_operations() {
 
 #[test]
 fn nested_typed_sets_can_feed_concept_operations_after_scalars_are_removed() {
-    let scalar = "(1000000 . 1000007)";
-    let concepts = format!("((1000008 OR {scalar}) MINUS {scalar})");
+    let scalar = "(1000000 . 1007000)";
+    let concepts = format!("((1008000 OR {scalar}) MINUS {scalar})");
     for (query, expected) in [
         (concepts.clone(), vec![8]),
         (format!("< {concepts}"), vec![9, 10]),
         (format!("> ({concepts} AND {scalar})"), vec![]),
-        (format!("!!> ({concepts} OR 1000009)"), vec![8]),
-        (format!("* : 1000005 = {concepts}"), vec![0, 1, 2, 3]),
+        (format!("!!> ({concepts} OR 1009000)"), vec![8]),
+        (format!("* : 1005000 = {concepts}"), vec![0, 1, 2, 3]),
         (format!("{concepts} {{{{C active=1}}}}"), vec![8]),
-        (format!("{concepts} : R 1000005 = 1000000"), vec![8]),
+        (format!("{concepts} : R 1005000 = 1000000"), vec![8]),
         (
-            format!("(1000009 OR ({concepts} AND {scalar})) . 116680003"),
+            format!("(1009000 OR ({concepts} AND {scalar})) . 116680003"),
             vec![8],
         ),
         (
-            format!("1000000 . ((1000005 OR {scalar}) MINUS {scalar})"),
+            format!("1000000 . ((1005000 OR {scalar}) MINUS {scalar})"),
             vec![8],
         ),
     ] {
         assert_query(&query, &expected);
     }
     for query in [
-        format!("< (1000008 OR {scalar})"),
-        format!("(1000008 OR {scalar}) . 116680003"),
-        format!("* : 1000005 = (1000008 OR {scalar})"),
+        format!("< (1008000 OR {scalar})"),
+        format!("(1008000 OR {scalar}) . 116680003"),
+        format!("* : 1005000 = (1008000 OR {scalar})"),
     ] {
         assert_eq!(
             evaluate(&fixture(), &parse(&query).unwrap()),
@@ -282,19 +285,19 @@ fn nested_typed_sets_can_feed_concept_operations_after_scalars_are_removed() {
 #[test]
 fn malformed_refinements_fail_and_long_syntax_agrees() {
     for query in [
-        "* : [2..1] 1000005 = *",
-        "* : [01..2] 1000005 = *",
-        "* : 1000005 > 1000008",
-        "* : 1000007 = #01",
-        "* : 1000007 = #1.",
-        "* : 1000007 = #--1",
-        "* : 1000007 = wild:\"*B\"",
-        "* : 1000007 = match:\"A\"",
-        "* : R 1000007 = #1",
-        "* : { { 1000005 = * } }",
-        "* : [1..*] (1000005 = *)",
-        "* : 1000005 = * OR 1000006 = * AND 1000007 = *",
-        "!!> <<1000008",
+        "* : [2..1] 1005000 = *",
+        "* : [01..2] 1005000 = *",
+        "* : 1005000 > 1008000",
+        "* : 1007000 = #01",
+        "* : 1007000 = #1.",
+        "* : 1007000 = #--1",
+        "* : 1007000 = wild:\"*B\"",
+        "* : 1007000 = match:\"A\"",
+        "* : R 1007000 = #1",
+        "* : { { 1005000 = * } }",
+        "* : [1..*] (1005000 = *)",
+        "* : 1005000 = * OR 1006000 = * AND 1007000 = *",
+        "!!> <<1008000",
     ] {
         assert_eq!(
             parse(query).unwrap_err().kind,
@@ -303,15 +306,15 @@ fn malformed_refinements_fail_and_long_syntax_agrees() {
         );
     }
     assert_eq!(
-        parse("* : [0..*] R 1000005 != 1000008").unwrap(),
-        parse("ANY : [0 to many] reverseOf 1000005 not = 1000008").unwrap()
+        parse("* : [0..*] R 1005000 != 1008000").unwrap(),
+        parse("ANY : [0 to many] reverseOf 1005000 not = 1008000").unwrap()
     );
 }
 
 #[test]
 fn decimal_order_is_exact_beyond_machine_integer_and_float_ranges() {
     let ordered = [
-        "-999999999999999999999999999999999999999999",
+        "-999000099900009990000999000099900009990000",
         "-10",
         "-0.11",
         "-0.10000000000000000001",
@@ -321,7 +324,7 @@ fn decimal_order_is_exact_beyond_machine_integer_and_float_ranges() {
         "0.1",
         "0.10000000000000000001",
         "10",
-        "999999999999999999999999999999999999999999",
+        "999000099900009990000999000099900009990000",
     ];
     for pair in ordered.windows(2) {
         assert!(Decimal::parse(pair[0]).unwrap() < Decimal::parse(pair[1]).unwrap());

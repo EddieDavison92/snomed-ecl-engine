@@ -4,6 +4,7 @@ use crate::store::MemberValue;
 pub(super) fn value_cost(value: &MemberValue) -> usize {
     let bytes = match value {
         MemberValue::Concept(v)
+        | MemberValue::Component(v)
         | MemberValue::Number(v)
         | MemberValue::Time(v)
         | MemberValue::String(v) => v.len(),
@@ -85,7 +86,7 @@ impl Context<'_> {
                         .parse()
                         .ok()
                         .and_then(|id| self.store.ordinal(id))
-                        .ok_or(EvalError::TypeMismatch)?;
+                        .ok_or_else(|| EvalError::MissingReference(id.clone()))?;
                     ordinals.push(ordinal);
                     self.live -= cost;
                 }

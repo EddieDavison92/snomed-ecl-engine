@@ -398,6 +398,14 @@ fn options(path: &Path) -> ImportOptions {
 }
 
 fn descriptor_fixture(path: &Path, invalid_decimal: bool) {
+    descriptor_fixture_with(
+        path,
+        invalid_decimal,
+        &["7", "9223372036854775807", "99999999999999999999999"],
+    );
+}
+
+fn descriptor_fixture_with(path: &Path, invalid_decimal: bool, integers: &[&str]) {
     use std::io::Read;
     fixture(path, false, false);
     let mut original = zip::ZipArchive::new(File::open(path).unwrap()).unwrap();
@@ -416,6 +424,7 @@ fn descriptor_fixture(path: &Path, invalid_decimal: bool) {
                 900000000000461009,
                 900000000000474003,
                 900000000000475002,
+                900000000000476001,
             ] {
                 body.push_str(&format!("{id}\t20260826\t1\t{ROOT}\t900000000000074008\n"));
             }
@@ -438,6 +447,13 @@ fn descriptor_fixture(path: &Path, invalid_decimal: bool) {
     {
         descriptors.push_str(&format!("00000000-0000-4000-8000-00000000100{position}\t20260826\t1\t{ROOT}\t900000000000456007\t800002\t{ROOT}\t{kind}\t{position}\n"));
     }
+    // An Integer descriptor on a string-typed file column declares integer semantics.
+    for (position, kind) in [900000000000461009u64, 900000000000476001]
+        .into_iter()
+        .enumerate()
+    {
+        descriptors.push_str(&format!("00000000-0000-4000-8000-00000000110{position}\t20260826\t1\t{ROOT}\t900000000000456007\t{KIND}\t{ROOT}\t{kind}\t{position}\n"));
+    }
     files.push((
         "Synthetic/Snapshot/Refset/der2_cciRefset_RefsetDescriptorSnapshot.txt".into(),
         descriptors,
@@ -448,6 +464,21 @@ fn descriptor_fixture(path: &Path, invalid_decimal: bool) {
         "0.100000000000000001"
     };
     files.push(("Synthetic/Snapshot/Refset/der2_sssRefset_CustomSnapshot.txt".into(), format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tcustom Amount\tReview Date\tlinkUuid\n00000000-0000-4000-8000-000000002001\t20260826\t1\t{ROOT}\t800001\t{LEAF}\t{amount}\t20260801\t00000000-0000-4000-8000-000000009001\n00000000-0000-4000-8000-000000002002\t20260826\t1\t{ROOT}\t800001\t{RIGHT}\t0.1\t\t00000000-0000-4000-8000-000000009002\n")));
+    // Undescribed integer fields fall back to the filename type; a declared Integer descriptor
+    // applies the same rules to a string-typed file column. Members cycle through LEAF, RIGHT, LEFT.
+    let members = [LEAF, RIGHT, LEFT];
+    for (file, refset) in [
+        ("der2_iRefset_WideSnapshot.txt", LEFT),
+        ("der2_sRefset_DeclaredSnapshot.txt", KIND),
+    ] {
+        let mut body =
+            "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsequence\n"
+                .to_owned();
+        for (i, value) in integers.iter().enumerate() {
+            body.push_str(&format!("00000000-0000-4000-8000-0000000{}{i:03}\t20260826\t1\t{ROOT}\t{refset}\t{}\t{value}\n", if refset == LEFT { 30 } else { 31 }, members[i % 3]));
+        }
+        files.push((format!("Synthetic/Snapshot/Refset/{file}"), body));
+    }
     let mut archive = zip::ZipWriter::new(File::create(path).unwrap());
     for (name, body) in files {
         archive
@@ -513,6 +544,70 @@ fn rf2_descriptors_preserve_inherited_decimal_date_and_uuid_types() {
     };
     number.text.replace_range(..3, "NaN");
     assert!(table.validate().is_err());
+    // Integer values beyond i64 keep the whole column exact instead of failing the import,
+    // whether the type comes from the filename or from an Integer descriptor on a string column.
+    for refset in [LEFT, KIND] {
+        let wide = store.member_tables.get(refset).unwrap().unwrap();
+        assert!(matches!(wide.columns[6], MemberColumn::Number(_)));
+        for (query, expected) in [
+            (format!("^{refset} {{{{M sequence=#7}}}}"), vec![LEAF]),
+            (
+                format!("^{refset} {{{{M sequence>#9223372036854775806}}}}"),
+                vec![LEFT, RIGHT],
+            ),
+            (
+                format!("^{refset} {{{{M sequence=#99999999999999999999999.0}}}}"),
+                vec![LEFT],
+            ),
+        ] {
+            assert_eq!(
+                evaluate(&store, &parse(&query).unwrap())
+                    .unwrap()
+                    .iter()
+                    .map(|&o| store.ids[o as usize])
+                    .collect::<Vec<_>>(),
+                expected,
+                "{query}"
+            );
+        }
+        assert_eq!(
+            evaluate_result(&store, &parse(&format!("^[sequence]{refset}")).unwrap()).unwrap(),
+            QueryResult::Values(vec![
+                MemberValue::Number("7".into()),
+                MemberValue::Number("9223372036854775807".into()),
+                MemberValue::Number("99999999999999999999999".into()),
+            ])
+        );
+    }
+    // Integer lexemes stay integers after promotion; decimals, signs and leading zeros fail.
+    for (integers, valid) in [
+        (&["7", "99999999999999999999999", "1.5"][..], false),
+        (&["7", "99999999999999999999999", "+3"][..], false),
+        (&["7", "99999999999999999999999", "007"][..], false),
+        (&["7", "-0", "1"][..], false),
+        (&["1.5", "7", "9"][..], false),
+        (&["-3", "0", "-99999999999999999999999"][..], true),
+    ] {
+        let archive = temp
+            .path()
+            .join(format!("integers-{}.zip", integers.join("_")));
+        let store_path = temp.path().join(format!("integers-{}", integers.join("_")));
+        descriptor_fixture_with(&archive, false, integers);
+        let imported = import_snapshot(&archive, &store_path, &options(&archive));
+        assert_eq!(imported.is_ok(), valid, "{integers:?}");
+        if valid {
+            let store = NumericStore::open(&store_path).unwrap();
+            assert_eq!(
+                evaluate_result(&store, &parse(&format!("^[sequence]{KIND}")).unwrap()).unwrap(),
+                // Scalar sets order values by their canonical spelling.
+                QueryResult::Values(vec![
+                    MemberValue::Number("-3".into()),
+                    MemberValue::Number("-99999999999999999999999".into()),
+                    MemberValue::Number("0".into()),
+                ])
+            );
+        }
+    }
     let bad_archive = temp.path().join("bad.zip");
     let bad_store = temp.path().join("bad-store");
     descriptor_fixture(&bad_archive, true);

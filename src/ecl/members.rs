@@ -97,9 +97,16 @@ impl Parser<'_> {
                     || self.word().eq_ignore_ascii_case("match")
                     || self.word().eq_ignore_ascii_case("wild"));
             self.pos = saved;
-            let value = if field == "active" {
+            // The activeFilter and effectiveTimeFilter forms come first; the generic
+            // memberFieldFilter still parses other value lexemes, which evaluation types.
+            let dated = field == "effectivetime" && self.rest().starts_with('"');
+            let active_literal = self.rest().starts_with(['*', '"'])
+                || self.word().eq_ignore_ascii_case("any")
+                || matches!(self.rest().as_bytes(), [b'0' | b'1', rest @ ..]
+                    if !rest.first().is_some_and(u8::is_ascii_digit));
+            let value = if field == "active" && active_literal {
                 MemberPredicate::Boolean(self.active_value()?)
-            } else if field == "effectivetime"
+            } else if dated
                 || quoted && !matches!(comparison, Comparison::Eq | Comparison::Ne)
                 || self.rest().starts_with("\"\"")
             {

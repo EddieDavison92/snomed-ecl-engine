@@ -1,4 +1,7 @@
-use snomed_ecl_engine::ecl::{AttributeValue, Comparison, Expr, Hierarchy, Refinement};
+use snomed_ecl_engine::ecl::{
+    AttributeValue, Comparison, Expr, Hierarchy, MemberFilter, MemberPredicate, MemberQuery,
+    Refinement,
+};
 use snomed_ecl_engine::store::NumericStore;
 use std::collections::{BTreeSet, VecDeque};
 
@@ -93,12 +96,117 @@ pub fn slow(store: &NumericStore, expr: &Expr) -> BTreeSet<u32> {
             }
             result
         }
-        Expr::Members(..)
-        | Expr::History(..)
+        Expr::Members(query) => members(store, query),
+        Expr::History(..)
         | Expr::AlternateIdentifier { .. }
         | Expr::DialectAlias(..)
         | Expr::DescriptionFiltered(..)
         | Expr::ConceptFiltered(..) => panic!("Outside the graph/refinement fixture"),
+    }
+}
+
+// Row-by-row member scan for concept-valued results. memberOf omits identifiers that name no
+// concept of the substrate; projected fields are assumed resolvable here. Tuple and text
+// predicates are out of scope.
+fn members(store: &NumericStore, query: &MemberQuery) -> BTreeSet<u32> {
+    use snomed_ecl_engine::store::MemberColumn as C;
+    let candidates = slow(store, &query.source);
+    let field = match &query.fields {
+        None => "referencedComponentId".to_owned(),
+        Some(fields) if fields.len() == 1 => fields[0].clone(),
+        Some(_) => panic!("Tuple projections are outside the slow evaluator"),
+    };
+    let active_explicit = query.filters.iter().any(|f| f.field == "active");
+    let mut result = BTreeSet::new();
+    for refset in store.member_tables.refsets() {
+        let refset_ordinal = store.ordinal(refset).unwrap();
+        if !query.reverse && !candidates.contains(&refset_ordinal) {
+            continue;
+        }
+        let table = store.member_tables.get(refset).unwrap().unwrap();
+        let (Some(C::Id(projected)), Some(C::Boolean(active)), Some(C::Id(referenced))) = (
+            table.column(&field),
+            table.column("active"),
+            table.column("referencedComponentId"),
+        ) else {
+            continue;
+        };
+        if query
+            .filters
+            .iter()
+            .any(|f| table.column(&f.field).is_none())
+        {
+            continue;
+        }
+        for row in 0..table.len() {
+            if !active_explicit && active[row] == 0 {
+                continue;
+            }
+            if !query
+                .filters
+                .iter()
+                .all(|f| member_predicate(store, table.column(&f.field).unwrap(), row, f))
+            {
+                continue;
+            }
+            if query.reverse {
+                if store
+                    .ordinal(referenced[row])
+                    .is_some_and(|o| candidates.contains(&o))
+                {
+                    result.insert(refset_ordinal);
+                }
+            } else if let Some(ordinal) = store.ordinal(projected[row]) {
+                result.insert(ordinal);
+            }
+        }
+    }
+    result
+}
+
+fn member_predicate(
+    store: &NumericStore,
+    column: &snomed_ecl_engine::store::MemberColumn,
+    row: usize,
+    filter: &MemberFilter,
+) -> bool {
+    use snomed_ecl_engine::decimal::Decimal;
+    use snomed_ecl_engine::store::MemberColumn as C;
+    let equal = filter.comparison == Comparison::Eq;
+    match (column, &filter.value) {
+        (C::Id(values), MemberPredicate::Concepts(expr)) => {
+            let allowed = slow(store, expr);
+            store
+                .ordinal(values[row])
+                .is_some_and(|o| allowed.contains(&o))
+                == equal
+        }
+        (C::Integer(values), MemberPredicate::Number(target)) => filter.comparison.matches(
+            Decimal::parse(&values[row].to_string())
+                .unwrap()
+                .cmp(target),
+        ),
+        (C::Number(values), MemberPredicate::Number(target)) => filter
+            .comparison
+            .matches(Decimal::parse(values.get(row)).unwrap().cmp(target)),
+        (C::Boolean(values), MemberPredicate::Boolean(target)) => {
+            target.is_none_or(|t| t == (values[row] != 0)) == equal
+        }
+        (
+            C::Time(values),
+            MemberPredicate::Dates(dates) | MemberPredicate::DatesOrText { dates, .. },
+        ) => {
+            let actual = (values[row] != 0).then_some(values[row]);
+            let hit = dates.iter().any(|date| match filter.comparison {
+                Comparison::Eq | Comparison::Ne => actual == *date,
+                Comparison::Le | Comparison::Ge if actual.is_none() && date.is_none() => true,
+                op => actual
+                    .zip(*date)
+                    .is_some_and(|(a, b)| op.matches(a.cmp(&b))),
+            });
+            hit == !matches!(filter.comparison, Comparison::Ne)
+        }
+        _ => panic!("Predicate type outside the slow evaluator"),
     }
 }
 

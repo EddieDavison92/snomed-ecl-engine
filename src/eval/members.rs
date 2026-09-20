@@ -162,6 +162,8 @@ impl Context<'_> {
         let mut marked = self.reserve(words)?;
         marked.resize(words, 0);
         let row_result = terminal && query.fields.as_ref().is_some_and(|f| f.len() != 1);
+        let membership =
+            requested.len() == 1 && requested[0].eq_ignore_ascii_case("referencedComponentId");
         let mut has_scalar_values = false;
         let active_explicit = query
             .filters
@@ -236,14 +238,27 @@ impl Context<'_> {
                     marked[ordinal as usize / 32] |= 1 << (ordinal % 32);
                     break;
                 } else if concepts && !row_result {
-                    let MemberColumn::Id(values) = columns[0] else {
+                    let MemberColumn::Id(ids) = columns[0] else {
                         unreachable!()
                     };
-                    let ordinal = self
-                        .store
-                        .ordinal(values[row])
-                        .ok_or(EvalError::TypeMismatch)?;
-                    marked[ordinal as usize / 32] |= 1 << (ordinal % 32);
+                    let id = ids[row];
+                    if let Some(ordinal) = self.store.ordinal(id) {
+                        marked[ordinal as usize / 32] |= 1 << (ordinal % 32);
+                    } else if membership && crate::store::is_concept_id(id) {
+                        // memberOf is the set of referenced concepts; an identifier naming no
+                        // concept of this substrate adds none. Other fields return their values.
+                    } else {
+                        let value = if crate::store::is_concept_id(id) {
+                            MemberValue::Concept(id.to_string())
+                        } else {
+                            MemberValue::Component(id.to_string())
+                        };
+                        has_scalar_values = true;
+                        if !values.contains(&value) {
+                            self.claim(super::values::value_cost(&value))?;
+                            values.insert(value);
+                        }
+                    }
                 } else if !row_result && requested.len() == 1 {
                     let column = columns[0];
                     let bytes = match column {

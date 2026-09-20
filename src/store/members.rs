@@ -60,10 +60,17 @@ pub enum MemberColumn {
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum MemberValue {
     Concept(String),
+    /// A description, relationship or other non-concept SCTID held by a component field.
+    Component(String),
     Number(String),
     Boolean(bool),
     Time(String),
     String(String),
+}
+
+/// RF2 partition digits 00 and 10 identify concepts.
+pub fn is_concept_id(id: u64) -> bool {
+    matches!((id / 10) % 100, 0 | 10)
 }
 
 impl MemberColumn {
@@ -82,7 +89,8 @@ impl MemberColumn {
     }
     pub fn value(&self, row: usize) -> MemberValue {
         match self {
-            Self::Id(v) => MemberValue::Concept(v[row].to_string()),
+            Self::Id(v) if is_concept_id(v[row]) => MemberValue::Concept(v[row].to_string()),
+            Self::Id(v) => MemberValue::Component(v[row].to_string()),
             Self::Integer(v) => MemberValue::Number(v[row].to_string()),
             Self::Number(v) => MemberValue::Number(v.get(row).into()),
             Self::Boolean(v) => MemberValue::Boolean(v[row] != 0),
@@ -141,6 +149,24 @@ impl MemberTable {
             "Refset schemas differ"
         );
         for (left, right) in self.columns.iter_mut().zip(other.columns) {
+            // An integer column promoted to decimal text on either side merges exactly.
+            if let (MemberColumn::Integer(a), MemberColumn::Number(_)) = (&*left, &right) {
+                let mut text = TextColumn::default();
+                for value in a {
+                    text.push(&value.to_string())?;
+                }
+                *left = MemberColumn::Number(text);
+            }
+            let right = match (&*left, right) {
+                (MemberColumn::Number(_), MemberColumn::Integer(b)) => {
+                    let mut text = TextColumn::default();
+                    for value in b {
+                        text.push(&value.to_string())?;
+                    }
+                    MemberColumn::Number(text)
+                }
+                (_, right) => right,
+            };
             match (left, right) {
                 (MemberColumn::Id(a), MemberColumn::Id(b)) => a.extend(b),
                 (MemberColumn::Integer(a), MemberColumn::Integer(b)) => a.extend(b),

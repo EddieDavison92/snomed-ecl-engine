@@ -1,5 +1,7 @@
 use super::{active, date, id, rows};
-use crate::store::{parse_uuid, MemberColumn, MemberManifest, MemberTable, NumericStore};
+use crate::store::{
+    is_concept_id, parse_uuid, MemberColumn, MemberManifest, MemberTable, NumericStore, TextColumn,
+};
 use anyhow::{ensure, Context, Result};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
@@ -75,7 +77,7 @@ pub(super) fn build(
             );
             let enabled = active(r[2])?;
             let reference = id(r[5])?;
-            if !matches!((reference / 10) % 100, 0 | 10) {
+            if !is_concept_id(reference) {
                 return Ok(());
             }
             let refset = id(r[4])?;
@@ -117,13 +119,18 @@ pub(super) fn build(
                         store,
                     )?);
                 }
-                entry.insert(MemberTable {
-                    refset,
-                    names: column_names.clone(),
-                    columns,
-                });
+                // Integer columns promoted to decimal text keep integer validation for every row.
+                let integer_columns = vec![false; columns.len()];
+                entry.insert((
+                    MemberTable {
+                        refset,
+                        names: column_names.clone(),
+                        columns,
+                    },
+                    integer_columns,
+                ));
             }
-            let table = tables.get_mut(&refset).unwrap();
+            let (table, integer_columns) = tables.get_mut(&refset).unwrap();
             for (i, column) in table.columns.iter_mut().enumerate() {
                 match column {
                     MemberColumn::Uuid(v) => v.push(if i == 0 { uuid } else { parse_uuid(r[i])? }),
@@ -139,7 +146,24 @@ pub(super) fn build(
                     }
                     MemberColumn::Id(v) => v.push(id(r[i])?),
                     MemberColumn::Integer(v) => {
-                        v.push(r[i].parse().context("Invalid integer member field")?)
+                        check_integer(r[i])?;
+                        match r[i].parse::<i64>() {
+                            Ok(value) => v.push(value),
+                            Err(_) => {
+                                // Integers can exceed i64; keep the whole column exact as decimal text.
+                                let mut text = TextColumn::default();
+                                for earlier in v.iter() {
+                                    text.push(&earlier.to_string())?;
+                                }
+                                text.push(r[i])?;
+                                *column = MemberColumn::Number(text);
+                                integer_columns[i] = true;
+                            }
+                        }
+                    }
+                    MemberColumn::Number(v) if integer_columns[i] => {
+                        check_integer(r[i])?;
+                        v.push(r[i])?;
                     }
                     MemberColumn::Number(v) => super::member_schema::push_number(v, r[i])?,
                     MemberColumn::Text(v) => {
@@ -150,7 +174,7 @@ pub(super) fn build(
             }
             Ok(())
         })?;
-        for (_, mut table) in tables {
+        for (_, (mut table, _)) in tables {
             ensure!(
                 seen_refsets.insert(table.refset),
                 "Refset occurs in multiple Snapshot files"
@@ -165,4 +189,17 @@ pub(super) fn build(
     }
     manifests.sort_by_key(|m| m.refset);
     Ok(manifests)
+}
+
+/// RF2 integers are decimal digits with an optional leading minus sign.
+fn check_integer(text: &str) -> Result<()> {
+    let digits = text.strip_prefix('-').unwrap_or(text);
+    ensure!(
+        !digits.is_empty()
+            && digits.bytes().all(|b| b.is_ascii_digit())
+            && (digits == "0" || !digits.starts_with('0'))
+            && text != "-0",
+        "Invalid integer member field"
+    );
+    Ok(())
 }

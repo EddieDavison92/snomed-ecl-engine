@@ -467,10 +467,26 @@ fn member_limits_and_dangling_inactive_references_never_return_partial_concept_s
     references[2] = 999001;
     let mut store = fixture();
     store.member_tables = MemberStore::loaded(vec![table]).unwrap();
+    // memberOf is the set of referenced concepts, so an identifier naming no concept of this
+    // substrate adds none. Tuple projections keep the row and its original identifier.
     let query = parse("^200001 {{M active=0}}").unwrap();
+    assert_eq!(evaluate(&store, &query).unwrap(), Vec::<u32>::new());
     assert_eq!(
-        evaluate_result(&store, &query),
-        Err(EvalError::TypeMismatch)
+        codes(&store, "^[referencedComponentId]200001 {{M active=\"*\"}}"),
+        vec![300001, 300003]
+    );
+    assert!(codes(&store, "^R (300001 OR 999001) {{M active=0}}").is_empty());
+    assert_eq!(
+        codes(&store, "^R (300001 OR 300003) {{M active=\"*\"}}"),
+        vec![200001]
+    );
+    assert_eq!(
+        evaluate_result(
+            &store,
+            &parse("^200001 {{M active=0, mapGroup=#1}}").unwrap()
+        )
+        .unwrap(),
+        QueryResult::Concepts(vec![])
     );
     let QueryResult::Rows(rows) = evaluate_result(
         &store,
@@ -479,10 +495,12 @@ fn member_limits_and_dangling_inactive_references_never_return_partial_concept_s
     .unwrap() else {
         panic!()
     };
+    assert_eq!(rows.len(), 1);
     assert_eq!(
         rows[0]["referencedComponentId"],
         MemberValue::Concept("999001".into())
     );
+    let query = parse("^200001 {{M active=0}}").unwrap();
     assert_eq!(
         evaluate_result_with_limits(
             &store,
@@ -505,6 +523,340 @@ fn member_limits_and_dangling_inactive_references_never_return_partial_concept_s
         Err(EvalError::WorkLimit)
     );
 }
+mod support;
+
+#[test]
+fn generated_member_queries_match_the_independent_row_scan() {
+    use snomed_ecl_engine::store::Adjacency;
+    use std::collections::BTreeSet;
+    // Identifiers 1000000 + 1000k all carry concept partition 00; 1098000 and 1099000 are absent.
+    let id = |k: usize| 1000000 + k as u64 * 1000;
+    let n = 30usize;
+    let ids: Vec<u64> = (0..n).map(id).collect();
+    let pairs: Vec<_> = (1..12u32).map(|c| (c, (c - 1) / 2)).collect();
+    let mut tables = Vec::new();
+    for t in 0..3usize {
+        let refset = id(20 + t);
+        let rows = 12 + t * 5;
+        // Only referencedComponentId carries absent identifiers: memberOf omits them, whereas a
+        // projected targetComponentId would return them as values outside the concept API.
+        let pick = |i: usize, salt: usize| -> u64 {
+            match (i * 7 + salt * 3 + t) % 9 {
+                0 if salt == 0 => id(99),
+                1 if salt == 0 => id(98),
+                k => id((i * 5 + k + salt) % 16),
+            }
+        };
+        let mut text = TextColumn::default();
+        for i in 0..rows {
+            text.push(&format!("T{}", i % 4)).unwrap();
+        }
+        tables.push(MemberTable {
+            refset,
+            names: [
+                "id",
+                "effectiveTime",
+                "active",
+                "moduleId",
+                "refsetId",
+                "referencedComponentId",
+                "mapGroup",
+                "mapTarget",
+                "targetComponentId",
+                "grouped",
+                "reviewDate",
+            ]
+            .into_iter()
+            .map(str::to_owned)
+            .collect(),
+            columns: vec![
+                C::Uuid(
+                    (0..rows)
+                        .map(|i| {
+                            let mut uuid = [0u8; 16];
+                            uuid[0] = t as u8 + 1;
+                            uuid[1] = i as u8;
+                            uuid
+                        })
+                        .collect(),
+                ),
+                C::Time(
+                    (0..rows)
+                        .map(|i| [20260826, 20260731, 0, 20250101][i % 4])
+                        .collect(),
+                ),
+                C::Boolean((0..rows).map(|i| u8::from((i * 3 + t) % 4 != 0)).collect()),
+                C::Id((0..rows).map(|i| id(i % 2)).collect()),
+                C::Id(vec![refset; rows]),
+                C::Id((0..rows).map(|i| pick(i, 0)).collect()),
+                C::Integer((0..rows).map(|i| (i % 3) as i64 - 1).collect()),
+                C::Text(text),
+                C::Id((0..rows).map(|i| pick(i, 1)).collect()),
+                C::Boolean((0..rows).map(|i| u8::from(i % 5 == 0)).collect()),
+                C::Time(
+                    (0..rows)
+                        .map(|i| [0, 20260826, 20240229, 20260826][i % 4])
+                        .collect(),
+                ),
+            ],
+        });
+    }
+    // Plain memberOf uses the active-membership index; keep it consistent with the tables.
+    let mut membership = Vec::new();
+    for table in &tables {
+        let (C::Boolean(active), C::Id(referenced)) = (&table.columns[2], &table.columns[5]) else {
+            panic!()
+        };
+        for row in 0..table.len() {
+            if active[row] != 0 {
+                if let Ok(member) = ids.binary_search(&referenced[row]) {
+                    let refset = ids.binary_search(&table.refset).unwrap() as u32;
+                    membership.push((refset, member as u32));
+                }
+            }
+        }
+    }
+    let store = NumericStore {
+        ids,
+        membership: Some(snomed_ecl_engine::store::MembershipIndex::build(n, membership).unwrap()),
+        // Inactive concepts sit outside the small hierarchy so the store validates.
+        flags: (0..n).map(|i| u8::from(i < 12 || i % 7 != 3)).collect(),
+        modules: vec![0; n],
+        effective_times: vec![20260826; n],
+        parents: Adjacency::build(n, pairs.clone()).unwrap(),
+        children: Adjacency::build(n, pairs.iter().map(|&(a, b)| (b, a)).collect()).unwrap(),
+        attributes: snomed_ecl_engine::store::Attributes::build(n, vec![]).unwrap(),
+        concrete: snomed_ecl_engine::store::Attributes::build(n, vec![]).unwrap(),
+        member_tables: MemberStore::loaded(tables).unwrap(),
+        ..NumericStore::default()
+    };
+    store.validate().unwrap();
+    let source = |i: usize| match i % 5 {
+        0 => id(20).to_string(),
+        1 => format!("({} OR {})", id(20), id(22)),
+        2 => "*".to_owned(),
+        3 => format!("(<< {} OR {})", id(0), id(20 + i % 3)),
+        _ => id(21).to_string(),
+    };
+    let filter = |i: usize| match i % 11 {
+        0 => String::new(),
+        1 => " {{M active=0}}".into(),
+        2 => " {{M active=\"*\"}}".into(),
+        3 => format!(
+            " {{{{M mapGroup{}#{}}}}}",
+            ["=", "!=", ">", "<="][i % 4],
+            (i % 3) as i64 - 1
+        ),
+        4 => format!(
+            " {{{{M referencedComponentId=(<<{} OR {})}}}}",
+            id(0),
+            id(i % 16)
+        ),
+        5 => format!(" {{{{M moduleId={}}}}}", id(1)),
+        6 => " {{M grouped=true}}".into(),
+        7 => format!(
+            " {{{{M reviewDate{}\"{}\"}}}}",
+            ["=", "!=", "<", ">="][i % 4],
+            ["20260826", ""][i % 2]
+        ),
+        8 => " {{M effectiveTime=(\"20260731\" \"\")}}".into(),
+        9 => format!(
+            " {{{{M targetComponentId!={}}}}} {{{{M active=\"*\"}}}}",
+            id(99)
+        ),
+        _ => " {{M mapGroup=#-1, grouped=false}}".into(),
+    };
+    for i in 0..600usize {
+        let operator = match i % 4 {
+            0 => "^",
+            1 => "^[targetComponentId]",
+            2 => "^R",
+            _ => "^[referencedComponentId]",
+        };
+        let query = format!(
+            "({operator} {}{}) {} ({} {})",
+            source(i / 4),
+            filter(i / 7),
+            ["OR", "AND", "MINUS"][i % 3],
+            if i % 2 == 0 { "^" } else { "<<" },
+            source(i / 9)
+        );
+        let expression = parse(&query).unwrap_or_else(|e| panic!("{query}: {e}"));
+        let actual: BTreeSet<_> = evaluate(&store, &expression)
+            .unwrap_or_else(|e| panic!("{query}: {e}"))
+            .into_iter()
+            .collect();
+        assert_eq!(actual, support::slow(&store, &expression), "{query}");
+    }
+}
+
+#[test]
+fn projected_component_fields_return_identifiers_that_name_no_substrate_concept() {
+    let mut projected = table();
+    let C::Id(targets) = &mut projected.columns[8] else {
+        panic!()
+    };
+    // 999001 is a concept-partition identifier absent from the substrate.
+    *targets = vec![400001, 999001, 400001, 400003];
+    let mut store = fixture();
+    store.member_tables = MemberStore::loaded(vec![projected]).unwrap();
+    store.parents = snomed_ecl_engine::store::Adjacency::build(store.ids.len(), vec![]).unwrap();
+    store.children = snomed_ecl_engine::store::Adjacency::build(store.ids.len(), vec![]).unwrap();
+    let projection = parse("^[targetComponentId]200001").unwrap();
+    assert_eq!(
+        evaluate_result(&store, &projection).unwrap(),
+        QueryResult::Values(vec![
+            MemberValue::Concept("400001".into()),
+            MemberValue::Concept("400003".into()),
+            MemberValue::Concept("999001".into()),
+        ])
+    );
+    // Concept operations cannot use an identifier outside the substrate.
+    assert_eq!(
+        evaluate(&store, &projection),
+        Err(EvalError::MissingReference("999001".into()))
+    );
+    assert_eq!(
+        evaluate_result(&store, &parse("<< (^[targetComponentId]200001)").unwrap()),
+        Err(EvalError::MissingReference("999001".into()))
+    );
+    // Restricting to the substrate first recovers a concept set.
+    assert_eq!(
+        codes(&store, "<< ((^[targetComponentId]200001) AND *)"),
+        vec![400001, 400003]
+    );
+    assert_eq!(
+        evaluate_result(
+            &store,
+            &parse("(^[targetComponentId]200001) MINUS *").unwrap()
+        )
+        .unwrap(),
+        QueryResult::Values(vec![MemberValue::Concept("999001".into())])
+    );
+    // A predicate on the field never matches an absent concept, so only != keeps that row.
+    assert_eq!(
+        codes(&store, "^200001 {{M targetComponentId=999001}}"),
+        Vec::<u64>::new()
+    );
+    assert_eq!(
+        codes(&store, "^200001 {{M targetComponentId!=400001}}"),
+        vec![300001, 300003]
+    );
+    let QueryResult::Rows(rows) = evaluate_result(
+        &store,
+        &parse("^[referencedComponentId,targetComponentId]200001").unwrap(),
+    )
+    .unwrap() else {
+        panic!()
+    };
+    assert_eq!(
+        rows[1]["targetComponentId"],
+        MemberValue::Concept("999001".into())
+    );
+    // Tables with a promoted integer column merge with 64-bit integer tables exactly.
+    let mut base = table();
+    let mut promoted = table();
+    let mut numbers = TextColumn::default();
+    for value in ["3", "99999999999999999999999", "-1", "0"] {
+        numbers.push(value).unwrap();
+    }
+    promoted.columns[6] = C::Number(numbers);
+    promoted.columns[0] = C::Uuid((5..=8).map(|i| [i; 16]).collect());
+    base.append(promoted.clone()).unwrap();
+    let C::Number(merged) = &base.columns[6] else {
+        panic!()
+    };
+    assert_eq!(
+        (0..8).map(|i| merged.get(i)).collect::<Vec<_>>(),
+        [
+            "1",
+            "2",
+            "1",
+            "2",
+            "3",
+            "99999999999999999999999",
+            "-1",
+            "0"
+        ]
+    );
+    let mut reversed = promoted;
+    reversed.append(table()).unwrap();
+    let C::Number(merged) = &reversed.columns[6] else {
+        panic!()
+    };
+    assert_eq!(merged.get(7), "2");
+}
+
+#[test]
+fn component_fields_keep_non_concept_identifiers_out_of_concept_sets() {
+    // 400011 and 400012 carry the description partition; 400021 the relationship partition.
+    let mut table = table();
+    let C::Id(targets) = &mut table.columns[8] else {
+        panic!()
+    };
+    *targets = vec![400001, 400011, 400021, 400012];
+    let mut store = fixture();
+    store.member_tables = MemberStore::loaded(vec![table]).unwrap();
+    store.parents = snomed_ecl_engine::store::Adjacency::build(store.ids.len(), vec![]).unwrap();
+    store.children = snomed_ecl_engine::store::Adjacency::build(store.ids.len(), vec![]).unwrap();
+    let projection = parse("^[targetComponentId]200001").unwrap();
+    assert_eq!(
+        evaluate_result(&store, &projection).unwrap(),
+        QueryResult::Values(vec![
+            MemberValue::Concept("400001".into()),
+            MemberValue::Component("400011".into()),
+            MemberValue::Component("400012".into()),
+        ])
+    );
+    assert_eq!(evaluate(&store, &projection), Err(EvalError::TypeMismatch));
+    assert_eq!(
+        evaluate_result(
+            &store,
+            &parse("^[targetComponentId]200001 {{M active=0}}").unwrap()
+        )
+        .unwrap(),
+        QueryResult::Values(vec![MemberValue::Component("400021".into())])
+    );
+    assert_eq!(
+        evaluate_result(
+            &store,
+            &parse("(^[targetComponentId]200001) AND (400001 OR 400011)").unwrap()
+        )
+        .unwrap(),
+        QueryResult::Values(vec![MemberValue::Concept("400001".into())])
+    );
+    // Recovering the concepts after removing every component value restores the concept API.
+    assert_eq!(
+        codes(
+            &store,
+            "<< ((^[targetComponentId]200001) MINUS (^[targetComponentId]200001 {{M mapGroup=#2}}))"
+        ),
+        vec![400001]
+    );
+    // A concept expression never matches a description identifier, so inequality keeps such rows.
+    assert_eq!(
+        codes(&store, "^200001 {{M targetComponentId=400001}}"),
+        vec![300001]
+    );
+    assert_eq!(
+        codes(&store, "^200001 {{M targetComponentId!=400001}}"),
+        vec![300001, 300003]
+    );
+    let QueryResult::Rows(rows) =
+        evaluate_result(&store, &parse("^[*]200001 {{M active=\"*\"}}").unwrap()).unwrap()
+    else {
+        panic!()
+    };
+    assert_eq!(
+        rows[2]["targetComponentId"],
+        MemberValue::Component("400021".into())
+    );
+    assert_eq!(
+        serde_json::to_string(&rows[2]["targetComponentId"]).unwrap(),
+        r#"{"type":"component","value":"400021"}"#
+    );
+}
+
 #[cfg(feature = "unicode")]
 #[test]
 fn map_target_strings_use_the_same_row_as_numeric_filters() {

@@ -14,7 +14,7 @@ fn fixture() -> NumericStore {
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
-        ids: (1000000..1000012).collect(),
+        ids: (0..12).map(|i| 1000000 + i * 1000).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
         flags,
@@ -38,22 +38,22 @@ fn membership_composes_with_hierarchy_sets_and_reverse_lookup() {
     let store = fixture();
     store.validate().unwrap();
     for (query, expected) in [
-        ("^ 1000008", vec![0, 1, 2]),
-        ("memberOf 1000008 |Synthetic refset|", vec![0, 1, 2]),
-        ("^ (<< 1000008)", vec![0, 1, 2, 3]),
+        ("^ 1008000", vec![0, 1, 2]),
+        ("memberOf 1008000 |Synthetic refset|", vec![0, 1, 2]),
+        ("^ (<< 1008000)", vec![0, 1, 2, 3]),
         ("^*", vec![0, 1, 2, 3, 4]),
-        ("<< ^ 1000008", vec![0, 1, 2]),
-        ("< (^ 1000008)", vec![1]),
-        ("^ (1000008 OR 1000009) MINUS 1000001", vec![0, 2, 3]),
-        ("^R 1000001", vec![8, 9]),
-        ("refsetContainingAny (1000000 OR 1000003)", vec![8, 9]),
-        ("^r 1000001", vec![8, 9]),
+        ("<< ^ 1008000", vec![0, 1, 2]),
+        ("< (^ 1008000)", vec![1]),
+        ("^ (1008000 OR 1009000) MINUS 1001000", vec![0, 2, 3]),
+        ("^R 1001000", vec![8, 9]),
+        ("refsetContainingAny (1000000 OR 1003000)", vec![8, 9]),
+        ("^r 1001000", vec![8, 9]),
         ("^R*", vec![8, 9, 10]),
-        ("^ 1000010", vec![4]),
-        ("^R 1000004", vec![10]),
-        ("^R 1000002", vec![8]),
-        ("^ 9999999", vec![]),
-        ("^ (1000008 MINUS 1000008)", vec![]),
+        ("^ 1010000", vec![4]),
+        ("^R 1004000", vec![10]),
+        ("^R 1002000", vec![8]),
+        ("^ 9990000", vec![]),
+        ("^ (1008000 MINUS 1008000)", vec![]),
     ] {
         assert_eq!(
             evaluate(&store, &parse(query).unwrap()).unwrap(),
@@ -68,11 +68,11 @@ fn missing_index_errors_are_not_hidden_by_empty_boolean_operands() {
     let mut store = fixture();
     store.membership = None;
     for query in [
-        "^ 1000008",
-        "^R 1000001",
-        "* OR (^ 1000008)",
-        "9999999 AND (^ 1000008)",
-        "^9999999",
+        "^ 1008000",
+        "^R 1001000",
+        "* OR (^ 1008000)",
+        "9990000 AND (^ 1008000)",
+        "^9990000",
     ] {
         assert!(
             matches!(
@@ -83,15 +83,15 @@ fn missing_index_errors_are_not_hidden_by_empty_boolean_operands() {
         );
     }
     for query in [
-        "^ [targetComponentId] 1000008",
-        "^ 1000008 {{ M active = false }}",
+        "^ [targetComponentId] 1008000",
+        "^ 1008000 {{ M active = false }}",
     ] {
         assert!(matches!(
             evaluate(&store, &parse(query).unwrap()),
             Err(EvalError::Unsupported(_))
         ));
     }
-    for query in ["^", "^R", "^ < 1000008", "^R ^1000008", "^^1000008"] {
+    for query in ["^", "^R", "^ < 1008000", "^R ^1008000", "^^1008000"] {
         assert!(parse(query).is_err(), "{query}");
     }
 }
@@ -99,7 +99,7 @@ fn missing_index_errors_are_not_hidden_by_empty_boolean_operands() {
 #[test]
 fn membership_respects_work_memory_and_cancellation_limits() {
     let store = fixture();
-    let expr = parse("^1000008").unwrap();
+    let expr = parse("^1008000").unwrap();
     assert_eq!(
         evaluate_with_limits(
             &store,
@@ -146,7 +146,7 @@ fn generated_memberships_match_independent_pair_scan() {
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
-        ids: (0..n).map(|i| 1000000 + i as u64).collect(),
+        ids: (0..n).map(|i| 1000000 + (i as u64) * 1000).collect(),
         flags: vec![1; n],
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -170,8 +170,8 @@ fn generated_memberships_match_independent_pair_scan() {
             let query = format!(
                 "{} ({} OR {})",
                 if reverse { "^R" } else { "^" },
-                1000000 + selected[0],
-                1000000 + selected[1]
+                1000000 + (selected[0]) * 1000,
+                1000000 + (selected[1]) * 1000
             );
             assert_eq!(
                 evaluate(&store, &parse(&query).unwrap()).unwrap(),

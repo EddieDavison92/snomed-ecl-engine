@@ -36,6 +36,8 @@ pub enum EvalError {
     Text(String),
     InvalidField(String),
     TypeMismatch,
+    /// A projected concept identifier names no concept of this substrate.
+    MissingReference(String),
     UnconfiguredAlias(String),
 }
 impl fmt::Display for EvalError {

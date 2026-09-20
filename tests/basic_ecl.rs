@@ -19,7 +19,7 @@ fn store(n: usize) -> NumericStore {
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
-        ids: (0..n).map(|i| 1000001 + i as u64).collect(),
+        ids: (0..n).map(|i| 1001000 + (i as u64) * 1000).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
         flags,
@@ -38,12 +38,12 @@ use support::slow;
 #[test]
 fn invalid_tokens_report_syntax_errors_and_unicode_lexemes_follow_abnf() {
     for query in [
-        "1000001 : :",
-        "* . . 1000001",
-        "* OR ^ ^ 1000001",
+        "1001000 : :",
+        "* . . 1001000",
+        "* OR ^ ^ 1001000",
         "* {{C active = }}",
         "* : * = match:\"abc\"",
-        "* : r 1000001 = *",
+        "* : r 1001000 = *",
         "/* \u{7f} */ *",
         "\"demo#a\u{7f}\"",
     ] {
@@ -62,12 +62,12 @@ fn invalid_tokens_report_syntax_errors_and_unicode_lexemes_follow_abnf() {
         }
     );
     assert_eq!(
-        parse("* : R 1000001 = *").unwrap(),
-        parse("* : rEvErSeOf 1000001 = *").unwrap()
+        parse("* : R 1001000 = *").unwrap(),
+        parse("* : rEvErSeOf 1001000 = *").unwrap()
     );
     assert_eq!(
-        parse(r#"* : 1000007 = "A\*B""#).unwrap(),
-        parse(r#"* : 1000007 = "A*B""#).unwrap()
+        parse(r#"* : 1007000 = "A\*B""#).unwrap(),
+        parse(r#"* : 1007000 = "A*B""#).unwrap()
     );
 }
 
@@ -111,17 +111,17 @@ fn generated_refinements_groups_cardinalities_and_membership_match_slow_scans() 
     store.validate().unwrap();
     let concept = |i: usize| match i % 7 {
         0 => "*".to_owned(),
-        1 => format!("<< {}", 1000001 + i % 8),
-        2 => format!("> {}", 1000001 + i % 8),
-        3 => format!("^ {}", 1000010 + i % 3),
-        4 => format!("^R {}", 1000001 + i % 13),
-        _ => (1000001 + i % 13).to_string(),
+        1 => format!("<< {}", 1001000 + (i % 8) * 1000),
+        2 => format!("> {}", 1001000 + (i % 8) * 1000),
+        3 => format!("^ {}", 1010000 + (i % 3) * 1000),
+        4 => format!("^R {}", 1001000 + (i % 13) * 1000),
+        _ => (1001000 + (i % 13) * 1000).to_string(),
     };
     for i in 0..1000usize {
         let name = if i % 4 == 0 {
             "*".into()
         } else {
-            (1000009 + i % 3).to_string()
+            (1009000 + (i % 3) * 1000).to_string()
         };
         let min = i % 3;
         let max = if i % 5 == 0 {
@@ -135,12 +135,12 @@ fn generated_refinements_groups_cardinalities_and_membership_match_slow_scans() 
             "[{min}..{max}] {reverse}{name} {comparison} {}",
             concept(i / 3)
         );
-        let b = format!("{} = {}", 1000009 + i % 3, concept(i / 7));
+        let b = format!("{} = {}", 1009000 + (i % 3) * 1000, concept(i / 7));
         let refinement = match i % 4 {
             0 => a,
             1 => format!("({a}) OR ({b})"),
             2 => format!("[0..2] {{ {b} }} AND ({a})"),
-            _ => format!("{{ ({b}) OR ([0..0] 1000009 = {}) }}", concept(i / 11)),
+            _ => format!("{{ ({b}) OR ([0..0] 1009000 = {}) }}", concept(i / 11)),
         };
         let query = format!(
             "({} : {refinement}) OR ({} MINUS {})",
@@ -159,11 +159,11 @@ fn default_substrate_includes_inactive_concepts_but_only_active_edges() {
     let store = store(4);
     for (query, expected) in [
         ("*", vec![0, 1, 2, 3]),
-        ("1000004", vec![3]),
-        ("<<1000004", vec![3]),
-        ("<1000004", vec![]),
-        ("* MINUS (<<1000001)", vec![3]),
-        ("1000004 : [0..0] 1000001 = *", vec![3]),
+        ("1004000", vec![3]),
+        ("<<1004000", vec![3]),
+        ("<1004000", vec![]),
+        ("* MINUS (<<1001000)", vec![3]),
+        ("1004000 : [0..0] 1001000 = *", vec![3]),
     ] {
         assert_eq!(
             evaluate(&store, &parse(query).unwrap()).unwrap(),
@@ -176,20 +176,20 @@ fn default_substrate_includes_inactive_concepts_but_only_active_edges() {
 #[test]
 fn brief_long_terms_comments_and_boolean_grouping() {
     let equivalent = [
-        ("1000001", "1000001 |term /* explanation | */ |"),
-        ("1000001", "1000001 |/* literal */|"),
+        ("1001000", "1001000 |term /* explanation | */ |"),
+        ("1001000", "1001000 |/* literal */|"),
         ("<<195967001", "descendantOrSelfOf 195967001 |Asthma|"),
         ("<!195967001", "CHILDOF/* note */195967001"),
         (">>!195967001", "parentOrSelfOf 195967001"),
         ("*", "aNy"),
-        ("1000001,1000002 AND 1000003", "1000001 AND 1000002,1000003"),
+        ("1001000,1002000 AND 1003000", "1001000 AND 1002000,1003000"),
         (
-            "< (1000001 OR 1000002)",
-            "descendantOf (1000001 or 1000002)",
+            "< (1001000 OR 1002000)",
+            "descendantOf (1001000 or 1002000)",
         ),
         (
-            "1000001 |Synthetic cafÃ©|",
-            "/* leading */ 1000001 /* trailing */",
+            "1001000 |Synthetic cafÃ©|",
+            "/* leading */ 1001000 /* trailing */",
         ),
     ];
     for (a, b) in equivalent {
@@ -197,24 +197,24 @@ fn brief_long_terms_comments_and_boolean_grouping() {
     }
     for bad in [
         "",
-        "1000001 OR",
-        "(1000001",
-        "1000001)",
-        "< <1000001",
-        "1000001 1000002",
+        "1001000 OR",
+        "(1001000",
+        "1001000)",
+        "< <1001000",
+        "1001000 1002000",
         "12345",
         "0123456",
         "1234567890123456789",
-        "1000001 | |",
-        "1000001 |bad\tterm|",
-        "1000001 |unclosed",
+        "1001000 | |",
+        "1001000 |bad\tterm|",
+        "1001000 |unclosed",
         "/* unclosed",
-        "1000001 OR(1000002)",
-        "1000001 AND1000002",
-        "childOf(1000001)",
-        "1000001 AND 1000002 OR 1000003",
-        "1000001 MINUS 1000002 MINUS 1000003",
-        "1000001 OR 1000002 MINUS 1000003",
+        "1001000 OR(1002000)",
+        "1001000 AND1002000",
+        "childOf(1001000)",
+        "1001000 AND 1002000 OR 1003000",
+        "1001000 MINUS 1002000 MINUS 1003000",
+        "1001000 OR 1002000 MINUS 1003000",
     ] {
         assert_eq!(
             parse(bad).unwrap_err().kind,
@@ -222,8 +222,8 @@ fn brief_long_terms_comments_and_boolean_grouping() {
             "{bad}"
         );
     }
-    assert!(parse("1000001 AND (1000002 OR 1000003)").is_ok());
-    assert!(parse("1000001 MINUS (1000002 MINUS 1000003)").is_ok());
+    assert!(parse("1001000 AND (1002000 OR 1003000)").is_ok());
+    assert!(parse("1001000 MINUS (1002000 MINUS 1003000)").is_ok());
 }
 
 #[test]
@@ -243,14 +243,14 @@ fn all_hierarchy_operators_match_independent_evaluator_for_overlapping_seeds() {
     store.validate().unwrap();
     for op in ["<", "<<", "<!", "<<!", ">", ">>", ">!", ">>!"] {
         for seed in [
-            "1000001",
-            "1000010",
-            "1000024",
-            "9999999",
+            "1001000",
+            "1010000",
+            "1024000",
+            "9990000",
             "*",
-            "(1000001 OR 1000010)",
-            "(1000001 AND 1000010)",
-            "(<1000001 MINUS <1000010)",
+            "(1001000 OR 1010000)",
+            "(1001000 AND 1010000)",
+            "(<1001000 MINUS <1010000)",
         ] {
             let query = format!("{op} {seed}");
             let expr = parse(&query).unwrap();
@@ -262,7 +262,7 @@ fn all_hierarchy_operators_match_independent_evaluator_for_overlapping_seeds() {
         }
     }
     // Strict descendants of a union can contain one of the input concepts.
-    assert!(evaluate(&store, &parse("< (1000001 OR 1000010)").unwrap())
+    assert!(evaluate(&store, &parse("< (1001000 OR 1010000)").unwrap())
         .unwrap()
         .contains(&9));
 }
@@ -273,13 +273,13 @@ fn generated_boolean_expressions_match_slow_sets() {
     for seed in 0..80u64 {
         let a = Expr::Hierarchy(
             Hierarchy::DescendantOrSelf,
-            Box::new(Expr::Concept(1000001 + seed % 24)),
+            Box::new(Expr::Concept(1001000 + (seed % 24) * 1000)),
         );
         let b = Expr::Hierarchy(
             Hierarchy::Ancestor,
-            Box::new(Expr::Concept(1000001 + seed * 7 % 24)),
+            Box::new(Expr::Concept(1001000 + (seed * 7 % 24) * 1000)),
         );
-        let c = Expr::Concept(1000001 + seed * 11 % 24);
+        let c = Expr::Concept(1001000 + (seed * 11 % 24) * 1000);
         for expr in [
             Expr::And(vec![a.clone(), b.clone()]),
             Expr::Or(vec![a.clone(), b.clone(), c.clone()]),
@@ -300,7 +300,7 @@ fn generated_boolean_expressions_match_slow_sets() {
 #[test]
 fn limits_and_cancellation_fail_without_results() {
     assert_eq!(
-        parse(&format!("{}1000001{}", "(".repeat(65), ")".repeat(65)))
+        parse(&format!("{}1001000{}", "(".repeat(65), ")".repeat(65)))
             .unwrap_err()
             .kind,
         ParseErrorKind::Limit

@@ -113,8 +113,8 @@
         {
           "production": "eclConceptReferenceSet",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "conceptId",
@@ -377,8 +377,8 @@
         {
           "production": "idComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "descriptionFilterConstraint",
@@ -905,14 +905,14 @@
         {
           "production": "true",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "false",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "nonNegativeIntegerValue",
@@ -947,98 +947,98 @@
         {
           "production": "nonStarChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "starWithNonFSlash",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "nonFSlash",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "SP",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "HTAB",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "CR",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "LF",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "QM",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "BS",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "star",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "digit",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "zero",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "digitNonZero",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "nonwsNonPipe",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "anyNonEscapedChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "escapedChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "escapedWildChar",
@@ -1049,44 +1049,44 @@
         {
           "production": "nonwsNonEscapedChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "alpha",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "dash",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-2",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-3",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-4",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-tail",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         }
       ]
     },
@@ -1199,8 +1199,8 @@
         {
           "production": "eclConceptReferenceSet",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "conceptId",
@@ -1463,8 +1463,8 @@
         {
           "production": "idComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "descriptionFilterConstraint",
@@ -1991,14 +1991,14 @@
         {
           "production": "true",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "false",
           "area": "value_syntax",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "nonNegativeIntegerValue",
@@ -2033,98 +2033,98 @@
         {
           "production": "nonStarChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "starWithNonFSlash",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "nonFSlash",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "SP",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "HTAB",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "CR",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "LF",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "QM",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "BS",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "star",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "digit",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "zero",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "digitNonZero",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "nonwsNonPipe",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "anyNonEscapedChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "escapedChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "escapedWildChar",
@@ -2135,44 +2135,44 @@
         {
           "production": "nonwsNonEscapedChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "alpha",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "dash",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-2",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-3",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-4",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         },
         {
           "production": "UTF8-tail",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/lexical.rs"
         }
       ]
     }

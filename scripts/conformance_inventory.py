@@ -24,6 +24,9 @@ PARTIAL |= MEMBER_FILTERS
 HISTORY = set("historySupplement historyKeyword historyProfileSuffix historyMinimumSuffix historyModerateSuffix historyMaximumSuffix historySubset".split())
 IDENTIFIERS = set("altIdentifier altIdentifierSchemeAlias altIdentifierCodeWithinQuotes altIdentifierCodeWithoutQuotes".split())
 PARTIAL |= HISTORY | IDENTIFIERS
+# Lexical rules and shared value tokens exercised by tests/lexical.rs. stringValue is unreferenced by the grammars.
+LEXICAL = set("eclConceptReferenceSet idComparisonOperator true false nonStarChar starWithNonFSlash nonFSlash SP HTAB CR LF QM BS star digit zero digitNonZero nonwsNonPipe anyNonEscapedChar escapedChar nonwsNonEscapedChar alpha dash UTF8-2 UTF8-3 UTF8-4 UTF8-tail".split())
+PARTIAL |= LEXICAL
 BOUNDARIES = {
     "expressionConstraint": "expressions", "eclRefinement": "refinements",
     "descriptionFilterConstraint": "description_filters", "conceptFilterConstraint": "concept_filters",
@@ -43,7 +46,7 @@ def inventory():
             group = BOUNDARIES.get(rule, group)
             status = "implemented" if rule in IMPLEMENTED else "partial" if rule in PARTIAL else "pending"
             rules.append({"production": rule, "area": group, "status": status,
-                          "evidence": "tests/history.rs" if rule in HISTORY else "tests/identifiers.rs" if rule in IDENTIFIERS else "tests/member_filters.rs" if rule in MEMBER_FILTERS else "tests/term_filters.rs" if rule in TERM_FILTERS else "tests/description_filters.rs" if rule in DESCRIPTION_FILTERS else "tests/concept_filters.rs" if rule in CONCEPT_FILTERS else "tests/membership.rs" if rule in MEMBERSHIP else "tests/refinements.rs" if rule in REFINEMENTS else "tests/basic_ecl.rs" if status != "pending" else None})
+                          "evidence": "tests/lexical.rs" if rule in LEXICAL else "tests/history.rs" if rule in HISTORY else "tests/identifiers.rs" if rule in IDENTIFIERS else "tests/member_filters.rs" if rule in MEMBER_FILTERS else "tests/term_filters.rs" if rule in TERM_FILTERS else "tests/description_filters.rs" if rule in DESCRIPTION_FILTERS else "tests/concept_filters.rs" if rule in CONCEPT_FILTERS else "tests/membership.rs" if rule in MEMBERSHIP else "tests/refinements.rs" if rule in REFINEMENTS else "tests/basic_ecl.rs" if status != "pending" else None})
         assert len({r["production"] for r in rules}) == len(rules)
         grammars.append({"file": name, "sha256_utf8_lf": hashlib.sha256(raw).hexdigest(), "productions": rules})
     return {"version": "2.3", "reference_commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",

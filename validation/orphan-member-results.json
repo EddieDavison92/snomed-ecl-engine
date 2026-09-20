@@ -1,0 +1,174 @@
+{
+  "checkedAt": "2026-09-20T11:21:54.243547+00:00",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "index": "data/compact-store/v2-uk-64.ecl (packed container; release build with import and unicode features; default evaluation limits)",
+  "digestFormat": "Numeric SCTID sort; UTF-8; LF separated; final LF for non-empty sets; no BOM.",
+  "scope": "Independent RF2 scan of the UK ICD-10 extended map (999002271000000101). Three inactive rows reference two concept identifiers absent from the concept Snapshot. The engine reads ECL 6.1 memberOf as the set of referenced concepts of the substrate, so ^ and ^[referencedComponentId] omit those identifiers; the RF2 scan encodes the same reading and therefore confirms consistency, not the reading itself, which the specification does not address. Tuple projections keep every row. Other projected component fields would return absent identifiers as values and refuse concept operations with MissingReference, but no refset in this edition holds an absent or non-concept targetComponentId, so that rule has synthetic evidence only. The full 1,242,723-row tuple projection exceeds the default output budget and fails with MemoryLimit rather than a partial result.",
+  "rf2_scan": {
+    "inactive_concepts": {
+      "total": 893822,
+      "sha256": "0c5e14380c016bdfe48b68daf78d353af985eb5deea87bbee7c9ec3ae7fc5463"
+    },
+    "any_status_concepts": {
+      "total": 989090,
+      "sha256": "077468c5d1faa7980621ddac22c431619f6948d4c0eb4dcbb84b05a9724328d8"
+    },
+    "inactive_rows": 1242723,
+    "orphan_identifiers": 2,
+    "active_absent": 0,
+    "slices": {
+      "active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#1, mapBlock=#1": {
+        "rows": 272,
+        "orphan_rows": 2,
+        "concepts": {
+          "total": 270,
+          "sha256": "7d946f268eae04cd0072004a5ad8b400e6a73c875c631f3e7ebd3d20c2ac2f6a"
+        }
+      },
+      "active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#2, mapBlock=#1": {
+        "rows": 134,
+        "orphan_rows": 1,
+        "concepts": {
+          "total": 133,
+          "sha256": "760f20c91826b3f13bcee955b68adbf12e672bd99fc88897da07f5a647ed0b30"
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "ecl": "^[referencedComponentId] 999002271000000101 {{M active=0}}",
+      "expected": {
+        "total": 893822,
+        "sha256": "0c5e14380c016bdfe48b68daf78d353af985eb5deea87bbee7c9ec3ae7fc5463"
+      },
+      "actual": {
+        "total": 893822,
+        "sha256": "0c5e14380c016bdfe48b68daf78d353af985eb5deea87bbee7c9ec3ae7fc5463"
+      },
+      "rule": "memberOf: set of referenced concepts of the substrate; absent identifiers add none",
+      "match": true
+    },
+    {
+      "ecl": "^999002271000000101 {{M active=\"*\"}}",
+      "expected": {
+        "total": 989090,
+        "sha256": "077468c5d1faa7980621ddac22c431619f6948d4c0eb4dcbb84b05a9724328d8"
+      },
+      "actual": {
+        "total": 989090,
+        "sha256": "077468c5d1faa7980621ddac22c431619f6948d4c0eb4dcbb84b05a9724328d8"
+      },
+      "rule": "memberOf: set of referenced concepts of the substrate; absent identifiers add none",
+      "match": true
+    },
+    {
+      "ecl": "^999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#1, mapBlock=#1}}",
+      "expected": {
+        "total": 270,
+        "sha256": "7d946f268eae04cd0072004a5ad8b400e6a73c875c631f3e7ebd3d20c2ac2f6a"
+      },
+      "actual": {
+        "total": 270,
+        "sha256": "7d946f268eae04cd0072004a5ad8b400e6a73c875c631f3e7ebd3d20c2ac2f6a"
+      },
+      "note": "2 rows reference absent concepts",
+      "match": true
+    },
+    {
+      "ecl": "^[referencedComponentId,mapTarget,mapPriority] 999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#1, mapBlock=#1}}",
+      "expected": {
+        "total": 272
+      },
+      "actual": {
+        "total": 272
+      },
+      "note": "tuple rows keep the orphan members",
+      "match": true
+    },
+    {
+      "ecl": "^999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#2, mapBlock=#1}}",
+      "expected": {
+        "total": 133,
+        "sha256": "760f20c91826b3f13bcee955b68adbf12e672bd99fc88897da07f5a647ed0b30"
+      },
+      "actual": {
+        "total": 133,
+        "sha256": "760f20c91826b3f13bcee955b68adbf12e672bd99fc88897da07f5a647ed0b30"
+      },
+      "note": "1 row references an absent concept",
+      "match": true
+    },
+    {
+      "ecl": "^[*] 999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#2, mapBlock=#1}}",
+      "expected": {
+        "total": 134
+      },
+      "actual": {
+        "total": 134
+      },
+      "note": "tuple rows keep the orphan member",
+      "match": true
+    }
+  ],
+  "probes": [
+    {
+      "ecl": "^[referencedComponentId] 999002271000000101 {{M active=0}}",
+      "total": 893822,
+      "result_type": "concepts",
+      "eval_ms": 2799.08,
+      "sha256": "0c5e14380c016bdfe48b68daf78d353af985eb5deea87bbee7c9ec3ae7fc5463"
+    },
+    {
+      "ecl": "^999002271000000101 {{M active=\"*\"}}",
+      "total": 989090,
+      "result_type": "concepts",
+      "eval_ms": 374.44,
+      "sha256": "077468c5d1faa7980621ddac22c431619f6948d4c0eb4dcbb84b05a9724328d8"
+    },
+    {
+      "ecl": "^[referencedComponentId,mapTarget] 999002271000000101 {{M active=0}}",
+      "error": "MemoryLimit"
+    },
+    {
+      "ecl": "^999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#1, mapBlock=#1}}",
+      "total": 270,
+      "result_type": "concepts",
+      "eval_ms": 17.0,
+      "sha256": "7d946f268eae04cd0072004a5ad8b400e6a73c875c631f3e7ebd3d20c2ac2f6a"
+    },
+    {
+      "ecl": "^[referencedComponentId,mapTarget,mapPriority] 999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#1, mapBlock=#1}}",
+      "total": 272,
+      "result_type": "rows",
+      "eval_ms": 16.99
+    },
+    {
+      "ecl": "^999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#2, mapBlock=#1}}",
+      "total": 133,
+      "result_type": "concepts",
+      "eval_ms": 16.36,
+      "sha256": "760f20c91826b3f13bcee955b68adbf12e672bd99fc88897da07f5a647ed0b30"
+    },
+    {
+      "ecl": "^[*] 999002271000000101 {{M active=0, effectiveTime=\"20260603\", mapGroup=#1, mapPriority=#2, mapBlock=#1}}",
+      "total": 134,
+      "result_type": "rows",
+      "eval_ms": 16.4
+    },
+    {
+      "ecl": "^R (999002271000000101 OR 195967001) {{M active=0}}",
+      "total": 5,
+      "result_type": "concepts",
+      "eval_ms": 7188.92,
+      "sha256": "f6f65bf227571249b11cbd937f18966b47df26a6572fca009c630d640c2f7bc4"
+    },
+    {
+      "ecl": "^[targetComponentId] 900000000000527005 {{M active=\"*\"}}",
+      "total": 116709,
+      "result_type": "concepts",
+      "eval_ms": 27.53
+    }
+  ]
+}

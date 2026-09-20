@@ -19,8 +19,8 @@ use container::{Section, SectionReader};
 pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
 pub use identifiers::{Identifier, IdentifierIndex, IdentifierManifest, IdentifierStore};
 pub use members::{
-    format_uuid, parse_uuid, MemberColumn, MemberManifest, MemberStore, MemberTable, MemberValue,
-    TextColumn,
+    format_uuid, is_concept_id, parse_uuid, MemberColumn, MemberManifest, MemberStore, MemberTable,
+    MemberValue, TextColumn,
 };
 pub use membership::{MembershipIndex, MembershipManifest};
 
