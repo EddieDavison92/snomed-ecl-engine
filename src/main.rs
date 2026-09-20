@@ -1,21 +1,50 @@
 use anyhow::{bail, ensure, Context, Result};
 #[cfg(feature = "import")]
-use snomed_rust_ecl_engine::import::{import_snapshot, ImportOptions, UK_DISPLAY_REFSETS};
+use snomed_rust_ecl_engine::import::{
+    import_snapshot_with_progress, ImportOptions, UK_DISPLAY_REFSETS,
+};
 use snomed_rust_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
 use snomed_rust_ecl_engine::{ecl, eval};
 use std::io::{self, BufRead, Read, Write};
 use std::path::Path;
 use std::time::Instant;
+mod presentation;
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("{error:#}");
+        if error
+            .downcast_ref::<io::Error>()
+            .is_some_and(|e| e.kind() == io::ErrorKind::BrokenPipe)
+        {
+            return;
+        }
+        eprintln!("Error: {}", presentation::clean(&format!("{error:#}")));
         std::process::exit(1);
     }
 }
 
 fn run() -> Result<()> {
-    let args: Vec<_> = std::env::args().skip(1).collect();
+    let mut args: Vec<_> = std::env::args().skip(1).collect();
+    let json = args.iter().any(|s| s == "--json");
+    let plain = args.iter().any(|s| s == "--plain");
+    ensure!(!(json && plain), "Choose either --json or --plain");
+    args.retain(|s| s != "--json" && s != "--plain");
+    let human = presentation::human() && !json && !plain;
+    if args.is_empty()
+        || matches!(
+            args.first().map(String::as_str),
+            Some("--help" | "-h" | "help")
+        )
+    {
+        return presentation::help(args.get(1).map(String::as_str));
+    }
+    if args.len() == 2 && matches!(args[1].as_str(), "--help" | "-h") {
+        return presentation::help(Some(&args[0]));
+    }
+    if args.len() == 1 && matches!(args[0].as_str(), "--version" | "-V") {
+        println!("snomed-rust-ecl-engine {}", env!("CARGO_PKG_VERSION"));
+        return Ok(());
+    }
     match args.first().map(String::as_str) {
         #[cfg(not(feature = "import"))]
         Some("import") => bail!("Import support was excluded; rebuild with --features import"),
@@ -34,7 +63,8 @@ fn run() -> Result<()> {
                 UK_DISPLAY_REFSETS.to_vec()
             };
             let start = Instant::now();
-            let manifest = import_snapshot(
+            let mut stage = 0;
+            let manifest = import_snapshot_with_progress(
                 Path::new(&args[1]),
                 Path::new(&args[2]),
                 &ImportOptions {
@@ -42,20 +72,37 @@ fn run() -> Result<()> {
                     expected_sha256: args[4].clone(),
                     display_refsets: refsets,
                 },
+                |message| {
+                    stage += 1;
+                    eprintln!(
+                        "  [{stage}/6] {message}  ({:.1}s elapsed)",
+                        start.elapsed().as_secs_f64()
+                    );
+                },
             )?;
-            println!(
-                "{}",
-                serde_json::to_string_pretty(
-                    &serde_json::json!({"manifest": manifest, "elapsed_seconds": start.elapsed().as_secs_f64()})
-                )?
-            );
+            if human {
+                presentation::manifest(&manifest);
+                eprintln!(
+                    "\n  Import complete in {:.2}s",
+                    start.elapsed().as_secs_f64()
+                );
+            } else {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(
+                        &serde_json::json!({"manifest": manifest, "elapsed_seconds": start.elapsed().as_secs_f64()})
+                    )?
+                );
+            }
         }
         Some("stats") => {
             ensure!(args.len() == 2, "Usage: stats STORE");
-            println!(
-                "{}",
-                serde_json::to_string_pretty(&Manifest::read(Path::new(&args[1]))?)?
-            );
+            let manifest = Manifest::read(Path::new(&args[1]))?;
+            if human {
+                presentation::manifest(&manifest);
+            } else {
+                println!("{}", serde_json::to_string_pretty(&manifest)?);
+            }
         }
         Some("expand") => {
             ensure!(
@@ -67,11 +114,38 @@ fn run() -> Result<()> {
                 matches!(option, None | Some("--display" | "--count")),
                 "Unknown expansion option"
             );
-            let expression = ecl::parse(&args[2])?;
+            let parse_start = Instant::now();
+            let expression = ecl::parse(&args[2]).map_err(|error| {
+                anyhow::anyhow!(
+                    "{error}. ECL byte offset: {}. See docs/conformance.md for current support.",
+                    error.offset
+                )
+            })?;
+            let parse_ms = parse_start.elapsed().as_secs_f64() * 1000.0;
+            if human {
+                eprintln!("  Opening and verifying index...");
+            }
+            let open_start = Instant::now();
             let store = NumericStore::open(Path::new(&args[1]))?;
+            let open_seconds = open_start.elapsed().as_secs_f64();
+            let eval_start = Instant::now();
             let ordinals = eval::evaluate(&store, &expression)?;
+            let eval_ms = eval_start.elapsed().as_secs_f64() * 1000.0;
+            if human {
+                eprintln!(
+                    "  {} concepts | query {:.3} ms | parse {:.3} ms | index {:.3} s",
+                    presentation::number(ordinals.len()),
+                    eval_ms,
+                    parse_ms,
+                    open_seconds
+                );
+            }
             if option == Some("--count") {
-                println!("{}", ordinals.len());
+                if json {
+                    println!("{}", serde_json::json!({"total": ordinals.len()}));
+                } else {
+                    println!("{}", ordinals.len());
+                }
             } else {
                 let mut display = if option == Some("--display") {
                     Some(DisplayStore::open(Path::new(&args[1]))?)
@@ -79,14 +153,34 @@ fn run() -> Result<()> {
                     None
                 };
                 let mut out = io::BufWriter::new(io::stdout().lock());
+                if human && display.is_some() {
+                    writeln!(out, "\n{}\n", presentation::heading("SNOMED ECL / results"))?;
+                    writeln!(out, "{:<20}  DISPLAY", "CODE")?;
+                    writeln!(out, "{}", "-".repeat(64))?;
+                }
                 for ordinal in ordinals {
                     let code = store.ids[ordinal as usize];
                     if let Some(display) = &mut display {
-                        writeln!(
-                            out,
-                            "{}",
-                            serde_json::json!({"code": code.to_string(), "display": display.get(ordinal)?})
-                        )?;
+                        let label = display.get(ordinal)?;
+                        if human {
+                            writeln!(
+                                out,
+                                "{code:<20}  {}",
+                                label
+                                    .as_deref()
+                                    .map(presentation::clean)
+                                    .as_deref()
+                                    .unwrap_or("(no display)")
+                            )?;
+                        } else {
+                            writeln!(
+                                out,
+                                "{}",
+                                serde_json::json!({"code": code.to_string(), "display": label})
+                            )?;
+                        }
+                    } else if json {
+                        writeln!(out, "{}", serde_json::json!({"code": code.to_string()}))?;
                     } else {
                         writeln!(out, "{code}")?;
                     }
@@ -156,12 +250,15 @@ fn run() -> Result<()> {
                         "{}",
                         serde_json::json!({"code": code.to_string(), "display": text})
                     )?;
+                } else if json {
+                    writeln!(out, "{}", serde_json::json!({"code": code.to_string()}))?;
                 } else {
                     writeln!(out, "{code}")?;
                 }
             }
+            out.flush()?;
         }
-        _ => bail!("Commands: import, stats, hierarchy, expand, batch. See docs/basic-ecl.md."),
+        _ => bail!("Unknown command. Run --help for available commands"),
     }
     Ok(())
 }

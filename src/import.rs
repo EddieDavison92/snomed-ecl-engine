@@ -30,6 +30,17 @@ pub fn import_snapshot(
     destination: &Path,
     options: &ImportOptions,
 ) -> Result<Manifest> {
+    import_snapshot_with_progress(archive_path, destination, options, |_| {})
+}
+
+/// Reports stage starts to the caller without writing to stdout or stderr.
+/// Progress is informational; successful completion is the returned manifest.
+pub fn import_snapshot_with_progress(
+    archive_path: &Path,
+    destination: &Path,
+    options: &ImportOptions,
+    mut progress: impl FnMut(&'static str),
+) -> Result<Manifest> {
     ensure!(
         !destination.exists(),
         "Destination already exists; choose a new directory"
@@ -46,6 +57,7 @@ pub fn import_snapshot(
                 .all(|b| b.is_ascii_hexdigit()),
         "Expected archive SHA-256 is required"
     );
+    progress("Verifying archive checksum");
     let archive_hash = sha256(archive_path)?;
     ensure!(
         archive_hash.eq_ignore_ascii_case(&options.expected_sha256),
@@ -87,7 +99,7 @@ pub fn import_snapshot(
         "Package date differs from edition URI"
     );
 
-    eprintln!("Reading concepts");
+    progress("Reading concepts and module dependencies");
     let mut concepts = Vec::new();
     rows(
         &mut archive,
@@ -182,7 +194,7 @@ pub fn import_snapshot(
         "Edition composition dependency is absent"
     );
 
-    eprintln!("Reading inferred relationships");
+    progress("Reading inferred relationships");
     let mut parents = Vec::new();
     let mut attributes = Vec::new();
     let mut seen_relationships = HashSet::new();
@@ -252,6 +264,7 @@ pub fn import_snapshot(
     store.attributes = Attributes::build(n, attributes)?;
     let mut concrete = Vec::new();
     let mut values = HashMap::new();
+    progress("Reading concrete values");
     rows(
         &mut archive,
         &concrete_file,
@@ -310,7 +323,7 @@ pub fn import_snapshot(
     drop(values);
     store.validate()?;
 
-    eprintln!("Selecting displays in a separate pass");
+    progress("Selecting displays in a separate pass");
     let mut preferred: HashMap<u64, u16> = HashMap::new();
     rows(
         &mut archive,
@@ -402,7 +415,7 @@ pub fn import_snapshot(
     let nonce = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
     let staging = parent.join(format!(".store-building-{}-{nonce}", std::process::id()));
     fs::create_dir(&staging)?;
-    eprintln!("Writing immutable store");
+    progress("Writing immutable store");
     let core_path = staging.join("core.bin");
     let display_path = staging.join("display.bin");
     store.write(&core_path)?;

@@ -27,7 +27,15 @@ Snowstorm Lite 2.7.0 started with the same verified archive and exact edition UR
 
 Import completed at 22:39:10 UTC. Snowstorm Lite reported 1,057.257 seconds for the import, about 17.6 minutes, under this preparation run's settings. The index occupies 506,801,604 bytes. The watcher ran the local comparison successfully and stopped the container at 22:39 UTC.
 
-The eight-query report is `data/validation/snowstorm-lite-smoke.json`. All eight complete result sets matched the version-pinned OneLondon baseline. The report contains small warm HTTP samples, not a controlled benchmark. Full Snowstorm and the Rust reference engines have not been run.
+The eight-query report is `data/validation/snowstorm-lite-smoke.json`. All eight complete result sets matched the version-pinned OneLondon baseline. The report contains small warm HTTP samples, not a controlled benchmark. Later Rust comparisons are recorded in [basic ECL](basic-ecl.md) and [refinements](refinements.md).
+
+## Full Snowstorm update, 20 September 2026
+
+Snowstorm 11.0.0 completed the same UK Monolith Snapshot import on MAIN at 01:12:47 UTC. Its import log reports 4,360 seconds, about 72.7 minutes. This includes Snowstorm's broader terminology and semantic indexing work; it is not an equivalent-work comparison with the current Rust importer.
+
+The 1,000-expression comparison stopped after five HTTP 400 responses. All five were top/bottom expressions (`!!>` and `!!<`), which this Snowstorm build's parser rejected at the first `!`. Before the stop, 24 complete result sets matched Rust, 10 expressions were recorded as unsupported by Rust, and 961 remained unattempted. No result-set mismatches were recorded in that partial run, and no warm timing batches completed.
+
+The partial report is `data/validation/ecl-1000-full-snowstorm.json`. Both containers stopped after the failed comparison; the Elasticsearch volume remains available. Resume with a serving-only Snowstorm container, not the original container's `--import` command. The benchmark still needs to distinguish comparison-server language rejections from transport failures and complete the remaining corpus.
 
 ## Checks completed
 

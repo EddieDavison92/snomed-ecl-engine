@@ -33,6 +33,8 @@ flowchart LR
 
 Start with one library crate with modules for RF2, storage, parsing and evaluation, plus one CLI binary. Split crates only when there is a concrete dependency or reuse benefit. The storage prototype pins Rust 1.93.1 and is validated on Linux.
 
+Polish the command interface first; defer a full-screen workbench. Keep terminal presentation in the binary, preserve script output and document the clone/import/query workflow in the repository `SKILL.md`. Agents use the CLI or persistent JSONL batch process without an MCP server.
+
 Represent external SCTIDs as `u64` internally and decimal strings at JSON boundaries. Map concepts to dense `u32` ordinals for indexes. Never use a raw SCTID as a bitmap position or assume it fits in a JavaScript number.
 
 Store compact parent and child adjacency arrays. Compare three hierarchy strategies on the real snapshot: traversal with bounded caching, precomputed compressed descendant sets, and a hybrid that precomputes broad or frequently used sets. Measure total index size, load time, page faults and query latency. Avoid building every pair in transitive closure without measuring the cost.

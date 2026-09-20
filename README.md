@@ -9,6 +9,8 @@ Full ECL 2.3 support is a core requirement. The project is complete only when th
 The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested attribute refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact decimal comparisons and top/bottom selection. Displays are optional lookups in a separate file. Membership, filters, history, typed projections and other conformance gaps remain required work. Hosting, FHIR, authoring and classification are outside the current implementation scope.
 
 - [Implementation plan](docs/plan.md)
+- [Agent skill: build, import RF2 and query ECL](SKILL.md)
+- [CLI usage and output formats](docs/cli.md)
 - [Compact store prototype and commands](docs/compact-store.md)
 - [Basic ECL commands and validation](docs/basic-ecl.md)
 - [Refinements and the 1,000-expression corpus](docs/refinements.md)

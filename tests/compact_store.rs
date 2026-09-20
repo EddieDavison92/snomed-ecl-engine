@@ -309,3 +309,52 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
     assert_eq!(rows[2]["total"], 0);
     assert!(rows[2].get("codes").is_none());
 }
+
+#[test]
+fn cli_import_progress_and_presentation_keep_machine_output_parseable() {
+    use std::process::Command;
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    let binary = env!("CARGO_BIN_EXE_snomed-rust-ecl-engine");
+    let config = options(&archive);
+    let imported = Command::new(binary)
+        .arg("import")
+        .arg(&archive)
+        .arg(&destination)
+        .args([&config.edition, &config.expected_sha256, "--json"])
+        .output()
+        .unwrap();
+    assert!(imported.status.success(), "{:?}", imported);
+    let manifest: serde_json::Value = serde_json::from_slice(&imported.stdout).unwrap();
+    assert_eq!(manifest["manifest"]["active_concept_count"], 7);
+    assert!(!imported.stderr.is_empty());
+    assert!(!imported.stdout.contains(&0x1b));
+    for options in [vec!["--count", "--json"], vec!["--json"], vec!["--plain"]] {
+        let output = Command::new(binary)
+            .arg("expand")
+            .arg(&destination)
+            .arg(ROOT.to_string())
+            .args(&options)
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        assert!(!output.stdout.contains(&0x1b));
+        assert!(output.stderr.is_empty());
+        let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        if options.contains(&"--count") {
+            assert_eq!(value, serde_json::json!({"total": 1}));
+        } else if options.contains(&"--json") {
+            assert_eq!(value, serde_json::json!({"code": ROOT.to_string()}));
+        } else {
+            assert_eq!(value, ROOT);
+        }
+    }
+    let conflict = Command::new(binary)
+        .args(["--json", "--plain", "--help"])
+        .output()
+        .unwrap();
+    assert!(!conflict.status.success());
+    assert!(conflict.stdout.is_empty());
+}
