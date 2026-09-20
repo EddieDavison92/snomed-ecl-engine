@@ -1,14 +1,26 @@
 # Serverless query runtime
 
-The engine must run without an always-on API, Redis or database server. Import and index construction run offline. A provider-specific HTTP wrapper can live in another repository and depend on this library.
+The engine must run without an always-on API, Redis or database server. Import and index construction run offline. Vercel is the owner's preferred hosting platform. Its HTTP wrapper can live in another repository and depend on this library.
 
 ## Deployment model
 
-Publish immutable indexes under an edition and checksum. A new instance obtains the required index files from external object storage, verifies them and opens the store. Keep the opened store for subsequent requests while the instance stays warm. Displays remain a separate lookup after expansion.
+Publish immutable indexes under an edition and checksum. Prefer fetching a pinned, prebuilt index during the application build, verifying it and including it in the function bundle. Application builds reuse the index rather than importing RF2 again. Each instance opens its bundled files once and keeps the store for subsequent requests while warm. Displays remain a separate lookup after expansion.
+
+Bundling removes an application-level startup download, but platform bundle preparation and index loading still contribute to a cold start. Keep startup downloads to local temporary storage as a fallback if the complete index outgrows the chosen deployment format.
 
 Use local files for graph traversal. A remote object request for every relationship would replace inexpensive memory reads with network round trips. Future semantic indexes should have independent files so hierarchy queries do not have to acquire description text or history data. Queries that need those files must acquire them before returning a complete result.
 
-The current reader loads the whole numeric store into memory. It does not yet download indexes, load semantic files on demand, or provide a cloud runtime. Consider memory mapping or bounded block reads only after the full semantic data layout exists and measurements show a benefit. Avoid a provider choice based on the incomplete core's footprint.
+The current reader loads the whole numeric store into memory. It does not yet download indexes, load semantic files on demand, or provide a cloud runtime. Consider memory mapping or bounded block reads only after the full semantic data layout exists and measurements show a benefit. Verify the complete engine against Vercel's limits before committing to the final packaging.
+
+## Vercel deployment target
+
+Use a thin native Rust Function wrapper around the query library, with importer features disabled. Vercel documents an official [Rust runtime](https://vercel.com/docs/functions/runtimes/rust), currently in beta, using `vercel_runtime` and Fluid compute. No deployment has been created yet.
+
+Bundle index files as private function assets, outside public/static routes. Initialise one shared immutable store per process, with bounded query concurrency. Pin the edition and store format in the deployment; release updates produce a new deployment rather than replacing files in a running instance.
+
+Vercel documents a standard [250 MB uncompressed function bundle limit and 4.5 MB request/response limit](https://vercel.com/docs/functions/limitations). The current 90.3 MB numeric index leaves room for the wrapper, but the full semantic index has not been measured. The advertised [large-function beta](https://vercel.com/changelog/vercel-functions-can-now-be-up-to-5-gb-in-package-size) names Node.js and Python; do not assume that allowance applies to the native Rust runtime. Check the actual packaged output in a preview deployment. Paginate large expansions and provide count-only responses.
+
+These platform facts were checked on 20 September 2026. Measure deployment cold starts and concurrency on Vercel; local Linux timings do not predict them directly.
 
 ## Query-only build
 
@@ -30,7 +42,7 @@ The same buffered reader took 3.327 seconds through a Windows bind mount. Filesy
 
 The [recorded run](refinement-results.json) contains the binary checksum, index size, startup log, complete-set digests and raw warm-query samples.
 
-Before choosing a host, measure:
+Before deploying the complete engine, measure:
 
 - The complete runtime package and all required semantic index files.
 - Empty-cache acquisition, checksum verification and first expansion over object storage.
