@@ -18,7 +18,26 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 
 Batch times are medians of five shuffled runs through one persistent process, with no result cache. Each count request evaluates the full result set. The [benchmark record](validation/description-corpus-results.json) pins the release, binary, resource limits and result digests.
 
-In a separate same-release comparison, 719 expressions produced identical complete results in Rust and Snowstorm. Median batch request time was **2.16 seconds for Rust versus 10.32 seconds for Snowstorm**. Rust used a persistent CLI process; Snowstorm used loopback HTTP with larger resource allocations. See the [comparison and methodology](docs/full-snowstorm.md) for transport, cache and resource details.
+## Compared with Snowstorm
+
+The intended advantage is fast embedded and batch expansion with a small runtime and no separate search service. These observations use the same UK release:
+
+| Metric | This engine | Snowstorm Lite 2.7.0 | Snowstorm 11.0.0 |
+|---|---|---|---|
+| Query architecture | Rust library or native CLI | Java service with Lucene | Java service plus Elasticsearch |
+| Observed import time | 83.6 seconds | 1,057 seconds, 17.6 minutes | 4,360 seconds, 72.7 minutes |
+| Current index files | 103.3 MiB numeric; 545 MiB including descriptions and displays | 483.3 MiB | 6.11 GiB Elasticsearch directory |
+| Serving allocations used | One CPU; 256 MiB numeric, 1 GiB with descriptions | One CPU, 2 GiB | Each service: four CPUs, 6 GiB |
+| Median request, 719-expression Snowstorm comparison | **2.24 ms** | Not measured on this workload | **12.66 ms** |
+| Request p95, same 719 expressions | 8.81 ms | Not measured on this workload | 38.92 ms |
+| Median 719-request batch | 2.16 seconds | Not measured on this workload | 10.32 seconds |
+| Median request, 18-expression Lite comparison | **1.93 ms** | **15.99 ms** | Not measured on this workload |
+
+Request timings include transport. Rust uses a persistent JSONL process; the servers use loopback HTTP. The Lite comparison also includes pagination and display materialisation. Latency statistics include only expressions with matching complete result sets. The Lite and full Snowstorm workloads are different, so their columns do not establish a speed ranking between the two servers.
+
+Index contents and import allocations also differ. The current Rust description file is uncompressed, and the full language still needs more semantic indexes. These are observed builds, not equal-capability storage ratios or minimum serving allocations. Sources: [Snowstorm comparison](docs/full-snowstorm.md), [Lite comparison](docs/basic-ecl.md), [import records](docs/baseline-status.md) and [derived comparison figures](validation/readme-comparison.json).
+
+The comparison servers also have ECL coverage limits. Lite documents an ECL Core subset without attribute groups, concept/description/member filters or member-field selection in its [pinned source](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/README.md#ecl-utility-endpoints). The tested full Snowstorm parser rejected all 80 top/bottom expressions in our corpus. We also recorded a concrete-inequality disagreement where Rust matched OneLondon and the RF2 evidence. These findings apply to the tested versions; full ECL 2.3 remains this project's target, not a claim that it is already complete.
 
 Description data currently adds 376 MiB and loads on demand. The description-inclusive run peaked at 537 MiB of container-charged memory; it does not fit in 256 MiB yet. Compression and bounded loading are the next storage targets. The [description measurements](docs/descriptions.md) include the failed 256 MiB run as well as successful checks.
 

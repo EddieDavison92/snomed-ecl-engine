@@ -1,0 +1,15 @@
+{
+  "lite_source_sha256": "7f9f10af23548dd7a11a062cc4b727ad9efc299404b9127ffed1e3a8e6afd849",
+  "lite_complete_matches": 18,
+  "lite_timed_samples_per_engine": 52,
+  "lite_scope": "Pooled raw request samples for 18 complete-set matches; 17 small cases have three samples each and one broad case has one. Rust JSONL versus paginated FHIR HTTP with displays. The four mismatched cases are excluded; see the historical default-population correction in docs/basic-ecl.md.",
+  "rust_lite_cohort_request_median_ms": 1.93349999608472,
+  "lite_request_median_ms": 15.993749955669045,
+  "full_snowstorm_source": "docs/full-snowstorm-results.json",
+  "full_snowstorm_scope": "Use the separately documented 719-expression cohort in docs/full-snowstorm.md; do not compare its latency directly with the Lite cohort.",
+  "full_snowstorm_source_sha256": "cf86e8f3141e986c0dd33883382bcc5084ba975144781cf4066f09cccbab4456",
+  "full_snowstorm_complete_matches": 719,
+  "full_snowstorm_timed_samples_per_engine": 3595,
+  "rust_full_cohort_request_median_ms": 2.2373999236151576,
+  "full_snowstorm_request_median_ms": 12.660500011406839
+}
