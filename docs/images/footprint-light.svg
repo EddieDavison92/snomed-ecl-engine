@@ -3,37 +3,37 @@
 <text x="24" y="28" font-size="16" font-weight="600" fill="#0b0b0b">Setting up and serving one UK release</text>
 <text x="24" y="48" font-size="12" fill="#52514e">One RF2 Snapshot, 1.15 million concepts. Each panel has its own scale.</text>
 <text x="24" y="74" font-size="12.5" font-weight="600" fill="#0b0b0b">Index on disk</text>
-<text x="120" y="109.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
-<path d="M132,94.0 H150.7653997378768 A4,4 0 0 1 154.7653997378768,98.0 V112.0 A4,4 0 0 1 150.7653997378768,116.0 H132 Z" fill="#2a78d6"/>
-<text x="164.7653997378768" y="109.0" font-size="12" font-weight="600" fill="#0b0b0b">290 MiB</text>
-<text x="120" y="143.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
-<path d="M132,128.0 H166.00524246395807 A4,4 0 0 1 170.00524246395807,132.0 V146.0 A4,4 0 0 1 166.00524246395807,150.0 H132 Z" fill="#eb6834"/>
-<text x="180.00524246395807" y="143.0" font-size="12" font-weight="600" fill="#0b0b0b">483 MiB</text>
-<text x="120" y="177.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm</text>
-<path d="M132,162.0 H620.0 A4,4 0 0 1 624.0,166.0 V180.0 A4,4 0 0 1 620.0,184.0 H132 Z" fill="#1baf7a"/>
+<text x="138" y="109.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
+<path d="M150,94.0 H167.9325192596618 A4,4 0 0 1 171.9325192596618,98.0 V112.0 A4,4 0 0 1 167.9325192596618,116.0 H150 Z" fill="#2a78d6"/>
+<text x="181.9325192596618" y="109.0" font-size="12" font-weight="600" fill="#0b0b0b">290 MiB</text>
+<text x="138" y="143.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
+<path d="M150,128.0 H182.61480676405716 A4,4 0 0 1 186.61480676405716,132.0 V146.0 A4,4 0 0 1 182.61480676405716,150.0 H150 Z" fill="#eb6834"/>
+<text x="196.61480676405716" y="143.0" font-size="12" font-weight="600" fill="#0b0b0b">483 MiB</text>
+<text x="138" y="177.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm</text>
+<path d="M150,162.0 H620.0 A4,4 0 0 1 624.0,166.0 V180.0 A4,4 0 0 1 620.0,184.0 H150 Z" fill="#1baf7a"/>
 <text x="634.0" y="177.0" font-size="12" font-weight="600" fill="#0b0b0b">6.11 GiB</text>
-<line x1="132" y1="86" x2="132" y2="188" stroke="#e4e3df" stroke-width="1"/>
+<line x1="150" y1="86" x2="150" y2="188" stroke="#e4e3df" stroke-width="1"/>
 <text x="24" y="224" font-size="12.5" font-weight="600" fill="#0b0b0b">Reading the release and building the indexes (one-off)</text>
-<text x="120" y="259.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
-<path d="M132,244.0 H141.51871559633028 A4,4 0 0 1 145.51871559633028,248.0 V262.0 A4,4 0 0 1 141.51871559633028,266.0 H132 Z" fill="#2a78d6"/>
-<text x="155.51871559633028" y="259.0" font-size="12" font-weight="600" fill="#0b0b0b">2.0 min</text>
-<text x="120" y="293.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
-<path d="M132,278.0 H247.27614678899084 A4,4 0 0 1 251.27614678899084,282.0 V296.0 A4,4 0 0 1 247.27614678899084,300.0 H132 Z" fill="#eb6834"/>
-<text x="261.27614678899084" y="293.0" font-size="12" font-weight="600" fill="#0b0b0b">17.6 min</text>
-<text x="120" y="327.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm</text>
-<path d="M132,312.0 H620.0 A4,4 0 0 1 624.0,316.0 V330.0 A4,4 0 0 1 620.0,334.0 H132 Z" fill="#1baf7a"/>
+<text x="138" y="259.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
+<path d="M150,244.0 H159.02412844036698 A4,4 0 0 1 163.02412844036698,248.0 V262.0 A4,4 0 0 1 159.02412844036698,266.0 H150 Z" fill="#2a78d6"/>
+<text x="173.02412844036698" y="259.0" font-size="12" font-weight="600" fill="#0b0b0b">2.0 min</text>
+<text x="138" y="293.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
+<path d="M150,278.0 H260.91238532110094 A4,4 0 0 1 264.91238532110094,282.0 V296.0 A4,4 0 0 1 260.91238532110094,300.0 H150 Z" fill="#eb6834"/>
+<text x="274.91238532110094" y="293.0" font-size="12" font-weight="600" fill="#0b0b0b">17.6 min</text>
+<text x="138" y="327.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm</text>
+<path d="M150,312.0 H620.0 A4,4 0 0 1 624.0,316.0 V330.0 A4,4 0 0 1 620.0,334.0 H150 Z" fill="#1baf7a"/>
 <text x="634.0" y="327.0" font-size="12" font-weight="600" fill="#0b0b0b">72.7 min</text>
-<line x1="132" y1="236" x2="132" y2="338" stroke="#e4e3df" stroke-width="1"/>
+<line x1="150" y1="236" x2="150" y2="338" stroke="#e4e3df" stroke-width="1"/>
 <text x="24" y="374" font-size="12.5" font-weight="600" fill="#0b0b0b">Memory allocated to answer queries</text>
-<text x="120" y="409.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
-<path d="M132,394.0 H138.25 A4,4 0 0 1 142.25,398.0 V412.0 A4,4 0 0 1 138.25,416.0 H132 Z" fill="#2a78d6"/>
-<text x="152.25" y="409.0" font-size="12" font-weight="600" fill="#0b0b0b">256 MiB</text>
-<text x="120" y="443.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
-<path d="M132,428.0 H210.0 A4,4 0 0 1 214.0,432.0 V446.0 A4,4 0 0 1 210.0,450.0 H132 Z" fill="#eb6834"/>
-<text x="224.0" y="443.0" font-size="12" font-weight="600" fill="#0b0b0b">2 GiB</text>
-<text x="120" y="477.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm</text>
-<path d="M132,462.0 H620.0 A4,4 0 0 1 624.0,466.0 V480.0 A4,4 0 0 1 620.0,484.0 H132 Z" fill="#1baf7a"/>
+<text x="138" y="409.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
+<path d="M150,394.0 H155.875 A4,4 0 0 1 159.875,398.0 V412.0 A4,4 0 0 1 155.875,416.0 H150 Z" fill="#2a78d6"/>
+<text x="169.875" y="409.0" font-size="12" font-weight="600" fill="#0b0b0b">256 MiB</text>
+<text x="138" y="443.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
+<path d="M150,428.0 H225.0 A4,4 0 0 1 229.0,432.0 V446.0 A4,4 0 0 1 225.0,450.0 H150 Z" fill="#eb6834"/>
+<text x="239.0" y="443.0" font-size="12" font-weight="600" fill="#0b0b0b">2 GiB</text>
+<text x="138" y="477.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm</text>
+<path d="M150,462.0 H620.0 A4,4 0 0 1 624.0,466.0 V480.0 A4,4 0 0 1 620.0,484.0 H150 Z" fill="#1baf7a"/>
 <text x="634.0" y="477.0" font-size="12" font-weight="600" fill="#0b0b0b">12 GiB</text>
-<line x1="132" y1="386" x2="132" y2="488" stroke="#e4e3df" stroke-width="1"/>
+<line x1="150" y1="386" x2="150" y2="488" stroke="#e4e3df" stroke-width="1"/>
 <text x="24" y="528" font-size="11" fill="#52514e">Allocations used in these runs, not measured minimums. Snowstorm counts both its service and Elasticsearch.</text>
 </svg>

@@ -55,6 +55,10 @@ expansion**. Against Snowstorm Lite, 2 and 3 times. All medians over the
 expressions both engines answered, and the tail is wider than the middle: the
 slowest 5% take 9.97 ms here and 41.63 ms through Snowstorm.
 
+It is worth saying what each side was given. This engine had one CPU and
+256 MiB. Snowstorm had eight CPUs and 12 GiB across its service and
+Elasticsearch, and Snowstorm Lite one CPU and 2 GiB.
+
 Two paths are slower here than on either server, and you should know about them
 before you rely on this. The first description-filter query in a process loads
 the description index and takes about six seconds; every one after that takes
@@ -107,7 +111,7 @@ Against the UK Monolith release, 1.15 million concepts.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/latency-dark.svg">
-  <img alt="Warm count median: this engine 2.20 ms, Snowstorm Lite 4.56 ms, Snowstorm 13.19 ms. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms." src="docs/images/latency-light.svg">
+  <img alt="Warm count median: this engine 2.20 ms on 1 CPU and 256 MiB, Snowstorm Lite 4.56 ms on 1 CPU and 2 GiB, Snowstorm 13.19 ms on 8 CPUs and 12 GiB. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms on the same allocations." src="docs/images/latency-light.svg">
 </picture>
 
 Speed only counts if the answers match, so the corpus compares complete code

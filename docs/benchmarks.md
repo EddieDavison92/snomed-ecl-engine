@@ -39,11 +39,12 @@ hold their own search structures.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/latency-dark.svg">
-  <img alt="Warm count median: this engine 2.20 ms, Snowstorm Lite 4.56 ms, Snowstorm 13.19 ms. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms." src="images/latency-light.svg">
+  <img alt="Warm count median: this engine 2.20 ms on 1 CPU and 256 MiB, Snowstorm Lite 4.56 ms on 1 CPU and 2 GiB, Snowstorm 13.19 ms on 8 CPUs and 12 GiB. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms on the same allocations." src="images/latency-light.svg">
 </picture>
 
-The 1,000-expression corpus, one CPU and 256 MiB for the engine, each server
-compared on its own matched cohort:
+The 1,000-expression corpus, each server compared on its own matched cohort.
+The engine ran on one CPU and 256 MiB, Snowstorm Lite on one CPU and 2 GiB, and
+Snowstorm on eight CPUs and 12 GiB across its service and Elasticsearch:
 
 | | Engine median | Engine p95 | Server median | Server p95 |
 |---|---:|---:|---:|---:|

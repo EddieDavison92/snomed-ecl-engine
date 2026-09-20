@@ -34,13 +34,31 @@ FONT = (
     "sans-serif"
 )
 ENGINES = ["This engine", "Snowstorm Lite", "Snowstorm"]
+# What each was given for the run. Shown under the name on the latency chart,
+# because a speed comparison means little without the hardware behind it.
+ALLOCATIONS = ["1 CPU, 256 MiB", "1 CPU, 2 GiB", "8 CPUs, 12 GiB"]
 
 BAR = 22          # <= 24px: never fill the band
 RADIUS = 4        # rounded data-end
 ROW = 34
-LEFT = 132        # room for the engine names
+LEFT = 150        # room for the engine names and their allocations
 RIGHT = 96        # room for the value label
 WIDTH = 720
+
+
+def wrap(text, width=112):
+    """Break a note into lines that fit the canvas at 11px."""
+    lines, current = [], ""
+    for word in text.split():
+        candidate = f"{current} {word}".strip()
+        if len(candidate) > width and current:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return lines
 
 
 def esc(text):
@@ -59,12 +77,15 @@ def bar_path(x, y, length, height, radius):
     )
 
 
-def panels_svg(theme_name, title, subtitle, panels, note):
+def panels_svg(theme_name, title, subtitle, panels, note, allocations=False):
     """Small multiples: one panel per measure, one bar per engine."""
     t = THEMES[theme_name]
     head = 58 if subtitle else 38
     panel_head = 30
-    height = head + sum(panel_head + ROW * len(p["values"]) + 18 for p in panels) + 34
+    row_height = ROW + (8 if allocations else 0)
+    note_lines = wrap(note)
+    height = (head + sum(panel_head + row_height * len(p["values"]) + 18 for p in panels)
+              + 20 + 14 * len(note_lines))
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{height}" '
         f'viewBox="0 0 {WIDTH} {height}" font-family="{FONT}" '
@@ -85,17 +106,30 @@ def panels_svg(theme_name, title, subtitle, panels, note):
             f'fill="{t["primary"]}">{esc(panel["title"])}</text>'
         )
         y += panel_head
+        row = ROW + (8 if allocations else 0)
         widest = max(v for v, _ in panel["values"])
         span = WIDTH - LEFT - RIGHT
         for index, (value, label) in enumerate(panel["values"]):
-            row_y = y + index * ROW
-            centre = row_y + ROW / 2
+            row_y = y + index * row
+            centre = row_y + row / 2
             length = max(2.0, span * value / widest)
-            out.append(
-                f'<text x="{LEFT - 12}" y="{centre + 4}" font-size="12" '
-                f'text-anchor="end" fill="{t["secondary"]}">'
-                f"{esc(ENGINES[index])}</text>"
-            )
+            if allocations:
+                out.append(
+                    f'<text x="{LEFT - 12}" y="{centre - 1}" font-size="12" '
+                    f'text-anchor="end" fill="{t["secondary"]}">'
+                    f"{esc(ENGINES[index])}</text>"
+                )
+                out.append(
+                    f'<text x="{LEFT - 12}" y="{centre + 12}" font-size="10" '
+                    f'text-anchor="end" fill="{t["secondary"]}">'
+                    f"{esc(ALLOCATIONS[index])}</text>"
+                )
+            else:
+                out.append(
+                    f'<text x="{LEFT - 12}" y="{centre + 4}" font-size="12" '
+                    f'text-anchor="end" fill="{t["secondary"]}">'
+                    f"{esc(ENGINES[index])}</text>"
+                )
             out.append(
                 f'<path d="{bar_path(LEFT, centre - BAR / 2, length, BAR, RADIUS)}" '
                 f'fill="{t["series"][index]}"/>'
@@ -104,16 +138,18 @@ def panels_svg(theme_name, title, subtitle, panels, note):
                 f'<text x="{LEFT + length + 10}" y="{centre + 4}" font-size="12" '
                 f'font-weight="600" fill="{t["primary"]}">{esc(label)}</text>'
             )
-        baseline = y + ROW * len(panel["values"])
+        baseline = y + row * len(panel["values"])
         out.append(
             f'<line x1="{LEFT}" y1="{y - 2}" x2="{LEFT}" y2="{baseline - 2}" '
             f'stroke="{t["grid"]}" stroke-width="1"/>'
         )
         y = baseline + 18
-    out.append(
-        f'<text x="24" y="{height - 14}" font-size="11" fill="{t["secondary"]}">'
-        f"{esc(note)}</text>"
-    )
+    for offset, line in enumerate(note_lines):
+        baseline_y = height - 14 - 14 * (len(note_lines) - 1 - offset)
+        out.append(
+            f'<text x="24" y="{baseline_y}" font-size="11" '
+            f'fill="{t["secondary"]}">{esc(line)}</text>'
+        )
     out.append("</svg>")
     return "\n".join(out)
 
@@ -175,11 +211,11 @@ def latency_svg(theme_name, title, subtitle, rows, note):
     return "\n".join(out)
 
 
-def write(name, builder, *args):
+def write(name, builder, *args, **options):
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in THEMES:
         path = OUT / f"{name}-{theme}.svg"
-        path.write_text(builder(theme, *args) + "\n", encoding="utf-8")
+        path.write_text(builder(theme, *args, **options) + "\n", encoding="utf-8")
         print("wrote", path.relative_to(OUT.parent.parent))
 
 
@@ -221,6 +257,8 @@ if __name__ == "__main__":
                 "values": [(2.29, "2.29 ms"), (7.15, "7.15 ms"), (36.40, "36.40 ms")],
             },
         ],
-        "Engine cost is flat between the two; server cost is not. Includes transport: "
-        "JSONL to a child process, or loopback HTTP with paging.",
+        "Engine cost is flat between the two; server cost is not. Snowstorm's "
+        "allocation covers its service and Elasticsearch together. Includes "
+        "transport: JSONL to a child process, or loopback HTTP with paging.",
+        allocations=True,
     )
