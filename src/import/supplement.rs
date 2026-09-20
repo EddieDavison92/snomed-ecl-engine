@@ -476,9 +476,10 @@ pub fn add_refsets_snapshot(
     manifest.display_bytes = display.metadata()?.len();
     manifest.display_sha256 = sha256(&display)?;
     manifest.displays_selected = labels.iter().flatten().count();
-    let mut file = File::create_new(staging.join("manifest.json"))?;
+    let mut file = BufWriter::new(File::create_new(staging.join("manifest.json"))?);
     serde_json::to_writer_pretty(&mut file, &manifest)?;
-    file.sync_all()?;
+    file.flush()?;
+    file.get_ref().sync_all()?;
     drop(file);
     ensure!(!destination.exists(), "Destination appeared during import");
     fs::rename(&staging, destination)

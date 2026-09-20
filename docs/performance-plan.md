@@ -120,4 +120,12 @@ Full ECL needs text and typed member data. A description-filter index must prese
 
 Membership uses one stored sorted list per refset. A single-refset lookup binary-searches its key; unions use bounded packed marker words. Containing-any checks the smaller candidate/member list against the larger and stops at its first intersection. No full reverse membership copy or result cache is stored.
 
+Manifest and identifier JSON writes now use buffers and explicitly flush before
+syncing their files. In the [PCD import check](../validation/buffered-import-results.json),
+the same packed base and supplement took 81.36 seconds before this change and
+49.08 seconds afterwards. Both runs used two CPUs and 2 GiB; filesystem caches
+were retained and the host was shared. The resulting manifest bytes and every
+component checksum are identical. These are single observed runs, not a general
+import-speed estimate.
+
 The supplementary loader reads displays sequentially when remapping ordinals. It does not issue a file seek for every concept. These choices are covered by complete-set validation. Larger evaluator changes should follow the experiments above, independently of ECL feature additions.

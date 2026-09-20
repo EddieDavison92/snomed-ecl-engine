@@ -1,0 +1,28 @@
+{
+  "recorded_at": "2026-09-20T11:23:56.792242+00:00",
+  "base_container_sha256": "f82c6b2507502ba7279a67c138fa5b56034f7965253701c3c6c9b24275959b6a",
+  "supplement_sha256": "672f4ee9ffa6f385a3620129b968d42031bd68bc157c47a93565392dd635db60",
+  "before_binary_sha256": "b828a5db212753d676ed809b0df8b9c94dcb55c52ba2f9454a80c275e4cd6008",
+  "after_binary_sha256": "7762c2b97b6c1bf8b76c5844773487bd0e1051de08d3f69056628b5c0d352193",
+  "before_seconds": 81.36,
+  "after_seconds": 49.08,
+  "allocation": {
+    "cpus": 2,
+    "memory_mib": 2048,
+    "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31"
+  },
+  "manifest_bytes": 571478,
+  "manifest_sha256": "96a834d9ccea6dc922146973adf82faef0f32c4911683972f6b2721b71070872",
+  "manifest_bytes_identical": true,
+  "all_component_checksums_identical": true,
+  "description_index": {
+    "bytes": 394688869,
+    "sha256": "bee1c74c6da75b21df8bcdc546137f7db78ef4993eadc888833ac3611b0ac8a0",
+    "descriptions": 3564824,
+    "active_descriptions": 2701201,
+    "language_memberships": 5608984
+  },
+  "member_files": 1621,
+  "supplement_refsets": 1039,
+  "scope": "Sequential single PCD imports from the same packed base, on a Windows bind mount with caches retained. Other work could run on the shared host. Observed elapsed times, not a controlled speedup estimate. Buffered manifest and identifier JSON writes retain explicit flush and sync before publication. The preceding streamed-description import also reproduced the earlier v1-schema-pcd manifest exactly."
+}

@@ -1,6 +1,7 @@
 use super::{sha256, IndexSource, Section};
 use anyhow::{bail, ensure, Result};
 use serde::{Deserialize, Serialize};
+use std::io::{BufWriter, Write};
 use std::path::Path;
 use std::sync::OnceLock;
 
@@ -67,9 +68,10 @@ impl IdentifierIndex {
     pub fn write(&self, directory: &Path) -> Result<IdentifierManifest> {
         self.validate()?;
         let path = directory.join("identifiers.json");
-        let mut file = std::fs::File::create_new(&path)?;
+        let mut file = BufWriter::new(std::fs::File::create_new(&path)?);
         serde_json::to_writer(&mut file, self)?;
-        file.sync_all()?;
+        file.flush()?;
+        file.get_ref().sync_all()?;
         Ok(IdentifierManifest {
             bytes: path.metadata()?.len(),
             sha256: sha256(&path)?,

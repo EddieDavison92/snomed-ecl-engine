@@ -5,7 +5,7 @@ use crate::store::{
 use anyhow::{bail, ensure, Context, Result};
 use std::collections::{HashMap, HashSet};
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use zip::ZipArchive;
@@ -487,9 +487,10 @@ pub fn import_snapshot_with_progress(
         identifiers: Some(identifiers),
         supplements: Vec::new(),
     };
-    let mut manifest_file = File::create_new(staging.join("manifest.json"))?;
+    let mut manifest_file = BufWriter::new(File::create_new(staging.join("manifest.json"))?);
     serde_json::to_writer_pretty(&mut manifest_file, &manifest)?;
-    manifest_file.sync_all()?;
+    manifest_file.flush()?;
+    manifest_file.get_ref().sync_all()?;
     drop(manifest_file);
     ensure!(!destination.exists(), "Destination appeared during import");
     fs::rename(&staging, destination)
