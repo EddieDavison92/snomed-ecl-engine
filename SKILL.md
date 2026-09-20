@@ -137,7 +137,7 @@ description filters, member filters and projections, history supplements and
 alternate identifiers. Term matching inside description filters needs
 `--features unicode`.
 
-Three grammar-valid forms have no settled meaning in the specification and
+Three grammar-valid forms have no clear meaning in the specification and
 return a `Semantic` error: a reverse flag inside an attribute group, a member
 filter without a refset operator, and a reverse flag with a concrete value. Read
 [ECL support](docs/ecl-support.md) before claiming a category is covered, and

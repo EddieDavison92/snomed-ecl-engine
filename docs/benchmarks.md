@@ -15,21 +15,22 @@ The two cost this engine 2.20 ms and 2.29 ms. They cost Snowstorm 13.19 ms and
 36.40 ms. Quoting a count latency for an enumeration workload would understate
 Snowstorm's by a factor of three, so the tables below keep them apart.
 
-## Cost of serving one release
+## Setting up and serving one release
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/footprint-dark.svg">
-  <img alt="Index on disk: this engine 290 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Import time: 2.0, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="images/footprint-light.svg">
+  <img alt="Index on disk: this engine 290 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.0, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="images/footprint-light.svg">
 </picture>
 
 | | This engine | Snowstorm Lite 2.7.0 | Snowstorm 11.0.0 |
 |---|---:|---:|---:|
 | Index on disk | 290 MiB packed | 483 MiB | 6.11 GiB Elasticsearch |
-| Import time | 120 s | 1,057 s | 4,360 s |
-| Memory allocated to serve | 256 MiB | 2 GiB | 12 GiB (two services) |
+| Read the release and build the indexes | 120 s | 1,057 s | 4,360 s |
+| Memory allocated to answer queries | 256 MiB | 2 GiB | 12 GiB (two services) |
 | Architecture | Rust library or CLI | Java service with Lucene | Java service plus Elasticsearch |
 
-Allocations are what each run was given, not measured minimums. Snowstorm's
+Reading the release happens once, before any query, and produces an index that
+never changes. Allocations are what each run was given, not measured minimums. Snowstorm's
 figure counts its own service and Elasticsearch together. Index contents are not
 identical: ours holds descriptions, displays and typed member tables; the servers
 hold their own search structures.
@@ -119,8 +120,41 @@ No comparison server involved.
 | Query-only executable, `--no-default-features` | 2,231,176 B (2.13 MiB), 955,586 B gzipped |
 | Default build, with the RF2 importer | 2,973,128 B (2.84 MiB), 1,290,251 B gzipped |
 | With `--features unicode` for term matching | 35,731,536 B (34.08 MiB), 14,106,938 B gzipped |
-| Packed index open | 1.13 s |
-| Container start to first response | 1.72 s |
+| Open a packed index | 525 ms |
+| Open an uncompressed index | 285 ms |
+| Process start, open and answer one query | 650 ms |
+
+## Starting cold
+
+Opening an index is the cost a serverless invocation pays before it can answer
+anything. `examples/open_breakdown.rs` splits it, on one CPU with the index on a
+local filesystem:
+
+| Phase | Uncompressed | Packed |
+|---|---:|---:|
+| Read and decode the core | 145 ms | 460 ms |
+| Verify the core checksum | 47 ms | included above |
+| Structural validation | 88 ms | 100 ms |
+| **Total** | **285 ms** | **525 ms** |
+
+The packed layout costs about 240 ms more to open, because zstd decodes 21.8 MiB
+into the 86 MiB core. It is 290 MiB on disk against 1.08 GiB. Which way that
+trades depends on whether the file is already local or downloaded per cold start.
+
+Process start, opening a packed index and answering one hierarchy query takes
+650 ms inside a running container. Creating the container is the platform's
+cost, not the engine's: an empty `docker run` on this host takes 1,045 ms, so
+end-to-end here is about 1.5 s. That figure describes Docker Desktop on Windows
+and says nothing about a Linux serverless host.
+
+An earlier version of this page reported 1.13 s to open and 1.72 s to first
+response. Those were measured with the index on a Windows bind mount, which
+reads at 181 MB/s against 5.6 GB/s for the container's own filesystem. They
+measured the mount, not the engine.
+
+[Bringing this down](roadmap.md#now) is open work.
+
+## Executable size
 
 Statically linking ICU4C costs about 31 MiB of executable. Only description term
 predicates need it. Metadata-only description filters and every other feature

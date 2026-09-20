@@ -14,6 +14,34 @@ reaches easily. The fix is to make the cost proportional to nodes touched:
 generation-stamped markers reused across the query, and results collected from
 the touched set. Raising the budget would hide it.
 
+**Cold start.** Opening a packed index takes 525 ms, and 285 ms uncompressed.
+A serverless invocation pays that before it answers anything. Measured with
+`examples/open_breakdown.rs`, the cost splits four ways, and each has a
+different fix.
+
+- *Structural validation, 88 ms.* Every open re-derives graph invariants,
+  including a topological sort for acyclicity, on bytes whose SHA-256 already
+  matches the manifest. The same bytes passed those checks when the index was
+  written. Skipping validation when the section hash matches keeps corruption
+  detection, which the checksum does better, and drops the work. `verify` keeps
+  the full checks.
+- *Reading and decoding the core, 145 ms uncompressed and 460 ms packed.* The
+  decoder builds each vector one element at a time through a per-element
+  `Result`: 1.15 million concept IDs, 1.6 million edges, 2.96 million attribute
+  rows. Decoding in bulk from the byte buffer would vectorise.
+- *Attributes the query never uses.* Attribute rows are roughly 35 MiB of the
+  86 MiB core and are only needed for refinements. A hierarchy or Boolean query
+  loads, checksums and validates them for nothing. Making them lazy, as
+  descriptions and member tables already are, would cut all three costs for the
+  common case.
+- *Everything else.* Memory-mapping an uncompressed index would make opening it
+  close to free and let pages fault in on demand. It needs `unsafe` and careful
+  alignment, and it rules out compression, so it is a separate layout rather
+  than a replacement.
+
+The first two are worth doing before the last two. Together they should put a
+hierarchy query well under 100 ms.
+
 **A comparison on the broad corpus.** The 1,000-expression comparison has been
 re-run: 879 of 1,000 expressions now match Snowstorm's complete code sets, up
 from 719. The 10,000-expression corpus still has no comparison: several of its

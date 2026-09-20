@@ -187,7 +187,7 @@ if __name__ == "__main__":
     write(
         "footprint",
         panels_svg,
-        "Cost of serving the same UK release",
+        "Setting up and serving one UK release",
         "One RF2 Snapshot, 1.15 million concepts. Each panel has its own scale.",
         [
             {
@@ -195,11 +195,11 @@ if __name__ == "__main__":
                 "values": [(289.5, "290 MiB"), (483.3, "483 MiB"), (6256.6, "6.11 GiB")],
             },
             {
-                "title": "Import time",
+                "title": "Reading the release and building the indexes (one-off)",
                 "values": [(119.8, "2.0 min"), (1057.0, "17.6 min"), (4360.0, "72.7 min")],
             },
             {
-                "title": "Memory allocated to serve the workload",
+                "title": "Memory allocated to answer queries",
                 "values": [(256, "256 MiB"), (2048, "2 GiB"), (12288, "12 GiB")],
             },
         ],

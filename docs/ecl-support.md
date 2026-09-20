@@ -56,7 +56,7 @@ examples parse.
 
 ## Open questions
 
-Three grammar-valid forms have no settled meaning in the specification. The
+Three grammar-valid forms have no clear meaning in the specification. The
 parser returns a `Semantic` error for each, which is distinct from `Unsupported`.
 Neither the error nor its name resolves the question, and each remains an
 acceptance item.

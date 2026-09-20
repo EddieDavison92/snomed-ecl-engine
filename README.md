@@ -41,8 +41,8 @@ expression already built the whole set, so returning it costs almost nothing
 more. Snowstorm answers the same two requests in 13.19 ms and 36.40 ms, because
 it serialises the concepts and returns them in pages over HTTP.
 
-Expanding 879 definitions in full took 9.0 seconds here. The same 879 through
-Snowstorm took 101.6 seconds.
+Expanding the 879 expressions that both engines could answer took 9.0 seconds
+here and 101.6 seconds through Snowstorm.
 
 - **Expand hundreds of codelists at once.** Turning a directory of static code
   lists into ECL definitions means expanding every one in full and diffing it
@@ -94,7 +94,7 @@ Against the UK Monolith release, 1.15 million concepts.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/footprint-dark.svg">
-  <img alt="Index on disk: this engine 290 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Import time: 2.0, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
+  <img alt="Index on disk: this engine 290 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.0, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
 </picture>
 
 <picture>
@@ -102,18 +102,25 @@ Against the UK Monolith release, 1.15 million concepts.
   <img alt="Warm count median: this engine 2.20 ms, Snowstorm Lite 4.56 ms, Snowstorm 13.19 ms. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms." src="docs/images/latency-light.svg">
 </picture>
 
-Over the same 1,000-expression corpus, 879 expressions returned complete code
-sets identical to Snowstorm's, up from 719 before membership, descriptions,
-history and filters landed. Snowstorm Lite matched 587. It declared 320 of the
-expressions to use features it does not implement.
+This engine evaluated all 1,000 expressions in the test corpus and returned a
+complete code set for every one. Snowstorm could answer 879 of them, and its
+answers matched ours on all 879. Of the rest, its parser rejected 80, its
+concept endpoint could not return 40, and 1 it answered differently. An earlier
+run of the same corpus matched 719, before membership, descriptions, history and
+filters were added to this engine.
+
+Snowstorm Lite could answer 587. It reported 320 as using ECL features it does
+not implement, rejected 80 at the parser, and answered 13 differently. All 13 of
+those are attribute inequalities, where Lite returns an empty set and Snowstorm
+agrees with us.
 
 | | |
 |---|---:|
 | Query-only Linux executable | 2.13 MiB (0.91 MiB gzipped) |
 | 10,000-expression corpus, one CPU and 256 MiB | 35.05 s per warm batch |
 | Same corpus, four CPUs and four workers | 5.87 s |
-| Index open, packed | 1.13 s |
-| Container start to first response | 1.72 s |
+| Open a packed index | 525 ms |
+| Open an uncompressed index | 285 ms |
 
 [Benchmarks](docs/benchmarks.md) has the method, the raw samples, the
 disagreements and the limits of these numbers.
