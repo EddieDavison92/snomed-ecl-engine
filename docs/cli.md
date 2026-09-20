@@ -108,9 +108,26 @@ label objects, in place of the bare `codes` array. Labels are resolved after
 evaluation and the display index opens on first use, so a batch that never asks
 never pays for it. `count_only` returns neither. It always emits JSONL, including in a terminal. Individual query errors return an error object and do not stop the batch. An empty successful expansion has total zero. See [the agent batch workflow](../SKILL.md#reuse-the-index-for-many-queries) for schemas and process handling.
 
+`"offset"` and `"limit"` return a window of a result. `total` still counts the
+whole answer, so a caller can show 200 of 838,955 without fetching the rest and
+without mistaking the page for the set.
+
+A request carrying `"search"` instead of `"ecl"` looks concepts up by name
+through the word index rather than evaluating an expression. It returns ranked
+`concepts` with their codes, labels and active flags, and `total` matches. It is
+capped by `limit`, defaulting to 50, because it answers what a person meant
+rather than producing a set. `"include_inactive": true` keeps retired concepts.
+
+A request carrying `"concept"` returns that concept's descriptions, parents,
+children, relationship groups and reference set membership. Concrete values keep
+their published type. An unknown SCTID returns `{"error":"NotFound"}`.
+
 [Member projections](ecl-support.md) can return distinct typed values or rows. `expand` emits these as JSONL, and `--count` counts values or rows. `--display` requires concept results. Batch responses use `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`, instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
 
 The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](ecl-support.md) tracks the outstanding work.
+
+`build-search STORE_DIRECTORY` adds the word index to an index that predates
+it, then repack. Import builds it, so this is only for older stores.
 
 Use `add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256` for supplementary simple refsets, including PCD. Read [refset loading](indexes.md) for supported definitions, collision handling and release provenance.
 
