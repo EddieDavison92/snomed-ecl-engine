@@ -588,3 +588,119 @@ fn date(value: &str) -> Result<u32> {
     ensure!(year >= 1900 && day > 0 && day <= days, "Invalid RF2 date");
     Ok(number)
 }
+
+/// What an RF2 archive declares about itself, without importing it.
+#[derive(Debug, serde::Serialize)]
+pub struct ArchiveSummary {
+    pub sha256: String,
+    pub bytes: u64,
+    pub effective_time: String,
+    /// Edition URIs the archive's own module dependencies support, the roots
+    /// first. A module that another module depends on is not the edition.
+    pub edition_uris: Vec<String>,
+    /// How many of those are roots. Exactly one means the edition is unambiguous.
+    pub root_editions: usize,
+    /// Snapshot files the importer requires, and whether each was found.
+    pub required_files: Vec<(String, Option<String>)>,
+    pub importable: bool,
+}
+
+/// Reads an archive's declared release metadata so the caller can check it
+/// against the distributor's published values before importing. This reports
+/// what the file claims; it establishes nothing about the file's origin.
+pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
+    let bytes = std::fs::metadata(archive_path)?.len();
+    let sha256 = crate::store::sha256(archive_path)?;
+    let mut archive = ZipArchive::new(BufReader::new(File::open(archive_path)?))?;
+    let required = [
+        ("concepts", "sct2_Concept_"),
+        ("relationships", "sct2_Relationship_"),
+        ("concrete values", "sct2_RelationshipConcreteValues_"),
+        ("descriptions", "sct2_Description_"),
+        ("language refset", "der2_cRefset_Language"),
+        ("module dependencies", "der2_ssRefset_ModuleDependency"),
+    ];
+    let required_files: Vec<_> = required
+        .iter()
+        .map(|(label, prefix)| ((*label).to_owned(), snapshot_file(&archive, prefix).ok()))
+        .collect();
+    let importable = required_files.iter().all(|(_, found)| found.is_some());
+
+    let metadata_files: Vec<_> = archive
+        .file_names()
+        .filter(|n| n.ends_with("/release_package_information.json"))
+        .map(str::to_owned)
+        .collect();
+    ensure!(
+        metadata_files.len() == 1,
+        "One package metadata file is required; this archive has {}",
+        metadata_files.len()
+    );
+    let mut metadata_text = String::new();
+    archive
+        .by_name(&metadata_files[0])?
+        .take(1024 * 1024)
+        .read_to_string(&mut metadata_text)?;
+    let package: serde_json::Value = serde_json::from_str(&metadata_text)?;
+    let effective_time = package["effectiveTime"]
+        .as_str()
+        .context("Package metadata has no effectiveTime")?
+        .to_owned();
+
+    // The importer requires a module whose own dependency row carries the
+    // package date, so those modules are the edition URIs it would accept.
+    let mut modules = Vec::new();
+    let mut depended_on = Vec::new();
+    if let Some(Some(name)) = required_files
+        .iter()
+        .find(|(label, _)| label == "module dependencies")
+        .map(|(_, found)| found.clone())
+    {
+        rows(
+            &mut archive,
+            &name,
+            &[
+                "id",
+                "effectiveTime",
+                "active",
+                "moduleId",
+                "refsetId",
+                "referencedComponentId",
+                "sourceEffectiveTime",
+                "targetEffectiveTime",
+            ],
+            |r| {
+                if !active(r[2])? {
+                    return Ok(());
+                }
+                if r[6] == effective_time && !modules.contains(&r[3].to_owned()) {
+                    modules.push(r[3].to_owned());
+                }
+                if !depended_on.contains(&r[5].to_owned()) {
+                    depended_on.push(r[5].to_owned());
+                }
+                Ok(())
+            },
+        )?;
+    }
+    modules.sort();
+    // The edition module is the root of the package's dependency graph: every
+    // other module is depended on by something inside the package.
+    let (roots, rest): (Vec<_>, Vec<_>) = modules
+        .into_iter()
+        .partition(|module| !depended_on.contains(module));
+    let root_editions = roots.len();
+    Ok(ArchiveSummary {
+        edition_uris: roots
+            .into_iter()
+            .chain(rest)
+            .map(|module| format!("http://snomed.info/sct/{module}/version/{effective_time}"))
+            .collect(),
+        root_editions,
+        sha256,
+        bytes,
+        effective_time,
+        required_files,
+        importable,
+    })
+}

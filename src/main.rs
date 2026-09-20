@@ -133,18 +133,74 @@ fn run() -> Result<()> {
                 }
             }
         }
-        "checksum" => {
-            ensure!(args.len() == 2, "Usage: checksum ARCHIVE");
-            let digest = file_sha256(Path::new(&args[1]))?;
-            if human {
-                println!("{digest}  {}", presentation::clean(&args[1]));
-                println!(
-                    "\n  Compare this with the checksum the release distributor published.\n  \
-                     A checksum taken from the downloaded file alone proves nothing about its origin."
-                );
-            } else {
-                println!("{}", serde_json::json!({"sha256": digest, "path": args[1]}));
+        #[cfg(not(feature = "import"))]
+        "inspect" => bail!("Archive inspection needs the importer; rebuild with --features import"),
+        #[cfg(feature = "import")]
+        "inspect" => {
+            ensure!(args.len() == 2, "Usage: inspect ARCHIVE");
+            let summary = snomed_ecl_engine::import::inspect_archive(Path::new(&args[1]))?;
+            if !human {
+                println!("{}", serde_json::to_string_pretty(&summary)?);
+                return Ok(());
             }
+            println!("{}", presentation::heading("SNOMED ECL / archive"));
+            println!();
+            println!("  File      {}", presentation::clean(&args[1]));
+            println!("  Size      {}", presentation::bytes(summary.bytes));
+            println!("  SHA-256   {}", summary.sha256);
+            println!(
+                "  Release   {}",
+                presentation::clean(&summary.effective_time)
+            );
+            println!();
+            for (label, found) in &summary.required_files {
+                match found {
+                    Some(name) => println!("  found     {}", presentation::clean(name)),
+                    None => println!("  MISSING   {label}"),
+                }
+            }
+            if !summary.importable {
+                println!();
+                println!("  Required Snapshot files are missing. The importer takes one");
+                println!("  self-contained Snapshot package; Full, Delta and split");
+                println!("  extensions are not supported.");
+                return Ok(());
+            }
+            println!();
+            if summary.edition_uris.is_empty() {
+                println!("  No module declares this release date, so no edition URI can be");
+                println!("  offered. Use the versioned URI from the release distributor.");
+                return Ok(());
+            }
+            match summary.root_editions {
+                1 => println!("  Edition URI"),
+                0 => println!("  Edition URI candidates (no single root module)"),
+                n => println!("  Edition URI candidates ({n} root modules)"),
+            }
+            for (index, uri) in summary.edition_uris.iter().enumerate() {
+                let marker = if index < summary.root_editions.max(1) {
+                    " "
+                } else {
+                    "-"
+                };
+                println!("  {marker} {}", presentation::clean(uri));
+            }
+            if summary.edition_uris.len() > summary.root_editions.max(1) {
+                println!();
+                println!("  Lines marked - are modules another module in this package depends");
+                println!("  on, so they are components of the edition rather than the edition.");
+            }
+            println!();
+            println!("  Check the SHA-256 above against the value the release distributor");
+            println!("  published. A checksum taken from the downloaded file shows only that");
+            println!("  the file is intact, never where it came from. Then import:");
+            println!();
+            println!(
+                "    snomed-ecl-engine import {} INDEX_DIRECTORY \\",
+                presentation::clean(&args[1])
+            );
+            println!("      {} \\", presentation::clean(&summary.edition_uris[0]));
+            println!("      {}", summary.sha256);
         }
         "query" => {
             let mut style = Style::take(&mut args, human, json)?;
@@ -490,7 +546,18 @@ fn run() -> Result<()> {
             }
             let mut display = None;
             let mut out = io::BufWriter::new(io::stdout().lock());
-            emit(&store, &path, &mut display, &result, &style, None, &mut out)?;
+            // A terminal lists a page; redirected output and --json stay complete,
+            // so scripts are unaffected and the total is always reported.
+            let limit = human.then_some(EXPAND_LIMIT);
+            emit(
+                &store,
+                &path,
+                &mut display,
+                &result,
+                &style,
+                limit,
+                &mut out,
+            )?;
             out.flush()?;
         }
         "batch" => {
@@ -697,24 +764,12 @@ fn batch_response(
 /// printed, so this caps the listing only.
 const QUERY_LIMIT: usize = 40;
 
+/// Codes listed by `expand` in a terminal, for the same reason. Redirected
+/// output is never capped.
+const EXPAND_LIMIT: usize = 200;
+
 /// Codes listed per side of a terminal diff, for the same reason.
 const DIFF_LIMIT: usize = 40;
-
-fn file_sha256(path: &Path) -> Result<String> {
-    use sha2::{Digest, Sha256};
-    let mut file =
-        std::fs::File::open(path).with_context(|| format!("Cannot read {}", path.display()))?;
-    let mut hasher = Sha256::new();
-    let mut buffer = vec![0; 1 << 20];
-    loop {
-        let read = file.read(&mut buffer)?;
-        if read == 0 {
-            break;
-        }
-        hasher.update(&buffer[..read]);
-    }
-    Ok(format!("{:x}", hasher.finalize()))
-}
 
 /// Evaluates one expression against one index and returns its edition with the
 /// result as sorted (code, ordinal) pairs. The ordinal is kept so terms can be

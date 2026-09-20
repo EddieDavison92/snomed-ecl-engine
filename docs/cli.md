@@ -64,10 +64,19 @@ rather than compared as concepts.
 
 ## Prepare an archive for import
 
-`checksum ARCHIVE` prints an archive's SHA-256. That confirms a download is
-intact; it does not establish where the file came from, so take the expected
-value from the release distributor and pass it to `import`, which verifies it
-before reading any content.
+`inspect ARCHIVE` reads an archive's release metadata without importing it: the
+SHA-256, the release date, which required Snapshot files are present, and the
+edition URIs its own module dependencies declare. It ends with the `import`
+command for that archive.
+
+The edition module is the root of the package's dependency graph, so a module
+another module depends on is a component of the edition rather than the edition
+itself. A well-formed package has exactly one root; `inspect` says so when it
+does not, instead of guessing.
+
+The checksum confirms a download is intact. It does not establish where the file
+came from, so compare it with the value the release distributor published before
+importing. `import` verifies it before reading any content.
 
 Running the executable with no command lists the commands, names the selected index and gives the next step. Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports nine stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
 
@@ -77,7 +86,7 @@ Running the executable with no command lists the commands, names the selected in
 |---|---|---|
 | `stores` | One index object per line | Same |
 | `use` | Store and edition JSON | Same |
-| `checksum` | Checksum and path JSON | Same |
+| `inspect` | Archive summary JSON | Same |
 | `diff` | Comparison JSON | Same |
 | `stats` | Manifest JSON | Manifest JSON |
 | `import` | Manifest and elapsed time JSON | Same |

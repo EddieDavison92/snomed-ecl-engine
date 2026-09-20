@@ -1325,6 +1325,57 @@ fn cli_remembers_a_selected_index_and_finds_the_indexes_on_disk() {
 }
 
 #[test]
+fn cli_inspect_reports_what_an_archive_declares_before_importing() {
+    let temp = TempDir::new().unwrap();
+    let config = temp.path().join("config");
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    let archive_text = archive.to_str().unwrap();
+
+    let output = cli(&config, &["inspect", archive_text]);
+    assert!(output.status.success());
+    let summary: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(summary["sha256"], sha256(&archive).unwrap());
+    assert_eq!(summary["effective_time"], "20260826");
+    assert!(summary["importable"].as_bool().unwrap());
+    // The one module carrying the release date is nothing else's dependency, so
+    // it is offered as the edition and the offer is unambiguous.
+    assert_eq!(summary["root_editions"], 1);
+    assert_eq!(
+        summary["edition_uris"],
+        serde_json::json!([options(&archive).edition])
+    );
+    // The URI it offers is the one the importer accepts.
+    let store = temp.path().join("store");
+    import_snapshot(&archive, &store, &options(&archive)).unwrap();
+
+    // An archive without the required Snapshot files is reported, not imported.
+    let empty = temp.path().join("empty.zip");
+    {
+        let mut writer = zip::ZipWriter::new(File::create(&empty).unwrap());
+        writer
+            .start_file(
+                "Synthetic/release_package_information.json",
+                SimpleFileOptions::default(),
+            )
+            .unwrap();
+        writer
+            .write_all(br#"{"effectiveTime":"20260826"}"#)
+            .unwrap();
+        writer.finish().unwrap();
+    }
+    let output = cli(&config, &["inspect", empty.to_str().unwrap()]);
+    assert!(output.status.success());
+    let summary: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert!(!summary["importable"].as_bool().unwrap());
+    assert!(summary["required_files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|entry| entry[1].is_null()));
+}
+
+#[test]
 fn cli_diffs_one_expression_between_two_indexes() {
     use snomed_ecl_engine::import::add_refsets_snapshot;
     let temp = TempDir::new().unwrap();

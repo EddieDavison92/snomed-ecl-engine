@@ -189,7 +189,7 @@ fn root() {
     println!("Index:");
     println!("  import      Build an immutable index from an RF2 archive");
     println!("  add-refsets Add a simple RF2 refset supplement to an existing index");
-    println!("  checksum    Print an archive's SHA-256 for comparison before import");
+    println!("  inspect     Read an archive's release metadata and print its import command");
     println!("  stores      List indexes found on disk");
     println!("  use         Remember one index for later commands");
     println!("  stats       Inspect edition, counts and index size");
@@ -235,7 +235,15 @@ pub fn help(command: Option<&str>) -> anyhow::Result<()> {
         Some("stores") => println!("Usage: stores [PATH...]\n\nList indexes in the given directories, or in . and data/compact-store.\nEach directory holding manifest.json, and each packed index file, is listed.\nThe selected index is marked. Nothing else is reported as an error."),
         Some("query") => println!("Usage: query [STORE] [--display|--count] [--config FILE]\n\nOpen one index and evaluate ECL expressions until :quit.\nThe index is opened and verified once, so later expressions answer immediately.\n  :display  toggle result terms\n  :count    toggle totals only\n  :stats    show the index manifest\nParse and evaluation errors return to the prompt and do not end the session.\nResults are listed in pages; the total is always reported in full.\nUse expand for one expression, or batch for scripted JSONL queries."),
         Some("diff") => println!("Usage: diff OLD_STORE NEW_STORE ECL [--display|--count] [--config FILE]\n\nEvaluate one expression against two indexes and report added and removed codes.\nUse it to see what a release or refset version changed for a definition.\nBoth indexes are opened in turn, not together.\nTerms are resolved from the index each code belongs to, so removed concepts\nstill get the term the older index held.\nRedirected output, or --json, gives the complete added and removed code sets.\nConcept results only; member projections returning values or rows are refused."),
-        Some("checksum") => println!("Usage: checksum ARCHIVE\n\nPrint an archive's SHA-256 so it can be compared with the published value.\nThis proves the file is intact, not where it came from: take the expected\nchecksum from the release distributor, never from the downloaded file alone.\nimport requires the checksum and verifies it before reading any content."),
+        Some("inspect") => println!("Usage: inspect ARCHIVE
+
+Read an RF2 archive's release metadata without importing it, and print the
+import command for it. Reports the SHA-256, the release date, which required
+Snapshot files are present, and the edition URIs the archive's own module
+dependencies declare.
+
+The checksum proves the file is intact, not where it came from. Compare it
+with the value the release distributor published before importing."),
         Some("stats") => println!("Usage: stats [STORE] [--json|--plain]\n\nRead manifest metadata without loading the numeric index.\nExample: snomed-ecl-engine stats --json"),
         Some("expand") => println!("Usage: expand [STORE] ECL [--display|--count] [--json|--plain] [--config FILE]\n\nQuote ECL so the shell preserves operators, spaces and SNOMED terms.\n  --count    Return only the total\n  --display  Resolve labels after evaluating the complete result set\n  --json     Emit code objects as JSONL, or a total object with --count\n\nExample: snomed-ecl-engine expand data/compact-store/v1 \"<< 404684003\" --count\n\nAll matches are returned; there is no implicit result limit.\nMember projections can return typed JSON rows; --count counts those rows and --display requires concepts.\nUse --config FILE for identifier-scheme and dialect aliases (docs/aliases.md).\nFor repeated queries, use batch to open the index once."),
         Some("batch") => println!("Usage: batch [STORE] [--config FILE]\n\nRead one JSON object per line from stdin:\n  {{\"ecl\":\"<< 404684003\",\"count_only\":true}}\n\nEach response includes edition, query_config_sha256, total, parse_ms and eval_ms.\nOmit count_only or set it false to include codes as decimal strings.\nQuery errors return an error object; later queries still run.\nEnd stdin to exit. Output stays JSONL in terminals too."),
