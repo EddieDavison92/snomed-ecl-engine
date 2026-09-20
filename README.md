@@ -56,38 +56,6 @@ here and 101.6 seconds through Snowstorm.
 - **Give an agent a terminology.** One persistent JSONL process answers thousands
   of expressions without reopening the index.
 
-## Get started
-
-```sh
-cargo build --locked --release --bin snomed-ecl-engine
-
-# What does this archive declare? Prints the import command for it.
-snomed-ecl-engine inspect uk_release.zip
-
-# Build an immutable index, then keep it in one compressed file.
-snomed-ecl-engine import uk_release.zip index/ EDITION_URI SHA256
-snomed-ecl-engine pack index/ uk.ecl
-
-# Choose it once; later commands need no path.
-snomed-ecl-engine use uk.ecl
-snomed-ecl-engine query
-```
-
-Bring your own licensed RF2 Snapshot. This repository contains no release
-content, and `import` verifies the checksum you supply before reading anything.
-
-| Command | |
-|---|---|
-| `inspect` | Read an archive's release metadata and print its import command |
-| `import` · `add-refsets` | Build an index; add simple refsets such as UK PCD |
-| `pack` · `verify` | One compressed file; check every section |
-| `stores` · `use` · `stats` | Find indexes, select one, inspect it |
-| `query` | Evaluate expressions against one open index |
-| `expand` · `batch` | One expression; or JSONL on stdin for scripts and agents |
-| `diff` | Compare one expression across two indexes |
-
-The [CLI guide](docs/cli.md) is the full reference.
-
 ## Measurements
 
 Against the UK Monolith release, 1.15 million concepts.
@@ -137,7 +105,7 @@ concrete comparisons, top and bottom, membership, concept filters, description
 filters, member filters and projections, history supplements and alternate
 identifiers.
 
-Three forms are valid under the grammar but have no settled meaning in the
+Three forms are valid under the grammar but have no clear meaning in the
 specification, so the parser refuses them rather than guess:
 
 - a reverse flag inside an attribute group, `* : { R 363698007 = X }`
@@ -151,6 +119,38 @@ error, and no query returns a partial answer as a success.
 Decimals keep their exact spelling, and the evaluator never compares them as
 binary floating point. Relationship groups survive import. The engine reads the
 published inferred view and does not classify.
+
+## Get started
+
+```sh
+cargo build --locked --release --bin snomed-ecl-engine
+
+# What does this archive declare? Prints the import command for it.
+snomed-ecl-engine inspect uk_release.zip
+
+# Build an immutable index, then keep it in one compressed file.
+snomed-ecl-engine import uk_release.zip index/ EDITION_URI SHA256
+snomed-ecl-engine pack index/ uk.ecl
+
+# Choose it once; later commands need no path.
+snomed-ecl-engine use uk.ecl
+snomed-ecl-engine query
+```
+
+Bring your own licensed RF2 Snapshot. This repository contains no release
+content, and `import` verifies the checksum you supply before reading anything.
+
+| Command | |
+|---|---|
+| `inspect` | Read an archive's release metadata and print its import command |
+| `import` · `add-refsets` | Build an index; add simple refsets such as UK PCD |
+| `pack` · `verify` | One compressed file; check every section |
+| `stores` · `use` · `stats` | Find indexes, select one, inspect it |
+| `query` | Evaluate expressions against one open index |
+| `expand` · `batch` | One expression; or JSONL on stdin for scripts and agents |
+| `diff` | Compare one expression across two indexes |
+
+The [CLI guide](docs/cli.md) is the full reference.
 
 ## Embed it
 

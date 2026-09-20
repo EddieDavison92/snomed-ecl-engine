@@ -64,7 +64,7 @@ sequential and the batch process handles one request at a time.
 
 ## Blocked
 
-Three forms are valid under the grammar but have no settled meaning in the
+Three forms are valid under the grammar but have no clear meaning in the
 specification:
 
 - a reverse flag inside an attribute group, `* : { R 363698007 = X }`
