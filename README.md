@@ -19,7 +19,7 @@ cluster beside it, gigabytes of resident memory. That puts ECL out of reach of a
 serverless function, a shared VPS or a portable device. This engine keeps the
 terminology in one file and evaluates queries inside the calling process.
 
-### Where it runs
+### What it is designed for
 
 - **Serverless functions.** Compute only when a query arrives. The query-only
   executable is 2.13 MiB, under a megabyte gzipped, and the index is a single
@@ -33,8 +33,7 @@ terminology in one file and evaluates queries inside the calling process.
   expressions without reopening the index. [SKILL.md](SKILL.md) is the agent
   workflow.
 
-Those are resource requirements rather than ported builds. Everything measured
-here ran on x86-64 Linux.
+Everything measured here ran on x86-64 Linux.
 
 No HTTP server lives here, by design. This repository owns the library, index
 format, importer, CLI, conformance tests and benchmarks. A deployment
@@ -61,10 +60,6 @@ here and 101.6 seconds through Snowstorm.
   two indexes and reports what the release added and removed.
 - **Put it in CI.** A two-megabyte binary and an index file let a pipeline assert
   that every definition in a repository still resolves.
-- **Work offline.** Mobile, air-gapped or field use. No service, no network at
-  query time, and the index checks its own checksums when opened.
-- **Give an agent a terminology.** One persistent JSONL process answers thousands
-  of expressions without reopening the index.
 
 ## Measurements
 
