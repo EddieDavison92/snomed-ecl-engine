@@ -50,7 +50,9 @@ expression already built the whole set, so handing it to you is a write. Ask
 Snowstorm the same two questions and you get 13.19 ms and 36.40 ms, because it
 has to serialise the concepts and page them back over HTTP.
 
-That is roughly **6 times faster for a count and 16 times for a full
+None of this is an argument for replacing a terminology server. Snowstorm does a
+great deal this does not, and the only job both do is batch-expanding ECL. On
+that job it is roughly **6 times faster for a count and 16 times for a full
 expansion**. Against Snowstorm Lite, 2 and 3 times. All medians over the
 expressions both engines answered, and the tail is wider than the middle: the
 slowest 5% take 9.97 ms here and 41.63 ms through Snowstorm.

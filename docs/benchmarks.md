@@ -17,7 +17,13 @@ Snowstorm's by a factor of three, so the tables below keep them apart.
 
 ## Is this a fair comparison?
 
-Partly, and it is worth being precise about which parts.
+This engine is not trying to be Snowstorm, and nothing here is a verdict on
+Snowstorm. The comparison answers one narrower question: if you were going to
+batch-expand ECL through a terminology server's API, what does that cost, and
+what does doing the same work in your own process cost instead? That is a real
+choice somebody has to make, so it is worth measuring.
+
+Within that question, here is what holds and what does not.
 
 **What is fair.** Both engines answer the same expressions against the same
 release, gated by four checks before any timing runs: the store manifest and the
@@ -47,8 +53,10 @@ workload of mostly small expansions the gap is closer to the count figure.
 
 *The products are not equivalent.* Snowstorm is a terminology server with
 search, FHIR endpoints, branch management, authoring and multiple versions
-loaded at once. This engine evaluates ECL against one fixed release. Being
-faster at that one operation is not being better.
+loaded at once, and it is answering over a network interface that other clients
+can share. This engine evaluates ECL against one frozen release, in your
+process, for you alone. Being quicker at that one operation says nothing about
+the rest.
 
 **What is untested.** Every measurement here is a single sequential client.
 Snowstorm's extra CPUs would matter under concurrent load; this engine's CLI is
@@ -115,15 +123,20 @@ caches not dropped. p95 describes this corpus, not a general workload.
 
 ### The 10,000-expression corpus
 
-The broader [10,000-expression corpus](../validation/ecl-10000.json) contains
-expressions whose results run to hundreds of thousands of concepts. Paging one of
-those out of Snowstorm takes minutes, and a full comparison run over all 10,000
-has never finished. The engine evaluates the same corpus in 35.05 s per warm
-batch on one CPU and 256 MiB.
+Treat this one as a torture test for the enumeration path rather than as a
+representative workload. The [10,000-expression corpus](../validation/ecl-10000.json)
+holds 107 expressions whose results run past 50,000 concepts, against two in the
+1,000. Both corpora have the same median result size: one concept. The tail is
+the whole difference.
 
-Snowstorm is not slow at the work it is built for; its count latency above is
-13.19 ms. The cost here is HTTP pagination and JSON serialisation of very large
-result sets, repeated thousands of times.
+That tail is what an HTTP API struggles with. A 111,171-concept result takes
+about 49 seconds to page out of Snowstorm at its maximum 10,000 per page; this
+engine returns the same set in roughly 35 ms. Snowstorm is not slow at the work
+it is built for, and its count latency above is 13.19 ms. The cost here is
+serialising and paging very large result sets, thousands of times over.
+
+If your expansions are small, none of this applies to you and the count figures
+are the ones to read.
 
 ## How much of the language each engine ran
 
