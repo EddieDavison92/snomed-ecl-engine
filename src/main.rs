@@ -577,6 +577,7 @@ fn run() -> Result<()> {
                 "Store opened in {:.3} seconds",
                 start.elapsed().as_secs_f64()
             );
+            let mut displays = None;
             let mut input = io::stdin().lock();
             let mut out = io::BufWriter::new(io::stdout().lock());
             let mut line = Vec::new();
@@ -587,9 +588,15 @@ fn run() -> Result<()> {
                 }
                 ensure!(line.len() <= 524288, "Batch request exceeds 512 KiB");
                 match serde_json::from_slice::<BatchRequest>(&line) {
-                    Ok(request) => {
-                        batch_response(&store, &manifest, &config_sha256, &request, &mut out)?
-                    }
+                    Ok(request) => batch_response(
+                        &store,
+                        &manifest,
+                        &config_sha256,
+                        &request,
+                        &mut displays,
+                        &directory,
+                        &mut out,
+                    )?,
                     Err(_) => writeln!(out, "{{\"error\":\"InvalidRequest\"}}")?,
                 }
                 out.flush()?;
@@ -654,11 +661,39 @@ struct BatchRequest {
     ecl: String,
     #[serde(default)]
     count_only: bool,
+    /// Resolve a display label for every concept in the result.
+    ///
+    /// Off by default: labels are a separate lookup per concept, and a caller
+    /// that only wants codes should not pay for them.
+    #[serde(default)]
+    display: bool,
 }
 
 struct Codes<'a> {
     store: &'a NumericStore,
     ordinals: &'a [u32],
+}
+
+/// Concepts with their labels, for a request that asked for them.
+struct Labelled {
+    codes: Vec<u64>,
+    displays: Vec<Option<String>>,
+}
+impl serde::Serialize for Labelled {
+    fn serialize<S: serde::Serializer>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error> {
+        use serde::ser::SerializeSeq;
+        let mut seq = serializer.serialize_seq(Some(self.codes.len()))?;
+        for (code, display) in self.codes.iter().zip(&self.displays) {
+            seq.serialize_element(&serde_json::json!({
+                "code": code.to_string(),
+                "display": display,
+            }))?;
+        }
+        seq.end()
+    }
 }
 impl serde::Serialize for Codes<'_> {
     fn serialize<S: serde::Serializer>(
@@ -686,6 +721,8 @@ struct BatchResponse<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     codes: Option<Codes<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    concepts: Option<Labelled>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     rows: Option<&'a [std::collections::BTreeMap<String, snomed_ecl_engine::store::MemberValue>]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     values: Option<&'a [snomed_ecl_engine::store::MemberValue]>,
@@ -698,6 +735,8 @@ fn batch_response(
     manifest: &Manifest,
     config_sha256: &str,
     request: &BatchRequest,
+    displays: &mut Option<DisplayStore>,
+    display_path: &Path,
     out: &mut impl Write,
 ) -> Result<()> {
     let start = Instant::now();
@@ -722,6 +761,27 @@ fn batch_response(
         }
     };
     let eval_ms = start.elapsed().as_secs_f64() * 1000.0;
+    // Labels are resolved after evaluation, and only for a request that asked.
+    // The display index opens on first use and is then reused by the batch.
+    let mut labelled = None;
+    if request.display && !request.count_only {
+        if let eval::QueryResult::Concepts(ordinals) = &result {
+            if displays.is_none() {
+                *displays = Some(DisplayStore::open(display_path)?);
+            }
+            let index = displays.as_mut().expect("just opened");
+            let mut codes = Vec::with_capacity(ordinals.len());
+            let mut texts = Vec::with_capacity(ordinals.len());
+            for &ordinal in ordinals {
+                codes.push(store.ids[ordinal as usize]);
+                texts.push(index.get(ordinal)?);
+            }
+            labelled = Some(Labelled {
+                codes,
+                displays: texts,
+            });
+        }
+    }
     serde_json::to_writer(
         &mut *out,
         &BatchResponse {
@@ -736,11 +796,14 @@ fn batch_response(
             parse_ms,
             eval_ms,
             codes: match &result {
-                eval::QueryResult::Concepts(ordinals) if !request.count_only => {
+                eval::QueryResult::Concepts(ordinals)
+                    if !request.count_only && labelled.is_none() =>
+                {
                     Some(Codes { store, ordinals })
                 }
                 _ => None,
             },
+            concepts: labelled,
             rows: match &result {
                 eval::QueryResult::Rows(rows) if !request.count_only => Some(rows),
                 _ => None,

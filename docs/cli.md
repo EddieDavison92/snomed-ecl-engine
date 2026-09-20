@@ -102,7 +102,11 @@ Running the executable with no command lists the commands, names the selected in
 
 `--plain` forces the original script format in a terminal. `--json` and `--plain` are mutually exclusive. `NO_COLOR` disables colour; redirection and `TERM=dumb` also suppress colour. Diagnostics remain on stderr. CLI errors exit non-zero. Closing a results pipe early is treated as a normal exit.
 
-`batch STORE` loads the index once and reads newline-delimited JSON from stdin. It always emits JSONL, including in a terminal. Individual query errors return an error object and do not stop the batch. An empty successful expansion has total zero. See [the agent batch workflow](../SKILL.md#reuse-the-index-for-many-queries) for schemas and process handling.
+`batch STORE` loads the index once and reads newline-delimited JSON from stdin.
+Set `"display": true` on a request to get `concepts`, an array of code and
+label objects, in place of the bare `codes` array. Labels are resolved after
+evaluation and the display index opens on first use, so a batch that never asks
+never pays for it. `count_only` returns neither. It always emits JSONL, including in a terminal. Individual query errors return an error object and do not stop the batch. An empty successful expansion has total zero. See [the agent batch workflow](../SKILL.md#reuse-the-index-for-many-queries) for schemas and process handling.
 
 [Member projections](ecl-support.md) can return distinct typed values or rows. `expand` emits these as JSONL, and `--count` counts values or rows. `--display` requires concept results. Batch responses use `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`, instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
 

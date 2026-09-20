@@ -1371,6 +1371,61 @@ fn opening_checks_bounds_and_verification_checks_meaning() {
 }
 
 #[test]
+fn batch_returns_labels_only_when_they_are_asked_for() {
+    use std::process::{Command, Stdio};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+
+    let mut process = Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .arg("batch")
+        .arg(&destination)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    {
+        let mut input = process.stdin.take().unwrap();
+        writeln!(input, "{{\"ecl\":\"{LEAF}\",\"display\":true}}").unwrap();
+        writeln!(input, "{{\"ecl\":\"{LEAF}\"}}").unwrap();
+        // Counting asks for no concepts, so a label has nothing to attach to.
+        writeln!(
+            input,
+            "{{\"ecl\":\"{LEAF}\",\"display\":true,\"count_only\":true}}"
+        )
+        .unwrap();
+    }
+    let output = process.wait_with_output().unwrap();
+    assert!(output.status.success());
+    let lines: Vec<serde_json::Value> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(lines.len(), 3);
+
+    // Asked for: objects carrying the code and its label.
+    let labelled = &lines[0]["concepts"];
+    assert_eq!(labelled[0]["code"], LEAF.to_string());
+    assert!(
+        labelled[0]["display"].is_string(),
+        "a label should be resolved"
+    );
+    assert!(lines[0]["codes"].is_null(), "not both forms at once");
+
+    // Not asked for: bare codes, and no label lookup paid for.
+    assert_eq!(lines[1]["codes"][0], LEAF.to_string());
+    assert!(lines[1]["concepts"].is_null());
+
+    // Counting returns neither.
+    assert_eq!(lines[2]["total"], 1);
+    assert!(lines[2]["concepts"].is_null());
+    assert!(lines[2]["codes"].is_null());
+}
+
+#[test]
 fn cli_inspect_reports_what_an_archive_declares_before_importing() {
     let temp = TempDir::new().unwrap();
     let config = temp.path().join("config");
