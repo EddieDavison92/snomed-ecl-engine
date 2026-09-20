@@ -247,6 +247,54 @@ fn packed_store_rejects_corrupt_tables_offsets_and_lazy_payloads() {
 }
 
 #[test]
+fn opening_skips_the_core_checksum_that_verify_still_catches() {
+    // Opening stopped hashing sections so a query does not read the core twice.
+    // A flipped byte that keeps every length and offset valid is therefore
+    // invisible to `open`, and `verify` is the only thing that catches it.
+    use snomed_ecl_engine::store::{pack_with_options, verify, PackOptions};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let directory = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &directory, &options(&archive)).unwrap();
+    let packed = temp.path().join("edition.ecl");
+    // Uncompressed, so a byte in the file is the same byte in the section.
+    let raw = PackOptions {
+        compress: false,
+        ..PackOptions::default()
+    };
+    pack_with_options(&directory, &packed, raw).unwrap();
+
+    let original = fs::read(&packed).unwrap();
+    let table_len = u64::from_le_bytes(original[16..24].try_into().unwrap()) as usize;
+    let table: serde_json::Value = serde_json::from_slice(&original[56..56 + table_len]).unwrap();
+    let core = table["sections"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["name"] == "core.bin")
+        .expect("core section");
+    assert_eq!(core["codec"], 0, "test needs an uncompressed section");
+    let offset = core["offset"].as_u64().unwrap() as usize;
+    let concepts = Manifest::read(&packed).unwrap().concept_count;
+
+    // The module column: magic, count, ids, then its own count. Nothing bounds
+    // checks or semantically validates a module id, so only the hash sees this.
+    let modules = offset + 8 + 8 + concepts * 8 + 8;
+    let mut copy = original;
+    copy[modules] ^= 1;
+    let bad = temp.path().join("bad.ecl");
+    fs::write(&bad, &copy).unwrap();
+
+    let store = NumericStore::open(&bad).expect("open does not hash the core");
+    store.validate().expect("the flip breaks no semantic invariant");
+    assert_eq!(store.ids.len(), concepts);
+
+    let error = verify(&bad).expect_err("verify hashes every section").to_string();
+    assert!(error.contains("checksum"), "unexpected error: {error}");
+}
+
+#[test]
 fn packed_section_readers_do_not_share_seek_positions() {
     use snomed_ecl_engine::store::pack;
     let temp = TempDir::new().unwrap();

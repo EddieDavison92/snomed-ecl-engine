@@ -113,8 +113,8 @@ answered 587 and reported 320 as using features it does not implement.
 | Query-only Linux executable | 2.13 MiB (0.91 MiB gzipped) |
 | 10,000-expression corpus, one CPU and 256 MiB | 35.05 s per warm batch |
 | Same corpus, four CPUs and four workers | 5.87 s |
-| Open a packed index | 293 ms |
-| Open an uncompressed index | 116 ms |
+| Open a packed index | 177 ms |
+| Open an uncompressed index | 94 ms |
 
 [Benchmarks](docs/benchmarks.md) has the method, the disagreements, where this
 engine is slower and what these numbers are not.
