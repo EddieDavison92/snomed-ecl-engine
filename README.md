@@ -103,16 +103,20 @@ Against the UK Monolith release, 1.15 million concepts.
 </picture>
 
 This engine evaluated all 1,000 expressions in the test corpus and returned a
-complete code set for every one. Snowstorm could answer 879 of them, and its
-answers matched ours on all 879. Of the rest, its parser rejected 80, its
-concept endpoint could not return 40, and 1 it answered differently. An earlier
-run of the same corpus matched 719, before membership, descriptions, history and
-filters were added to this engine.
+complete code set for every one. Snowstorm could answer 879 of them, and agreed
+with us on all 879. Its parser rejected 80, its concept endpoint could not
+return 40, and it answered 1 differently.
+
+That one is `(<< 377442002) : 1142138002 != #10`. In this release the concept has
+two active values for that attribute, 20 in one relationship group and 10 in
+another, so `!= #10` selects it: one of its values is not 10. We return it and
+Ontoserver returns it. Snowstorm returns nothing, which reads the test as "has no
+value equal to 10".
 
 Snowstorm Lite could answer 587. It reported 320 as using ECL features it does
-not implement, rejected 80 at the parser, and answered 13 differently. All 13 of
-those are attribute inequalities, where Lite returns an empty set and Snowstorm
-agrees with us.
+not implement, rejected 80 at the parser, and answered 13 differently. All 13
+are attribute inequalities where Lite returns an empty set, and Snowstorm agrees
+with us on every one.
 
 | | |
 |---|---:|

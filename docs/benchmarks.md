@@ -84,11 +84,6 @@ Same 1,000 expressions:
 | Server's parser rejects the expression | 120 | 80 |
 | Complete sets disagree | 1 | 13 |
 
-The previous run of this comparison matched 719 of 1,000. The corpus and the
-release are unchanged since. The increase comes from features added to the
-engine: membership, descriptions, history, concept filters, member filters and
-projections.
-
 Snowstorm Lite reports unsupported features honestly, answering HTTP 501
 `not-supported` and saying which feature: attribute group (80), concept filter
 (40), description filter (40), member filter (40), attribute cardinality (40),
@@ -98,16 +93,28 @@ member-field projections its concept endpoint cannot return.
 
 ### The disagreements
 
-Against Snowstorm, one: a concrete inequality, `(<< 377442002) : 1142138002 != #10`.
-Our result matches OneLondon's Ontoserver and the RF2 rows.
+Against Snowstorm, one: `(<< 377442002) : 1142138002 != #10`. The RF2 concrete
+relationship rows settle it. The concept has two active values for attribute
+1142138002 in this release:
+
+```text
+active=1  group=1  value=#20
+active=1  group=2  value=#10
+```
+
+One of those is not 10, so the concept satisfies `!= #10`. We return it, and
+OneLondon's Ontoserver returns it, with the same result for `= #10` and `> #10`
+because a different row satisfies each. Snowstorm returns an empty set, which
+reads the test as "has no value equal to 10" rather than "has a value that is
+not 10". The probe is recorded in
+[`ontoserver-concrete-inequality.json`](../validation/ontoserver-concrete-inequality.json).
 
 Against Lite, thirteen, all attribute inequality refinements of the form
 `X : attribute != value`. Lite returns an empty set for each. Snowstorm agrees
 with this engine on all thirteen, including cases with 477 and 123 concepts, so
 these are answers Lite gets wrong rather than a semantic disagreement. It also
 returns them as success rather than the 501 it uses for features it does not
-implement. This applies to
-the pinned version tested.
+implement. This applies to the pinned version tested.
 
 ## Engine-only measurements
 
@@ -147,10 +154,9 @@ cost, not the engine's: an empty `docker run` on this host takes 1,045 ms, so
 end-to-end here is about 1.5 s. That figure describes Docker Desktop on Windows
 and says nothing about a Linux serverless host.
 
-An earlier version of this page reported 1.13 s to open and 1.72 s to first
-response. Those were measured with the index on a Windows bind mount, which
-reads at 181 MB/s against 5.6 GB/s for the container's own filesystem. They
-measured the mount, not the engine.
+Measure with the index on a local filesystem. A Windows bind mount reads at
+181 MB/s against 5.6 GB/s for the container's own filesystem, which dominates
+every figure above.
 
 [Bringing this down](roadmap.md#now) is open work.
 

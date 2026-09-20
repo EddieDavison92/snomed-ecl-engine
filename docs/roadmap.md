@@ -42,9 +42,8 @@ different fix.
 The first two are worth doing before the last two. Together they should put a
 hierarchy query well under 100 ms.
 
-**A comparison on the broad corpus.** The 1,000-expression comparison has been
-re-run: 879 of 1,000 expressions now match Snowstorm's complete code sets, up
-from 719. The 10,000-expression corpus still has no comparison: several of its
+**A comparison on the broad corpus.** The 10,000-expression corpus has no
+server comparison: several of its
 expansions take minutes each to page out of Snowstorm, so that run has never
 finished. Either sample it, or report engine-only figures for that corpus and
 say why. See [benchmarks](benchmarks.md).
