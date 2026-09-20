@@ -6,8 +6,13 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 mod descriptions;
+mod members;
 mod membership;
 pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
+pub use members::{
+    format_uuid, parse_uuid, MemberColumn, MemberManifest, MemberStore, MemberTable, MemberValue,
+    TextColumn,
+};
 pub use membership::{MembershipIndex, MembershipManifest};
 
 pub const FORMAT: u32 = 1;
@@ -37,6 +42,8 @@ pub struct Manifest {
     pub membership: Option<MembershipManifest>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub descriptions: Option<DescriptionManifest>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub member_tables: Option<Vec<MemberManifest>>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplements: Vec<RefsetSupplement>,
 }
@@ -200,6 +207,7 @@ pub struct NumericStore {
     /// Active refset member rows referencing concepts. None means the index was not built.
     pub membership: Option<MembershipIndex>,
     pub descriptions: DescriptionStore,
+    pub member_tables: MemberStore,
 }
 
 impl NumericStore {
@@ -431,6 +439,11 @@ impl NumericStore {
             descriptions: manifest
                 .descriptions
                 .map(|m| DescriptionStore::lazy(directory, m, count))
+                .unwrap_or_default(),
+            member_tables: manifest
+                .member_tables
+                .map(|m| MemberStore::lazy(directory, m))
+                .transpose()?
                 .unwrap_or_default(),
         };
         store.validate()?;

@@ -16,6 +16,7 @@ fn store(n: usize) -> NumericStore {
     flags[n - 1] = 0;
     NumericStore {
         descriptions: Default::default(),
+        member_tables: Default::default(),
         ids: (0..n).map(|i| 1000001 + i as u64).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -86,6 +87,7 @@ fn slow(store: &NumericStore, expr: &Expr) -> BTreeSet<u32> {
         }
         Expr::Refined(..)
         | Expr::Dotted(..)
+        | Expr::Members(..)
         | Expr::MemberOf(..)
         | Expr::DescriptionFiltered(..)
         | Expr::ConceptFiltered(..)
@@ -167,12 +169,7 @@ fn brief_long_terms_comments_and_boolean_grouping() {
 
 #[test]
 fn unsupported_features_never_become_partial_success() {
-    for query in [
-        "* OR (^ [targetComponentId] 1000001)",
-        "* {{ +HISTORY }}",
-        "scheme#code",
-        "^ [targetComponentId] 1000001",
-    ] {
+    for query in ["* {{ +HISTORY }}", "scheme#code"] {
         assert_eq!(
             parse(query).unwrap_err().kind,
             ParseErrorKind::Unsupported,

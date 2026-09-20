@@ -35,6 +35,7 @@ fn fixture() -> NumericStore {
     };
     NumericStore {
         descriptions: Default::default(),
+        member_tables: Default::default(),
         ids: (1000000..1000011).chain([116680003]).collect(),
         flags: vec![1; n],
         modules: vec![0; n],

@@ -1,4 +1,4 @@
-use snomed_ecl_engine::ecl::{parse, ParseErrorKind};
+use snomed_ecl_engine::ecl::parse;
 use snomed_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
 use snomed_ecl_engine::store::{Adjacency, Attributes, MembershipIndex, NumericStore};
 use std::collections::BTreeSet;
@@ -11,6 +11,7 @@ fn fixture() -> NumericStore {
     flags[10] = 0;
     NumericStore {
         descriptions: Default::default(),
+        member_tables: Default::default(),
         ids: (1000000..1000012).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -83,7 +84,10 @@ fn missing_index_errors_are_not_hidden_by_empty_boolean_operands() {
         "^ [targetComponentId] 1000008",
         "^ 1000008 {{ M active = false }}",
     ] {
-        assert_eq!(parse(query).unwrap_err().kind, ParseErrorKind::Unsupported);
+        assert!(matches!(
+            evaluate(&store, &parse(query).unwrap()),
+            Err(EvalError::Unsupported(_))
+        ));
     }
     for query in ["^", "^R", "^ < 1000008", "^R ^1000008", "^^1000008"] {
         assert!(parse(query).is_err(), "{query}");
@@ -137,6 +141,7 @@ fn generated_memberships_match_independent_pair_scan() {
         .collect();
     let store = NumericStore {
         descriptions: Default::default(),
+        member_tables: Default::default(),
         ids: (0..n).map(|i| 1000000 + i as u64).collect(),
         flags: vec![1; n],
         modules: vec![0; n],

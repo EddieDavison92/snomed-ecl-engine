@@ -5,7 +5,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error::Error, fmt};
 mod descriptions;
 mod filters;
+mod members;
 mod membership;
+pub use members::QueryResult;
 mod refinement;
 
 #[derive(Clone, Copy)]
@@ -30,6 +32,8 @@ pub enum EvalError {
     Unsupported(&'static str),
     Index(String),
     Text(String),
+    InvalidField(String),
+    TypeMismatch,
 }
 impl fmt::Display for EvalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -41,6 +45,29 @@ type Result<T> = std::result::Result<T, EvalError>;
 
 pub fn evaluate(store: &NumericStore, expression: &Expr) -> Result<Vec<u32>> {
     evaluate_with_limits(store, expression, Limits::default(), None)
+}
+pub fn evaluate_result(store: &NumericStore, expression: &Expr) -> Result<QueryResult> {
+    evaluate_result_with_limits(store, expression, Limits::default(), None)
+}
+pub fn evaluate_result_with_limits(
+    store: &NumericStore,
+    expression: &Expr,
+    limits: Limits,
+    cancelled: Option<&AtomicBool>,
+) -> Result<QueryResult> {
+    let mut context = Context {
+        store,
+        limits,
+        cancelled,
+        work: 0,
+        live: 0,
+        nodes: 0,
+    };
+    if let Expr::Members(query) = expression {
+        context.member_query(query, 0, true)
+    } else {
+        context.eval(expression, 0).map(QueryResult::Concepts)
+    }
 }
 pub fn evaluate_with_limits(
     store: &NumericStore,
@@ -84,6 +111,10 @@ impl Context<'_> {
         Ok(())
     }
     fn reserve(&mut self, values: usize) -> Result<Vec<u32>> {
+        self.claim(values)?;
+        Ok(Vec::with_capacity(values))
+    }
+    fn claim(&mut self, values: usize) -> Result<()> {
         self.live = self
             .live
             .checked_add(values)
@@ -91,7 +122,7 @@ impl Context<'_> {
         if self.live > self.limits.max_live_set_values {
             return Err(EvalError::MemoryLimit);
         }
-        Ok(Vec::with_capacity(values))
+        Ok(())
     }
     fn release(&mut self, values: Vec<u32>) {
         self.live -= values.capacity();
@@ -103,6 +134,10 @@ impl Context<'_> {
             return Err(EvalError::InvalidAst);
         }
         match expr {
+            Expr::Members(query) => match self.member_query(query, depth + 1, false)? {
+                QueryResult::Concepts(values) => Ok(values),
+                _ => Err(EvalError::TypeMismatch),
+            },
             Expr::DescriptionFiltered(inner, filters) => {
                 let candidates = self.eval(inner, depth + 1)?;
                 self.description_filters(candidates, filters, depth + 1)

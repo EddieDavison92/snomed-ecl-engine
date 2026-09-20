@@ -1,0 +1,47 @@
+[
+  {
+    "id": "member-field-01",
+    "ecl": "^999002271000000101 {{M mapTarget=wild:\"J459\"}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-02",
+    "ecl": "^999002271000000101 {{M mapTarget=\"J45\"}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-03",
+    "ecl": "^999002271000000101 {{M mapGroup=#1,mapPriority=#1,mapTarget=wild:\"J459\"}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-04",
+    "ecl": "^999002271000000101 {{M mapGroup!=#2,mapPriority<#2,mapTarget=wild:\"J45*\"}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-05",
+    "ecl": "^[targetComponentId]900000000000527005 {{M referencedComponentId=67415000}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-06",
+    "ecl": "^900000000000527005 {{M targetComponentId=195967001}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-07",
+    "ecl": "^999002271000000101 {{M active=0,mapTarget=wild:\"J459\"}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-08",
+    "ecl": "^999002271000000101 {{M effectiveTime>=\"20200101\",mapTarget=wild:\"J459\"}}",
+    "probe": true
+  },
+  {
+    "id": "member-field-09",
+    "ecl": "^900000000000534007 {{M sourceEffectiveTime>=\"20260101\"}}",
+    "probe": true
+  }
+]

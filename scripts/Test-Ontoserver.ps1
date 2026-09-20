@@ -28,7 +28,7 @@ try {
             try { $response = Invoke-RestMethod -Uri $uri -Headers $headers }
             catch {
                 $status = [int]$_.Exception.Response.StatusCode
-                if (-not $ContinueOnQueryError -or $status -notin @(400,422)) { throw }
+                if (-not $ContinueOnQueryError -or $status -notin @(400,422,500)) { throw }
                 [ordered]@{id=$query.id;ecl=$query.ecl;complete=$false;httpStatus=$status;error='Reference server rejected this expression; no result comparison recorded.'}
                 continue probe
             }

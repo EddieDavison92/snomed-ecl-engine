@@ -81,10 +81,10 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
         relationships,
     );
     add("Snapshot/Terminology/sct2_RelationshipConcreteValues_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tsourceId\tvalue\trelationshipGroup\ttypeId\tcharacteristicTypeId\tmodifierId\n4000001\t20260826\t1\t{ROOT}\t{LEAF}\t#0.100000000000000001\t2\t{KIND}\t900000000000011006\t900000000000451002\n4000002\t20260826\t1\t{ROOT}\t{LEAF}\t\"synthetic value\"\t3\t{KIND}\t900000000000011006\t900000000000451002\n"));
-    add("Snapshot/Refset/der2_ssRefset_ModuleDependencySnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime\nsynthetic-dependency\t20260826\t1\t{ROOT}\t900000000000534007\t{LEFT}\t20260826\t20260826\n"));
+    add("Snapshot/Refset/der2_ssRefset_ModuleDependencySnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime\n00000000-0000-4000-8000-000000000001\t20260826\t1\t{ROOT}\t900000000000534007\t{LEFT}\t20260826\t20260826\n"));
     add("Snapshot/Refset/der2_cRefset_LanguageSnapshot.txt", "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tacceptabilityId\nsynthetic-gb\t20260826\t1\t1000001\t900000000000508004\t6000012\t900000000000548007\nsynthetic-realm\t20260826\t1\t1000001\t999001261000000100\t6000013\t900000000000548007\n".into());
     add("Snapshot/Terminology/sct2_Description_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000011\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic synonym\t900000000000448009\n6000012\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic GB label\t900000000000448009\n6000013\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic realm label\t900000000000448009\n6000014\t20260826\t1\t{ROOT}\t{ROOT}\ten\t900000000000003001\tSynthetic root (test)\t900000000000448009\n6000015\t20260826\t0\t{ROOT}\t{LEAF}\ten\t900000000000013009\tInactive label\t900000000000448009\n"));
-    add("Snapshot/Refset/der2_Refset_SimpleSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\nmember-a\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\nmember-b\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\nmember-c\t20260826\t1\t{ROOT}\t{ROOT}\t{LEAF}\nmember-d\t20260826\t1\t{ROOT}\t{ROOT}\t{INACTIVE}\nmember-e\t20260826\t0\t{ROOT}\t{ROOT}\t{RIGHT}\n"));
+    add("Snapshot/Refset/der2_Refset_SimpleSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\n00000000-0000-4000-8000-000000000002\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000003\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000004\t20260826\t1\t{ROOT}\t{ROOT}\t{LEAF}\n00000000-0000-4000-8000-000000000005\t20260826\t1\t{ROOT}\t{ROOT}\t{INACTIVE}\n00000000-0000-4000-8000-000000000006\t20260826\t0\t{ROOT}\t{ROOT}\t{RIGHT}\n"));
     add("Snapshot/Terminology/sct2_TextDefinition_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000016\t20260826\t1\t{ROOT}\t{RIGHT}\ten\t900000000000550004\tSynthetic definition\t900000000000448009\n"));
     archive.finish().unwrap();
 }
@@ -213,6 +213,7 @@ fn hierarchy_matches_slow_edge_scan_on_generated_dag() {
         .collect();
     let store = NumericStore {
         descriptions: Default::default(),
+        member_tables: Default::default(),
         ids: (0..n).map(|i| ROOT + i as u64).collect(),
         modules: vec![0; n],
         effective_times: vec![20260826; n],
@@ -310,6 +311,16 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
             "{{\"ecl\":\"1000001 MINUS 1000001\",\"count_only\":true}}"
         )
         .unwrap();
+        writeln!(
+            input,
+            "{{\"ecl\":\"^[referencedComponentId,sourceEffectiveTime]900000000000534007\"}}"
+        )
+        .unwrap();
+        writeln!(
+            input,
+            "{{\"ecl\":\"^[sourceEffectiveTime]900000000000534007\",\"count_only\":true}}"
+        )
+        .unwrap();
     }
     let output = process.wait_with_output().unwrap();
     assert!(output.status.success());
@@ -318,8 +329,11 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
         .lines()
         .map(|line| serde_json::from_str(line).unwrap())
         .collect();
-    assert_eq!(rows.len(), 3);
-    assert_eq!(rows[0]["error"], "Unsupported");
+    assert_eq!(rows.len(), 5);
+    assert!(rows[0]["error"]
+        .as_str()
+        .unwrap()
+        .starts_with("InvalidField"));
     assert!(rows[0].get("codes").is_none());
     assert_eq!(
         rows[1]["codes"],
@@ -332,6 +346,88 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
     );
     assert_eq!(rows[2]["total"], 0);
     assert!(rows[2].get("codes").is_none());
+    assert_eq!(rows[3]["result_type"], "rows");
+    assert_eq!(
+        rows[3]["rows"][0]["sourceEffectiveTime"],
+        serde_json::json!({"type":"time","value":"20260826"})
+    );
+    assert_eq!(
+        rows[3]["rows"][0]["referencedComponentId"],
+        serde_json::json!({"type":"concept","value":LEFT.to_string()})
+    );
+    assert!(rows[3].get("codes").is_none());
+    assert_eq!(rows[4]["total"], 1);
+    assert_eq!(rows[4]["result_type"], "rows");
+    assert!(rows[4].get("rows").is_none());
+    let invalid_display = Command::new(binary)
+        .arg("expand")
+        .arg(&destination)
+        .arg("^[sourceEffectiveTime]900000000000534007")
+        .arg("--display")
+        .output()
+        .unwrap();
+    assert!(!invalid_display.status.success());
+    assert!(invalid_display.stdout.is_empty());
+}
+
+#[test]
+fn typed_members_load_lazily_and_reject_corruption_even_with_a_forged_hash() {
+    use snomed_ecl_engine::{
+        ecl::parse,
+        eval::{evaluate, EvalError},
+    };
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    let mut manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let path = destination.join("members").join(format!("{ROOT}.bin"));
+    let original = fs::read(&path).unwrap();
+    let query = parse(&format!("^{ROOT} {{{{M active=0}}}}")).unwrap();
+    let loaded = NumericStore::open(&destination).unwrap();
+    assert_eq!(
+        evaluate(&loaded, &query).unwrap(),
+        [loaded.ordinal(RIGHT).unwrap()]
+    );
+    fs::remove_file(&path).unwrap();
+    let loaded = NumericStore::open(&destination).unwrap();
+    assert!(evaluate(&loaded, &parse(&format!("<<{ROOT}")).unwrap()).is_ok());
+    assert!(matches!(
+        evaluate(&loaded, &query),
+        Err(EvalError::Index(_))
+    ));
+    let mut corrupt = original.clone();
+    corrupt[0] ^= 1;
+    fs::write(&path, &corrupt).unwrap();
+    let loaded = NumericStore::open(&destination).unwrap();
+    assert!(matches!(
+        evaluate(&loaded, &query),
+        Err(EvalError::Index(_))
+    ));
+    // Duplicate the first UUID into the second row, while supplying a matching file hash.
+    let mut corrupt = original;
+    let schema_bytes = u64::from_le_bytes(corrupt[16..24].try_into().unwrap()) as usize;
+    let first_uuid = 24 + schema_bytes + 4 + 8;
+    corrupt.copy_within(first_uuid..first_uuid + 16, first_uuid + 16);
+    fs::write(&path, &corrupt).unwrap();
+    manifest
+        .member_tables
+        .as_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|m| m.refset == ROOT)
+        .unwrap()
+        .sha256 = sha256(&path).unwrap();
+    fs::write(
+        destination.join("manifest.json"),
+        serde_json::to_vec(&manifest).unwrap(),
+    )
+    .unwrap();
+    let loaded = NumericStore::open(&destination).unwrap();
+    assert!(matches!(
+        evaluate(&loaded, &query),
+        Err(EvalError::Index(_))
+    ));
 }
 
 #[test]
@@ -466,13 +562,14 @@ fn supplement_fixture(path: &Path, member: u64, duplicate: bool) {
     add("Snapshot/Terminology/sct2_Concept_Snapshot.txt", "id\teffectiveTime\tactive\tmoduleId\tdefinitionStatusId\n2000001\t20260820\t1\t2000002\t900000000000074008\n2000002\t20260820\t1\t2000002\t900000000000074008\n".into());
     add("Snapshot/Terminology/sct2_Relationship_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tsourceId\tdestinationId\trelationshipGroup\ttypeId\tcharacteristicTypeId\tmodifierId\n7000002\t20260820\t1\t2000002\t2000001\t{ROOT}\t0\t{ISA}\t900000000000011006\t900000000000451002\n"));
     add("Snapshot/Terminology/sct2_Description_Snapshot.txt", "id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n7000011\t20260820\t1\t2000002\t2000001\ten\t900000000000003001\tSynthetic extra refset (foundation metadata concept)\t900000000000448009\n".into());
-    let mut rows = format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\nextra-a\t20260820\t1\t2000002\t2000001\t{member}\nextra-b\t20260820\t1\t2000002\t2000001\t{INACTIVE}\nextra-c\t20260820\t0\t2000002\t2000001\t{RIGHT}\n");
+    let mut rows = format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\n00000000-0000-4000-8000-000000000007\t20260820\t1\t2000002\t2000001\t{member}\n00000000-0000-4000-8000-000000000008\t20260820\t1\t2000002\t2000001\t{INACTIVE}\n00000000-0000-4000-8000-000000000009\t20260820\t0\t2000002\t2000001\t{RIGHT}\n");
     if duplicate {
         rows.push_str(&format!(
-            "extra-a\t20260820\t1\t2000002\t2000001\t{member}\n"
+            "00000000-0000-4000-8000-000000000007\t20260820\t1\t2000002\t2000001\t{member}\n"
         ));
     }
     add("Snapshot/Refset/der2_Refset_SimpleSnapshot.txt", rows);
+    add("Snapshot/Refset/der2_ssRefset_ModuleDependencySnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime\n00000000-0000-4000-8000-000000000010\t20260820\t1\t2000002\t900000000000534007\t{ROOT}\t20260820\t20260826\n"));
     archive.finish().unwrap();
 }
 
@@ -511,6 +608,12 @@ fn supplementary_refsets_preserve_base_semantics_and_provenance() {
             .collect::<Vec<_>>()
     };
     assert_eq!(codes("^2000001"), [LEAF, INACTIVE]);
+    assert_eq!(codes("^2000001 {{M active=0}}"), [RIGHT]);
+    assert_eq!(codes("^900000000000534007 {{M active=1}}"), [ROOT, LEFT]);
+    assert_eq!(
+        codes("^900000000000534007 {{M sourceEffectiveTime=\"20260820\"}}"),
+        [ROOT]
+    );
     assert_eq!(codes("2000001 {{D type=fsn}}"), [2000001]);
     assert_eq!(
         codes(&format!("{LEAF} {{{{D dialect=en-gb (prefer)}}}}")),

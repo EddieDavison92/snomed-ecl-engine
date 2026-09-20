@@ -412,6 +412,28 @@ pub fn add_refsets_snapshot(
     let nonce = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
     let staging = parent.join(format!(".store-building-{}-{nonce}", std::process::id()));
     fs::create_dir(&staging)?;
+    if let Some(tables) = &mut manifest.member_tables {
+        fs::create_dir(staging.join("members"))?;
+        let additional = super::members::build(
+            &mut archive,
+            &lookup,
+            release_date,
+            &staging,
+            Some(&original.member_tables),
+        )?;
+        tables.retain(|old| !additional.iter().any(|new| new.refset == old.refset));
+        for table in tables.iter() {
+            let relative = Path::new("members").join(format!("{}.bin", table.refset));
+            let source = base.join(&relative);
+            ensure!(
+                source.metadata()?.len() == table.bytes && sha256(&source)? == table.sha256,
+                "Base member table checksum differs"
+            );
+            fs::copy(&source, staging.join(&relative))?;
+        }
+        tables.extend(additional);
+        tables.sort_by_key(|t| t.refset);
+    }
     let core = staging.join("core.bin");
     let display = staging.join("display.bin");
     let membership = staging.join("membership.bin");

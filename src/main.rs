@@ -100,7 +100,7 @@ fn run() -> Result<()> {
                 |message| {
                     stage += 1;
                     eprintln!(
-                        "  [{stage}/8] {message}  ({:.1}s elapsed)",
+                        "  [{stage}/9] {message}  ({:.1}s elapsed)",
                         start.elapsed().as_secs_f64()
                     );
                 },
@@ -154,8 +154,44 @@ fn run() -> Result<()> {
             let store = NumericStore::open(Path::new(&args[1]))?;
             let open_seconds = open_start.elapsed().as_secs_f64();
             let eval_start = Instant::now();
-            let ordinals = eval::evaluate(&store, &expression)?;
+            let result = eval::evaluate_result(&store, &expression)?;
             let eval_ms = eval_start.elapsed().as_secs_f64() * 1000.0;
+            let ordinals = match result {
+                eval::QueryResult::Concepts(ordinals) => ordinals,
+                eval::QueryResult::Rows(rows) => {
+                    ensure!(
+                        option != Some("--display"),
+                        "--display requires a concept result; this projection returns rows"
+                    );
+                    if human {
+                        eprintln!(
+                            "  {} rows | query {:.3} ms | parse {:.3} ms | index {:.3} s",
+                            presentation::number(rows.len()),
+                            eval_ms,
+                            parse_ms,
+                            open_seconds
+                        );
+                    }
+                    if option == Some("--count") {
+                        if json {
+                            println!(
+                                "{}",
+                                serde_json::json!({"total": rows.len(), "result_type":"rows"})
+                            );
+                        } else {
+                            println!("{}", rows.len());
+                        }
+                    } else {
+                        let mut out = io::BufWriter::new(io::stdout().lock());
+                        for row in rows {
+                            serde_json::to_writer(&mut out, &row)?;
+                            writeln!(out)?;
+                        }
+                        out.flush()?;
+                    }
+                    return Ok(());
+                }
+            };
             if human {
                 eprintln!(
                     "  {} concepts | query {:.3} ms | parse {:.3} ms | index {:.3} s",
@@ -324,6 +360,10 @@ struct BatchResponse<'a> {
     eval_ms: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     codes: Option<Codes<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    rows: Option<&'a [std::collections::BTreeMap<String, snomed_ecl_engine::store::MemberValue>]>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    result_type: Option<&'static str>,
 }
 
 fn batch_response(
@@ -346,8 +386,8 @@ fn batch_response(
     };
     let parse_ms = start.elapsed().as_secs_f64() * 1000.0;
     let start = Instant::now();
-    let ordinals = match eval::evaluate(store, &expression) {
-        Ok(ordinals) => ordinals,
+    let result = match eval::evaluate_result(store, &expression) {
+        Ok(result) => result,
         Err(error) => {
             writeln!(out, "{}", serde_json::json!({"error":format!("{error:?}")}))?;
             return Ok(());
@@ -363,13 +403,20 @@ fn batch_response(
                 .iter()
                 .map(|s| s.archive_sha256.as_str())
                 .collect(),
-            total: ordinals.len(),
+            total: result.len(),
             parse_ms,
             eval_ms,
-            codes: (!request.count_only).then_some(Codes {
-                store,
-                ordinals: &ordinals,
-            }),
+            codes: match &result {
+                eval::QueryResult::Concepts(ordinals) if !request.count_only => {
+                    Some(Codes { store, ordinals })
+                }
+                _ => None,
+            },
+            rows: match &result {
+                eval::QueryResult::Rows(rows) if !request.count_only => Some(rows),
+                _ => None,
+            },
+            result_type: matches!(result, eval::QueryResult::Rows(_)).then_some("rows"),
         },
     )?;
     writeln!(out)?;

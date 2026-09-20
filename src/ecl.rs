@@ -3,9 +3,11 @@ use std::fmt;
 mod descriptions;
 mod filters;
 pub use descriptions::{DescriptionFilter, Dialect};
+mod members;
 mod refinement;
 mod search;
 pub use filters::ConceptFilter;
+pub use members::{MemberFilter, MemberPredicate, MemberQuery};
 pub use refinement::{AttributeConstraint, AttributeValue, Cardinality, Comparison, Refinement};
 pub use search::SearchTerm;
 
@@ -54,6 +56,7 @@ pub enum Expr {
     Dotted(Box<Expr>, Vec<Expr>),
     Extremum { top: bool, inner: Box<Expr> },
     MemberOf(Box<Expr>),
+    Members(MemberQuery),
     RefsetContainingAny(Box<Expr>),
     ConceptFiltered(Box<Expr>, Vec<ConceptFilter>),
     DescriptionFiltered(Box<Expr>, Vec<DescriptionFilter>),
@@ -352,12 +355,11 @@ impl Parser<'_> {
             None
         };
         self.ws()?;
-        if refset_operator.is_some() && self.rest().starts_with('[') {
-            return Err(self.error(
-                ParseErrorKind::Unsupported,
-                "Member field projections are not implemented",
-            ));
-        }
+        let fields = if refset_operator == Some(false) && self.rest().starts_with('[') {
+            Some(self.member_fields()?)
+        } else {
+            None
+        };
         let mut expression = if self.take("(") {
             let inner = self.expression(depth + 1)?;
             self.ws()?;
@@ -394,8 +396,26 @@ impl Parser<'_> {
             return Err(self.unexpected());
         };
         self.ws()?;
+        let mut member_filters = Vec::new();
+        while self.starts_member_filter()? {
+            if refset_operator.is_none() {
+                return Err(self.error(
+                    ParseErrorKind::Unsupported,
+                    "Member filters without an explicit refset operator are not implemented",
+                ));
+            }
+            member_filters.extend(self.member_filters(depth + 1)?);
+            self.ws()?;
+        }
         if let Some(reverse) = refset_operator {
-            expression = self.node(if reverse {
+            expression = self.node(if fields.is_some() || !member_filters.is_empty() {
+                Expr::Members(MemberQuery {
+                    source: Box::new(expression),
+                    reverse,
+                    fields,
+                    filters: member_filters,
+                })
+            } else if reverse {
                 Expr::RefsetContainingAny(Box::new(expression))
             } else {
                 Expr::MemberOf(Box::new(expression))

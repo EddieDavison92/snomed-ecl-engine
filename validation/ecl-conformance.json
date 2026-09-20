@@ -95,14 +95,14 @@
         {
           "production": "refsetFieldNameSet",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "refsetFieldName",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "eclConceptReference",
@@ -359,8 +359,8 @@
         {
           "production": "timeComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "stringComparisonOperator",
@@ -815,20 +815,20 @@
         {
           "production": "memberFilterConstraint",
           "area": "member_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "memberFilter",
           "area": "member_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "memberFieldFilter",
           "area": "member_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "historySupplement",
@@ -1181,14 +1181,14 @@
         {
           "production": "refsetFieldNameSet",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "refsetFieldName",
           "area": "expressions",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "eclConceptReference",
@@ -1445,8 +1445,8 @@
         {
           "production": "timeComparisonOperator",
           "area": "refinements",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "stringComparisonOperator",
@@ -1901,20 +1901,20 @@
         {
           "production": "memberFilterConstraint",
           "area": "member_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "memberFilter",
           "area": "member_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "memberFieldFilter",
           "area": "member_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/member_filters.rs"
         },
         {
           "production": "historySupplement",

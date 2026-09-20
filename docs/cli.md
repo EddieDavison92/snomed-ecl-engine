@@ -12,7 +12,7 @@ snomed-ecl-engine expand data/compact-store/v1 '404684003' --display
 snomed-ecl-engine expand data/compact-store/v1 '<< 404684003' --count
 ```
 
-Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports eight stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
+Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports nine stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
 
 ## Select output for scripts
 
@@ -31,6 +31,8 @@ Terminal output has an index summary, a code/display table with `--display`, and
 `--plain` forces the original script format in a terminal. `--json` and `--plain` are mutually exclusive. `NO_COLOR` disables colour; redirection and `TERM=dumb` also suppress colour. Diagnostics remain on stderr. CLI errors exit non-zero. Closing a results pipe early is treated as a normal exit.
 
 `batch STORE` loads the index once and reads newline-delimited JSON from stdin. It always emits JSONL, including in a terminal. Individual query errors return an error object and do not stop the batch. An empty successful expansion has total zero. See [the agent batch workflow](../SKILL.md#reuse-the-index-for-many-queries) for schemas and process handling.
+
+[Member projections](member-filters.md) can return typed rows. `expand` emits these as JSONL, and `--count` counts rows. `--display` rejects row-valued results. Batch responses use `result_type: "rows"` and `rows` instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
 
 The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](conformance.md) tracks the outstanding work.
 

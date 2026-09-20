@@ -10,6 +10,7 @@ use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use zip::ZipArchive;
 mod descriptions;
+mod members;
 mod membership;
 mod supplement;
 pub use supplement::add_refsets_snapshot;
@@ -419,7 +420,6 @@ pub fn import_snapshot_with_progress(
     drop(best);
     progress("Indexing descriptions and language memberships");
     let descriptions = descriptions::build(&mut archive, &lookup, edition_date)?;
-    drop(lookup);
 
     let parent = destination.parent().unwrap_or(Path::new("."));
     fs::create_dir_all(parent)?;
@@ -440,6 +440,10 @@ pub fn import_snapshot_with_progress(
     let membership_manifest =
         membership.manifest(&membership_path, non_concept_rows, refset_files)?;
     let description_manifest = descriptions.write(&staging.join("descriptions.bin"))?;
+    drop(descriptions);
+    progress("Indexing typed reference-set members");
+    let member_tables = members::build(&mut archive, &lookup, edition_date, &staging, None)?;
+    drop(lookup);
     let manifest = Manifest {
         format: FORMAT,
         edition: options.edition.clone(),
@@ -465,9 +469,11 @@ pub fn import_snapshot_with_progress(
             "separate-english-display-lookup".into(),
             "concept-refset-membership".into(),
             "complete-description-metadata".into(),
+            "typed-concept-refset-members".into(),
         ],
         membership: Some(membership_manifest),
         descriptions: Some(description_manifest),
+        member_tables: Some(member_tables),
         supplements: Vec::new(),
     };
     let mut manifest_file = File::create_new(staging.join("manifest.json"))?;

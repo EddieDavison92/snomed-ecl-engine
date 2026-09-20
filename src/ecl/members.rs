@@ -1,0 +1,181 @@
+use super::*;
+use crate::decimal::Decimal;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum MemberPredicate {
+    Concepts(Box<Expr>),
+    Number(Decimal),
+    Text(Vec<SearchTerm>),
+    Boolean(Option<bool>),
+    Dates(Vec<Option<u32>>),
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MemberFilter {
+    pub field: String,
+    pub comparison: Comparison,
+    pub value: MemberPredicate,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MemberQuery {
+    pub source: Box<Expr>,
+    pub reverse: bool,
+    /// None selects referencedComponentId; an empty list selects all non-metadata fields.
+    pub fields: Option<Vec<String>>,
+    pub filters: Vec<MemberFilter>,
+}
+impl Parser<'_> {
+    pub(super) fn member_fields(&mut self) -> Result<Vec<String>> {
+        self.take("[");
+        self.ws()?;
+        let mut fields = Vec::new();
+        if self.take("*") || self.keyword("any") {
+            self.ws()?;
+        } else {
+            loop {
+                let field = self.word().to_ascii_lowercase();
+                if field.is_empty()
+                    || !field.bytes().all(|b| b.is_ascii_alphabetic())
+                    || fields.contains(&field)
+                {
+                    return Err(self.unexpected());
+                }
+                self.pos += field.len();
+                fields.push(field);
+                self.ws()?;
+                if !self.take(",") {
+                    break;
+                }
+                self.ws()?;
+            }
+        }
+        if !self.take("]") {
+            return Err(self.unexpected());
+        }
+        self.ws()?;
+        Ok(fields)
+    }
+    pub(super) fn starts_member_filter(&mut self) -> Result<bool> {
+        let saved = self.pos;
+        let result = if self.take("{{") {
+            self.ws()?;
+            self.word().eq_ignore_ascii_case("m")
+        } else {
+            false
+        };
+        self.pos = saved;
+        Ok(result)
+    }
+    pub(super) fn member_filters(&mut self, depth: usize) -> Result<Vec<MemberFilter>> {
+        if depth > MAX_DEPTH {
+            return Err(self.error(ParseErrorKind::Limit, "Filter nesting exceeds 64"));
+        }
+        self.take("{{");
+        self.ws()?;
+        if !self.keyword("m") {
+            return Err(self.unexpected());
+        }
+        self.ws()?;
+        let mut result = Vec::new();
+        loop {
+            let field = self.word().to_ascii_lowercase();
+            if field.is_empty() || !field.bytes().all(|b| b.is_ascii_alphabetic()) {
+                return Err(self.unexpected());
+            }
+            self.pos += field.len();
+            let comparison = self.comparison()?;
+            let saved = self.pos;
+            if self.take("(") {
+                self.ws()?;
+            }
+            let quoted = self.rest().starts_with('"')
+                || self.word().eq_ignore_ascii_case("match")
+                || self.word().eq_ignore_ascii_case("wild");
+            self.pos = saved;
+            let value = if field == "active" {
+                MemberPredicate::Boolean(
+                    if self.take("*") || self.keyword("any") || self.take("\"*\"") {
+                        None
+                    } else if self.keyword("true") || self.take("1") {
+                        Some(true)
+                    } else if self.keyword("false") || self.take("0") {
+                        Some(false)
+                    } else {
+                        return Err(self.unexpected());
+                    },
+                )
+            } else if field.ends_with("effectivetime")
+                || quoted && !matches!(comparison, Comparison::Eq | Comparison::Ne)
+                || self.rest().starts_with("\"\"")
+            {
+                let list = self.take("(");
+                self.ws()?;
+                let mut dates = vec![self.filter_date()?];
+                loop {
+                    let spaced = self.ws()?;
+                    if !list || self.take(")") {
+                        break;
+                    }
+                    if !spaced {
+                        return Err(self.unexpected());
+                    }
+                    dates.push(self.filter_date()?);
+                }
+                MemberPredicate::Dates(dates)
+            } else if self.take("#") {
+                let start = self.pos;
+                if !self.take("-") {
+                    self.take("+");
+                }
+                let integer = self.pos;
+                while self.rest().starts_with(|c: char| c.is_ascii_digit()) {
+                    self.pos += 1;
+                }
+                if self.pos == integer
+                    || self.pos - integer > 1 && self.text[integer..].starts_with('0')
+                {
+                    return Err(self.unexpected());
+                }
+                if self.take(".") {
+                    while self.rest().starts_with(|c: char| c.is_ascii_digit()) {
+                        self.pos += 1;
+                    }
+                }
+                MemberPredicate::Number(
+                    Decimal::parse(&self.text[start..self.pos]).ok_or_else(|| self.unexpected())?,
+                )
+            } else if quoted {
+                MemberPredicate::Text(self.search_terms()?)
+            } else if self.keyword("true") {
+                MemberPredicate::Boolean(Some(true))
+            } else if self.keyword("false") {
+                MemberPredicate::Boolean(Some(false))
+            } else {
+                MemberPredicate::Concepts(Box::new(self.filter_concepts(depth + 1)?))
+            };
+            if !matches!(
+                value,
+                MemberPredicate::Number(_) | MemberPredicate::Dates(_)
+            ) && !matches!(comparison, Comparison::Eq | Comparison::Ne)
+            {
+                return Err(self.unexpected());
+            }
+            result.push(MemberFilter {
+                field,
+                comparison,
+                value,
+            });
+            self.nodes += 1;
+            if self.nodes > MAX_NODES {
+                return Err(self.error(ParseErrorKind::Limit, "Too many member predicates"));
+            }
+            self.ws()?;
+            if self.take("}}") {
+                return Ok(result);
+            }
+            if !self.take(",") {
+                return Err(self.unexpected());
+            }
+            self.ws()?;
+        }
+    }
+}

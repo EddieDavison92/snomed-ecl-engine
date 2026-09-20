@@ -1,0 +1,184 @@
+{
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "member_table_count": 582,
+  "member_bytes": 593059086,
+  "member_rows": 7177107,
+  "binary_bytes": 34420096,
+  "binary_sha256": "b5d6eaa9a6ed16f2548a61f1aaef1111356486036ec963f546a4c9c26909ffa0",
+  "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31",
+  "reference_software": "Ontoserver\u00ae",
+  "reference_version": "6.25.4",
+  "scope": "Fixed ASCII map-code predicates, association projections and module dates. Independent complete RF2 sets and member tuples. One CPU, 1 GiB; first evaluations include lazy file loading. HTTP failures are not conformance matches.",
+  "tuple_query": "^[referencedComponentId,mapTarget,mapGroup]999002271000000101 {{M mapGroup=#1,mapPriority=#1,mapTarget=wild:\"J459\"}}",
+  "tuple_count": 19,
+  "tuple_matches": true,
+  "results": [
+    {
+      "id": "member-field-01",
+      "ecl": "^999002271000000101 {{M mapTarget=wild:\"J459\"}}",
+      "expected_total": 56,
+      "observed_total": 56,
+      "rf2_matches": true,
+      "expected_sha256": "ddc7525baf46418c362bbbaa7bb95803a0d29a81fc24fc506b6b75daf0e69de6",
+      "observed_sha256": "ddc7525baf46418c362bbbaa7bb95803a0d29a81fc24fc506b6b75daf0e69de6",
+      "first_eval_ms": 1724.1972429999998,
+      "warm_eval_ms": [
+        102.78474299999999,
+        111.68647600000001,
+        101.128274
+      ],
+      "median_warm_eval_ms": 102.78474299999999,
+      "ontoserver_complete": false,
+      "ontoserver_http_status": 500
+    },
+    {
+      "id": "member-field-02",
+      "ecl": "^999002271000000101 {{M mapTarget=\"J45\"}}",
+      "expected_total": 131,
+      "observed_total": 131,
+      "rf2_matches": true,
+      "expected_sha256": "ee4d927c0585479c36db5317f85cb924203f1004f0d8d93cbc513692c5017bb5",
+      "observed_sha256": "ee4d927c0585479c36db5317f85cb924203f1004f0d8d93cbc513692c5017bb5",
+      "first_eval_ms": 113.668641,
+      "warm_eval_ms": [
+        121.988815,
+        111.002717,
+        120.644853
+      ],
+      "median_warm_eval_ms": 120.644853,
+      "ontoserver_complete": false,
+      "ontoserver_http_status": 500
+    },
+    {
+      "id": "member-field-03",
+      "ecl": "^999002271000000101 {{M mapGroup=#1,mapPriority=#1,mapTarget=wild:\"J459\"}}",
+      "expected_total": 19,
+      "observed_total": 19,
+      "rf2_matches": true,
+      "expected_sha256": "08773dc13b1017a1012994c139d350e3675d263607268c911b140b7e5d6c2033",
+      "observed_sha256": "08773dc13b1017a1012994c139d350e3675d263607268c911b140b7e5d6c2033",
+      "first_eval_ms": 80.152011,
+      "warm_eval_ms": [
+        80.712761,
+        89.21776200000001,
+        80.04844399999999
+      ],
+      "median_warm_eval_ms": 80.712761,
+      "ontoserver_complete": false,
+      "ontoserver_http_status": 500
+    },
+    {
+      "id": "member-field-04",
+      "ecl": "^999002271000000101 {{M mapGroup!=#2,mapPriority<#2,mapTarget=wild:\"J45*\"}}",
+      "expected_total": 111,
+      "observed_total": 111,
+      "rf2_matches": true,
+      "expected_sha256": "122e71f0be9bdf8f9a064e0f3a6eab781a354eb381e5b6ac04ad3309490c1d5c",
+      "observed_sha256": "122e71f0be9bdf8f9a064e0f3a6eab781a354eb381e5b6ac04ad3309490c1d5c",
+      "first_eval_ms": 90.763178,
+      "warm_eval_ms": [
+        81.064296,
+        82.657644,
+        94.618061
+      ],
+      "median_warm_eval_ms": 82.657644,
+      "ontoserver_complete": false,
+      "ontoserver_http_status": 500
+    },
+    {
+      "id": "member-field-05",
+      "ecl": "^[targetComponentId]900000000000527005 {{M referencedComponentId=67415000}}",
+      "expected_total": 1,
+      "observed_total": 1,
+      "rf2_matches": true,
+      "expected_sha256": "84b1d17a353bb7735df808fb7fd3e2583d6f4ced2082cedfe9ade99ca7a68efa",
+      "observed_sha256": "84b1d17a353bb7735df808fb7fd3e2583d6f4ced2082cedfe9ade99ca7a68efa",
+      "first_eval_ms": 96.45140500000001,
+      "warm_eval_ms": [
+        29.010607,
+        16.63443,
+        17.008694000000002
+      ],
+      "median_warm_eval_ms": 17.008694000000002,
+      "ontoserver_complete": true,
+      "ontoserver_total": 1,
+      "ontoserver_sha256": "84b1d17a353bb7735df808fb7fd3e2583d6f4ced2082cedfe9ade99ca7a68efa",
+      "ontoserver_matches": true
+    },
+    {
+      "id": "member-field-06",
+      "ecl": "^900000000000527005 {{M targetComponentId=195967001}}",
+      "expected_total": 2,
+      "observed_total": 2,
+      "rf2_matches": true,
+      "expected_sha256": "4c62eadb2f549f32c0f6d11a87ea7ef4139ad595a0ace34345b9c2fdcbf3974c",
+      "observed_sha256": "4c62eadb2f549f32c0f6d11a87ea7ef4139ad595a0ace34345b9c2fdcbf3974c",
+      "first_eval_ms": 15.561271999999999,
+      "warm_eval_ms": [
+        15.156958,
+        13.717813000000001,
+        13.224713000000001
+      ],
+      "median_warm_eval_ms": 13.717813000000001,
+      "ontoserver_complete": true,
+      "ontoserver_total": 2,
+      "ontoserver_sha256": "4c62eadb2f549f32c0f6d11a87ea7ef4139ad595a0ace34345b9c2fdcbf3974c",
+      "ontoserver_matches": true
+    },
+    {
+      "id": "member-field-07",
+      "ecl": "^999002271000000101 {{M active=0,mapTarget=wild:\"J459\"}}",
+      "expected_total": 63,
+      "observed_total": 63,
+      "rf2_matches": true,
+      "expected_sha256": "22c8ff099669af72dc8364bbe7628499efc0a52c4b700f3d13ccb0c709431951",
+      "observed_sha256": "22c8ff099669af72dc8364bbe7628499efc0a52c4b700f3d13ccb0c709431951",
+      "first_eval_ms": 524.347892,
+      "warm_eval_ms": [
+        534.4347710000001,
+        533.663197,
+        534.526706
+      ],
+      "median_warm_eval_ms": 534.4347710000001,
+      "ontoserver_complete": false,
+      "ontoserver_http_status": 422
+    },
+    {
+      "id": "member-field-08",
+      "ecl": "^999002271000000101 {{M effectiveTime>=\"20200101\",mapTarget=wild:\"J459\"}}",
+      "expected_total": 56,
+      "observed_total": 56,
+      "rf2_matches": true,
+      "expected_sha256": "ddc7525baf46418c362bbbaa7bb95803a0d29a81fc24fc506b6b75daf0e69de6",
+      "observed_sha256": "ddc7525baf46418c362bbbaa7bb95803a0d29a81fc24fc506b6b75daf0e69de6",
+      "first_eval_ms": 112.753734,
+      "warm_eval_ms": [
+        101.702546,
+        113.145955,
+        113.346322
+      ],
+      "median_warm_eval_ms": 113.145955,
+      "ontoserver_complete": false,
+      "ontoserver_http_status": 422
+    },
+    {
+      "id": "member-field-09",
+      "ecl": "^900000000000534007 {{M sourceEffectiveTime>=\"20260101\"}}",
+      "expected_total": 8,
+      "observed_total": 8,
+      "rf2_matches": true,
+      "expected_sha256": "585e9496891d6a9f01c0cc745c44ccbdb0eb0e265ed0981de4019421bb6bd738",
+      "observed_sha256": "585e9496891d6a9f01c0cc745c44ccbdb0eb0e265ed0981de4019421bb6bd738",
+      "first_eval_ms": 5.321496,
+      "warm_eval_ms": [
+        0.153346,
+        0.153346,
+        0.148431
+      ],
+      "median_warm_eval_ms": 0.153346,
+      "ontoserver_complete": false,
+      "ontoserver_http_status": 422
+    }
+  ]
+}

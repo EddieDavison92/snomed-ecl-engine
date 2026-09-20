@@ -1,4 +1,51 @@
-# Performance experiments after membership
+# Compact storage and evaluation plan
+
+Full ECL correctness comes first. The next substantial performance work should change the representation before tuning its scans. Extend the independent test evaluator to refinements, groups, cardinalities and membership before that rewrite. Keep complete release-set digests, typed tuple tests, cancellation and resource-limit checks as acceptance tests.
+
+Claude Fable 5.1 analysed the actual UK description index on 20 September 2026. The ignored `.local/analyse_store.py` and `.local/analysis.json` contain the script and output. Its findings change the order of the earlier evaluator experiments below.
+
+## What the storage analysis establishes
+
+These figures use decimal MB and the pinned UK Monolith 42.5.0, before typed member tables. Compression byte counts are Python measurements. Packed layouts and posting sizes are estimates, not Rust runtime measurements.
+
+| Item | Observed data | Proposed implication |
+|---|---|---|
+| Numeric core | 90.26 MB; 7 modules, 341 dates, 127 attribute types, maximum group 30 | Dictionary coding and adaptive widths estimate 64.79 MB |
+| Description text | 230.77 MB raw; 28.44 MB with independent 16 KiB zstd level-3 blocks | Test block compression without a trained dictionary first |
+| Trained dictionary | 26.79 MB compressed blocks, before dictionary and lookup overhead | About 1.66 MB saved; defer the extra format complexity |
+| Description metadata | 3.56 million rows, one language and four language refsets | Pack common values, with wider representations for other editions |
+| Display file | 68.95 MB | Test a description-row pointer per concept, preserving display selection |
+| Tokens | 155,947 distinct tokens; 12,493,716 concept-level postings | Build and measure the candidate index before accepting a size estimate |
+| Descendant ordering | Disease falls from 42,738 SCTID-ordered runs to 16 DFS-ordered runs | Test exact interval sets on a reordered DAG |
+
+The proposed 195 MB complete file is not yet supported by measurements. It excludes typed refset tables and unfinished semantic data. It also needs section tables, dictionaries, offsets, checksums and lookup permutations. Sorting description IDs separately, for example, needs a way back to their description rows. The sampled transitive-closure estimate is unreliable and must not set a memory budget.
+
+Keep the comparisons with Snowstorm and Snowstorm Lite, including matched per-request medians. Describe their broader server responsibilities alongside resource measurements. Hermes is also a useful architectural comparison for an embedded engine. Claims about any product's complete ECL coverage need version-pinned evidence. OneLondon's Ontoserver remains a modest correctness comparison, not the definition of correct ECL.
+
+## Revised experiment order
+
+1. Extend the independent evaluator with generated refinement, group, zero/finite cardinality, inequality and membership cases. Include typed member rows and history as those semantics land. Compare sets or tuples, not totals alone.
+2. Prototype a versioned section container with current encodings to measure container and mmap effects separately. Put numeric data first and declare optional sections explicitly. A numeric-only artefact needs its own valid section table; arbitrary truncation must fail. Measure open, first query, page faults and charged memory. Keep the current reader until the prototype proves useful.
+3. Test DFS ordinals and adaptive widths. Preserve every parent in the DAG, stable external SCTIDs and numeric output ordering. Measure exact interval counts for all concepts, including the heavy tail, before choosing stored closure or traversal. An active-concept prefix needs an explicit partition and preserved hierarchy semantics. Root descendants are not the same set as all concepts.
+4. Compress descriptions and typed members. Compare 16 and 64 KiB zstd blocks, decode implementations and bounded block caches. Include locators, long terms, UTF-8 boundaries, description IDs, dialect metadata and display pointers in total costs. Measure large map and OWL member tables too. A numeric-only benchmark cannot establish a 256 MiB budget for the full engine.
+5. Add conservative text candidates. Prefix postings may reduce verification work. Candidate generation must contain every result allowed by ECL, including inactive descriptions when selected. Folded tokens need locale tests before they can safely discard candidates. Retain ICU verification until a replacement passes independent Unicode and language-tailoring checks.
+6. Measure reverse type/value indexes, reusable bounded scratch storage, subexpression caching and selective conjunction ordering. Charge cached results to a bounded session budget. Recheck performance and cancellation after each change.
+
+Each step needs unchanged correctness results and separate measurements for import time, import peak memory, file size, distribution size, cold open, first evaluation and warm per-request median/p95. Count filesystem cache in container memory. Deployment download and provider cold-start measurements belong to the separate application repository.
+
+## Format and candidate-selection conditions
+
+Small values in this release justify adaptive encodings, not fixed UK limits. Wider modules, dates, groups, languages, dialects and custom fields must remain representable. Preserve inactive descriptions, member rows, association targets, exact decimals and configured identifier schemes required by full ECL.
+
+An mmap reader needs a reviewed safe interface around mapping creation, bounded accessors and a rule that mapped files cannot be mutated. A dependency does not remove the caller's unsafe obligations. Combining files alone does not reduce resident memory.
+
+Measure checksums and structural validation separately. Import and an explicit `verify` command can do exhaustive checks, but lazy opening still needs bounds, schema and integrity checks before using each section. Specify the corruption guarantees for unopened sections and how a pinned artefact becomes trusted. A hash does not prove structural validity.
+
+Missing optional text is acceptable for numeric queries. Missing data required by a requested operator must return an error. Separately delivered terms must remain tied to the numeric edition and manifest. Measure the consuming deployment's current package limits before making a bundling claim.
+
+Prefix postings for `match:"gas"` cannot restrict the independent `wild:"*itis"` branch of an OR expression. That branch needs its own complete candidate strategy or a bounded scan. Single-digit milliseconds for the combined query is an experiment, not an established result.
+
+## Earlier evaluator review
 
 Claude CLI reviewed the supplied evaluator, store and benchmark code using `claude-fable-5-1` on 20 September 2026. It ran without tools or write access through a text-only advisory request. The recommendations below were checked against the code; they are proposals, not measured speedups. The local raw response stays in ignored `.local/`.
 

@@ -21,6 +21,7 @@ fn fixture() -> NumericStore {
     let edges = vec![(1, 0), (2, 1), (4, 0), (5, 0), (7, 6), (8, 10), (9, 10)];
     NumericStore {
         descriptions: Default::default(),
+        member_tables: Default::default(),
         ids,
         flags: vec![1, 3, 1, 2, 3, 1, 1, 1, 1, 1, 1],
         modules: vec![6, 6, 7, 7, 7, 6, 6, 6, 6, 6, 6],
@@ -167,9 +168,10 @@ fn filters_keep_errors_visible_and_respect_limits() {
         evaluate(&store, &expression),
         Err(EvalError::Unsupported(_))
     ));
-    for query in ["^2000001 {{M active=0}}", "* {{+ HISTORY}}"] {
-        assert_eq!(parse(query).unwrap_err().kind, ParseErrorKind::Unsupported);
-    }
+    assert_eq!(
+        parse("* {{+ HISTORY}}").unwrap_err().kind,
+        ParseErrorKind::Unsupported
+    );
     let expression = parse("* {{C active=1}}").unwrap();
     assert_eq!(
         evaluate_with_limits(
