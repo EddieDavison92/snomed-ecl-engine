@@ -46,8 +46,16 @@ expression already built the whole set, so returning it costs almost nothing
 more. Snowstorm answers the same two requests in 13.19 ms and 36.40 ms, because
 it serialises the concepts and returns them in pages over HTTP.
 
-All four are medians over the same 1,000 expressions. The slowest 5% take
-9.97 ms here and 41.63 ms through Snowstorm.
+That is about 6 times faster than Snowstorm for a count and 16 times for a full
+expansion. Against Snowstorm Lite it is 2 and 3 times. All of these are medians
+over the expressions both engines answered; the slowest 5% take 9.97 ms here and
+41.63 ms through Snowstorm.
+
+Two paths are slower here than on either server. The first description-filter
+query in a process loads the description index, which takes about six seconds;
+every one after that takes roughly a millisecond. History supplements take about
+16 ms, because evaluating one scans reference set member rows. Both are
+[open work](docs/roadmap.md).
 
 Expanding the 879 expressions that both engines could answer took 9.0 seconds
 here and 101.6 seconds through Snowstorm.

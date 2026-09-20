@@ -14,6 +14,19 @@ reaches easily. The fix is to make the cost proportional to nodes touched:
 generation-stamped markers reused across the query, and results collected from
 the touched set. Raising the budget would hide it.
 
+**Two slow paths.** Measured against the comparison servers, these are the only
+expressions where this engine loses.
+
+- *The first description-filter query in a process* loads the description index,
+  costing up to 5,940 ms. Later ones take about 1 ms. A serverless invocation is
+  a new process every time, so it pays that load on every cold start that uses a
+  description filter. Loading only the parts a predicate needs, or building a
+  smaller metadata-only section, would cut it.
+- *History supplements* run at about 16 ms, cold or warm, against roughly 4 ms
+  on Snowstorm Lite. `Context::history` in `src/eval/history.rs` scans every row
+  of every selected reference set's member table. An index from concept to the
+  association rows that reference it would replace the scan.
+
 **Cold start.** Opening a packed index takes 525 ms, and 285 ms uncompressed.
 A serverless invocation pays that before it answers anything. Measured with
 `examples/open_breakdown.rs`, the cost splits four ways, and each has a

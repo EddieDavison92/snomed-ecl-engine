@@ -52,6 +52,17 @@ compared on its own matched cohort:
 | Lite, warm count | 2.22 ms | 13.94 ms | 4.56 ms | 35.40 ms |
 | Lite, complete enumeration | 2.34 ms | 15.95 ms | 7.15 ms | 58.24 ms |
 
+As ratios, comparing medians on each matched cohort:
+
+| | Count | Complete enumeration |
+|---|---:|---:|
+| Faster than Snowstorm by | 6.0x | 15.9x |
+| Faster than Snowstorm Lite by | 2.1x | 3.1x |
+
+Summed over a whole cohort rather than per expression, enumeration is 11.3x
+against Snowstorm and 10.8x against Lite. The per-expression median and the
+cohort total differ because the total is dominated by the largest results.
+
 The engine's cost moves from 2.20 ms to 2.29 ms between counting and
 enumerating, because evaluating the expression already built the whole set.
 Both servers roughly triple. Over the matched cohort that is 9.0 s
@@ -90,6 +101,24 @@ Snowstorm Lite reports unsupported features honestly, answering HTTP 501
 reverse flag (40), and concrete value comparison operators (40). Snowstorm's 120
 are its parser rejecting ECL 2.3 top and bottom at the first `!`, plus
 member-field projections its concept endpoint cannot return.
+
+### Where this engine is slower
+
+Snowstorm enumerated faster on 2 of the 879, and Lite on 37 of its 587. Two
+paths account for nearly all of it.
+
+**The first description-filter query in a process.** It loads the description
+index, and that cost lands on whichever query arrives first: 5,940 ms for the
+slowest case here. Across all 40 description-filter expressions the median
+first run was 1.24 ms and the median warm request 1.13 ms, so this is one load
+rather than a per-query cost. It matters most in a serverless function, where
+every invocation is a new process.
+
+**History supplements.** These ran at a 15.65 ms median cold and 16.10 ms warm,
+so loading is not the cause. Evaluating one scans reference set member rows.
+Lite answered the same expressions in about 4 ms.
+
+Both are recorded in the [roadmap](roadmap.md).
 
 ### The disagreements
 
