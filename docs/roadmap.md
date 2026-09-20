@@ -16,7 +16,7 @@ the touched set. Raising the budget would hide it.
 
 **A comparison on the broad corpus.** The 1,000-expression comparison has been
 re-run: 879 of 1,000 expressions now match Snowstorm's complete code sets, up
-from 719. The 10,000-expression corpus is a different matter — several of its
+from 719. The 10,000-expression corpus still has no comparison: several of its
 expansions take minutes each to page out of Snowstorm, so that run has never
 finished. Either sample it, or report engine-only figures for that corpus and
 say why. See [benchmarks](benchmarks.md).
@@ -37,10 +37,19 @@ sequential and the batch process handles one request at a time.
 
 ## Blocked
 
-Three grammar-valid forms have no settled meaning in the specification, and two
-of the three have unanswered upstream issues. They are listed under
-[open questions](ecl-support.md#open-questions). A full ECL 2.3 claim is not
-available until they are ruled on; inventing an interpretation is not an option.
+Three forms are valid under the grammar but have no settled meaning in the
+specification:
+
+- a reverse flag inside an attribute group, `* : { R 363698007 = X }`
+- a member filter with no refset operator, `X {{ M active = true }}`
+- a reverse flag applied to a concrete value
+
+Issues [#10](https://github.com/IHTSDO/snomed-expression-constraint-language/issues/10)
+and [#11](https://github.com/IHTSDO/snomed-expression-constraint-language/issues/11)
+cover the second and third, and both are unanswered. Until these are ruled on,
+this engine cannot claim full ECL 2.3, and guessing an interpretation would
+produce results that silently differ from other engines. The reasoning for each
+is in [open questions](ecl-support.md#open-questions).
 
 ## Out of scope
 

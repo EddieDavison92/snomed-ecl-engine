@@ -23,8 +23,6 @@ with an explicit error; no query returns a partial answer as a success.
 | [History supplements](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.11-history-supplements) | Supported | `HISTORY-MIN`, `-MOD`, `-MAX` and explicit subsets, one association step |
 | Alternate identifiers | Supported | RF2 Identifier components with configured scheme aliases |
 
-Two behaviours are worth knowing before you rely on them.
-
 **History supplements add predecessors, not successors.** `X {{ + HISTORY-MOD }}`
 returns `X` plus the inactive concepts that were replaced by it, so records coded
 before an inactivation still match. To find what replaced an inactive concept,
@@ -51,10 +49,10 @@ Both grammars have 180 productions:
 | Partial | 161 | Implemented, with evidence that is not exhaustive across alternatives and lexical edges |
 | Pending | 1 | `stringValue`: no evidence recorded in the inventory |
 
-Read "partial" as depth of test evidence, not as a missing feature. It is not a
-percentage of the language and it does not measure evaluation correctness:
-parsing a production proves nothing about the result it produces. All 121
-official syntax examples parse.
+"Partial" describes how thorough the tests are, not whether the feature works.
+The figure is not a percentage of the language, and parsing a production says
+nothing about whether the engine evaluates it correctly. All 121 official syntax
+examples parse.
 
 ## Open questions
 
@@ -63,12 +61,12 @@ parser returns a `Semantic` error for each, which is distinct from `Unsupported`
 Neither the error nor its name resolves the question, and each remains an
 acceptance item.
 
-**Reverse flag inside an attribute group** — `* : { R 363698007 = X }`. Both
+**Reverse flag inside an attribute group**, as in `* : { R 363698007 = X }`. Both
 grammars admit it. Reversal is defined through relationship source and
 destination, while groups belong to the source, and the specification does not
 say how those identities compose.
 
-**Member filter without a refset operator** — `X {{ M active = true }}`. The
+**Member filter without a refset operator**, as in `X {{ M active = true }}`. The
 ABNF permits it; the logical model only describes filters applied to `memberOf`
 results. [Upstream issue #10](https://github.com/IHTSDO/snomed-expression-constraint-language/issues/10)
 is unanswered.

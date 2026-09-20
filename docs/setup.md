@@ -101,8 +101,8 @@ docker start snomed-ecl-serving         # Snowstorm Lite
 Never restart a preparation container that still has `--load` in its command: it
 will import a second time. `scripts/benchmark_corpus.py` refuses to compare
 unless a completed MAIN snapshot import is evidenced, the advertised edition
-matches the index, and two release sentinels agree — so an accidental reimport or
-a mismatched release stops the run rather than producing numbers.
+matches the index, and two release sentinels agree. An accidental reimport or a
+mismatched release stops the run instead of producing numbers.
 
 Do not benchmark OneLondon's shared Ontoserver. Its latency and shared load make
 it unsuitable, and repeated load adds no correctness evidence. Small pinned

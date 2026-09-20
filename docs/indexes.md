@@ -39,7 +39,7 @@ dates and active/definition flags.
 
 Relationships reference four-byte ordinals rather than repeating 18-digit codes.
 Attribute rows are ordered by source, group, type and value, and group numbers
-survive import — including group zero and groups shared between ordinary and
+survive import, including group zero and groups shared between ordinary and
 concrete relationships.
 
 Concrete values keep their original decimal spelling in a separate dictionary, so
@@ -64,9 +64,9 @@ synonym, breaking ties on the smallest description ID. Missing text returns null
 and is never replaced with an invented label. Supply a different ordered refset
 list as the final `import` argument; the manifest records what was used.
 
-This selects one label per concept. It is not a language service, and it cannot
-answer queries about synonyms, dialect or description metadata — those use the
-description index and [description filters](ecl-support.md).
+This selects one label per concept. It cannot answer queries about synonyms,
+dialect or description metadata; those read the description index through
+[description filters](ecl-support.md).
 
 ## Supplementary refsets
 
@@ -118,7 +118,7 @@ declared. Codec 0 is raw bytes; codec 1 is `SNZST001` followed by a decoded bloc
 size, block count, a 36-byte entry per block holding compressed length and frame
 SHA-256, then independent zstd frames.
 
-Truncating the file is invalid — there is no numeric-only prefix. Padding carries
+Truncating the file is invalid, because there is no numeric-only prefix. Padding carries
 no meaning and is not covered by component hashes, so pin a whole-file SHA-256
 when distributing an artefact.
 

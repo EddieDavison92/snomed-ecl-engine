@@ -14,10 +14,10 @@ snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 
 ## Why it is small
 
-Most ways to evaluate ECL assume a server: a long-running process, a search
-cluster, gigabytes of resident memory. That rules out whole classes of
-deployment. This engine keeps the terminology in one file and evaluates queries
-in the calling process.
+Most ways to evaluate ECL need a server: a process that stays up, a search
+cluster beside it, gigabytes of resident memory. That puts ECL out of reach of a
+serverless function, a shared VPS or a phone. This engine keeps the terminology
+in one file and evaluates queries inside the calling process.
 
 - **Serverless.** Compute only when a query arrives. The query-only executable is
   2.13 MiB, under a megabyte gzipped, and the index is a single verified file.
@@ -35,18 +35,18 @@ application depends on it and owns hosting.
 
 ## What it is good for
 
-Terminology servers answer *how many* and *show me a page*. Handing back every
-code costs this engine 2.29 ms. Counting costs 2.20 ms. The two are the same
-because evaluating the expression already produced the whole set. Snowstorm goes
-from 13.19 ms to 36.40 ms on those same expressions, because it serialises and
-pages the result over HTTP.
+Asking this engine how many concepts an expression selects takes 2.20 ms.
+Asking it for every one of those concepts takes 2.29 ms. Evaluating the
+expression already built the whole set, so returning it costs almost nothing
+more. Snowstorm answers the same two requests in 13.19 ms and 36.40 ms, because
+it serialises the concepts and returns them in pages over HTTP.
 
-That flat cost changes which jobs are worth doing.
+Expanding 879 definitions in full took 9.0 seconds here. The same 879 through
+Snowstorm took 101.6 seconds.
 
 - **Expand hundreds of codelists at once.** Turning a directory of static code
-  lists into ECL definitions means enumerating every one and diffing it against
-  the original. At about 2 ms each that is a loop. Against a paged HTTP API it is
-  a batch job you schedule.
+  lists into ECL definitions means expanding every one in full and diffing it
+  against the original. At about 2 ms each, 274 lists take under a second.
 - **Check a codelist against a new release.** `diff` runs one expression across
   two indexes and reports what the release added and removed.
 - **Put it in CI.** A two-megabyte binary and an index file let a pipeline assert
@@ -126,11 +126,16 @@ concrete comparisons, top and bottom, membership, concept filters, description
 filters, member filters and projections, history supplements and alternate
 identifiers.
 
-Three grammar-valid forms have no settled meaning in the specification. The
-parser refuses them rather than guess. Unsupported input fails with an explicit
+Three forms are valid under the grammar but have no settled meaning in the
+specification, so the parser refuses them rather than guess:
+
+- a reverse flag inside an attribute group, `* : { R 363698007 = X }`
+- a member filter with no refset operator, `X {{ M active = true }}`
+- a reverse flag applied to a concrete value
+
+Two of those have questions open with SNOMED International, still unanswered.
+Everything else in ECL 2.3 evaluates. Unsupported input fails with an explicit
 error, and no query returns a partial answer as a success.
-[ECL support](docs/ecl-support.md) has the detail and the grammar inventory.
-[The roadmap](docs/roadmap.md) has what is left.
 
 Decimals keep their exact spelling, and the evaluator never compares them as
 binary floating point. Relationship groups survive import. The engine reads the
@@ -157,6 +162,6 @@ ZIP importer for a query-only build.
 - [ECL support](docs/ecl-support.md) lists what evaluates and the open questions.
 - [Indexes](docs/indexes.md) covers building, packing, the format and configuration.
 - [Benchmarks](docs/benchmarks.md) has the method, results and comparisons.
-- [Roadmap](docs/roadmap.md) is what comes next.
+- [Roadmap](docs/roadmap.md) lists the open work.
 - [Developer setup](docs/setup.md) covers building, releases and comparison servers.
 - [SKILL.md](SKILL.md) is the agent workflow.
