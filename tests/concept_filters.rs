@@ -167,11 +167,7 @@ fn filters_keep_errors_visible_and_respect_limits() {
         evaluate(&store, &expression),
         Err(EvalError::Unsupported(_))
     ));
-    for query in [
-        "* {{D term=\"text\"}}",
-        "^2000001 {{M active=0}}",
-        "* {{+ HISTORY}}",
-    ] {
+    for query in ["^2000001 {{M active=0}}", "* {{+ HISTORY}}"] {
         assert_eq!(parse(query).unwrap_err().kind, ParseErrorKind::Unsupported);
     }
     let expression = parse("* {{C active=1}}").unwrap();

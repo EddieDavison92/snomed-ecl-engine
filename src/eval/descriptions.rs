@@ -3,6 +3,8 @@ use crate::ecl::{Comparison, ConceptFilter, DescriptionFilter};
 use crate::store::DescriptionIndex;
 
 enum Prepared<'a> {
+    #[cfg(feature = "unicode")]
+    Term(Comparison, crate::text::Terms<'a>),
     Active(Comparison, Option<bool>),
     Language(Comparison, &'a [[u8; 2]]),
     Id(Comparison, &'a [u64]),
@@ -22,6 +24,15 @@ impl Context<'_> {
             return Err(EvalError::InvalidAst);
         }
         self.tick(1)?;
+        #[cfg(not(feature = "unicode"))]
+        if filters
+            .iter()
+            .any(|f| matches!(f, DescriptionFilter::Term(..)))
+        {
+            return Err(EvalError::Unsupported(
+                "Term matching requires the unicode Cargo feature",
+            ));
+        }
         let index = self
             .store
             .descriptions
@@ -39,6 +50,11 @@ impl Context<'_> {
                 return Err(EvalError::InvalidAst);
             }
             let item = match filter {
+                #[cfg(feature = "unicode")]
+                DescriptionFilter::Term(op, terms) => Prepared::Term(
+                    *op,
+                    crate::text::Terms::new(terms).map_err(|_| EvalError::InvalidAst)?,
+                ),
                 DescriptionFilter::Metadata(ConceptFilter::Active(op, active)) => {
                     active_explicit = true;
                     Prepared::Active(*op, *active)
@@ -77,6 +93,8 @@ impl Context<'_> {
                 _ => return Err(EvalError::InvalidAst),
             };
             let op = match &item {
+                #[cfg(feature = "unicode")]
+                Prepared::Term(op, _) => *op,
                 Prepared::Active(op, _)
                 | Prepared::Language(op, _)
                 | Prepared::Id(op, _)
@@ -101,7 +119,7 @@ impl Context<'_> {
                     continue;
                 }
                 let mut matches = true;
-                for predicate in &prepared {
+                for predicate in &mut prepared {
                     if !self.description_matches(index, row, predicate)? {
                         matches = false;
                         break;
@@ -136,10 +154,20 @@ impl Context<'_> {
         &mut self,
         index: &DescriptionIndex,
         row: usize,
-        predicate: &Prepared<'_>,
+        predicate: &mut Prepared<'_>,
     ) -> Result<bool> {
         self.tick(1)?;
         let (op, member) = match predicate {
+            #[cfg(feature = "unicode")]
+            Prepared::Term(op, terms) => {
+                self.tick(terms.work(index.term(row)))?;
+                (
+                    *op,
+                    terms
+                        .matches(index.term(row), index.language(row))
+                        .map_err(|e| EvalError::Text(format!("{e:?}")))?,
+                )
+            }
             Prepared::Active(op, value) => (*op, value.is_none_or(|v| v == index.active(row))),
             Prepared::Language(op, values) => {
                 self.tick(values.len())?;
@@ -182,7 +210,7 @@ impl Context<'_> {
             Prepared::Dialect(op, dialects) => {
                 let mut found = false;
                 for (refset, acceptability) in index.dialects(row) {
-                    for (values, allowed) in dialects {
+                    for (values, allowed) in dialects.iter() {
                         self.tick(
                             values.len().checked_ilog2().unwrap_or(0) as usize + allowed.len() + 1,
                         )?;

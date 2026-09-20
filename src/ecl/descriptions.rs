@@ -2,6 +2,7 @@ use super::*;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DescriptionFilter {
+    Term(Comparison, Vec<SearchTerm>),
     Metadata(ConceptFilter),
     Language(Comparison, Vec<[u8; 2]>),
     Type(Comparison, Box<Expr>),
@@ -33,17 +34,12 @@ impl Parser<'_> {
         loop {
             let name = self.word().to_ascii_lowercase();
             self.pos += name.len();
-            if name == "term" {
-                return Err(self.error(
-                    ParseErrorKind::Unsupported,
-                    "Description term matching is not implemented",
-                ));
-            }
             let comparison = self.comparison()?;
             if name != "effectivetime" && !matches!(comparison, Comparison::Eq | Comparison::Ne) {
                 return Err(self.unexpected());
             }
             let filter = match name.as_str() {
+                "term" => DescriptionFilter::Term(comparison, self.search_terms()?),
                 "active" => DescriptionFilter::Metadata(ConceptFilter::Active(
                     comparison,
                     if self.take("*") || self.keyword("any") {

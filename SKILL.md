@@ -23,6 +23,8 @@ The commands below use the Linux/macOS executable path. On Windows, use `./targe
 
 Run `./target/release/snomed-ecl-engine --help` or `COMMAND --help` for arguments. For an existing index and a query-only executable, build with `--no-default-features`. That executable cannot import RF2.
 
+For description term filters, build or install with `--features unicode`. This requires ICU4C static development libraries, `pkg-config` and a C compiler; the [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers the tested Linux setup. Keep this feature when also using `--no-default-features`. A build without it rejects term predicates explicitly.
+
 ## Obtain the right RF2 package
 
 Use an RF2 archive the caller is entitled to access. Data and indexes are not included in the clone. Keep them under ignored `data/` or another private local directory.
@@ -99,7 +101,7 @@ Inspect `supplements` in the combined manifest. Batch responses include suppleme
 
 ## Recognise current limits
 
-Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact concrete comparisons, top/bottom and concept refset membership (`^` and `^R`) and concept metadata filters are implemented. Description metadata filters are also supported, including language, type, dialect and acceptability. Description term matching, member filters, history, alternate identifiers and typed projections still have gaps. Consult [conformance](docs/conformance.md) and [refinements](docs/refinements.md) before claiming support for a query category.
+Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact concrete comparisons, top/bottom and concept refset membership (`^` and `^R`) and concept metadata filters are implemented. Description filters include metadata and, with `unicode`, term prefixes and wildcards. Configurable dialect aliases, member filters, history, alternate identifiers, typed projections and remaining semantic details still have gaps. Consult [conformance](docs/conformance.md) and [refinements](docs/refinements.md) before claiming support for a query category.
 
 Do not simplify unsupported ECL silently. Ordinary ECL includes active and inactive concepts, active inferred relationships and active refset member rows. An inactive concept can be returned by a literal or membership query. An unknown literal returns an empty set. For external correctness checks, pin the same edition and supplement checksums and compare complete code sets. The optional helper for OneLondon's Ontoserver in [local setup](docs/setup.md#refresh-the-ontoserver-probes) needs a separately configured credential helper; it is not required to use this engine.
 

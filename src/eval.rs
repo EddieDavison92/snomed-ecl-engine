@@ -29,6 +29,7 @@ pub enum EvalError {
     InvalidAst,
     Unsupported(&'static str),
     Index(String),
+    Text(String),
 }
 impl fmt::Display for EvalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

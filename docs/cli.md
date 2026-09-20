@@ -2,6 +2,8 @@
 
 Build with `cargo build --locked --release --bin snomed-ecl-engine`, or install from the checkout with `cargo install --locked --path .`. Native Windows builds need the MSVC C++ tools and Windows SDK. [Build and run](compact-store.md#build-and-run) includes the Linux Docker alternative.
 
+Add `--features unicode` to build or install term matching. Its ICU4C prerequisites and package cost are described in the [Unicode build guide](descriptions.md#build-with-unicode-term-matching).
+
 The executable is `target/release/snomed-ecl-engine` (`.exe` on Windows). Run `--help`, `COMMAND --help` or `--version`. Agents can follow the repository [SKILL.md](../SKILL.md) for the complete import and query workflow.
 
 ```sh
@@ -10,7 +12,7 @@ snomed-ecl-engine expand data/compact-store/v1 '404684003' --display
 snomed-ecl-engine expand data/compact-store/v1 '<< 404684003' --count
 ```
 
-Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports seven stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
+Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports eight stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.
 
 ## Select output for scripts
 

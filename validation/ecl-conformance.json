@@ -419,26 +419,26 @@
         {
           "production": "termFilter",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "termKeyword",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "typedSearchTerm",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "typedSearchTermSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "concreteStringSet",
@@ -461,38 +461,38 @@
         {
           "production": "wild",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "matchKeyword",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "matchSearchTerm",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "matchSearchTermSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "wildSearchTerm",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "wildSearchTermSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "languageFilter",
@@ -1043,8 +1043,8 @@
         {
           "production": "escapedWildChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "nonwsNonEscapedChar",
@@ -1505,26 +1505,26 @@
         {
           "production": "termFilter",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "termKeyword",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "typedSearchTerm",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "typedSearchTermSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "concreteStringSet",
@@ -1547,38 +1547,38 @@
         {
           "production": "wild",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "matchKeyword",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "matchSearchTerm",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "matchSearchTermSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "wildSearchTerm",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "wildSearchTermSet",
           "area": "description_filters",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "languageFilter",
@@ -2129,8 +2129,8 @@
         {
           "production": "escapedWildChar",
           "area": "lexical",
-          "status": "pending",
-          "evidence": null
+          "status": "partial",
+          "evidence": "tests/term_filters.rs"
         },
         {
           "production": "nonwsNonEscapedChar",

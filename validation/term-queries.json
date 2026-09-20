@@ -1,0 +1,47 @@
+[
+  {
+    "id": "term-01",
+    "ecl": "< 64572001 |Disease| {{ term = (match:\"gas\" wild:\"*itis\")}}",
+    "probe": true
+  },
+  {
+    "id": "term-02",
+    "ecl": "<<195967001 {{term=\"asth\"}}",
+    "probe": true
+  },
+  {
+    "id": "term-03",
+    "ecl": "<<195967001 {{term=wild:\"*asthma*\"}}",
+    "probe": true
+  },
+  {
+    "id": "term-04",
+    "ecl": "<<195967001 {{term=\"allergic asthma\"}}",
+    "probe": true
+  },
+  {
+    "id": "term-05",
+    "ecl": "<<195967001 {{term=\"asthma allergic\"}}",
+    "probe": true
+  },
+  {
+    "id": "term-06",
+    "ecl": "<<195967001 {{term=wild:\"*itis\"}}",
+    "probe": true
+  },
+  {
+    "id": "term-07",
+    "ecl": "<<195967001 {{term=(\"exercise\" \"allergic\")}}",
+    "probe": true
+  },
+  {
+    "id": "term-08",
+    "ecl": "<<195967001 {{term!=\"allergic\"}}",
+    "probe": true
+  },
+  {
+    "id": "term-09",
+    "ecl": "<<195967001 {{term=\"zzznomatch\"}}",
+    "probe": true
+  }
+]

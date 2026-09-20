@@ -12,7 +12,7 @@ Measured against the UK SNOMED CT Monolith, with 1.15 million concepts:
 |---|---|
 | 880 numeric-index expressions, one CPU and 256 MiB | 1.82 seconds per warm batch |
 | 920 expressions including description metadata, one CPU and 1 GiB | 1.86 seconds per warm batch |
-| Query-only Linux executable | 0.83 MiB, 0.39 MiB gzipped |
+| Measured numeric query-only Linux executable, without Unicode | 0.83 MiB, 0.39 MiB gzipped |
 | Numeric and concept-membership indexes | 103.3 MiB |
 | RF2 import, including descriptions and displays | 83.6 seconds with two CPUs and 2 GiB |
 
@@ -37,7 +37,9 @@ Request timings include transport. Rust uses a persistent JSONL process; the ser
 
 Index contents and import allocations also differ. The current Rust description file is uncompressed, and the full language still needs more semantic indexes. These are observed builds, not equal-capability storage ratios or minimum serving allocations. Sources: [Snowstorm comparison](docs/full-snowstorm.md), [Lite comparison](docs/basic-ecl.md), [import records](docs/baseline-status.md) and [derived comparison figures](validation/readme-comparison.json).
 
-The comparison servers also have ECL coverage limits. Lite documents an ECL Core subset without attribute groups, concept/description/member filters or member-field selection in its [pinned source](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/README.md#ecl-utility-endpoints). The tested full Snowstorm parser rejected all 80 top/bottom expressions in our corpus. We also recorded a concrete-inequality disagreement where Rust matched OneLondon's Ontoserver and the RF2 evidence. These findings apply to the tested versions; full ECL 2.3 remains this project's target, not a claim that it is already complete.
+The comparison servers also have ECL coverage limits. Lite documents an ECL Core subset without attribute groups, concept/description/member filters or member-field selection in its [pinned source](https://github.com/IHTSDO/snowstorm-lite/blob/6942831706b68d23a028e16e92d23ea31d10653c/README.md#ecl-utility-endpoints). The tested full Snowstorm parser rejected all 80 top/bottom expressions in our corpus. We also recorded a concrete-inequality disagreement where Rust matched OneLondon's Ontoserver and the RF2 evidence.
+
+OneLondon's Ontoserver 6.25.4 also rejected our [description metadata probes](validation/ontoserver-description-metadata.json), including `type` filters. These findings apply to the tested versions; full ECL 2.3 remains this project's target, not a claim that it is already complete.
 
 Description data currently adds 376 MiB and loads on demand. The description-inclusive run peaked at 537 MiB of container-charged memory; it does not fit in 256 MiB yet. Compression and bounded loading are the next storage targets. The [description measurements](docs/descriptions.md) include the failed 256 MiB run as well as successful checks.
 
@@ -66,13 +68,17 @@ Use your own licensed RF2 content. Archives and generated indexes are not includ
 
 For Rust integration, open a `NumericStore`, parse with `ecl::parse` and evaluate with `eval::evaluate_with_limits`. Keep the store open for repeated queries. Results are concept ordinals that resolve to SNOMED IDs; display labels are a separate lookup. Disable default Cargo features to omit the offline ZIP importer from a query-only application.
 
+Description term queries need `--features unicode` and ICU4C development libraries at build time. The [Unicode build guide](docs/descriptions.md#build-with-unicode-term-matching) covers installation and the additional executable size. Numeric queries do not require this feature.
+
+The measured CLI with import and Unicode support is 32.64 MiB, or 12.86 MiB gzipped. Broad term queries currently scan descriptions and are slower than numeric expansions. [Term measurements](docs/descriptions.md#term-comparison-evidence) record their latency and correctness separately.
+
 The [CLI guide](docs/cli.md) covers commands and output formats. The repository [SKILL.md](SKILL.md) gives agents the build, RF2 loading and querying workflow.
 
 ## Development status
 
-Full ECL 2.3 support is the acceptance requirement. Current capabilities include hierarchy and Boolean operations, nested refinements, groups and cardinalities, exact concrete comparisons, top/bottom, concept refsets, concept filters and description metadata filters.
+Full ECL 2.3 support is the acceptance requirement. Current capabilities include hierarchy and Boolean operations, nested refinements, groups and cardinalities, exact concrete comparisons, top/bottom, concept refsets, concept filters and description filters. The optional Unicode backend evaluates term prefixes, wildcards and term sets.
 
-The 1,000-expression corpus currently evaluates 920 cases. This measures coverage of that workload, not percentage conformance to the language. Term matching, typed member filters and projections, history, alternate identifiers and remaining semantic details are still in progress. Unsupported expressions fail explicitly. The [conformance checklist](docs/conformance.md) tracks the remaining work.
+The 1,000-expression corpus currently evaluates 920 cases. This measures coverage of that workload, not percentage conformance to the language. Typed member filters and projections, history, alternate identifiers, configurable dialect aliases and remaining semantic details are still in progress. Unsupported expressions fail explicitly. The [conformance checklist](docs/conformance.md) tracks the remaining work.
 
 The engine is intended to power embedded tools, low-resource servers and serverless applications. An HTTP or deployment wrapper belongs in a separate application that consumes the library. Cloud cold starts and the complete engine's final resource footprint still need measurement.
 

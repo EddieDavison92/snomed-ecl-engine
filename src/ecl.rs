@@ -4,8 +4,10 @@ mod descriptions;
 mod filters;
 pub use descriptions::{DescriptionFilter, Dialect};
 mod refinement;
+mod search;
 pub use filters::ConceptFilter;
 pub use refinement::{AttributeConstraint, AttributeValue, Cardinality, Comparison, Refinement};
+pub use search::SearchTerm;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Hierarchy {
