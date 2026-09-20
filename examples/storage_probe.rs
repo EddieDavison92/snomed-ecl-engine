@@ -1,6 +1,6 @@
 use anyhow::{ensure, Context, Result};
 use sha2::{Digest, Sha256};
-use snomed_rust_ecl_engine::store::{Manifest, NumericStore};
+use snomed_ecl_engine::store::{Manifest, NumericStore};
 use std::fs::File;
 use std::hint::black_box;
 use std::path::Path;

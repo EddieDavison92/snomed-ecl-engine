@@ -39,7 +39,7 @@ def main():
     expected = dict(sorted(expected.items(), key=lambda p: int(p[0])))
     command = ["docker", "run", "--rm", "-i", "--cpus", "1", "--memory", "256m", "--memory-swap", "256m",
                "--mount", f"type=bind,source={ROOT},target=/work,readonly", "-w", "/work", IMAGE,
-               "target/linux-core/release/snomed-rust-ecl-engine", "batch", args.store.resolve().relative_to(ROOT).as_posix()]
+               "target/linux-core/release/snomed-ecl-engine", "batch", args.store.resolve().relative_to(ROOT).as_posix()]
     run = subprocess.run(command, input="".join(json.dumps({"ecl": "^" + r}) + "\n" for r in expected),
                          capture_output=True, text=True, encoding="utf-8", timeout=180, check=True)
     responses = [json.loads(line) for line in run.stdout.splitlines()]

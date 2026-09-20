@@ -1,10 +1,12 @@
 [package]
-name = "snomed-rust-ecl-engine"
+name = "snomed-ecl-engine"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.93"
 publish = false
-description = "Experimental compact RF2 store and ECL engine"
+description = "Compact SNOMED CT ECL engine and RF2 index builder"
+repository = "https://github.com/EddieDavison92/snomed-ecl-engine"
+keywords = ["snomed", "ecl", "terminology", "rf2"]
 
 [dependencies]
 anyhow = "1"

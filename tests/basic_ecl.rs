@@ -1,6 +1,6 @@
-use snomed_rust_ecl_engine::ecl::{parse, Expr, Hierarchy, ParseErrorKind};
-use snomed_rust_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
-use snomed_rust_ecl_engine::store::{Adjacency, Attributes, NumericStore};
+use snomed_ecl_engine::ecl::{parse, Expr, Hierarchy, ParseErrorKind};
+use snomed_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
+use snomed_ecl_engine::store::{Adjacency, Attributes, NumericStore};
 use std::collections::{BTreeSet, VecDeque};
 use std::sync::atomic::AtomicBool;
 

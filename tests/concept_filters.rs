@@ -1,6 +1,6 @@
-use snomed_rust_ecl_engine::ecl::{parse, Comparison, ConceptFilter, Expr, ParseErrorKind};
-use snomed_rust_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
-use snomed_rust_ecl_engine::store::{Adjacency, Attributes, MembershipIndex, NumericStore};
+use snomed_ecl_engine::ecl::{parse, Comparison, ConceptFilter, Expr, ParseErrorKind};
+use snomed_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
+use snomed_ecl_engine::store::{Adjacency, Attributes, MembershipIndex, NumericStore};
 use std::sync::atomic::AtomicBool;
 
 fn fixture() -> NumericStore {

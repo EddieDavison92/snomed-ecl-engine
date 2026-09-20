@@ -1,6 +1,6 @@
 //! Classify pinned official syntax examples without copying their contents into this repository.
 use anyhow::{ensure, Result};
-use snomed_rust_ecl_engine::ecl::{parse, ParseErrorKind};
+use snomed_ecl_engine::ecl::{parse, ParseErrorKind};
 use std::path::Path;
 
 fn visit(root: &Path, directory: &Path, results: &mut Vec<serde_json::Value>) -> Result<()> {

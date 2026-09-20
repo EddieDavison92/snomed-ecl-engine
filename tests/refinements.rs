@@ -1,9 +1,7 @@
-use snomed_rust_ecl_engine::decimal::Decimal;
-use snomed_rust_ecl_engine::ecl::{parse, ParseErrorKind};
-use snomed_rust_ecl_engine::eval::{evaluate, EvalError};
-use snomed_rust_ecl_engine::store::{
-    Adjacency, Attribute, Attributes, ConcreteValue, NumericStore,
-};
+use snomed_ecl_engine::decimal::Decimal;
+use snomed_ecl_engine::ecl::{parse, ParseErrorKind};
+use snomed_ecl_engine::eval::{evaluate, EvalError};
+use snomed_ecl_engine::store::{Adjacency, Attribute, Attributes, ConcreteValue, NumericStore};
 
 // Sources 0..4, attribute types 5..7, values 8..10, is-a 11.
 fn fixture() -> NumericStore {

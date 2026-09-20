@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--archive", required=True, type=Path)
     parser.add_argument("--store", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--binary", default="target/linux-core/release/snomed-rust-ecl-engine")
+    parser.add_argument("--binary", default="target/linux-core/release/snomed-ecl-engine")
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Choose a new output path")

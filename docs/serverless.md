@@ -12,7 +12,7 @@ Bundling removes an application-level startup download, but platform bundle prep
 
 Use local files for graph traversal. A remote object request for every relationship would replace inexpensive memory reads with network round trips. Future semantic indexes should have independent files so hierarchy queries do not have to acquire description text or history data. Queries that need those files must acquire them before returning a complete result.
 
-The current reader loads the whole numeric store into memory. It does not yet download indexes, load semantic files on demand, or provide a cloud runtime. Consider memory mapping or bounded block reads only after the full semantic data layout exists and measurements show a benefit. Verify the complete engine against Vercel's limits before committing to the final packaging.
+The current reader loads the whole numeric store into memory. It loads description data on demand. It does not download indexes or provide a cloud runtime. Consider memory mapping or bounded block reads only after the full semantic data layout exists and measurements show a benefit. Verify the complete engine against Vercel's limits before committing to the final packaging.
 
 ## Vercel deployment target
 
@@ -27,7 +27,7 @@ These platform facts were checked on 20 September 2026. Measure deployment cold 
 ## Query-only build
 
 ```sh
-cargo build --locked --release --no-default-features --bin snomed-rust-ecl-engine
+cargo build --locked --release --no-default-features --bin snomed-ecl-engine
 ```
 
 The default `import` feature includes RF2 ZIP support. Excluding it removes the importer and decompression dependencies. Release builds strip symbols. A dependent service can also disable default features on the library dependency.

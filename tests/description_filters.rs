@@ -1,8 +1,6 @@
-use snomed_rust_ecl_engine::ecl::parse;
-use snomed_rust_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
-use snomed_rust_ecl_engine::store::{
-    Description, DescriptionIndex, DescriptionStore, NumericStore,
-};
+use snomed_ecl_engine::ecl::parse;
+use snomed_ecl_engine::eval::{evaluate, evaluate_with_limits, EvalError, Limits};
+use snomed_ecl_engine::store::{Description, DescriptionIndex, DescriptionStore, NumericStore};
 use std::sync::atomic::AtomicBool;
 
 const SYN: u64 = 900000000000013009;

@@ -47,7 +47,7 @@ def snowstorm(base, ecl):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--binary", default="target/linux-core/release/snomed-rust-ecl-engine")
+    parser.add_argument("--binary", default="target/linux-core/release/snomed-ecl-engine")
     parser.add_argument("--samples", type=int, default=5)
     parser.add_argument("--memory-mib", type=int, default=256, help="Container memory and swap limit; record larger semantic-index runs separately")
     parser.add_argument("--store-volume", help="Optional Docker volume holding core.bin and manifest.json")

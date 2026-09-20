@@ -65,7 +65,7 @@ def main():
     del children, active, finding, sources, destinations
     command = ["docker", "run", "--rm", "-i", "--name", "snomed-ecl-rf2-check", "--cpus", "1", "--memory", "256m", "--memory-swap", "256m",
                "--mount", f"type=bind,source={ROOT},target=/work", "-w", "/work", IMAGE,
-               "target/linux/release/snomed-rust-ecl-engine", "batch", "data/compact-store/v1"]
+               "target/linux/release/snomed-ecl-engine", "batch", "data/compact-store/v1"]
     cases = json.loads((ROOT / "validation/basic-ecl-queries.json").read_text())
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, encoding="utf-8", bufsize=1)
     results = []

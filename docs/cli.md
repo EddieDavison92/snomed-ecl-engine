@@ -1,13 +1,13 @@
 # Use the CLI
 
-Build with `cargo build --locked --release --bin snomed-rust-ecl-engine`, or install from the checkout with `cargo install --locked --path .`. Native Windows builds need the MSVC C++ tools and Windows SDK. [Build and run](compact-store.md#build-and-run) includes the Linux Docker alternative.
+Build with `cargo build --locked --release --bin snomed-ecl-engine`, or install from the checkout with `cargo install --locked --path .`. Native Windows builds need the MSVC C++ tools and Windows SDK. [Build and run](compact-store.md#build-and-run) includes the Linux Docker alternative.
 
-The executable is `target/release/snomed-rust-ecl-engine` (`.exe` on Windows). Run `--help`, `COMMAND --help` or `--version`. Agents can follow the repository [SKILL.md](../SKILL.md) for the complete import and query workflow.
+The executable is `target/release/snomed-ecl-engine` (`.exe` on Windows). Run `--help`, `COMMAND --help` or `--version`. Agents can follow the repository [SKILL.md](../SKILL.md) for the complete import and query workflow.
 
 ```sh
-snomed-rust-ecl-engine stats data/compact-store/v1
-snomed-rust-ecl-engine expand data/compact-store/v1 '404684003' --display
-snomed-rust-ecl-engine expand data/compact-store/v1 '<< 404684003' --count
+snomed-ecl-engine stats data/compact-store/v1
+snomed-ecl-engine expand data/compact-store/v1 '404684003' --display
+snomed-ecl-engine expand data/compact-store/v1 '<< 404684003' --count
 ```
 
 Terminal output has an index summary, a code/display table with `--display`, and separate parse, evaluation and index-open timings on stderr. Every result is returned. Query timing excludes display lookup and output. Import reports seven stage starts with elapsed time on stderr. Stages have different costs; the stage number is not a completion percentage.

@@ -98,14 +98,14 @@ docker run --rm --mount $mount -e CARGO_TARGET_DIR=/work/target/linux -w /work $
 $release = Get-Content docs/release.json -Raw | ConvertFrom-Json
 $edition = 'http://snomed.info/sct/83821000000107/version/20260826'
 New-Item -ItemType Directory -Force data/compact-store | Out-Null
-docker run --rm --cpus 2 --memory 2g --memory-swap 2g --mount $mount -w /work $rustImage python3 scripts/measure_process.py --report data/compact-store/import-resources.json --stdout data/compact-store/import.json target/linux/release/snomed-rust-ecl-engine import ('data/rf2/' + $release.archiveFileName) data/compact-store/v1 $edition $release.sha256
+docker run --rm --cpus 2 --memory 2g --memory-swap 2g --mount $mount -w /work $rustImage python3 scripts/measure_process.py --report data/compact-store/import-resources.json --stdout data/compact-store/import.json target/linux/release/snomed-ecl-engine import ('data/rf2/' + $release.archiveFileName) data/compact-store/v1 $edition $release.sha256
 ```
 
 Choose new store and report paths for subsequent imports. Run the five release-matched hierarchy probes in a fresh container:
 
 ```powershell
 docker run --rm --cpus 1 --memory 256m --memory-swap 256m --mount $mount -w /work $rustImage python3 scripts/measure_process.py --report data/compact-store/probe-resources.json --stdout data/compact-store/probe.json target/linux/release/examples/storage_probe data/compact-store/v1 validation/ontoserver-baseline.json
-docker run --rm --cpus 1 --memory 256m --memory-swap 256m --mount $mount -w /work $rustImage target/linux/release/snomed-rust-ecl-engine hierarchy data/compact-store/v1 '<<' 195967001 --display
+docker run --rm --cpus 1 --memory 256m --memory-swap 256m --mount $mount -w /work $rustImage target/linux/release/snomed-ecl-engine hierarchy data/compact-store/v1 '<<' 195967001 --display
 ```
 
 Omit `--display` for one numeric SCTID per line. The displayed form uses decimal strings for JSON codes. These operators are accepted: `<`, `<<`, `<!`, `<<!`, `>`, `>>`, `>!`, `>>!`.

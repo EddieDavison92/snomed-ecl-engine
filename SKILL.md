@@ -1,5 +1,5 @@
 ---
-name: snomed-rust-ecl-engine
+name: snomed-ecl-engine
 description: Build and use the local Rust SNOMED ECL engine. Use when cloning this repository, importing a verified RF2 Snapshot, inspecting an index, or expanding ECL through the CLI or persistent JSONL batch process.
 ---
 
@@ -9,19 +9,19 @@ Run commands from this repository's root. This is an embedded engine and CLI; no
 
 ## Get the CLI
 
-The repository is private. Use the caller's existing GitHub access:
+Clone the repository, using the caller's GitHub access if required:
 
 ```sh
-git clone https://github.com/EddieDavison92/snomed-rust-ecl-engine.git
-cd snomed-rust-ecl-engine
-cargo build --locked --release --bin snomed-rust-ecl-engine
+git clone https://github.com/EddieDavison92/snomed-ecl-engine.git
+cd snomed-ecl-engine
+cargo build --locked --release --bin snomed-ecl-engine
 ```
 
 Use the toolchain pinned in `rust-toolchain.toml`. With rustup installed, Cargo selects it automatically. Native Windows builds need the MSVC C++ build tools and Windows SDK. For a Linux Docker build, read [Build and run](docs/compact-store.md#build-and-run).
 
-The commands below use the Linux/macOS executable path. On Windows, use `./target/release/snomed-rust-ecl-engine.exe`. Alternatively, install from the checkout with `cargo install --locked --path .` and use `snomed-rust-ecl-engine` on PATH. No crates.io package or prebuilt release is published yet.
+The commands below use the Linux/macOS executable path. On Windows, use `./target/release/snomed-ecl-engine.exe`. Alternatively, install from the checkout with `cargo install --locked --path .` and use `snomed-ecl-engine` on PATH. No crates.io package or prebuilt release is published yet.
 
-Run `./target/release/snomed-rust-ecl-engine --help` or `COMMAND --help` for arguments. For an existing index and a query-only executable, build with `--no-default-features`. That executable cannot import RF2.
+Run `./target/release/snomed-ecl-engine --help` or `COMMAND --help` for arguments. For an existing index and a query-only executable, build with `--no-default-features`. That executable cannot import RF2.
 
 ## Obtain the right RF2 package
 
@@ -38,8 +38,8 @@ If this user's configured 1Password/TRUD setup is available, [local setup](docs/
 This reproducible example uses the release pinned in [docs/release.json](docs/release.json), not a moving "latest" release:
 
 ```sh
-./target/release/snomed-rust-ecl-engine import data/rf2/uk_sct2mo_42.5.0_20260826000001Z.zip data/compact-store/v1 http://snomed.info/sct/83821000000107/version/20260826 1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b --json
-./target/release/snomed-rust-ecl-engine stats data/compact-store/v1 --json
+./target/release/snomed-ecl-engine import data/rf2/uk_sct2mo_42.5.0_20260826000001Z.zip data/compact-store/v1 http://snomed.info/sct/83821000000107/version/20260826 1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b --json
+./target/release/snomed-ecl-engine stats data/compact-store/v1 --json
 ```
 
 The destination must not exist. Import verifies the archive checksum, validates the supported content and writes `manifest.json`, `core.bin`, `membership.bin` and `display.bin`. It reports stage starts to stderr and returns the completed manifest on stdout. Existing destinations are rejected, so reuse a matching index or choose a new directory rather than deleting it automatically. Failed writes can leave a sibling `.store-building-*` directory; do not query that partial directory.
@@ -53,9 +53,9 @@ Default display selection prefers NHS clinical realm, NHS pharmacy realm, then G
 Quote the complete ECL expression so the shell preserves operators and spaces:
 
 ```sh
-./target/release/snomed-rust-ecl-engine expand data/compact-store/v1 '<< 404684003' --count --json
-./target/release/snomed-rust-ecl-engine expand data/compact-store/v1 '404684003' --display --json
-./target/release/snomed-rust-ecl-engine expand data/compact-store/v1 '(< 404684003 : 363698007 = << 39057004)' --json
+./target/release/snomed-ecl-engine expand data/compact-store/v1 '<< 404684003' --count --json
+./target/release/snomed-ecl-engine expand data/compact-store/v1 '404684003' --display --json
+./target/release/snomed-ecl-engine expand data/compact-store/v1 '(< 404684003 : 363698007 = << 39057004)' --json
 ```
 
 `--count --json` returns `{"total":...}`. Ordinary `--json` expansion emits one `{"code":"..."}` object per line. `--display --json` adds `display`, which can be null. Codes are decimal strings; preserve them as strings in JavaScript and JSON consumers. All matches are returned, including an empty stream for an empty expansion. Use `--count` to distinguish an empty success when that is all the caller needs.
@@ -67,7 +67,7 @@ Numeric queries need only the manifest and core. Displays are resolved after eva
 Launch one persistent child process:
 
 ```sh
-./target/release/snomed-rust-ecl-engine batch data/compact-store/v1
+./target/release/snomed-ecl-engine batch data/compact-store/v1
 ```
 
 Write one UTF-8 JSON object and a newline to its stdin, then flush. Read one JSON response line per request. Keep stdout and stderr separate. Example requests:
@@ -89,8 +89,8 @@ Requests are limited to 512 KiB per line; ECL itself is limited to 65,536 bytes,
 Use a verified simple RF2 Snapshot supplement such as PCD:
 
 ```sh
-./target/release/snomed-rust-ecl-engine add-refsets BASE_STORE PCD_ZIP NEW_STORE YYYYMMDD TRUSTED_SHA256
-./target/release/snomed-rust-ecl-engine expand NEW_STORE '^REFSET_SCTID' --count
+./target/release/snomed-ecl-engine add-refsets BASE_STORE PCD_ZIP NEW_STORE YYYYMMDD TRUSTED_SHA256
+./target/release/snomed-ecl-engine expand NEW_STORE '^REFSET_SCTID' --count
 ```
 
 Substitute the real date, checksum and refset SCTID. The base needs its display and membership files. The loader adds new refset definitions and inferred is-a edges without rereading the base RF2. It rejects collisions, unknown concepts and existing definitions. For a newer supplement, start from the original base store and use a new destination.

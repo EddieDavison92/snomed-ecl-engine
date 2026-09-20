@@ -91,7 +91,7 @@ def main():
         raise ValueError("Comparison server does not advertise pinned edition")
     command = ["docker", "run", "--rm", "-i", "--name", "snomed-ecl-query", "--cpus", "1", "--memory", "256m", "--memory-swap", "256m",
                "--mount", f"type=bind,source={ROOT},target=/work", "-w", "/work", IMAGE,
-               "target/linux/release/snomed-rust-ecl-engine", "batch", "data/compact-store/v1"]
+               "target/linux/release/snomed-ecl-engine", "batch", "data/compact-store/v1"]
     start = time.perf_counter()
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, encoding="utf-8", bufsize=1)
 
@@ -110,7 +110,7 @@ def main():
 
     results = []
     report = {"edition": edition, "recorded_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-              "rust_binary_sha256": hashlib.sha256((ROOT / "target/linux/release/snomed-rust-ecl-engine").read_bytes()).hexdigest(),
+              "rust_binary_sha256": hashlib.sha256((ROOT / "target/linux/release/snomed-ecl-engine").read_bytes()).hexdigest(),
               "samples": args.samples, "large_samples": args.large_samples, "page_size": args.page_size,
               "scope": "Complete code sets checked first, then alternating warm transport measurements. Rust uses JSONL through docker stdin/stdout; Snowstorm Lite uses paginated FHIR HTTP and also materialises displays. Transport timings are not an isolated engine speed comparison. Rust eval_ms excludes parsing, transport and display lookup. Small sample p95 is descriptive only. Host controller memory and Docker VM overhead are excluded from cgroup figures.",
               "results": results}

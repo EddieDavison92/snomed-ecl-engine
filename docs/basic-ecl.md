@@ -9,9 +9,9 @@ Full ECL 2.3 remains mandatory. Refinements, refsets, filters, history, projecti
 After the [store build](compact-store.md#build-and-run), run:
 
 ```sh
-snomed-rust-ecl-engine expand STORE '<< 195967001'
-snomed-rust-ecl-engine expand STORE '(<< 195967001) MINUS 195967001' --count
-snomed-rust-ecl-engine expand STORE '(<< 195967001) OR (<< 73211009)' --display
+snomed-ecl-engine expand STORE '<< 195967001'
+snomed-ecl-engine expand STORE '(<< 195967001) MINUS 195967001' --count
+snomed-ecl-engine expand STORE '(<< 195967001) OR (<< 73211009)' --display
 ```
 
 `--count` currently evaluates the complete ordinal set, then returns its length. It is not a separate count-optimised execution path. Display lookup happens after evaluation and reads only the requested labels. The numeric path works without `display.bin`.

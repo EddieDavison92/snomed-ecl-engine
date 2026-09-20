@@ -3,14 +3,14 @@
 The engine supports `^` / `memberOf` and ECL 2.3 `^R` / `refsetContainingAny` for concept-based refsets. Both compose with hierarchy, Boolean sets and refinements. Member filters and typed field projections remain required work.
 
 ```sh
-snomed-rust-ecl-engine expand STORE '^723562003' --count
-snomed-rust-ecl-engine expand STORE '^R195967001' --display
-snomed-rust-ecl-engine expand STORE '(<<195967001) AND (^*)' --count
+snomed-ecl-engine expand STORE '^723562003' --count
+snomed-ecl-engine expand STORE '^R195967001' --display
+snomed-ecl-engine expand STORE '(<<195967001) AND (^*)' --count
 ```
 
 `membership.bin` contains sparse refset keys and sorted, deduplicated concept ordinals. Only active RF2 member rows contribute. Description-referencing language rows are not converted into their owning concepts. The file has its own version, bounds checks and checksum. Old stores still open, but membership queries fail explicitly if their manifest has no membership index. Reimport the base Snapshot to build it.
 
-The current numeric loader opens membership with the core. Preferred display text remains separate. Typed member fields, all descriptions, dialect memberships and historical associations need further semantic indexes. These are part of full ECL's eventual storage budget.
+The current numeric loader opens membership with the core. Preferred display text remains separate. The later [description index](descriptions.md) retains descriptions, definitions and active language memberships. Typed member fields and historical associations still need further semantic indexes. These are part of full ECL's eventual storage budget.
 
 ## Concept status defaults
 
@@ -23,7 +23,7 @@ The release-matched query `^51971000001109` returns 102 concepts, including five
 ## Add PCD or another simple refset supplement
 
 ```sh
-snomed-rust-ecl-engine add-refsets BASE_STORE ARCHIVE NEW_STORE YYYYMMDD SHA256
+snomed-ecl-engine add-refsets BASE_STORE ARCHIVE NEW_STORE YYYYMMDD SHA256
 ```
 
 The library equivalent is `import::add_refsets_snapshot`. Import support is optional at build time; query-only binaries can open the completed index.
@@ -32,7 +32,7 @@ The command reads the existing numeric and display indexes plus a checksum-verif
 
 The destination must be new. Unknown referenced concepts, duplicate Snapshot member IDs, future-dated rows, existing concept definitions and populated refset collisions fail before publication. A refset already introduced by a previous supplement also fails, even if empty. To update or replace a supplement, run against the original base and publish a new combined store. This avoids retaining memberships withdrawn in the newer Snapshot. Additive extension of a populated refset and Delta updates are not implemented.
 
-This command imports simple refset content. It does not import supplemental maps, language memberships, OWL axioms, typed member fields or arbitrary clinical extension definitions. Additional relationship types and active concrete definition rows are rejected. Published inferred is-a rows supply the new definition hierarchy; no reasoner runs.
+This command imports simple refset content. When the base has a description index, it also preserves descriptions and their active language memberships. It does not import supplemental maps, OWL axioms, typed member fields or arbitrary clinical extension definitions. Additional relationship types and active concrete definition rows are rejected. Published inferred is-a rows supply the new definition hierarchy; no reasoner runs.
 
 The base edition URI and base archive checksum remain in the manifest. Each supplement records its own checksum, date, refset IDs, added concept count, input core checksum and declared module dependencies. Batch responses include supplement checksums alongside the base edition. Compare that complete identity when checking results against another server.
 

@@ -1,10 +1,8 @@
 use anyhow::{bail, ensure, Context, Result};
 #[cfg(feature = "import")]
-use snomed_rust_ecl_engine::import::{
-    import_snapshot_with_progress, ImportOptions, UK_DISPLAY_REFSETS,
-};
-use snomed_rust_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
-use snomed_rust_ecl_engine::{ecl, eval};
+use snomed_ecl_engine::import::{import_snapshot_with_progress, ImportOptions, UK_DISPLAY_REFSETS};
+use snomed_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
+use snomed_ecl_engine::{ecl, eval};
 use std::io::{self, BufRead, Read, Write};
 use std::path::Path;
 use std::time::Instant;
@@ -42,7 +40,7 @@ fn run() -> Result<()> {
         return presentation::help(Some(&args[0]));
     }
     if args.len() == 1 && matches!(args[0].as_str(), "--version" | "-V") {
-        println!("snomed-rust-ecl-engine {}", env!("CARGO_PKG_VERSION"));
+        println!("snomed-ecl-engine {}", env!("CARGO_PKG_VERSION"));
         return Ok(());
     }
     match args.first().map(String::as_str) {
@@ -58,7 +56,7 @@ fn run() -> Result<()> {
             );
             let start = Instant::now();
             eprintln!("  Verifying and adding supplementary refsets...");
-            let manifest = snomed_rust_ecl_engine::import::add_refsets_snapshot(
+            let manifest = snomed_ecl_engine::import::add_refsets_snapshot(
                 Path::new(&args[1]),
                 Path::new(&args[2]),
                 Path::new(&args[3]),

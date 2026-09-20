@@ -1,7 +1,7 @@
 #![cfg(feature = "import")]
 
-use snomed_rust_ecl_engine::import::{import_snapshot, ImportOptions, UK_DISPLAY_REFSETS};
-use snomed_rust_ecl_engine::store::{
+use snomed_ecl_engine::import::{import_snapshot, ImportOptions, UK_DISPLAY_REFSETS};
+use snomed_ecl_engine::store::{
     sha256, Adjacency, Attributes, ConcreteValue, DisplayStore, Manifest, NumericStore,
 };
 use std::collections::{BTreeSet, VecDeque};
@@ -265,7 +265,7 @@ fn cli_parses_before_output_and_batch_recovers_after_query_errors() {
     let destination = temp.path().join("store");
     fixture(&archive, false, false);
     import_snapshot(&archive, &destination, &options(&archive)).unwrap();
-    let binary = env!("CARGO_BIN_EXE_snomed-rust-ecl-engine");
+    let binary = env!("CARGO_BIN_EXE_snomed-ecl-engine");
     let invalid = Command::new(binary)
         .arg("expand")
         .arg(&destination)
@@ -341,7 +341,7 @@ fn cli_import_progress_and_presentation_keep_machine_output_parseable() {
     let archive = temp.path().join("fixture.zip");
     let destination = temp.path().join("store");
     fixture(&archive, false, false);
-    let binary = env!("CARGO_BIN_EXE_snomed-rust-ecl-engine");
+    let binary = env!("CARGO_BIN_EXE_snomed-ecl-engine");
     let config = options(&archive);
     let imported = Command::new(binary)
         .arg("import")
@@ -385,7 +385,7 @@ fn cli_import_progress_and_presentation_keep_machine_output_parseable() {
 
 #[test]
 fn membership_import_distinguishes_component_types_and_old_stores() {
-    use snomed_rust_ecl_engine::{
+    use snomed_ecl_engine::{
         ecl::parse,
         eval::{evaluate, EvalError},
     };
@@ -478,7 +478,7 @@ fn supplement_fixture(path: &Path, member: u64, duplicate: bool) {
 
 #[test]
 fn supplementary_refsets_preserve_base_semantics_and_provenance() {
-    use snomed_rust_ecl_engine::{ecl::parse, eval::evaluate, import::add_refsets_snapshot};
+    use snomed_ecl_engine::{ecl::parse, eval::evaluate, import::add_refsets_snapshot};
     let temp = TempDir::new().unwrap();
     let base_archive = temp.path().join("base.zip");
     let base = temp.path().join("base");
@@ -554,7 +554,7 @@ fn supplementary_refsets_preserve_base_semantics_and_provenance() {
 
 #[test]
 fn supplementary_refsets_reject_invalid_snapshots_before_publishing() {
-    use snomed_rust_ecl_engine::import::add_refsets_snapshot;
+    use snomed_ecl_engine::import::add_refsets_snapshot;
     let temp = TempDir::new().unwrap();
     let archive = temp.path().join("base.zip");
     let base = temp.path().join("base");
@@ -585,7 +585,7 @@ fn supplementary_refsets_reject_invalid_snapshots_before_publishing() {
 
 #[test]
 fn descriptions_load_lazily_preserve_definitions_and_reject_corruption() {
-    use snomed_rust_ecl_engine::{
+    use snomed_ecl_engine::{
         ecl::parse,
         eval::{evaluate, EvalError},
     };

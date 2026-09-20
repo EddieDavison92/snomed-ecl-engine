@@ -87,7 +87,7 @@ def main():
                          if (predicate.startswith('active=') or d['active'] == '1') and checks[predicate](d,members[key])})
     command = ['docker','run','--rm','-i','--cpus','1','--memory','1g','--memory-swap','1g',
                '--mount',f'type=bind,source={ROOT},target=/work,readonly','-w','/work',IMAGE,
-               'target/linux/release/snomed-rust-ecl-engine','batch',args.store.resolve().relative_to(ROOT).as_posix()]
+               'target/linux/release/snomed-ecl-engine','batch',args.store.resolve().relative_to(ROOT).as_posix()]
     run = subprocess.run(command,input=''.join(json.dumps({'ecl':q['ecl']})+'\n' for q in queries),capture_output=True,text=True,encoding='utf-8',timeout=180,check=True)
     observed = [json.loads(line) for line in run.stdout.splitlines()]
     results = []
