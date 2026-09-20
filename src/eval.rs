@@ -3,6 +3,7 @@ use crate::ecl::{Expr, Hierarchy, MAX_DEPTH, MAX_NODES};
 use crate::store::NumericStore;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error::Error, fmt};
+mod filters;
 mod membership;
 mod refinement;
 
@@ -99,6 +100,10 @@ impl Context<'_> {
             return Err(EvalError::InvalidAst);
         }
         match expr {
+            Expr::ConceptFiltered(inner, filters) => {
+                let candidates = self.eval(inner, depth + 1)?;
+                self.concept_filters(candidates, filters, depth + 1)
+            }
             Expr::MemberOf(inner) | Expr::RefsetContainingAny(inner) => {
                 let candidates = self.eval(inner, depth + 1)?;
                 let result =

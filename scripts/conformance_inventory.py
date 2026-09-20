@@ -13,6 +13,8 @@ REFINEMENTS = set("refinedExpressionConstraint dottedExpressionConstraint dotted
 PARTIAL |= REFINEMENTS
 MEMBERSHIP = {"refsetOperator", "memberOf", "refsetContainingAny"}
 PARTIAL |= MEMBERSHIP
+CONCEPT_FILTERS = set("conceptFilterConstraint conceptFilter definitionStatusFilter definitionStatusIdFilter definitionStatusIdKeyword definitionStatusTokenFilter definitionStatusKeyword definitionStatusToken definitionStatusTokenSet primitiveToken definedToken moduleFilter moduleIdKeyword effectiveTimeFilter effectiveTimeKeyword timeValue timeValueSet year month day activeFilter activeKeyword activeValue activeTrueValue activeFalseValue".split())
+PARTIAL |= CONCEPT_FILTERS
 BOUNDARIES = {
     "expressionConstraint": "expressions", "eclRefinement": "refinements",
     "descriptionFilterConstraint": "description_filters", "conceptFilterConstraint": "concept_filters",
@@ -32,7 +34,7 @@ def inventory():
             group = BOUNDARIES.get(rule, group)
             status = "implemented" if rule in IMPLEMENTED else "partial" if rule in PARTIAL else "pending"
             rules.append({"production": rule, "area": group, "status": status,
-                          "evidence": "tests/membership.rs" if rule in MEMBERSHIP else "tests/refinements.rs" if rule in REFINEMENTS else "tests/basic_ecl.rs" if status != "pending" else None})
+                          "evidence": "tests/concept_filters.rs" if rule in CONCEPT_FILTERS else "tests/membership.rs" if rule in MEMBERSHIP else "tests/refinements.rs" if rule in REFINEMENTS else "tests/basic_ecl.rs" if status != "pending" else None})
         assert len({r["production"] for r in rules}) == len(rules)
         grammars.append({"file": name, "sha256_utf8_lf": hashlib.sha256(raw).hexdigest(), "productions": rules})
     return {"version": "2.3", "reference_commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",

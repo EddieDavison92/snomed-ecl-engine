@@ -1,6 +1,8 @@
 //! ECL 2.3 parsing. Unsupported constructs fail before evaluation.
 use std::fmt;
+mod filters;
 mod refinement;
+pub use filters::ConceptFilter;
 pub use refinement::{AttributeConstraint, AttributeValue, Cardinality, Comparison, Refinement};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -49,6 +51,7 @@ pub enum Expr {
     Extremum { top: bool, inner: Box<Expr> },
     MemberOf(Box<Expr>),
     RefsetContainingAny(Box<Expr>),
+    ConceptFiltered(Box<Expr>, Vec<ConceptFilter>),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -286,21 +289,7 @@ impl Parser<'_> {
         } else {
             None
         };
-        if let Some(top) = extremum {
-            self.ws()?;
-            let parenthesised = self.rest().starts_with('(');
-            let inner = self.subexpression(depth + 1)?;
-            if !parenthesised && matches!(inner, Expr::Hierarchy(_, _) | Expr::Extremum { .. }) {
-                return Err(self.error(
-                    ParseErrorKind::Syntax,
-                    "Unary operators require a parenthesised operand",
-                ));
-            }
-            return self.node(Expr::Extremum {
-                top,
-                inner: Box::new(inner),
-            });
-        }
+        self.ws()?;
         let mut hierarchy = None;
         for (symbol, op) in [
             ("<<!", Hierarchy::ChildOrSelf),
@@ -338,6 +327,12 @@ impl Parser<'_> {
             }
         }
         self.ws()?;
+        if extremum.is_some() && hierarchy.is_some() {
+            return Err(self.error(
+                ParseErrorKind::Syntax,
+                "Unary operators require a parenthesised operand",
+            ));
+        }
         let refset_operator = if self.take("^R") || self.take("^r") {
             Some(true)
         } else if self.take("^") {
@@ -394,9 +389,6 @@ impl Parser<'_> {
             return Err(self.unexpected());
         };
         self.ws()?;
-        if self.rest().starts_with(['^', '{', '[']) {
-            return Err(self.unexpected());
-        }
         if let Some(reverse) = refset_operator {
             expression = self.node(if reverse {
                 Expr::RefsetContainingAny(Box::new(expression))
@@ -405,10 +397,20 @@ impl Parser<'_> {
             })?;
         }
         if let Some(op) = hierarchy {
-            self.node(Expr::Hierarchy(op, Box::new(expression)))
-        } else {
-            Ok(expression)
+            expression = self.node(Expr::Hierarchy(op, Box::new(expression)))?;
         }
+        if let Some(top) = extremum {
+            expression = self.node(Expr::Extremum {
+                top,
+                inner: Box::new(expression),
+            })?;
+        }
+        while self.rest().starts_with("{{") {
+            let filters = self.concept_filters(depth + 1)?;
+            expression = self.node(Expr::ConceptFiltered(Box::new(expression), filters))?;
+            self.ws()?;
+        }
+        Ok(expression)
     }
     fn unexpected(&self) -> ParseError {
         let word = self.word().to_ascii_lowercase();

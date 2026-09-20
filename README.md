@@ -6,7 +6,7 @@ This repository owns the reusable engine library and its import, CLI and validat
 
 Full ECL 2.3 support is a core requirement. The project is complete only when the full language has implementation and conformance evidence; subsets are intermediate milestones.
 
-The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested attribute refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact decimal comparisons, top/bottom selection and concept refset membership in both directions. Displays are optional lookups in a separate file. Filters, history, typed projections and other conformance gaps remain required work. Hosting, FHIR, authoring and classification are outside the current implementation scope.
+The prototype is a Rust library and CLI with hierarchy and Boolean sets, nested attribute refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact decimal comparisons, top/bottom selection and concept refset membership in both directions and concept metadata filters. Displays are optional lookups in a separate file. Description/member filters, history, typed projections and other conformance gaps remain required work. Hosting, FHIR, authoring and classification are outside the current implementation scope.
 
 - [Implementation plan](docs/plan.md)
 - [Agent skill: build, import RF2 and query ECL](SKILL.md)

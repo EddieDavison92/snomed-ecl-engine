@@ -3,7 +3,8 @@ param(
     [string]$CredentialHelper = 'C:/Users/eddie/scripts/_terminology-creds.ps1',
     [string]$Destination = (Join-Path $PSScriptRoot '../data/validation'),
     [string]$QueryPath = (Join-Path $PSScriptRoot '../validation/queries.json'),
-    [int]$PageSize = 500
+    [int]$PageSize = 500,
+    [switch]$ContinueOnQueryError
 )
 
 $ErrorActionPreference = 'Stop'
@@ -17,14 +18,20 @@ try {
     if ($systems.link | Where-Object relation -EQ 'next') { throw 'CodeSystem discovery was paginated; extend discovery before validation.' }
     if ($Version -notin @($systems.entry.resource.version)) { throw 'Requested edition is unavailable on the reference server.' }
     $queries = Get-Content $QueryPath -Raw | ConvertFrom-Json
-    $results = foreach ($query in $queries | Where-Object probe) {
+    $results = :probe foreach ($query in $queries | Where-Object probe) {
         $codes = [Collections.Generic.HashSet[string]]::new()
         $offset = 0
         $reportedVersions = [Collections.Generic.HashSet[string]]::new()
         do {
             $valueSet = $Version + '?fhir_vs=ecl/' + $query.ecl
             $uri = $FhirServer + '/ValueSet/$expand?url=' + [uri]::EscapeDataString($valueSet) + '&count=' + $PageSize + '&offset=' + $offset
-            $response = Invoke-RestMethod -Uri $uri -Headers $headers
+            try { $response = Invoke-RestMethod -Uri $uri -Headers $headers }
+            catch {
+                $status = [int]$_.Exception.Response.StatusCode
+                if (-not $ContinueOnQueryError -or $status -notin @(400,422)) { throw }
+                [ordered]@{id=$query.id;ecl=$query.ecl;complete=$false;httpStatus=$status;error='Reference server rejected this expression; no result comparison recorded.'}
+                continue probe
+            }
             if ($null -eq $response.expansion.total) { throw 'Expansion did not return a total.' }
             $total = [int]$response.expansion.total
             $page = @($response.expansion.contains | Where-Object { $null -ne $_ })

@@ -99,7 +99,7 @@ Inspect `supplements` in the combined manifest. Batch responses include suppleme
 
 ## Recognise current limits
 
-Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact concrete comparisons, top/bottom and concept refset membership (`^` and `^R`) are implemented. Filters, history, alternate identifiers and typed projections still have gaps. Consult [conformance](docs/conformance.md) and [refinements](docs/refinements.md) before claiming support for a query category.
+Full ECL 2.3 is required but **not complete**. Hierarchy, Boolean sets, many refinements, groups, cardinalities, reverse attributes, concept-valued dotted projections, exact concrete comparisons, top/bottom and concept refset membership (`^` and `^R`) and concept metadata filters are implemented. Description/member filters, history, alternate identifiers and typed projections still have gaps. Consult [conformance](docs/conformance.md) and [refinements](docs/refinements.md) before claiming support for a query category.
 
 Do not simplify unsupported ECL silently. Ordinary ECL includes active and inactive concepts, active inferred relationships and active refset member rows. An inactive concept can be returned by a literal or membership query. An unknown literal returns an empty set. For external correctness checks, pin the same edition and supplement checksums and compare complete code sets. The optional OneLondon helper in [local setup](docs/setup.md#refresh-the-onelondon-probes) needs a separately configured credential helper; it is not required to use this engine.
 

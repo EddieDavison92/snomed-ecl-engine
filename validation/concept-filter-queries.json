@@ -1,0 +1,307 @@
+[
+  {
+    "id": "concept-filter-01",
+    "category": "concept-filter",
+    "ecl": "824004 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-02",
+    "category": "concept-filter",
+    "ecl": "911003 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-03",
+    "category": "concept-filter",
+    "ecl": "1239002 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-04",
+    "category": "concept-filter",
+    "ecl": "1545006 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-05",
+    "category": "concept-filter",
+    "ecl": "3162001 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-06",
+    "category": "concept-filter",
+    "ecl": "4348005 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-07",
+    "category": "concept-filter",
+    "ecl": "5282006 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-08",
+    "category": "concept-filter",
+    "ecl": "11486001 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-09",
+    "category": "concept-filter",
+    "ecl": "12062007 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-10",
+    "category": "concept-filter",
+    "ecl": "12191008 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-11",
+    "category": "concept-filter",
+    "ecl": "12446006 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-12",
+    "category": "concept-filter",
+    "ecl": "12479006 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-13",
+    "category": "concept-filter",
+    "ecl": "15847003 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-14",
+    "category": "concept-filter",
+    "ecl": "18197001 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-15",
+    "category": "concept-filter",
+    "ecl": "18202008 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-16",
+    "category": "concept-filter",
+    "ecl": "18268005 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-17",
+    "category": "concept-filter",
+    "ecl": "19445006 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-18",
+    "category": "concept-filter",
+    "ecl": "20480004 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-19",
+    "category": "concept-filter",
+    "ecl": "21249000 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-20",
+    "category": "concept-filter",
+    "ecl": "22558005 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-21",
+    "category": "concept-filter",
+    "ecl": "23827009 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-22",
+    "category": "concept-filter",
+    "ecl": "25721003 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-23",
+    "category": "concept-filter",
+    "ecl": "26624006 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-24",
+    "category": "concept-filter",
+    "ecl": "27970007 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-25",
+    "category": "concept-filter",
+    "ecl": "31117002 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-26",
+    "category": "concept-filter",
+    "ecl": "32379001 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-27",
+    "category": "concept-filter",
+    "ecl": "32801008 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-28",
+    "category": "concept-filter",
+    "ecl": "33545008 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-29",
+    "category": "concept-filter",
+    "ecl": "38549000 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-30",
+    "category": "concept-filter",
+    "ecl": "40528000 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-31",
+    "category": "concept-filter",
+    "ecl": "42526005 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-32",
+    "category": "concept-filter",
+    "ecl": "46523000 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-33",
+    "category": "concept-filter",
+    "ecl": "46603009 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-34",
+    "category": "concept-filter",
+    "ecl": "47526003 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-35",
+    "category": "concept-filter",
+    "ecl": "51371005 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-36",
+    "category": "concept-filter",
+    "ecl": "52390004 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-37",
+    "category": "concept-filter",
+    "ecl": "53386008 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-38",
+    "category": "concept-filter",
+    "ecl": "55849004 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-39",
+    "category": "concept-filter",
+    "ecl": "56367006 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "concept-filter-40",
+    "category": "concept-filter",
+    "ecl": "56564003 {{ C definitionStatus = defined }}",
+    "probe": true
+  },
+  {
+    "id": "inactive-member",
+    "ecl": "^51971000001109 {{C active=0}}",
+    "probe": true
+  },
+  {
+    "id": "active-member",
+    "ecl": "^51971000001109 {{C active=true}}",
+    "probe": true
+  },
+  {
+    "id": "defined",
+    "ecl": "<<195967001 {{C definitionStatus=defined}}",
+    "probe": true
+  },
+  {
+    "id": "module",
+    "ecl": "<<195967001 {{C moduleId=900000000000207008}}",
+    "probe": true
+  },
+  {
+    "id": "module-list",
+    "ecl": "<<195967001 {{C moduleId=(900000000000207008 999000011000000103)}}",
+    "probe": true
+  },
+  {
+    "id": "module-expression",
+    "ecl": "<<195967001 {{C moduleId=(900000000000207008 OR 999000011000000103)}}",
+    "probe": true
+  },
+  {
+    "id": "date-eq",
+    "ecl": "<<195967001 {{C effectiveTime=\"20210131\"}}",
+    "probe": true
+  },
+  {
+    "id": "date-ne",
+    "ecl": "<<195967001 {{C effectiveTime!=(\"20210131\" \"20020131\")}}",
+    "probe": true
+  },
+  {
+    "id": "date-gt",
+    "ecl": "<<195967001 {{C effectiveTime>\"20210131\"}}",
+    "probe": true
+  },
+  {
+    "id": "date-empty",
+    "ecl": "<<195967001 {{C effectiveTime=\"\"}}",
+    "probe": true
+  },
+  {
+    "id": "date-empty-ne",
+    "ecl": "<<195967001 {{C effectiveTime!=\"\"}}",
+    "probe": true
+  },
+  {
+    "id": "combined",
+    "ecl": "<<195967001 {{C definitionStatus=primitive, moduleId=900000000000207008}}",
+    "probe": true
+  },
+  {
+    "id": "status-set",
+    "ecl": "<<195967001 {{C definitionStatusId=(900000000000074008 900000000000073002)}}",
+    "probe": true
+  }
+]
