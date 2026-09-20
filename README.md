@@ -29,9 +29,8 @@ terminology in one file and evaluates queries inside the calling process.
 - **Portable devices.** The index sits beside the application and needs no
   network at query time. Built once it never changes, and it checks its own
   checksums when opened.
-- **Agents and tooling.** A persistent JSONL process answers thousands of
-  expressions without reopening the index. [SKILL.md](SKILL.md) is the agent
-  workflow.
+- **Agents and tooling.** One persistent process reads expressions as JSONL and
+  answers thousands of them without reopening the index.
 
 Everything measured here ran on x86-64 Linux.
 
@@ -60,6 +59,26 @@ here and 101.6 seconds through Snowstorm.
   two indexes and reports what the release added and removed.
 - **Put it in CI.** A two-megabyte binary and an index file let a pipeline assert
   that every definition in a repository still resolves.
+
+### Authoring with an assistant
+
+Giving someone ECL usually means provisioning a terminology server account or an
+API key. Here they install one binary and point it at a release they are already
+licensed for. Nothing to host, no key to issue, no rate limit and no per-seat
+provisioning. An agent can do the setup unaided: [SKILL.md](SKILL.md) takes it
+from a clone to a working index and a query.
+
+That makes interactive terminology work practical. Replacing a static code list
+with an ECL definition means walking up the hierarchy from every code in the
+list, sizing each ancestor that could subsume them, and comparing what each
+candidate returns against the list you started with. A list of five codes takes
+about thirty expansions; a list of a hundred takes about five hundred. At
+roughly 2 ms each that is a tenth of a second at one end and just over a second
+at the other, so an assistant can propose a definition, show exactly which
+concepts it adds and which it drops, then try a different one.
+
+The same loop through a hosted terminology server is those same hundreds of
+requests per suggestion, on a shared service, under someone else's rate limit.
 
 ## Measurements
 
