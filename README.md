@@ -4,7 +4,7 @@ Evaluate SNOMED CT Expression Constraint Language locally, without running a
 terminology server.
 
 A Rust library, a CLI and an RF2 index builder sharing one implementation. Point
-it at a release, build an immutable index, and query it — no Elasticsearch, no
+it at a release, build an immutable index, and query it. No Elasticsearch, no
 JVM, no database, no service to keep alive.
 
 ```sh
@@ -16,21 +16,21 @@ snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 
 Most ways to evaluate ECL assume a server: a long-running process, a search
 cluster, gigabytes of resident memory. That rules out whole classes of
-deployment. This engine is built so the terminology *is* a file and the query
-engine is a function.
+deployment. This engine keeps the terminology in one file and evaluates queries
+in the calling process.
 
 - **Serverless.** Compute only when a query arrives. The query-only executable is
   2.13 MiB, under a megabyte gzipped, and the index is a single verified file.
-- **A small VPS.** One CPU and a few hundred megabytes serves the whole UK
+- **A small VPS.** One CPU and a few hundred megabytes serve the whole UK
   release, so an ECL API does not need a cluster behind it.
 - **Mobile and offline.** No network dependency at query time. An index built
-  once is immutable and self-verifying.
+  once never changes, and checks its own checksums when opened.
 - **Agents and tooling.** A persistent JSONL process answers thousands of
   expressions without reopening the index. [SKILL.md](SKILL.md) is the agent
   workflow.
 
-The HTTP wrapper is deliberately **not** here. This repository owns the library,
-index format, importer, CLI, conformance tests and benchmarks; a deployment
+No HTTP server lives here, by design. This repository owns the library, index
+format, importer, CLI, conformance tests and benchmarks. A deployment
 application depends on it and owns hosting.
 
 ## Get started
@@ -50,8 +50,8 @@ snomed-ecl-engine use uk.ecl
 snomed-ecl-engine query
 ```
 
-Bring your own licensed RF2 Snapshot; no release content is in this repository.
-`import` verifies the checksum you supply before reading anything.
+Bring your own licensed RF2 Snapshot. This repository contains no release
+content, and `import` verifies the checksum you supply before reading anything.
 
 | Command | |
 |---|---|
@@ -63,28 +63,28 @@ Bring your own licensed RF2 Snapshot; no release content is in this repository.
 | `expand` · `batch` | One expression; or JSONL on stdin for scripts and agents |
 | `diff` | Compare one expression across two indexes |
 
-Full reference: the [CLI guide](docs/cli.md).
+The [CLI guide](docs/cli.md) is the full reference.
 
-## What this makes possible
+## What it is good for
 
-Terminology servers are built to answer *how many* and *show me a page*. This
-engine costs the same to hand you **every code** — 2.20 ms to count, 2.29 ms to
-enumerate — because evaluation already produced the whole set. Snowstorm goes
-from 13.19 ms to 36.40 ms on the same expressions, because it has to serialise
-and page the result over HTTP.
+Terminology servers answer *how many* and *show me a page*. Handing back every
+code costs this engine 2.29 ms. Counting costs 2.20 ms. The two are the same
+because evaluating the expression already produced the whole set. Snowstorm goes
+from 13.19 ms to 36.40 ms on those same expressions, because it serialises and
+pages the result over HTTP.
 
-That flat cost is what changes which jobs are reasonable:
+That flat cost changes which jobs are worth doing.
 
-- **Expand hundreds of codelists at once.** Converting a directory of static code
+- **Expand hundreds of codelists at once.** Turning a directory of static code
   lists into ECL definitions means enumerating every one and diffing it against
-  the original. At ~2 ms each that is a loop; against a paged HTTP API it is a
-  batch job you schedule.
+  the original. At about 2 ms each that is a loop. Against a paged HTTP API it is
+  a batch job you schedule.
 - **Check a codelist against a new release.** `diff` runs one expression across
-  two indexes and reports what a release added and removed.
-- **Put it in CI.** A two-megabyte binary and an index file mean a pipeline can
-  assert that every definition in a repository still resolves.
-- **Work offline.** Mobile, air-gapped or field use: no service, no network at
-  query time, and the index verifies itself when opened.
+  two indexes and reports what the release added and removed.
+- **Put it in CI.** A two-megabyte binary and an index file let a pipeline assert
+  that every definition in a repository still resolves.
+- **Work offline.** Mobile, air-gapped or field use. No service, no network at
+  query time, and the index checks its own checksums when opened.
 - **Give an agent a terminology.** One persistent JSONL process answers thousands
   of expressions without reopening the index.
 
@@ -102,9 +102,9 @@ Against the UK Monolith release, 1.15 million concepts.
   <img alt="Warm count median: this engine 2.20 ms, Snowstorm Lite 4.56 ms, Snowstorm 13.19 ms. Complete enumeration median: 2.29 ms, 7.15 ms and 36.40 ms." src="docs/images/latency-light.svg">
 </picture>
 
-Over the same 1,000-expression corpus, **879** expressions returned complete code
+Over the same 1,000-expression corpus, 879 expressions returned complete code
 sets identical to Snowstorm's, up from 719 before membership, descriptions,
-history and filters landed. Snowstorm Lite matched 587, declaring 320 of the
+history and filters landed. Snowstorm Lite matched 587. It declared 320 of the
 expressions to use features it does not implement.
 
 | | |
@@ -115,25 +115,26 @@ expressions to use features it does not implement.
 | Index open, packed | 1.13 s |
 | Container start to first response | 1.72 s |
 
-Method, raw samples, the disagreements and what these numbers are not:
-[benchmarks](docs/benchmarks.md).
+[Benchmarks](docs/benchmarks.md) has the method, the raw samples, the
+disagreements and the limits of these numbers.
 
 ## What it supports
 
-Every ECL 2.3 feature area is implemented — hierarchy and Boolean sets,
+The engine implements every ECL 2.3 feature area: hierarchy and Boolean sets,
 refinements, groups and cardinalities, reverse and dotted attributes, exact
 concrete comparisons, top and bottom, membership, concept filters, description
 filters, member filters and projections, history supplements and alternate
 identifiers.
 
-Three grammar-valid forms have no settled meaning in the specification and are
-refused rather than guessed. Unsupported input always fails explicitly; no query
-returns a partial answer as a success. [ECL support](docs/ecl-support.md) has the
-detail and the grammar inventory; [the roadmap](docs/roadmap.md) has what is left.
+Three grammar-valid forms have no settled meaning in the specification. The
+parser refuses them rather than guess. Unsupported input fails with an explicit
+error, and no query returns a partial answer as a success.
+[ECL support](docs/ecl-support.md) has the detail and the grammar inventory.
+[The roadmap](docs/roadmap.md) has what is left.
 
-Decimals keep their exact spelling and are never compared as binary floating
-point. Relationship groups survive import. The engine reads the published
-inferred view and does not classify.
+Decimals keep their exact spelling, and the evaluator never compares them as
+binary floating point. Relationship groups survive import. The engine reads the
+published inferred view and does not classify.
 
 ## Embed it
 
@@ -145,17 +146,17 @@ let codes = ordinals.iter().map(|&o| store.ids[o as usize]);
 ```
 
 Keep the store open across queries. Results are concept ordinals that resolve
-through `store.ids`; display labels are a separate lookup. Use
+through `store.ids`. Display labels are a separate lookup. Use
 `eval::evaluate_result_with_limits` to accept member projections, which return
 typed scalars or rows as well as concept sets. `--no-default-features` drops the
 ZIP importer for a query-only build.
 
 ## Documentation
 
-- [CLI guide](docs/cli.md) — commands, output formats, scripting
-- [ECL support](docs/ecl-support.md) — what evaluates, and the open questions
-- [Indexes](docs/indexes.md) — building, packing, format, configuration
-- [Benchmarks](docs/benchmarks.md) — method, results and comparisons
-- [Roadmap](docs/roadmap.md) — what is next
-- [Developer setup](docs/setup.md) — building, releases, comparison servers
-- [SKILL.md](SKILL.md) — the agent workflow
+- [CLI guide](docs/cli.md) covers commands, output formats and scripting.
+- [ECL support](docs/ecl-support.md) lists what evaluates and the open questions.
+- [Indexes](docs/indexes.md) covers building, packing, the format and configuration.
+- [Benchmarks](docs/benchmarks.md) has the method, results and comparisons.
+- [Roadmap](docs/roadmap.md) is what comes next.
+- [Developer setup](docs/setup.md) covers building, releases and comparison servers.
+- [SKILL.md](SKILL.md) is the agent workflow.
