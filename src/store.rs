@@ -632,8 +632,13 @@ struct Input {
     remaining: u64,
 }
 impl Input {
+    /// Opens a section without checksumming it.
+    ///
+    /// Hashing the section here read every byte before a query could run, and
+    /// the decode below then read them all again. `verify` hashes every section
+    /// explicitly instead, so integrity is still checked, just not on the path
+    /// that only wants to answer a question.
     fn open(section: &Section, magic: &[u8; 8]) -> Result<Self> {
-        section.verify()?;
         let size = section.length;
         ensure!(
             (8..=2 * 1024 * 1024 * 1024).contains(&size),
