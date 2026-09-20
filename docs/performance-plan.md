@@ -20,6 +20,30 @@ These figures use decimal MB and the pinned UK Monolith 42.5.0, before typed mem
 
 The proposed 195 MB complete file is not yet supported by measurements. It excludes typed refset tables and unfinished semantic data. It also needs section tables, dictionaries, offsets, checksums and lookup permutations. Sorting description IDs separately, for example, needs a way back to their description rows. The sampled transitive-closure estimate is unreliable and must not set a memory budget.
 
+The [complete hierarchy scan](../validation/hierarchy-layout-results.json) now
+counts every descendant-or-self set in this release. It finds 12,768,452 pairs
+across 1,151,519 concepts. A root-first DFS forest, stably partitioned into active
+then inactive concepts, reduces the interval count from 8,095,879 to 2,044,534.
+Median, p95 and p99 counts are 1, 2 and 10 intervals; the maximum is 30,344.
+This supports testing the layout but does not establish a runtime speedup.
+
+Uncompressed interval endpoints need 16,356,272 bytes, plus 4,606,080 bytes of
+offsets and 4,606,076 bytes for one permutation. These are extra structures, not
+the complete index. Limiting stored lists to 64 intervals would need 11,999,912
+endpoint bytes and leave 2,111 concepts for traversal. Measure both strategies
+before choosing one; avoid a fallback threshold based only on the median.
+
+Reproduce the count with the existing index, without changing its bytes:
+
+```sh
+cargo run --locked --release --no-default-features --example measure_hierarchy_layout -- INDEX
+```
+
+The example follows every hierarchy edge, including multiple parents, checks
+that the permutation is bijective, and retains inactive and disconnected
+concepts. It does not load descriptions or typed member rows. The existing
+evaluator still uses SCTID-ordered ordinals.
+
 Keep the comparisons with Snowstorm and Snowstorm Lite, including matched per-request medians. Describe their broader server responsibilities alongside resource measurements. Hermes is also a useful architectural comparison for an embedded engine. Claims about any product's complete ECL coverage need version-pinned evidence. OneLondon's Ontoserver remains a modest correctness comparison, not the definition of correct ECL.
 
 ## Revised experiment order
