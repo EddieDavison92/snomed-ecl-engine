@@ -733,6 +733,9 @@ struct Codes<'a> {
 struct Labelled {
     codes: Vec<u64>,
     displays: Vec<Option<String>>,
+    /// Whether each concept is active. A caller showing labels is showing the
+    /// result to a person, and a retired concept must not look current.
+    actives: Vec<bool>,
 }
 impl serde::Serialize for Labelled {
     fn serialize<S: serde::Serializer>(
@@ -741,10 +744,13 @@ impl serde::Serialize for Labelled {
     ) -> std::result::Result<S::Ok, S::Error> {
         use serde::ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(Some(self.codes.len()))?;
-        for (code, display) in self.codes.iter().zip(&self.displays) {
+        for ((code, display), active) in
+            self.codes.iter().zip(&self.displays).zip(&self.actives)
+        {
             seq.serialize_element(&serde_json::json!({
                 "code": code.to_string(),
                 "display": display,
+                "active": active,
             }))?;
         }
         seq.end()
@@ -1014,13 +1020,16 @@ fn batch_response(
             let index = displays.as_mut().expect("just opened");
             let mut codes = Vec::with_capacity(ordinals.len());
             let mut texts = Vec::with_capacity(ordinals.len());
+            let mut actives = Vec::with_capacity(ordinals.len());
             for &ordinal in ordinals {
                 codes.push(store.ids[ordinal as usize]);
                 texts.push(index.get(ordinal)?);
+                actives.push(store.is_active(ordinal));
             }
             labelled = Some(Labelled {
                 codes,
                 displays: texts,
+                actives,
             });
         }
     }
