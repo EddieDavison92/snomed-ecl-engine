@@ -256,7 +256,7 @@ impl Context<'_> {
                 let candidates = match Self::candidates(&prepared) {
                     Some(bound) if matches!(focus.as_ref(), Expr::All) => {
                         self.tick(bound.len())?;
-                        self.claim(bound.len())?;
+                        self.claim(bound.capacity())?;
                         bound
                     }
                     Some(bound) => {
@@ -264,7 +264,7 @@ impl Context<'_> {
                         self.tick(focus.len().min(bound.len()) + bound.len())?;
                         let tested = refinement::intersect(&focus, &bound);
                         self.release(focus);
-                        self.claim(tested.len())?;
+                        self.claim(tested.capacity())?;
                         tested
                     }
                     None => self.eval(focus, depth + 1)?,
@@ -277,6 +277,12 @@ impl Context<'_> {
                 }
                 self.release(candidates);
                 self.release_prepared(prepared);
+                Ok(result)
+            }
+            Expr::Extremum { top: true, inner } => {
+                let candidates = self.eval(inner, depth + 1)?;
+                let result = self.top(&candidates)?;
+                self.release(candidates);
                 Ok(result)
             }
             Expr::Extremum { top, inner } => {
@@ -401,6 +407,61 @@ impl Context<'_> {
         found.shrink_to_fit();
         self.claim(found.capacity())?;
         Ok(found)
+    }
+    /// The members of `set` with no proper ancestor in it.
+    ///
+    /// Walks upward, remembering for each concept reached whether it or an
+    /// ancestor is in the set, so the cost is the set's ancestors rather than
+    /// its descendants, which for a broad concept are much of the edition.
+    fn top(&mut self, set: &[u32]) -> Result<Vec<u32>> {
+        let store = self.store;
+        let stamp = self.marks.next(store.ids.len());
+        self.tick(set.len())?;
+        // seen: the answer for this concept is known; selected: the answer is yes.
+        for &member in set {
+            self.marks.seen[member as usize] = stamp;
+            self.marks.selected[member as usize] = stamp;
+        }
+        let mut result = self.reserve(set.len())?;
+        let mut stack: Vec<(u32, usize)> = Vec::new();
+        for &member in set {
+            let parents = store.parents.get(member);
+            self.tick(1 + parents.len())?;
+            let mut covered = false;
+            for &parent in parents {
+                if self.marks.seen[parent as usize] != stamp {
+                    self.marks.seen[parent as usize] = stamp;
+                    stack.push((parent, 0));
+                    while let Some((node, next)) = stack.last_mut() {
+                        let above = store.parents.get(*node);
+                        let Some(&up) = above.get(*next) else {
+                            // Nothing above reaches the set.
+                            stack.pop();
+                            continue;
+                        };
+                        *next += 1;
+                        self.tick(1)?;
+                        if self.marks.seen[up as usize] != stamp {
+                            self.marks.seen[up as usize] = stamp;
+                            stack.push((up, 0));
+                        } else if self.marks.selected[up as usize] == stamp {
+                            // Every concept on the stack lies below `up`.
+                            for (node, _) in stack.drain(..) {
+                                self.marks.selected[node as usize] = stamp;
+                            }
+                        }
+                    }
+                }
+                if self.marks.selected[parent as usize] == stamp {
+                    covered = true;
+                    break;
+                }
+            }
+            if !covered {
+                result.push(member);
+            }
+        }
+        Ok(result)
     }
     fn merge(&mut self, left: &[u32], right: &[u32], mode: u8) -> Result<Vec<u32>> {
         self.tick(left.len() + right.len())?;

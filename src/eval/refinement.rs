@@ -317,10 +317,7 @@ impl Context<'_> {
         }
     }
     pub(super) fn project(&mut self, seeds: &[u32], names: &[u32]) -> Result<QueryResult> {
-        let n = self.store.ids.len();
-        self.tick(n)?;
-        self.claim(n.div_ceil(4))?;
-        let mut selected = vec![false; n];
+        let mut selected = Vec::new();
         let mut values = std::collections::BTreeSet::new();
         let isa = self
             .store
@@ -331,14 +328,15 @@ impl Context<'_> {
             self.tick(1 + rows.len())?;
             for row in rows {
                 if names.binary_search(&row.kind).is_ok() && self.store.is_active(row.value) {
-                    selected[row.value as usize] = true;
+                    self.claim(1)?;
+                    selected.push(row.value);
                 }
             }
             if isa {
-                self.tick(self.store.parents.get(seed).len())?;
-                for &parent in self.store.parents.get(seed) {
-                    selected[parent as usize] = true;
-                }
+                let parents = self.store.parents.get(seed);
+                self.tick(parents.len())?;
+                self.claim(parents.len())?;
+                selected.extend_from_slice(parents);
             }
             self.tick(self.store.concrete.get(seed).len())?;
             for row in self.store.concrete.get(seed) {
@@ -370,28 +368,24 @@ impl Context<'_> {
                 }
             }
         }
+        self.tick(selected.len())?;
+        let claimed = selected.len();
+        selected.sort_unstable();
+        selected.dedup();
         if !values.is_empty() {
-            for (i, &included) in selected.iter().enumerate() {
+            for &i in &selected {
                 self.tick(1)?;
-                if included {
-                    let value = crate::store::MemberValue::Concept(self.store.ids[i].to_string());
-                    self.claim(super::values::value_cost(&value))?;
-                    values.insert(value);
-                }
+                let value = crate::store::MemberValue::Concept(self.store.ids[i as usize].to_string());
+                self.claim(super::values::value_cost(&value))?;
+                values.insert(value);
             }
-            self.live -= n.div_ceil(4);
+            self.live -= claimed;
             return Ok(QueryResult::Values(values.into_iter().collect()));
         }
-        let mut result = self.reserve(selected.iter().filter(|&&s| s).count())?;
-        result.extend(
-            selected
-                .iter()
-                .enumerate()
-                .filter(|(_, s)| **s)
-                .map(|(i, _)| i as u32),
-        );
-        self.live -= n.div_ceil(4);
-        Ok(QueryResult::Concepts(result))
+        selected.shrink_to_fit();
+        self.live -= claimed;
+        self.claim(selected.capacity())?;
+        Ok(QueryResult::Concepts(selected))
     }
 }
 
