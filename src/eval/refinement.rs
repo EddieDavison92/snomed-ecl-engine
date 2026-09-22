@@ -262,35 +262,90 @@ impl Context<'_> {
         }
     }
     /// A sorted superset of the concepts that can satisfy `prepared`, when one
-    /// is known without testing each concept; `None` means test every concept.
+    /// is cheaper to name than testing `limit` focus concepts one by one;
+    /// `None` means test every focus concept.
     ///
-    /// A reverse attribute needing at least one match holds only for concepts
-    /// something points at, so `* : R x = y` tests hundreds of concepts rather
-    /// than the edition. The per-concept test still decides every answer.
-    pub(super) fn candidates(prepared: &Prepared) -> Option<Vec<u32>> {
-        match prepared {
+    /// An attribute needing at least one match holds only for concepts with a
+    /// matching row. For a reverse attribute those are the keys of its counts;
+    /// for a forward one, the sources pointing at a value in its range, plus
+    /// the children of those values when the name includes is-a. So
+    /// `* : 363698007 = << 39057004` tests the concepts with a lung site
+    /// rather than the edition. The per-concept test still decides every
+    /// answer.
+    pub(super) fn candidates(
+        &mut self,
+        prepared: &Prepared,
+        limit: usize,
+    ) -> Result<Option<Vec<u32>>> {
+        Ok(match prepared {
+            Prepared::Attribute { cardinality, .. } if cardinality.min == 0 => None,
             Prepared::Attribute {
-                cardinality,
                 reverse_counts: Some(counts),
                 ..
-            } if cardinality.min >= 1 => Some(counts.iter().map(|&(target, _)| target).collect()),
+            } => Some(counts.iter().map(|&(target, _)| target).collect()),
+            Prepared::Attribute {
+                names,
+                range: Range::Concepts(values),
+                comparison: Comparison::Eq,
+                ..
+            } if values.len() <= limit => {
+                let store = self.store;
+                let isa = store
+                    .ordinal(116680003)
+                    .is_some_and(|kind| names.binary_search(&kind).is_ok());
+                self.tick(values.len())?;
+                let mut total = 0usize;
+                for &value in values {
+                    total += store.attributes.sources(value).len();
+                    if isa {
+                        total += store.children.get(value).len();
+                    }
+                }
+                if total > limit {
+                    return Ok(None);
+                }
+                self.tick(total)?;
+                let mut bound = Vec::with_capacity(total);
+                for &value in values {
+                    bound.extend_from_slice(store.attributes.sources(value));
+                    if isa {
+                        bound.extend_from_slice(store.children.get(value));
+                    }
+                }
+                bound.sort_unstable();
+                bound.dedup();
+                Some(bound)
+            }
             Prepared::Attribute { .. } => None,
-            Prepared::Group(cardinality, inner) if cardinality.min >= 1 => Self::candidates(inner),
+            Prepared::Group(cardinality, inner) if cardinality.min >= 1 => {
+                self.candidates(inner, limit)?
+            }
             Prepared::Group(..) => None,
-            Prepared::And(parts) => parts
-                .iter()
-                .filter_map(Self::candidates)
-                .reduce(|left, right| intersect(&left, &right)),
+            Prepared::And(parts) => {
+                let mut bound: Option<Vec<u32>> = None;
+                for part in parts {
+                    if let Some(set) = self.candidates(part, limit)? {
+                        bound = Some(match bound {
+                            None => set,
+                            Some(current) => intersect(&current, &set),
+                        });
+                    }
+                }
+                bound
+            }
             Prepared::Or(parts) => {
                 let mut union = Vec::new();
                 for part in parts {
-                    union.extend(Self::candidates(part)?);
+                    let Some(set) = self.candidates(part, limit)? else {
+                        return Ok(None);
+                    };
+                    union.extend(set);
                 }
                 union.sort_unstable();
                 union.dedup();
                 Some(union)
             }
-        }
+        })
     }
     pub(super) fn release_prepared(&mut self, prepared: Prepared) {
         match prepared {

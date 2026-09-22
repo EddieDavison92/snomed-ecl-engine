@@ -1,4 +1,4 @@
-//! Reverse attributes test only the concepts something points at.
+//! Attribute refinements test only the concepts that can match.
 //!
 //! These compare the bounded path against a brute-force count, and against the
 //! same refinement with an arm added that can never match but removes the
@@ -134,12 +134,15 @@ fn bounded_and_unbounded_refinements_agree() {
     for seed in 0..4 {
         let store = store(300, seed);
         let mut rng = Rng(seed + 7);
-        // A forward attribute whose value set is empty: never true, never bounded.
-        let never = format!("{} = ({} MINUS {})", code(&store, 0), code(&store, 3), code(&store, 3));
+        // Every value is a concept, so this never holds, and != is never bounded.
+        let never = format!("{} != *", code(&store, 0));
+        let isa = store.ids.len() as u32 - 1;
         let clause = |rng: &mut Rng| {
-            let kind = code(&store, rng.below(3) as u32);
+            let kind = code(&store, [0, 1, 2, isa][rng.below(4) as usize]);
             let value = code(&store, 3 + rng.below(40) as u32);
-            match rng.below(5) {
+            match rng.below(7) {
+                5 => format!("{kind} = {value}"),
+                6 => format!("[2..3] {kind} = << {value}"),
                 0 => format!("R {kind} = << {value}"),
                 1 => format!("[2..*] R {kind} = << {value}"),
                 2 => format!("[0..1] R {kind} = << {value}"),

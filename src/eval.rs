@@ -253,21 +253,27 @@ impl Context<'_> {
                 let prepared = self.prepare(refinement, depth + 1, false)?;
                 // Test only concepts that can satisfy the refinement, when it
                 // names them; `*` then needn't be materialised at all.
-                let candidates = match Self::candidates(&prepared) {
-                    Some(bound) if matches!(focus.as_ref(), Expr::All) => {
+                let focus = if matches!(focus.as_ref(), Expr::All) {
+                    None
+                } else {
+                    Some(self.eval(focus, depth + 1)?)
+                };
+                let limit = focus.as_ref().map_or(self.store.ids.len(), Vec::len);
+                let candidates = match (self.candidates(&prepared, limit)?, focus) {
+                    (Some(bound), None) => {
                         self.tick(bound.len())?;
                         self.claim(bound.capacity())?;
                         bound
                     }
-                    Some(bound) => {
-                        let focus = self.eval(focus, depth + 1)?;
+                    (Some(bound), Some(focus)) => {
                         self.tick(focus.len().min(bound.len()) + bound.len())?;
                         let tested = refinement::intersect(&focus, &bound);
                         self.release(focus);
                         self.claim(tested.capacity())?;
                         tested
                     }
-                    None => self.eval(focus, depth + 1)?,
+                    (None, Some(focus)) => focus,
+                    (None, None) => self.eval(&Expr::All, depth + 1)?,
                 };
                 let mut result = self.reserve(candidates.len())?;
                 for &source in &candidates {
