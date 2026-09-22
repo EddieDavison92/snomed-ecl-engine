@@ -37,8 +37,13 @@ fn store(n: usize, seed: u64) -> NumericStore {
         }
         if source > 3 {
             parents.push((source, 3 + rng.below((source - 3) as u64) as u32));
+            if rng.below(3) == 0 {
+                parents.push((source, 3 + rng.below((source - 3) as u64) as u32));
+            }
         }
     }
+    parents.sort_unstable();
+    parents.dedup();
     let flags = (0..total).map(|i| u8::from(i < 3 || i % 10 != 7)).collect();
     NumericStore {
         descriptions: Default::default(),
@@ -183,4 +188,27 @@ fn a_reverse_lookup_does_not_pay_for_the_edition() {
         .filter(|&c| counts[c as usize] > 0)
         .collect();
     assert_eq!(answer, expected);
+}
+
+#[test]
+fn a_large_focus_is_checked_from_the_candidates_upward() {
+    // Foci far above the 4,096 concepts that are materialised outright.
+    let store = store(40_000, 3);
+    let isa = store.ids.len() as u32 - 1;
+    let never = format!("{} != *", code(&store, 0));
+    let mut rng = Rng(11);
+    for i in 0..120 {
+        let top = code(&store, 3 + rng.below(4) as u32);
+        let focus = ["<<", "<", "<!", "<<!"][i % 4];
+        let kind = code(&store, [0, 1, 2, isa][rng.below(4) as usize]);
+        let value = code(&store, 3 + rng.below(4_000) as u32);
+        let refinement = match i % 3 {
+            0 => format!("{kind} = {value}"),
+            1 => format!("R {kind} = {value}"),
+            _ => format!("{kind} = << {value}"),
+        };
+        let bounded = format!("{focus} {top} : {refinement}");
+        let unbounded = format!("{focus} {top} : ({refinement}) OR {never}");
+        assert_eq!(run(&store, &bounded), run(&store, &unbounded), "{bounded}");
+    }
 }

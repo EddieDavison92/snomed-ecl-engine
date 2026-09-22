@@ -91,6 +91,18 @@ pub fn evaluate_with_limits(
     }
     .eval(expression, 0)
 }
+/// Past this many concepts a descendant focus is not materialised when the
+/// refinement names fewer candidates than the edition's sixteenth.
+const SMALL_FOCUS: usize = 4096;
+
+/// The focus of a refinement, as far as it has been evaluated.
+enum Focus {
+    Everything,
+    Set(Vec<u32>),
+    /// A descendant or child operator whose answer exceeds `SMALL_FOCUS`.
+    Below(Hierarchy, Vec<u32>),
+}
+
 struct Context<'a> {
     store: &'a NumericStore,
     limits: Limits,
@@ -252,28 +264,50 @@ impl Context<'_> {
             Expr::Refined(focus, refinement) => {
                 let prepared = self.prepare(refinement, depth + 1, false)?;
                 // Test only concepts that can satisfy the refinement, when it
-                // names them; `*` then needn't be materialised at all.
-                let focus = if matches!(focus.as_ref(), Expr::All) {
-                    None
-                } else {
-                    Some(self.eval(focus, depth + 1)?)
+                // names them. `*` then needn't be materialised at all, nor a
+                // large descendant focus: the few candidates are checked
+                // against its seeds by walking up instead.
+                let focus = match focus.as_ref() {
+                    Expr::All => Focus::Everything,
+                    Expr::Hierarchy(op, inner) if !op.ancestors() => {
+                        let seeds = self.eval(inner, depth + 1)?;
+                        match self.hierarchy_within(*op, &seeds, SMALL_FOCUS)? {
+                            Some(set) => {
+                                self.release(seeds);
+                                Focus::Set(set)
+                            }
+                            None => Focus::Below(*op, seeds),
+                        }
+                    }
+                    other => Focus::Set(self.eval(other, depth + 1)?),
                 };
-                let limit = focus.as_ref().map_or(self.store.ids.len(), Vec::len);
+                let limit = match &focus {
+                    Focus::Set(set) => set.len(),
+                    _ => self.store.ids.len(),
+                };
+                let n = self.store.ids.len();
                 let candidates = match (self.candidates(&prepared, limit)?, focus) {
-                    (Some(bound), None) => {
+                    (Some(bound), Focus::Everything) => {
                         self.tick(bound.len())?;
                         self.claim(bound.capacity())?;
                         bound
                     }
-                    (Some(bound), Some(focus)) => {
-                        self.tick(focus.len().min(bound.len()) + bound.len())?;
-                        let tested = refinement::intersect(&focus, &bound);
-                        self.release(focus);
-                        self.claim(tested.capacity())?;
+                    (Some(bound), Focus::Below(op, seeds)) if bound.len() <= n / 16 => {
+                        let tested = self.below(op, &seeds, &bound)?;
+                        self.release(seeds);
                         tested
                     }
-                    (None, Some(focus)) => focus,
-                    (None, None) => self.eval(&Expr::All, depth + 1)?,
+                    (bound, Focus::Below(op, seeds)) => {
+                        let set = self.hierarchy(op, &seeds)?;
+                        self.release(seeds);
+                        match bound {
+                            Some(bound) => self.within(set, &bound)?,
+                            None => set,
+                        }
+                    }
+                    (Some(bound), Focus::Set(set)) => self.within(set, &bound)?,
+                    (None, Focus::Set(set)) => set,
+                    (None, Focus::Everything) => self.eval(&Expr::All, depth + 1)?,
                 };
                 let mut result = self.reserve(candidates.len())?;
                 for &source in &candidates {
@@ -342,8 +376,17 @@ impl Context<'_> {
     /// is collected as it is found and sorted, so a union of hundreds of small
     /// hierarchies costs what those hierarchies cost.
     fn hierarchy(&mut self, op: Hierarchy, seeds: &[u32]) -> Result<Vec<u32>> {
+        Ok(self.hierarchy_within(op, seeds, usize::MAX)?.unwrap())
+    }
+    /// The hierarchy of `seeds`, or `None` once it exceeds `cap` concepts.
+    fn hierarchy_within(
+        &mut self,
+        op: Hierarchy,
+        seeds: &[u32],
+        cap: usize,
+    ) -> Result<Option<Vec<u32>>> {
         if seeds.is_empty() {
-            return self.reserve(0);
+            return self.reserve(0).map(Some);
         }
         let store = self.store;
         let graph = if op.ancestors() {
@@ -385,6 +428,9 @@ impl Context<'_> {
                     if count <= large {
                         found.push(concept);
                     }
+                    if count > cap {
+                        return Ok(None);
+                    }
                 }
                 if !op.direct() && self.marks.seen[i] != stamp {
                     self.marks.seen[i] = stamp;
@@ -412,62 +458,111 @@ impl Context<'_> {
         }
         found.shrink_to_fit();
         self.claim(found.capacity())?;
-        Ok(found)
+        Ok(Some(found))
     }
     /// The members of `set` with no proper ancestor in it.
     ///
-    /// Walks upward, remembering for each concept reached whether it or an
-    /// ancestor is in the set, so the cost is the set's ancestors rather than
-    /// its descendants, which for a broad concept are much of the edition.
+    /// Walks upward, so the cost is the set's ancestors rather than its
+    /// descendants, which for a broad concept are much of the edition.
     fn top(&mut self, set: &[u32]) -> Result<Vec<u32>> {
-        let store = self.store;
-        let stamp = self.marks.next(store.ids.len());
-        self.tick(set.len())?;
-        // seen: the answer for this concept is known; selected: the answer is yes.
-        for &member in set {
-            self.marks.seen[member as usize] = stamp;
-            self.marks.selected[member as usize] = stamp;
-        }
+        let stamp = self.mark_seeds(set)?;
         let mut result = self.reserve(set.len())?;
-        let mut stack: Vec<(u32, usize)> = Vec::new();
+        let mut stack = Vec::new();
         for &member in set {
-            let parents = store.parents.get(member);
-            self.tick(1 + parents.len())?;
-            let mut covered = false;
-            for &parent in parents {
-                if self.marks.seen[parent as usize] != stamp {
-                    self.marks.seen[parent as usize] = stamp;
-                    stack.push((parent, 0));
-                    while let Some((node, next)) = stack.last_mut() {
-                        let above = store.parents.get(*node);
-                        let Some(&up) = above.get(*next) else {
-                            // Nothing above reaches the set.
-                            stack.pop();
-                            continue;
-                        };
-                        *next += 1;
-                        self.tick(1)?;
-                        if self.marks.seen[up as usize] != stamp {
-                            self.marks.seen[up as usize] = stamp;
-                            stack.push((up, 0));
-                        } else if self.marks.selected[up as usize] == stamp {
-                            // Every concept on the stack lies below `up`.
-                            for (node, _) in stack.drain(..) {
-                                self.marks.selected[node as usize] = stamp;
-                            }
-                        }
-                    }
-                }
-                if self.marks.selected[parent as usize] == stamp {
-                    covered = true;
-                    break;
-                }
-            }
-            if !covered {
+            if !self.has_seed_above(member, stamp, &mut stack)? {
                 result.push(member);
             }
         }
         Ok(result)
+    }
+
+    /// The members of `candidates` in `op` of `seeds`, for a descendant or
+    /// child operator, found by walking up from each candidate rather than
+    /// down from the seeds. Cheaper when the candidates are few and the
+    /// seeds' descendants many.
+    fn below(&mut self, op: Hierarchy, seeds: &[u32], candidates: &[u32]) -> Result<Vec<u32>> {
+        debug_assert!(!op.ancestors());
+        let stamp = self.mark_seeds(seeds)?;
+        let mut result = self.reserve(candidates.len())?;
+        let mut stack = Vec::new();
+        for &candidate in candidates {
+            let is_seed = seeds.binary_search(&candidate).is_ok();
+            self.tick(1)?;
+            let inside = if op.include_self() && is_seed {
+                true
+            } else if op.direct() {
+                let parents = self.store.parents.get(candidate);
+                self.tick(parents.len())?;
+                parents.iter().any(|p| seeds.binary_search(p).is_ok())
+            } else {
+                self.has_seed_above(candidate, stamp, &mut stack)?
+            };
+            if inside {
+                result.push(candidate);
+            }
+        }
+        Ok(result)
+    }
+
+    /// Starts a memoised upward search: `seen` means the answer for a concept
+    /// is known, `selected` that the concept is a seed or lies below one.
+    fn mark_seeds(&mut self, seeds: &[u32]) -> Result<u8> {
+        let stamp = self.marks.next(self.store.ids.len());
+        self.tick(seeds.len())?;
+        for &seed in seeds {
+            self.marks.seen[seed as usize] = stamp;
+            self.marks.selected[seed as usize] = stamp;
+        }
+        Ok(stamp)
+    }
+
+    /// Whether a proper ancestor of `concept` is a seed. Each concept's answer
+    /// is kept, so a search costs the ancestors not already resolved.
+    fn has_seed_above(
+        &mut self,
+        concept: u32,
+        stamp: u8,
+        stack: &mut Vec<(u32, usize)>,
+    ) -> Result<bool> {
+        let store = self.store;
+        let parents = store.parents.get(concept);
+        self.tick(1 + parents.len())?;
+        for &parent in parents {
+            if self.marks.seen[parent as usize] != stamp {
+                self.marks.seen[parent as usize] = stamp;
+                stack.push((parent, 0));
+                while let Some((node, next)) = stack.last_mut() {
+                    let Some(&up) = store.parents.get(*node).get(*next) else {
+                        // Nothing above reaches a seed.
+                        stack.pop();
+                        continue;
+                    };
+                    *next += 1;
+                    self.tick(1)?;
+                    if self.marks.seen[up as usize] != stamp {
+                        self.marks.seen[up as usize] = stamp;
+                        stack.push((up, 0));
+                    } else if self.marks.selected[up as usize] == stamp {
+                        // Every concept on the stack lies below `up`.
+                        for (node, _) in stack.drain(..) {
+                            self.marks.selected[node as usize] = stamp;
+                        }
+                    }
+                }
+            }
+            if self.marks.selected[parent as usize] == stamp {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+    /// `set` restricted to the sorted `bound`, releasing `set`.
+    fn within(&mut self, set: Vec<u32>, bound: &[u32]) -> Result<Vec<u32>> {
+        self.tick(set.len().min(bound.len()) + bound.len())?;
+        let tested = refinement::intersect(&set, bound);
+        self.release(set);
+        self.claim(tested.capacity())?;
+        Ok(tested)
     }
     fn merge(&mut self, left: &[u32], right: &[u32], mode: u8) -> Result<Vec<u32>> {
         self.tick(left.len() + right.len())?;
