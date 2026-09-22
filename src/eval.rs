@@ -70,6 +70,7 @@ pub fn evaluate_result_with_limits(
         work: 0,
         live: 0,
         nodes: 0,
+        marks: Marks::borrow(),
     };
     context.result(expression, 0, true)
 }
@@ -86,6 +87,7 @@ pub fn evaluate_with_limits(
         work: 0,
         live: 0,
         nodes: 0,
+        marks: Marks::borrow(),
     }
     .eval(expression, 0)
 }
@@ -96,7 +98,58 @@ struct Context<'a> {
     work: u64,
     live: usize,
     nodes: usize,
+    marks: Marks,
 }
+
+/// Visit markers shared by every hierarchy operator.
+///
+/// A marker is set when it holds the current stamp, so starting a traversal is
+/// an increment rather than clearing an array the size of the edition. Stamps
+/// are single bytes, which keeps a full traversal's memory traffic the same as
+/// a plain boolean array; after 255 traversals both arrays are cleared once,
+/// which costs about a millisecond and happens rarely.
+///
+/// The arrays outlive the query: each thread keeps its own, so a process that
+/// answers many questions allocates them once rather than page-faulting a
+/// fresh pair in for every expression.
+#[derive(Default)]
+struct Marks {
+    seen: Vec<u8>,
+    selected: Vec<u8>,
+    stamp: u8,
+}
+impl Marks {
+    fn next(&mut self, n: usize) -> u8 {
+        if self.seen.len() != n {
+            self.seen = vec![0; n];
+            self.selected = vec![0; n];
+            self.stamp = 0;
+        }
+        if self.stamp == u8::MAX {
+            self.seen.fill(0);
+            self.selected.fill(0);
+            self.stamp = 0;
+        }
+        self.stamp += 1;
+        self.stamp
+    }
+    /// This thread's markers, left behind by its previous query if any.
+    fn borrow() -> Self {
+        MARKS.with(|slot| std::mem::take(&mut *slot.borrow_mut()))
+    }
+}
+
+thread_local! {
+    static MARKS: std::cell::RefCell<Marks> = std::cell::RefCell::new(Marks::default());
+}
+
+impl Drop for Context<'_> {
+    fn drop(&mut self) {
+        let marks = std::mem::take(&mut self.marks);
+        MARKS.with(|slot| *slot.borrow_mut() = marks);
+    }
+}
+
 impl Context<'_> {
     fn tick(&mut self, work: usize) -> Result<()> {
         if self
@@ -250,49 +303,87 @@ impl Context<'_> {
             | Expr::Minus(_, _) => Err(EvalError::InvalidAst),
         }
     }
+    /// Walks the hierarchy from `seeds`, paying only for what it touches.
+    ///
+    /// The earlier version charged the size of the whole edition twice per
+    /// operator and scanned every concept to collect its answer, so `<< X`
+    /// cost the same whether X had three descendants or a hundred thousand,
+    /// and one expression could hold only about forty subsumptions before the
+    /// work budget ran out. Here the work is the edges walked, and the answer
+    /// is collected as it is found and sorted, so a union of hundreds of small
+    /// hierarchies costs what those hierarchies cost.
     fn hierarchy(&mut self, op: Hierarchy, seeds: &[u32]) -> Result<Vec<u32>> {
         if seeds.is_empty() {
             return self.reserve(0);
         }
-        let n = self.store.ids.len();
-        self.tick(n)?;
+        let store = self.store;
         let graph = if op.ancestors() {
-            &self.store.parents
+            &store.parents
         } else {
-            &self.store.children
+            &store.children
         };
-        let mut seen = vec![false; n];
-        let mut selected = vec![false; n];
-        // Each vertex is queued once. Input seeds can still be results of other seeds.
-        let mut stack = self.reserve(n)?;
+        let n = store.ids.len();
+        let stamp = self.marks.next(n);
+        self.tick(seeds.len())?;
+        // Past this many results, reading the markers back in order beats
+        // sorting a list, so the list stops growing and the markers are used.
+        let large = n / 16;
+        let mut count = 0usize;
+        let mut stack = Vec::with_capacity(seeds.len());
+        let mut found = Vec::new();
         for &seed in seeds {
-            seen[seed as usize] = true;
-            stack.push(seed);
-            if op.include_self() {
-                selected[seed as usize] = true;
+            let i = seed as usize;
+            if self.marks.seen[i] != stamp {
+                self.marks.seen[i] = stamp;
+                stack.push(seed);
             }
-        }
-        while let Some(node) = stack.pop() {
-            self.tick(1 + graph.get(node).len())?;
-            for &next in graph.get(node) {
-                selected[next as usize] = true;
-                if !op.direct() && !seen[next as usize] {
-                    seen[next as usize] = true;
-                    stack.push(next);
+            if op.include_self() && self.marks.selected[i] != stamp {
+                self.marks.selected[i] = stamp;
+                count += 1;
+                if count <= large {
+                    found.push(seed);
                 }
             }
         }
-        self.release(stack);
-        self.tick(n)?;
-        let mut result = self.reserve(selected.iter().filter(|&&b| b).count())?;
-        result.extend(
-            selected
-                .iter()
-                .enumerate()
-                .filter(|(_, b)| **b)
-                .map(|(i, _)| i as u32),
-        );
-        Ok(result)
+        while let Some(node) = stack.pop() {
+            let next = graph.get(node);
+            self.tick(1 + next.len())?;
+            for &concept in next {
+                let i = concept as usize;
+                if self.marks.selected[i] != stamp {
+                    self.marks.selected[i] = stamp;
+                    count += 1;
+                    if count <= large {
+                        found.push(concept);
+                    }
+                }
+                if !op.direct() && self.marks.seen[i] != stamp {
+                    self.marks.seen[i] = stamp;
+                    stack.push(concept);
+                }
+            }
+        }
+        // Every set operation downstream merges sorted lists. A small answer is
+        // sorted, at k log k; a large one is read back from the markers in
+        // order, at one sequential pass over the edition.
+        if count > large {
+            self.tick(n)?;
+            found = Vec::with_capacity(count);
+            found.extend(
+                self.marks
+                    .selected
+                    .iter()
+                    .enumerate()
+                    .filter(|&(_, &mark)| mark == stamp)
+                    .map(|(i, _)| i as u32),
+            );
+        } else {
+            self.tick(found.len())?;
+            found.sort_unstable();
+        }
+        found.shrink_to_fit();
+        self.claim(found.capacity())?;
+        Ok(found)
     }
     fn merge(&mut self, left: &[u32], right: &[u32], mode: u8) -> Result<Vec<u32>> {
         self.tick(left.len() + right.len())?;

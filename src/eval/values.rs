@@ -27,18 +27,44 @@ impl Context<'_> {
         }
         match expr {
             Expr::Members(query) => self.member_query(query, depth + 1, terminal),
-            Expr::And(parts) | Expr::Or(parts) => {
+            Expr::And(parts) => {
                 if parts.len() < 2 {
                     return Err(EvalError::InvalidAst);
                 }
+                // An intersection only shrinks, so folding in order already
+                // costs the size of its inputs.
                 let mut result = self.result(&parts[0], depth + 1, false)?;
                 for part in &parts[1..] {
                     let right = self.result(part, depth + 1, false)?;
-                    result = self.merge_results(
-                        result,
-                        right,
-                        if matches!(expr, Expr::And(_)) { 0 } else { 1 },
-                    )?;
+                    result = self.merge_results(result, right, 0)?;
+                }
+                Ok(result)
+            }
+            Expr::Or(parts) => {
+                if parts.len() < 2 {
+                    return Err(EvalError::InvalidAst);
+                }
+                // A union folded in order re-merges its growing result once per
+                // part, so four hundred small parts cost the square of four
+                // hundred. That is exactly the shape of a code list written as
+                // ECL. Merging like a binary counter instead, where two partial
+                // results are only merged when they cover the same number of
+                // parts, costs the total size times the logarithm of the part
+                // count, and holds at most that logarithm of partials at once.
+                let mut partials: Vec<(QueryResult, u32)> = Vec::new();
+                for part in parts {
+                    let mut item = (self.result(part, depth + 1, false)?, 0);
+                    while partials.last().is_some_and(|(_, rank)| *rank == item.1) {
+                        let (left, rank) = partials.pop().expect("checked above");
+                        item = (self.merge_results(left, item.0, 1)?, rank + 1);
+                    }
+                    partials.push(item);
+                }
+                // What is left has falling ranks from bottom to top, so folding
+                // from the top merges the smallest partials first.
+                let (mut result, _) = partials.pop().expect("at least two parts");
+                while let Some((left, _)) = partials.pop() {
+                    result = self.merge_results(left, result, 1)?;
                 }
                 Ok(result)
             }
