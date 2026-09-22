@@ -489,6 +489,7 @@ pub fn import_snapshot_with_progress(
         member_tables: Some(member_tables),
         identifiers: Some(identifiers),
         search: Some(search_manifest),
+        history: None,
         supplements: Vec::new(),
     };
     let mut manifest_file = BufWriter::new(File::create_new(staging.join("manifest.json"))?);
@@ -496,6 +497,9 @@ pub fn import_snapshot_with_progress(
     manifest_file.flush()?;
     manifest_file.get_ref().sync_all()?;
     drop(manifest_file);
+    progress("Indexing historical associations");
+    let mut manifest = manifest;
+    manifest.history = crate::store::add_history(&staging)?;
     ensure!(!destination.exists(), "Destination appeared during import");
     fs::rename(&staging, destination)
         .context("Could not publish store; build directory retained")?;

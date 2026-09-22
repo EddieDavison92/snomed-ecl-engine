@@ -241,3 +241,77 @@ fn history_syntax_types_and_limits_fail_explicitly() {
         Err(EvalError::MemoryLimit)
     );
 }
+
+/// The fixture with the history index built from its own member tables.
+fn indexed() -> NumericStore {
+    let (mut store, _) = fixture();
+    let (index, skipped) = snomed_ecl_engine::store::HistoryIndex::build(&store).unwrap();
+    assert_eq!(skipped, 0, "every fixture row joins two concepts");
+    store.history = snomed_ecl_engine::store::HistoryStore::loaded(index);
+    store
+}
+
+#[test]
+fn the_history_index_gives_the_scan_answer_for_every_selection() {
+    // Same rows, two routes: the member-table scan and the index. Every
+    // selection the language can express, from every seed, must agree,
+    // including MOVED FROM, which runs backwards, and MOVED TO, which never
+    // contributes.
+    let (scan, _) = fixture();
+    let index = indexed();
+    let mut queries = Vec::new();
+    for seed in (100001001..=100011001).step_by(1000) {
+        for suffix in ["", "-MIN", "-MOD", "-MAX", " (*)"] {
+            queries.push(format!("{seed} {{{{+HISTORY{suffix}}}}}"));
+            queries.push(format!("<<{seed} {{{{+HISTORY{suffix}}}}}"));
+        }
+        for bits in 1..128 {
+            let selected: Vec<_> = [SAME, REPLACED, PARTIAL, POSSIBLE, WAS, FROM, TO]
+                .into_iter()
+                .enumerate()
+                .filter_map(|(i, id)| (bits & (1 << i) != 0).then_some(id.to_string()))
+                .collect();
+            queries.push(format!("{seed} {{{{+HISTORY ({})}}}}", selected.join(" OR ")));
+        }
+    }
+    queries.push("(100001001 {{+HISTORY-MIN}}) {{+HISTORY-MIN}}".into());
+    queries.push("100001001 {{+HISTORY-MIN}} MINUS 100006001".into());
+    for query in &queries {
+        assert_eq!(codes(&index, query), codes(&scan, query), "{query}");
+    }
+    assert!(queries.len() > 1_000);
+}
+
+#[test]
+fn successors_and_predecessors_name_their_association() {
+    let store = indexed();
+    let index = store.history.get().unwrap().expect("built above");
+    let ordinal = |id| store.ordinal(id).unwrap();
+    let named = |rows: Vec<snomed_ecl_engine::store::Association>| {
+        let mut out: Vec<_> = rows
+            .into_iter()
+            .map(|row| (store.ids[row.concept as usize], row.refset))
+            .collect();
+        out.sort();
+        out
+    };
+    // 100003001 was SAME AS 100001001, and 100007001 was SAME AS 100003001.
+    assert_eq!(named(index.successors(ordinal(100003001))), [(100001001, SAME)]);
+    assert_eq!(named(index.predecessors(ordinal(100003001))), [(100007001, SAME)]);
+    // Everything that points at 100001001, active rows only: the inactive
+    // SAME AS row from 100008001 must not appear.
+    assert_eq!(
+        named(index.predecessors(ordinal(100001001))),
+        [
+            (100003001, SAME),
+            (100005001, POSSIBLE),
+            (100009001, PARTIAL),
+            (100010001, WAS),
+            (100011001, TO),
+        ]
+    );
+    // MOVED FROM is stored as shipped: 100001001 is the referenced component.
+    assert_eq!(named(index.successors(ordinal(100001001))), [(100006001, FROM)]);
+    // A concept with no history has none either way.
+    assert!(index.successors(ordinal(100002001)).is_empty());
+}

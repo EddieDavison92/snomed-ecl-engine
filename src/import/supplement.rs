@@ -465,6 +465,8 @@ pub fn add_refsets_snapshot(
     // A supplement can add concepts and descriptions, so the word index is
     // rebuilt rather than inherited: the base one names rows that have moved.
     manifest.search = None;
+    // Rebuilt from the new member tables just before publishing.
+    manifest.history = None;
     manifest.descriptions = match descriptions {
         Some(index) => {
             let written = index.write(&staging.join("descriptions.bin"))?;
@@ -506,6 +508,9 @@ pub fn add_refsets_snapshot(
     file.flush()?;
     file.get_ref().sync_all()?;
     drop(file);
+    // The supplement rewrote the member tables, so the history index is
+    // rebuilt from them rather than carried over from the base.
+    manifest.history = crate::store::add_history(&staging)?;
     ensure!(!destination.exists(), "Destination appeared during import");
     fs::rename(&staging, destination)
         .context("Could not publish store; build directory retained")?;

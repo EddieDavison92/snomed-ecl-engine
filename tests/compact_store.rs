@@ -824,6 +824,7 @@ fn hierarchy_matches_slow_edge_scan_on_generated_dag() {
     let store = NumericStore {
         descriptions: Default::default(),
         search: Default::default(),
+        history: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
