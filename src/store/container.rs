@@ -136,6 +136,29 @@ pub(super) struct PositionalReader {
     length: u64,
 }
 impl PositionalReader {
+    /// Reads the whole section once on another thread, discarding it, so the
+    /// operating system holds its pages before the first scattered reads.
+    pub(super) fn prefetch(&self) -> Result<()> {
+        let reader = Self {
+            file: self.file.try_clone()?,
+            start: self.start,
+            length: self.length,
+        };
+        std::thread::Builder::new()
+            .name("prefetch".into())
+            .spawn(move || {
+                let mut buffer = vec![0; 1 << 20];
+                let mut at = 0;
+                while at < reader.length {
+                    let size = (reader.length - at).min(buffer.len() as u64) as usize;
+                    if reader.read_exact_at(at, &mut buffer[..size]).is_err() {
+                        return;
+                    }
+                    at += size as u64;
+                }
+            })?;
+        Ok(())
+    }
     pub(super) fn read_exact_at(&self, position: u64, bytes: &mut [u8]) -> io::Result<()> {
         if position
             .checked_add(bytes.len() as u64)

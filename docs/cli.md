@@ -117,6 +117,9 @@ through the word index rather than evaluating an expression. It returns ranked
 `concepts` with their codes, labels and active flags, and `total` matches. It is
 capped by `limit`, defaulting to 50, because it answers what a person meant
 rather than producing a set. `"include_inactive": true` keeps retired concepts.
+`"within"` takes an expression and keeps only matches in its answer, so
+`{"search":"left","within":"<< 404684003 : 363698007 = << 39057004"}` looks for
+"left" among findings sited in the lung. `total` then counts matches within.
 
 A request carrying `"concept"` returns that concept's descriptions, parents,
 children, relationship groups and reference set membership. Concrete values keep

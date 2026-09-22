@@ -1563,6 +1563,59 @@ fn one_concept_reads_the_same_descriptions_as_the_loaded_index() {
 }
 
 #[test]
+fn search_within_an_expression_keeps_only_its_concepts() {
+    use std::process::{Command, Stdio};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    // Import builds the word index.
+    let mut process = Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .arg("batch")
+        .arg(&destination)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    {
+        let mut input = process.stdin.take().unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"<< {LEFT}\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"{ROOT}\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"{LEFT}\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"<<\"}}").unwrap();
+    }
+    let output = process.wait_with_output().unwrap();
+    assert!(output.status.success());
+    let lines: Vec<serde_json::Value> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    let codes = |line: &serde_json::Value| -> Vec<String> {
+        let mut codes: Vec<String> = line["concepts"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|c| c["code"].as_str().unwrap().to_owned())
+            .collect();
+        codes.sort();
+        codes
+    };
+    // RIGHT matches through its text definition.
+    assert_eq!(
+        codes(&lines[0]),
+        [ROOT.to_string(), RIGHT.to_string(), LEAF.to_string()]
+    );
+    assert_eq!(codes(&lines[1]), [LEAF.to_string()]);
+    assert_eq!(lines[1]["total"], 1);
+    assert_eq!(codes(&lines[2]), [ROOT.to_string()]);
+    assert_eq!(lines[3]["total"], 0);
+    assert_eq!(lines[4]["error"], "Syntax");
+}
+
+#[test]
 fn cli_inspect_reports_what_an_archive_declares_before_importing() {
     let temp = TempDir::new().unwrap();
     let config = temp.path().join("config");

@@ -654,6 +654,16 @@ impl DisplayStore {
         })
     }
 
+    /// Starts reading every label in the background, so a server's first
+    /// searches do not wait on the disk for each one. Does nothing for a
+    /// compressed section.
+    pub fn prefetch(&self) -> Result<()> {
+        match &self.positional {
+            Some(reader) => reader.prefetch(),
+            None => Ok(()),
+        }
+    }
+
     /// Byte length of a concept's label, without reading it.
     ///
     /// The offsets are already in memory, so ranking thousands of candidates

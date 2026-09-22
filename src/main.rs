@@ -787,6 +787,10 @@ struct BatchRequest {
     /// An SCTID whose historical associations to return, in both directions.
     #[serde(default)]
     history: Option<String>,
+    /// With `search`: an expression whose concepts bound the results, so a
+    /// search can look inside a value set or a hierarchy.
+    #[serde(default)]
+    within: Option<String>,
     /// Include inactive concepts in search results. Off by default.
     #[serde(default)]
     include_inactive: bool,
@@ -824,6 +828,9 @@ impl<'a> Labels<'a> {
             return Ok(store);
         }
         let opened = DisplayStore::open(self.path)?;
+        // A batch serves many requests; warming the labels now costs one
+        // sequential read rather than a disk wait inside each early search.
+        opened.prefetch()?;
         Ok(self.store.get_or_init(|| opened))
     }
 }
@@ -928,13 +935,39 @@ fn search_response(
     if !request.include_inactive {
         candidates.retain(|&ordinal| store.is_active(ordinal));
     }
+    if let Some(within) = &request.within {
+        let expression = match ecl::parse(within) {
+            Ok(expression) => expression,
+            Err(error) => {
+                writeln!(
+                    out,
+                    "{}",
+                    serde_json::json!({"error":format!("{:?}", error.kind), "offset":error.offset, "message":error.message})
+                )?;
+                return Ok(());
+            }
+        };
+        let bound = match eval::evaluate(store, &expression) {
+            Ok(bound) => bound,
+            Err(error) => {
+                writeln!(out, "{}", serde_json::json!({"error":format!("{error:?}")}))?;
+                return Ok(());
+            }
+        };
+        candidates.retain(|ordinal| bound.binary_search(ordinal).is_ok());
+    }
     let total = candidates.len();
 
     let labels = labels.get()?;
     // Shortest labels first: the canonical name for a concept is almost always
-    // shorter than the compound terms that also contain the same words.
-    candidates.sort_by_key(|&ordinal| (labels.label_bytes(ordinal).unwrap_or(u32::MAX), ordinal));
-    candidates.truncate(SEARCH_CANDIDATES);
+    // shorter than the compound terms that also contain the same words. Only
+    // the shortest are kept, so they are selected rather than sorting all.
+    let key = |&ordinal: &u32| (labels.label_bytes(ordinal).unwrap_or(u32::MAX), ordinal);
+    if candidates.len() > SEARCH_CANDIDATES {
+        candidates.select_nth_unstable_by_key(SEARCH_CANDIDATES, key);
+        candidates.truncate(SEARCH_CANDIDATES);
+    }
+    candidates.sort_by_key(key);
 
     let mut query_words = Vec::new();
     snomed_ecl_engine::store::words(text, &mut query_words);
