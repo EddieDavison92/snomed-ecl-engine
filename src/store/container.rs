@@ -51,6 +51,23 @@ impl Section {
         }
     }
 
+    /// A reader that takes a position with each read, for an uncompressed
+    /// section; `None` for a compressed one, which must be read in blocks.
+    pub(super) fn positional(&self) -> Result<Option<PositionalReader>> {
+        if self.codec != 0 {
+            return Ok(None);
+        }
+        let file = File::open(&self.path)?;
+        ensure!(
+            file.metadata()?.len() == self.file_length,
+            "Store file size mismatch"
+        );
+        Ok(Some(PositionalReader {
+            file,
+            start: self.offset,
+            length: self.length,
+        }))
+    }
     pub(super) fn reader(&self) -> Result<SectionReader> {
         let mut file = File::open(&self.path)?;
         ensure!(
@@ -107,6 +124,49 @@ impl Section {
             "Copied section checksum mismatch"
         );
         Ok(())
+    }
+}
+
+/// Reads an uncompressed section at given positions, without a shared
+/// cursor, so concurrent callers need no lock and read only what they ask for.
+#[derive(Debug)]
+pub(super) struct PositionalReader {
+    file: File,
+    start: u64,
+    length: u64,
+}
+impl PositionalReader {
+    pub(super) fn read_exact_at(&self, position: u64, bytes: &mut [u8]) -> io::Result<()> {
+        if position
+            .checked_add(bytes.len() as u64)
+            .is_none_or(|end| end > self.length)
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Read outside store section",
+            ));
+        }
+        let at = self.start + position;
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::FileExt::read_exact_at(&self.file, bytes, at)
+        }
+        #[cfg(windows)]
+        {
+            let mut done = 0;
+            while done < bytes.len() {
+                let read = std::os::windows::fs::FileExt::seek_read(
+                    &self.file,
+                    &mut bytes[done..],
+                    at + done as u64,
+                )?;
+                if read == 0 {
+                    return Err(io::ErrorKind::UnexpectedEof.into());
+                }
+                done += read;
+            }
+            Ok(())
+        }
     }
 }
 
@@ -336,6 +396,11 @@ fn align(value: u64) -> Result<u64> {
         * PAGE)
 }
 
+/// Sections read a few bytes at a time, which stay uncompressed when packing.
+/// A compressed label costs decoding its whole 64 KiB block; a search reads
+/// hundreds of labels scattered across the file.
+const RANDOM_ACCESS: &[&str] = &["display.bin"];
+
 /// Packs verified component bytes into a new file. Existing destinations are never replaced.
 pub fn pack(source: &Path, destination: &Path) -> Result<()> {
     pack_with_options(source, destination, PackOptions::default())
@@ -379,7 +444,8 @@ pub fn pack_with_options(source: &Path, destination: &Path, options: PackOptions
         let section = source.section(&name)?;
         section.verify()?;
         offsets.push(spool.stream_position()?);
-        let encoded_length = if options.compress {
+        let compress = options.compress && !RANDOM_ACCESS.contains(&name.as_str());
+        let encoded_length = if compress {
             super::blocks::encode(
                 &mut section.reader()?,
                 &mut spool,
@@ -395,7 +461,7 @@ pub fn pack_with_options(source: &Path, destination: &Path, options: PackOptions
             name,
             offset: 0,
             length: encoded_length,
-            codec: u8::from(options.compress),
+            codec: u8::from(compress),
         });
     }
     let mut table = Table {

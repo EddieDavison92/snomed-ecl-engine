@@ -575,7 +575,9 @@ fn validate_offsets(offsets: &[u32], count: usize, values: usize) -> Result<()> 
 
 /// Opens only the display file and its manifest; text is fetched by ordinal on demand.
 pub struct DisplayStore {
-    /// Shared by concurrent requests; each read is one seek and a few bytes.
+    /// Reads labels without a lock when the section is uncompressed.
+    positional: Option<container::PositionalReader>,
+    /// Otherwise shared under a lock, decoding a block per read.
     input: std::sync::Mutex<BufReader<SectionReader>>,
     offsets: Vec<u32>,
     start: u64,
@@ -638,11 +640,13 @@ impl DisplayStore {
 
     pub fn open(directory: &Path) -> Result<Self> {
         let (manifest, source) = IndexSource::open(directory)?;
-        let mut input = Input::open(&source.section("display.bin")?, DISPLAY_MAGIC)?;
+        let section = source.section("display.bin")?;
+        let mut input = Input::open(&section, DISPLAY_MAGIC)?;
         let offsets = input.u32s()?;
         validate_offsets(&offsets, manifest.concept_count, input.remaining as usize)?;
         let start = input.reader.stream_position()?;
         Ok(Self {
+            positional: section.positional()?,
             input: std::sync::Mutex::new(input.reader),
             offsets,
             start,
@@ -665,13 +669,18 @@ impl DisplayStore {
         if length == 0 {
             return Ok(None);
         }
-        let mut input = self
-            .input
-            .lock()
-            .map_err(|_| anyhow::anyhow!("Display reader poisoned"))?;
-        input.seek(SeekFrom::Start(self.start + self.offsets[i] as u64))?;
+        let position = self.start + self.offsets[i] as u64;
         let mut bytes = vec![0; length];
-        input.read_exact(&mut bytes)?;
+        if let Some(reader) = &self.positional {
+            reader.read_exact_at(position, &mut bytes)?;
+        } else {
+            let mut input = self
+                .input
+                .lock()
+                .map_err(|_| anyhow::anyhow!("Display reader poisoned"))?;
+            input.seek(SeekFrom::Start(position))?;
+            input.read_exact(&mut bytes)?;
+        }
         Ok(Some(String::from_utf8(bytes)?))
     }
 }

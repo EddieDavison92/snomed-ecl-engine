@@ -97,6 +97,9 @@ component byte, manifest value and checksum. Both layouts work everywhere a stor
 is accepted. A query-only build can pack and verify without the ZIP importer.
 
 The default is zstd level 3 over independent 64 KiB blocks, with no dictionary.
+Labels (`display.bin`) stay raw: they are read a few bytes at a time, and a
+compressed label costs decoding its whole block, so a search reading 400 labels
+took 21 ms against 0.5 ms raw, for 55 MB more on disk in the UK edition.
 `--block-kib` accepts powers of two from 4 to 1,024; `--uncompressed` isolates the
 container layout from compression. The destination must be new; packing spools
 beside it and publishes with a hard link, so the filesystem must support hard
