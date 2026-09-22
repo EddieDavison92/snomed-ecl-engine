@@ -14,6 +14,13 @@ fn syntax_error(query: &str) {
         other => panic!("{query}: expected a syntax error, got {other:?}"),
     }
 }
+/// Grammatical, but refused because it can mean nothing.
+fn semantic_error(query: &str) {
+    match parse(query) {
+        Err(e) if e.kind == ParseErrorKind::Semantic => {}
+        other => panic!("{query}: expected a semantic refusal, got {other:?}"),
+    }
+}
 fn parses(query: &str) {
     parse(query).unwrap_or_else(|e| panic!("{query}: {e}"));
 }
@@ -116,8 +123,6 @@ fn member_field_values_follow_numeric_time_string_and_boolean_lexemes() {
         "^200001 {{M mapGroup=1}}",
         "^200001 {{M effectiveTime=\"2026-08-26\"}}",
         "^200001 {{M effectiveTime=\"20261301\"}}",
-        "^200001 {{M effectiveTime=\"20260231\"}}",
-        "^200001 {{M effectiveTime=\"20230229\"}}",
         "^200001 {{M effectiveTime=(\"20260826\",\"\")}}",
         "^200001 {{M effectiveTime=()}}",
         "^200001 {{M mapTarget=\"a\u{1}b\"}}",
@@ -273,7 +278,6 @@ fn operators_keywords_cardinalities_and_comments_follow_whitespace_rules() {
         "* : [0to1] 1000001 = *",
         "* : [0..] 1000001 = *",
         "* : [..1] 1000001 = *",
-        "* : [1..0] 1000001 = *",
         "* : [00..1] 1000001 = *",
         "* : 1000001 = = *",
         "* : 1000001 not= = *",
@@ -371,4 +375,34 @@ fn filter_and_history_keywords_follow_case_and_delimiter_rules() {
     ] {
         syntax_error(invalid);
     }
+}
+
+#[test]
+fn grammatical_values_that_name_nothing_are_refused_after_parsing() {
+    // The grammar allows day 31 in any month and any pair of cardinality bounds.
+    semantic_error("^200001 {{M effectiveTime=\"20260231\"}}");
+    semantic_error("^200001 {{M effectiveTime=\"20230229\"}}");
+    semantic_error("< 1000001 {{C effectiveTime = \"20260931\"}}");
+    semantic_error("* : [1..0] 1000001 = *");
+    // Malformed text around a refusal is still a syntax error.
+    syntax_error("* : [1..0] 1000001 = * )");
+    syntax_error("^200001 {{M effectiveTime=\"20260231\"} }");
+    syntax_error("1000001 {{M active=1}} (");
+}
+
+#[test]
+fn long_syntax_keywords_may_run_into_not_and_boolean_operators() {
+    same("< 1000001 {{D id NOT = 1000002}}", "< 1000001 {{D idNOT= 1000002}}");
+    same("< 1000001 {{C active NOT = 0}}", "< 1000001 {{C activeNot=0}}");
+    same("* : 1000001 = true OR 1000002 = *", "* : 1000001 = trueOR 1000002 = *");
+    // A field that merely ends in `not` stays a field.
+    parses("^200001 {{M cannot = 1000001}}");
+}
+
+#[test]
+fn a_dot_ends_an_alternate_code_only_before_an_attribute() {
+    same("x#a. 1000001", "x#a . 1000001");
+    same("x#a..1000001", "x#a. . 1000001");
+    parses("x#a.b");
+    parses("x#1.2");
 }

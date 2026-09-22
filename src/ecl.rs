@@ -78,7 +78,7 @@ pub enum ParseErrorKind {
     Limit,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ParseError {
     pub kind: ParseErrorKind,
     pub offset: usize,
@@ -105,6 +105,7 @@ pub fn parse(text: &str) -> Result<Expr> {
         text,
         pos: 0,
         nodes: 0,
+        refused: None,
     };
     if text.len() > MAX_QUERY_BYTES {
         return Err(parser.error(ParseErrorKind::Limit, "Query exceeds 65536 bytes"));
@@ -113,6 +114,11 @@ pub fn parse(text: &str) -> Result<Expr> {
     parser.ws()?;
     if parser.pos != text.len() {
         return Err(parser.unexpected());
+    }
+    // A grammatical expression the engine refuses for its meaning. Reported
+    // only once the whole text parses, so malformed text is a syntax error.
+    if let Some(refusal) = parser.refused {
+        return Err(refusal);
     }
     Ok(expression)
 }
@@ -128,8 +134,39 @@ struct Parser<'a> {
     text: &'a str,
     pos: usize,
     nodes: usize,
+    /// The first semantic refusal, held until the text is known to parse.
+    refused: Option<ParseError>,
 }
+
+/// Where the parser was, to return to after an alternative fails.
+#[derive(Clone)]
+struct Mark {
+    pos: usize,
+    nodes: usize,
+    refused: Option<ParseError>,
+}
+
 impl Parser<'_> {
+    fn mark(&self) -> Mark {
+        Mark {
+            pos: self.pos,
+            nodes: self.nodes,
+            refused: self.refused.clone(),
+        }
+    }
+    fn reset(&mut self, mark: Mark) {
+        self.pos = mark.pos;
+        self.nodes = mark.nodes;
+        self.refused = mark.refused;
+    }
+    /// Records a grammatical form refused for its meaning, and parses on.
+    fn refuse(&mut self, at: usize, message: &'static str) {
+        self.refused.get_or_insert(ParseError {
+            kind: ParseErrorKind::Semantic,
+            offset: at,
+            message,
+        });
+    }
     fn error(&self, kind: ParseErrorKind, message: &'static str) -> ParseError {
         ParseError {
             kind,
@@ -249,7 +286,7 @@ impl Parser<'_> {
         }
         let left = self.subexpression(depth)?;
         if self.take(":") {
-            let refinement = self.refinement(depth + 1, true)?;
+            let refinement = self.refinement(depth + 1)?;
             return self.node(Expr::Refined(Box::new(left), Box::new(refinement)));
         }
         if self.take(".") {
@@ -413,10 +450,10 @@ impl Parser<'_> {
         while self.starts_member_filter()? {
             if refset_operator.is_none() {
                 // Logical model 4: member filters apply to results of the memberOf function.
-                return Err(self.error(
-                    ParseErrorKind::Semantic,
+                self.refuse(
+                    self.pos,
                     "Member filters require a refset operator (^ or ^R); ECL defines them only over memberOf rows",
-                ));
+                );
             }
             member_filters.extend(self.member_filters(depth + 1)?);
             self.ws()?;

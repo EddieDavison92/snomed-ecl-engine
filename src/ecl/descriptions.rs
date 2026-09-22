@@ -32,7 +32,7 @@ impl Parser<'_> {
         }
         let mut filters = Vec::new();
         loop {
-            let name = self.word().to_ascii_lowercase();
+            let name = self.filter_name();
             self.pos += name.len();
             let comparison = self.comparison()?;
             if name != "effectivetime" && !matches!(comparison, Comparison::Eq | Comparison::Ne) {

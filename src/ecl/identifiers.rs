@@ -21,6 +21,14 @@ impl Parser<'_> {
             .find(|b| !(b.is_ascii_alphanumeric() || *b == b'-'))
             == Some(b'#')
     }
+    /// Whether an attribute name parses after the dot at the current position.
+    fn dot_starts_attribute(&mut self) -> bool {
+        let mark = self.mark();
+        self.pos += 1;
+        let parsed = self.ws().is_ok() && self.subexpression(0).is_ok();
+        self.reset(mark);
+        parsed
+    }
     pub(super) fn alternate_identifier(&mut self) -> Result<Expr> {
         let whole = self.take("\"");
         let scheme = self.alias()?;
@@ -39,6 +47,10 @@ impl Parser<'_> {
                     return Err(self.unexpected());
                 }
             } else if !(c.is_ascii_alphanumeric() || matches!(c, '-' | '.' | '_')) {
+                break;
+            } else if c == '.' && self.pos > start && self.dot_starts_attribute() {
+                // A dot is part of the code unless an attribute name follows it,
+                // in which case it is the dot operator: `x#a.b.<< 1234567`.
                 break;
             }
             self.pos += c.len_utf8();

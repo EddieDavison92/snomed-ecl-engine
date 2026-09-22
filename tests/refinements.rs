@@ -114,7 +114,8 @@ fn cardinality_bounds_beyond_machine_integers_preserve_finite_store_semantics() 
         "* : [18446744073709551617..18446744073709551616] 1005000 = *",
         "* : [18446744073709551616..4294967296] 1005000 = *",
     ] {
-        assert_eq!(parse(query).unwrap_err().kind, ParseErrorKind::Syntax);
+        // Reversed bounds are grammatical but admit no count.
+        assert_eq!(parse(query).unwrap_err().kind, ParseErrorKind::Semantic);
     }
 }
 
@@ -332,7 +333,6 @@ fn nested_typed_sets_can_feed_concept_operations_after_scalars_are_removed() {
 #[test]
 fn malformed_refinements_fail_and_long_syntax_agrees() {
     for query in [
-        "* : [2..1] 1005000 = *",
         "* : [01..2] 1005000 = *",
         "* : 1005000 > 1008000",
         "* : 1007000 = #01",
@@ -342,7 +342,10 @@ fn malformed_refinements_fail_and_long_syntax_agrees() {
         "* : 1007000 = match:\"A\"",
         "* : { { 1005000 = * } }",
         "* : [1..*] (1005000 = *)",
-        "* : 1005000 = * OR 1006000 = * AND 1007000 = *",
+        // Groups are refinement operands, so mixing operators between them has
+        // no attribute set to bind the first operator.
+        "* : { 1005000 = * }, { 1006000 = * } OR { 1007000 = * }",
+        "* : { 1005000 = * AND 1006000 = * OR 1007000 = * }",
         "!!> <<1008000",
     ] {
         assert_eq!(
@@ -351,6 +354,16 @@ fn malformed_refinements_fail_and_long_syntax_agrees() {
             "{query}"
         );
     }
+    // The grammar derives an unbracketed mix two ways with different meanings;
+    // 6.4 requires brackets, so the form is grammatical but refused.
+    for mixed in [
+        "* : 1005000 = * OR 1006000 = * AND 1007000 = *",
+        "* : 1005000 = *, 1006000 = * OR 1007000 = *, 1008000 = *",
+        "* : 1005000 = *, 1006000 = * OR { 1007000 = * }",
+    ] {
+        assert_eq!(parse(mixed).unwrap_err().kind, ParseErrorKind::Semantic, "{mixed}");
+    }
+    assert!(parse("* : (1005000 = * OR 1006000 = *) AND 1007000 = *").is_ok());
     assert_eq!(
         parse("* : [0..*] R 1005000 != 1008000").unwrap(),
         parse("ANY : [0 to many] reverseOf 1005000 not = 1008000").unwrap()

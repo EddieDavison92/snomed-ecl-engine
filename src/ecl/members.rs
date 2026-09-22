@@ -82,7 +82,7 @@ impl Parser<'_> {
         self.ws()?;
         let mut result = Vec::new();
         loop {
-            let field = self.word().to_ascii_lowercase();
+            let field = self.filter_name();
             if field.is_empty() || !field.bytes().all(|b| b.is_ascii_alphabetic()) {
                 return Err(self.unexpected());
             }
@@ -159,12 +159,15 @@ impl Parser<'_> {
                     self.pos = start;
                     MemberPredicate::Text(self.search_terms()?)
                 }
-            } else if !self.starts_alternate() && self.keyword("true") {
+            } else if !self.starts_alternate() && self.value_keyword("true") {
                 MemberPredicate::Boolean(Some(true))
-            } else if !self.starts_alternate() && self.keyword("false") {
+            } else if !self.starts_alternate() && self.value_keyword("false") {
                 MemberPredicate::Boolean(Some(false))
-            } else {
+            } else if field == "moduleid" {
+                // Only moduleFilter admits a bare set of concepts, `(a b)`.
                 MemberPredicate::Concepts(Box::new(self.filter_concepts(depth + 1)?))
+            } else {
+                MemberPredicate::Concepts(Box::new(self.subexpression(depth + 1)?))
             };
             if !matches!(
                 value,
