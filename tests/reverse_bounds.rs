@@ -212,3 +212,35 @@ fn a_large_focus_is_checked_from_the_candidates_upward() {
         assert_eq!(run(&store, &bounded), run(&store, &unbounded), "{bounded}");
     }
 }
+
+#[test]
+fn any_value_agrees_with_the_materialised_set_of_every_concept() {
+    let store = store(2_000, 5);
+    let isa = store.ids.len() as u32 - 1;
+    let every = format!("(* OR {})", code(&store, 3));
+    for kind in [0, 1, 2, isa] {
+        let kind = code(&store, kind);
+        for form in [
+            "<< {top} : {kind} {op} {value}",
+            "<< {top} : [2..*] {kind} {op} {value}",
+            "<< {top} : [0..0] {kind} {op} {value}",
+            "<< {top} : [0..1] {kind} {op} {value}",
+            "<< {top} : {{ {kind} {op} {value} }}",
+            "<< {top} : [1..1] {{ {kind} {op} {value}, {kind} {op} {value} }}",
+            "* : R {kind} {op} {value}",
+        ] {
+            for op in ["=", "!="] {
+                let query = |value: &str| {
+                    form.replace("{top}", &code(&store, 3).to_string())
+                        .replace("{kind}", &kind.to_string())
+                        .replace("{op}", op)
+                        .replace("{value}", value)
+                        .replace("{{", "{")
+                        .replace("}}", "}")
+                };
+                let any = query("*");
+                assert_eq!(run(&store, &any), run(&store, &query(&every)), "{any}");
+            }
+        }
+    }
+}

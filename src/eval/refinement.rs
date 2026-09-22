@@ -5,6 +5,8 @@ use crate::store::ConcreteValue;
 
 pub(super) enum Range {
     Concepts(Vec<u32>),
+    /// `*`: every concept, which every concept-valued row holds.
+    AnyConcept,
     Concrete(Vec<u32>),
 }
 pub(super) enum Prepared {
@@ -44,6 +46,11 @@ impl Context<'_> {
                 }
                 let names = self.eval(&attribute.name, depth + 1)?;
                 let range = match &attribute.value {
+                    AttributeValue::Concepts(expr)
+                        if !attribute.reverse && matches!(**expr, Expr::All) =>
+                    {
+                        Range::AnyConcept
+                    }
                     AttributeValue::Concepts(expr) => Range::Concepts(self.eval(expr, depth + 1)?),
                     value => {
                         let mut matching = self.reserve(self.store.concrete_values.len())?;
@@ -180,7 +187,7 @@ impl Context<'_> {
                     return Ok(cardinality.contains(count as usize));
                 }
                 let rows = match range {
-                    Range::Concepts(_) => self.store.attributes.get(source),
+                    Range::Concepts(_) | Range::AnyConcept => self.store.attributes.get(source),
                     Range::Concrete(_) => self.store.concrete.get(source),
                 };
                 self.tick(rows.len())?;
@@ -196,6 +203,7 @@ impl Context<'_> {
                             values.binary_search(&row.value).is_ok()
                                 == (*comparison == Comparison::Eq)
                         }
+                        Range::AnyConcept => *comparison == Comparison::Eq,
                         Range::Concrete(values) => values.binary_search(&row.value).is_ok(),
                     };
                     if matches {
@@ -208,15 +216,22 @@ impl Context<'_> {
                         .ordinal(116680003)
                         .is_some_and(|kind| names.binary_search(&kind).is_ok())
                 {
-                    if let Range::Concepts(values) = range {
-                        let parents = self.store.parents.get(source);
-                        self.tick(parents.len())?;
-                        count += parents
-                            .iter()
-                            .filter(|p| {
-                                values.binary_search(p).is_ok() == (*comparison == Comparison::Eq)
-                            })
-                            .count();
+                    let parents = self.store.parents.get(source);
+                    match range {
+                        Range::Concepts(values) => {
+                            self.tick(parents.len())?;
+                            count += parents
+                                .iter()
+                                .filter(|p| {
+                                    values.binary_search(p).is_ok()
+                                        == (*comparison == Comparison::Eq)
+                                })
+                                .count();
+                        }
+                        Range::AnyConcept if *comparison == Comparison::Eq => {
+                            count += parents.len();
+                        }
+                        _ => {}
                     }
                 }
                 Ok(cardinality.contains(count))
@@ -358,6 +373,7 @@ impl Context<'_> {
                 self.release(names);
                 match range {
                     Range::Concepts(values) | Range::Concrete(values) => self.release(values),
+                    Range::AnyConcept => {}
                 }
                 if let Some(counts) = reverse_counts {
                     self.live -= counts.len() * 2;
