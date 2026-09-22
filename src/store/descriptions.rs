@@ -495,6 +495,14 @@ impl DescriptionStore {
             seeker: OnceLock::new(),
         })
     }
+    /// Whether this store has descriptions at all.
+    pub fn is_available(&self) -> bool {
+        self.source.is_some() || self.loaded.get().is_some()
+    }
+    /// Whether the whole index is in memory already.
+    pub fn is_loaded(&self) -> bool {
+        matches!(self.loaded.get(), Some(Ok(_)))
+    }
     /// One concept's descriptions. Reads only that concept's rows unless the
     /// whole index is already loaded, so describing a concept costs a few
     /// small reads rather than loading every description in the edition.

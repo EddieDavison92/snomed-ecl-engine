@@ -1616,6 +1616,53 @@ fn search_within_an_expression_keeps_only_its_concepts() {
 }
 
 #[test]
+fn description_filters_on_a_small_focus_agree_with_the_loaded_index() {
+    use snomed_ecl_engine::{ecl::parse, eval::evaluate};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let packed = temp.path().join("store.ecl");
+    snomed_ecl_engine::store::pack(&destination, &packed).unwrap();
+    let mut queries = vec![
+        format!("* {{{{ D active = 0 }}}}"),
+        format!("* {{{{ D active = 1 }}}}"),
+        format!("<< {ROOT} {{{{ D type = fsn }}}}"),
+        format!("<< {ROOT} {{{{ D type != fsn }}}}"),
+        format!("* {{{{ D language = en }}}}"),
+        format!("* {{{{ D language != en }}}}"),
+        format!("* {{{{ D id = 6000012 }}}}"),
+        format!("* {{{{ D moduleId = {ROOT} }}}}"),
+        format!("* {{{{ D effectiveTime >= \"20260826\" }}}}"),
+        format!("* {{{{ D dialect = en-gb }}}}"),
+        format!("* {{{{ D dialect = en-gb (prefer) }}}}"),
+        format!("* {{{{ D dialect != en-gb }}}}"),
+        format!("* {{{{ D active = *, type = syn }}}}"),
+        format!("<< {LEFT} {{{{ D active = 0 }}}} {{{{ D language = en }}}}"),
+    ];
+    if cfg!(feature = "unicode") {
+        queries.push(format!("* {{{{ D term = \"synthetic\" }}}}"));
+        queries.push(format!("* {{{{ D term = wild:\"*label\" }}}}"));
+    }
+    for path in [&destination, &packed] {
+        let loaded = NumericStore::open(path).unwrap();
+        loaded.descriptions.get().unwrap().unwrap();
+        for query in &queries {
+            let expression = parse(query).unwrap_or_else(|e| panic!("{query}: {e}"));
+            // A fresh store has not loaded the index, so a small focus reads rows.
+            let fresh = NumericStore::open(path).unwrap();
+            assert_eq!(
+                evaluate(&fresh, &expression),
+                evaluate(&loaded, &expression),
+                "{query}"
+            );
+            assert!(!fresh.descriptions.is_loaded(), "{query} loaded the index");
+        }
+    }
+}
+
+#[test]
 fn cli_inspect_reports_what_an_archive_declares_before_importing() {
     let temp = TempDir::new().unwrap();
     let config = temp.path().join("config");

@@ -7,12 +7,11 @@ only covers the numeric core.
 
 ## Now
 
-**Description filters still load the whole index.** The first description-filter
-query in a process loads every description's metadata, up to 5,940 ms; later
-ones take about 1 ms. Describing a concept no longer pays this: it reads that
-concept's rows by position in about 0.2 ms. Filters could do the same when the
-focus is small, reading only its concepts' rows, and load the index only for a
-broad focus.
+**Description filters on a broad focus load the whole index.** A focus of up to
+1,000 concepts reads only its concepts' descriptions, about 0.2 ms each. A larger
+focus loads every description's metadata once per process, up to 5,940 ms, and
+later filters then take about 1 ms. Reading rows for larger foci in parallel, or
+a metadata-only section, would narrow that further.
 
 **Cold start.** Opening an index takes 94 ms uncompressed and 177 ms packed.
 Opening checks that stored indexes are in range; it does not re-derive the
