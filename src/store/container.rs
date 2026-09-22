@@ -401,6 +401,10 @@ fn align(value: u64) -> Result<u64> {
 /// hundreds of labels scattered across the file.
 const RANDOM_ACCESS: &[&str] = &["display.bin"];
 
+/// Sections read a concept at a time, packed in small blocks: describing one
+/// concept reads about a dozen arrays, each costing a block decode.
+const SMALL_BLOCKS: &[(&str, u32)] = &[("descriptions.bin", 8192)];
+
 /// Packs verified component bytes into a new file. Existing destinations are never replaced.
 pub fn pack(source: &Path, destination: &Path) -> Result<()> {
     pack_with_options(source, destination, PackOptions::default())
@@ -446,12 +450,11 @@ pub fn pack_with_options(source: &Path, destination: &Path, options: PackOptions
         offsets.push(spool.stream_position()?);
         let compress = options.compress && !RANDOM_ACCESS.contains(&name.as_str());
         let encoded_length = if compress {
-            super::blocks::encode(
-                &mut section.reader()?,
-                &mut spool,
-                length,
-                options.block_bytes,
-            )?
+            let block_bytes = SMALL_BLOCKS
+                .iter()
+                .find(|(small, _)| *small == name)
+                .map_or(options.block_bytes, |&(_, bytes)| bytes.min(options.block_bytes));
+            super::blocks::encode(&mut section.reader()?, &mut spool, length, block_bytes)?
         } else {
             let copied = io::copy(&mut section.reader()?, &mut spool)?;
             ensure!(copied == length, "Truncated source section");

@@ -18,6 +18,7 @@ mod term_storage;
 pub(crate) use container::IndexSource;
 pub use container::{pack, pack_with_options, verify, PackOptions, Verification};
 use container::{Section, SectionReader};
+pub use descriptions::DescriptionRow;
 pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
 pub use identifiers::{Identifier, IdentifierIndex, IdentifierManifest, IdentifierStore};
 pub use members::{

@@ -1538,6 +1538,31 @@ fn batch_workers_answer_every_request_under_its_id() {
 }
 
 #[test]
+fn one_concept_reads_the_same_descriptions_as_the_loaded_index() {
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let packed = temp.path().join("store.ecl");
+    snomed_ecl_engine::store::pack(&destination, &packed).unwrap();
+    for path in [&destination, &packed] {
+        let loaded = NumericStore::open(path).unwrap();
+        loaded.descriptions.get().unwrap().unwrap();
+        let seeking = NumericStore::open(path).unwrap();
+        let mut seen = 0;
+        for concept in 0..loaded.ids.len() as u32 {
+            let expected = loaded.descriptions.concept_rows(concept).unwrap().unwrap();
+            let read = seeking.descriptions.concept_rows(concept).unwrap().unwrap();
+            assert_eq!(read, expected, "concept {}", loaded.ids[concept as usize]);
+            seen += read.len();
+        }
+        assert!(seen > 0, "the fixture has descriptions");
+        assert!(seeking.descriptions.concept_rows(loaded.ids.len() as u32).is_err());
+    }
+}
+
+#[test]
 fn cli_inspect_reports_what_an_archive_declares_before_importing() {
     let temp = TempDir::new().unwrap();
     let config = temp.path().join("config");
