@@ -59,9 +59,9 @@ process, for you alone. Being quicker at that one operation says nothing about
 the rest.
 
 **What is untested.** Every measurement here is a single sequential client.
-Snowstorm's extra CPUs would matter under concurrent load; this engine's CLI is
-sequential and would not use them. Neither side has been measured under
-concurrency.
+Snowstorm's extra CPUs would matter under concurrent load. `batch --workers N`
+now answers concurrent requests from one index, but neither side has been
+benchmarked under concurrency.
 
 ## Setting up and serving one release
 
@@ -216,7 +216,9 @@ every invocation is a new process.
 so loading is not the cause. Evaluating one scans reference set member rows.
 Lite answered the same expressions in about 4 ms.
 
-Both are recorded in the [roadmap](roadmap.md).
+Since this run, a history section indexes associations from both ends: the 320
+history expressions in the 10,000-expression corpus now take a 0.016 ms median.
+The description-filter load remains and is recorded in the [roadmap](roadmap.md).
 
 ### The disagreements
 
@@ -257,6 +259,32 @@ No comparison server involved.
 | Open a packed index | 177 ms |
 | Open an uncompressed index | 94 ms |
 | Process start, open and answer one query | 177 ms |
+
+### Costing what a query touches
+
+Operators used to pay for the whole edition: subsumption allocated and scanned
+edition-sized markers, reverse attributes and dotted projections scanned every
+concept, refinements tested every focus concept, and member filters scanned
+every row of a reference set. Each now costs what it reads. Evaluation time as
+reported by `batch`, median of repeated runs, before and after, on WSL2 on the
+development machine; not comparable with the container figures above.
+
+| Workload | Before | After |
+|---|---:|---:|
+| 1,000-expression corpus, total | 1,470 ms | 28 ms |
+| 10,000-expression corpus, total | 18.2 s | 0.62 s |
+| `* : 363698007 = << 39057004` | 38.4 ms | 0.02 ms |
+| `<< 404684003 : 363698007 = << 39057004` | 11.9 ms | 0.22 ms |
+| `<< 373873005 : 127489000 = << 387517004` | 13.7 ms | 0.18 ms |
+| `* : R 363698007 = << 195967001` | 11.9 ms | 0.02 ms |
+| `<< 195967001 MINUS << 426979002` | 1.25 ms | 0.01 ms |
+| `>> 195967001` | 0.64 ms | 0.003 ms |
+| 400 `<<` operators joined by `OR` | exceeded the work limit | 1.35 ms |
+| Search, warm | 21 ms | 0.5 ms |
+| Describe a concept, first in a process | 650 ms | 1.7 ms |
+
+Both corpora return the recorded answers, all 10,000 including term matching
+checked with the ICU build.
 
 ## Starting cold
 

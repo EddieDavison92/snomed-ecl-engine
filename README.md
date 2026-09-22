@@ -126,7 +126,7 @@ the index carries a word index over active description terms and a lookup that
 returns a concept's descriptions, hierarchy neighbours, relationship groups and
 reference set membership.
 
-Searching the whole UK edition takes 3 to 18 ms. The same question asked as an
+Searching the whole UK edition takes under a millisecond once the index is warm, and a search can be limited to an expression's answer with `within`. The same question asked as an
 ECL term filter takes over a second scoped to one hierarchy, and exceeds the
 work limit unscoped, because it scans the descriptions of everything in scope.
 Words are extracted once at build time instead, so a search is a binary search

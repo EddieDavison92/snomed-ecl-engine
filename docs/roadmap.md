@@ -7,26 +7,12 @@ only covers the numeric core.
 
 ## Now
 
-**Subsumption cost.** Every hierarchy operator allocates two dense marker arrays
-sized to the whole store and scans all of it, so `<< 24700007` costs the same as
-a query returning 100,000 concepts. Against the default work budget that caps one
-expression at about 43 subsumption operators, which a codelist-derived union
-reaches easily. The fix is to make the cost proportional to nodes touched:
-generation-stamped markers reused across the query, and results collected from
-the touched set. Raising the budget would hide it.
-
-**Two slow paths.** Measured against the comparison servers, these are the only
-expressions where this engine loses.
-
-- *The first description-filter query in a process* loads the description index,
-  costing up to 5,940 ms. Later ones take about 1 ms. A serverless invocation is
-  a new process every time, so it pays that load on every cold start that uses a
-  description filter. Loading only the parts a predicate needs, or building a
-  smaller metadata-only section, would cut it.
-- *History supplements* run at about 16 ms, cold or warm, against roughly 4 ms
-  on Snowstorm Lite. `Context::history` in `src/eval/history.rs` scans every row
-  of every selected reference set's member table. An index from concept to the
-  association rows that reference it would replace the scan.
+**Description filters still load the whole index.** The first description-filter
+query in a process loads every description's metadata, up to 5,940 ms; later
+ones take about 1 ms. Describing a concept no longer pays this: it reads that
+concept's rows by position in about 0.2 ms. Filters could do the same when the
+focus is small, reading only its concepts' rows, and load the index only for a
+broad focus.
 
 **Cold start.** Opening an index takes 94 ms uncompressed and 177 ms packed.
 Opening checks that stored indexes are in range; it does not re-derive the
@@ -67,8 +53,10 @@ with data loaded on demand. Measure the complete engine with every semantic inde
 resident, including typed member tables and the Unicode backend, and report the
 minimum allocation at which the whole workload completes.
 
-**Concurrency.** The library runs four workers over one shared index. The CLI is
-sequential and the batch process handles one request at a time.
+**Warm-up.** A server's first scoped search or attribute refinement builds the
+attribute inverse, about 20 ms, and its first search loads the word index, about
+100 ms. The refset client asks for both at start-up; the engine could do it
+itself for `batch --workers`.
 
 ## Blocked
 
