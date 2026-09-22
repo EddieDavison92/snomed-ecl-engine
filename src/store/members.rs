@@ -430,16 +430,28 @@ pub(crate) fn valid_time(value: u32) -> bool {
     (1000..=9999).contains(&year) && day >= 1 && day <= days
 }
 
+/// A table, opened on first use, and per-column row orders built on first use.
+#[derive(Debug)]
+struct Slot {
+    meta: MemberManifest,
+    table: OnceLock<std::result::Result<MemberTable, String>>,
+    orders: Box<[OnceLock<Vec<u32>>]>,
+}
+impl Slot {
+    fn new(meta: MemberManifest, table: OnceLock<std::result::Result<MemberTable, String>>) -> Self {
+        let orders = (0..meta.fields.len()).map(|_| OnceLock::new()).collect();
+        Self {
+            meta,
+            table,
+            orders,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct MemberStore {
     source: Option<IndexSource>,
-    tables: BTreeMap<
-        u64,
-        (
-            MemberManifest,
-            OnceLock<std::result::Result<MemberTable, String>>,
-        ),
-    >,
+    tables: BTreeMap<u64, Slot>,
     available: bool,
 }
 impl MemberStore {
@@ -460,7 +472,7 @@ impl MemberStore {
             ensure!(
                 result
                     .tables
-                    .insert(table.refset, (meta, OnceLock::from(Ok(table))))
+                    .insert(table.refset, Slot::new(meta, OnceLock::from(Ok(table))))
                     .is_none(),
                 "Duplicate member table"
             );
@@ -478,7 +490,7 @@ impl MemberStore {
                 meta.refset > 0
                     && store
                         .tables
-                        .insert(meta.refset, (meta, OnceLock::new()))
+                        .insert(meta.refset, Slot::new(meta, OnceLock::new()))
                         .is_none(),
                 "Duplicate member manifest"
             );
@@ -492,17 +504,31 @@ impl MemberStore {
         self.tables.keys().copied()
     }
     pub fn fields(&self, refset: u64) -> Option<&[String]> {
-        self.tables.get(&refset).map(|(m, _)| m.fields.as_slice())
+        self.tables.get(&refset).map(|slot| slot.meta.fields.as_slice())
     }
     pub fn get(&self, refset: u64) -> Result<Option<&MemberTable>> {
-        let Some((meta, slot)) = self.tables.get(&refset) else {
+        let Some(slot) = self.tables.get(&refset) else {
             return Ok(None);
         };
-        match slot.get_or_init(|| {
-            MemberTable::open(self.source.as_ref().unwrap(), meta).map_err(|e| e.to_string())
+        match slot.table.get_or_init(|| {
+            MemberTable::open(self.source.as_ref().unwrap(), &slot.meta).map_err(|e| e.to_string())
         }) {
             Ok(table) => Ok(Some(table)),
             Err(e) => bail!("Member index: {e}"),
         }
+    }
+    /// Rows of an identifier column ordered by value, then row; `None` for
+    /// other column types. Built on first use and kept with the table.
+    pub fn order(&self, refset: u64, column: usize) -> Result<Option<&[u32]>> {
+        let Some(MemberColumn::Id(values)) = self.get(refset)?.and_then(|t| t.columns.get(column))
+        else {
+            return Ok(None);
+        };
+        let order = self.tables[&refset].orders[column].get_or_init(|| {
+            let mut rows: Vec<u32> = (0..values.len() as u32).collect();
+            rows.sort_by_key(|&row| values[row as usize]);
+            rows
+        });
+        Ok(Some(order))
     }
 }

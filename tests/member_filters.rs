@@ -638,7 +638,7 @@ fn generated_member_queries_match_the_independent_row_scan() {
         3 => format!("(<< {} OR {})", id(0), id(20 + i % 3)),
         _ => id(21).to_string(),
     };
-    let filter = |i: usize| match i % 11 {
+    let filter = |i: usize| match i % 13 {
         0 => String::new(),
         1 => " {{M active=0}}".into(),
         2 => " {{M active=\"*\"}}".into(),
@@ -663,6 +663,13 @@ fn generated_member_queries_match_the_independent_row_scan() {
         9 => format!(
             " {{{{M targetComponentId!={}}}}} {{{{M active=\"*\"}}}}",
             id(99)
+        ),
+        // One concept on an identifier column reads only its rows.
+        11 => format!(" {{{{M referencedComponentId={}}}}}", id(i % 16)),
+        12 => format!(
+            " {{{{M targetComponentId=({} OR {}), mapGroup!=#0}}}}",
+            id(i % 16),
+            id(98)
         ),
         _ => " {{M mapGroup=#-1, grouped=false}}".into(),
     };
@@ -1084,4 +1091,61 @@ fn map_target_strings_use_the_same_row_as_numeric_filters() {
     ] {
         assert_eq!(codes(&store, query), expected, "{query}");
     }
+}
+
+#[test]
+fn rows_found_through_an_identifier_column_keep_table_order() {
+    // Enough rows that one referenced concept is looked up rather than scanned.
+    let rows = 400usize;
+    let referenced: Vec<u64> = (0..rows).map(|i| [300001, 300002, 300003][i * 7 % 3]).collect();
+    let targets: Vec<u64> = (0..rows).map(|i| [400001, 400002, 400003][i % 3]).collect();
+    let mut text = TextColumn::default();
+    for i in 0..rows {
+        text.push(&format!("T{i}")).unwrap();
+    }
+    let mut base = table();
+    base.columns = vec![
+        C::Uuid((0..rows).map(|i| [(i / 256) as u8 + 1, i as u8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]).collect()),
+        C::Time(vec![20260826; rows]),
+        C::Boolean((0..rows).map(|i| u8::from(i % 5 != 0)).collect()),
+        C::Id(vec![100001; rows]),
+        C::Id(vec![200001; rows]),
+        C::Id(referenced.clone()),
+        C::Integer((0..rows).map(|i| (i % 4) as i64).collect()),
+        C::Text(text),
+        C::Id(targets.clone()),
+        C::Boolean(vec![0; rows]),
+        C::Time(vec![20260826; rows]),
+    ];
+    let mut store = fixture();
+    store.member_tables = MemberStore::loaded(vec![base]).unwrap();
+    let QueryResult::Rows(found) = evaluate_result(
+        &store,
+        &parse("^[mapTarget, targetComponentId] 200001 {{M referencedComponentId = 300002}}")
+            .unwrap(),
+    )
+    .unwrap() else {
+        panic!()
+    };
+    let expected: Vec<String> = (0..rows)
+        .filter(|&i| i % 5 != 0 && referenced[i] == 300002)
+        .map(|i| format!("T{i}"))
+        .collect();
+    let actual: Vec<String> = found
+        .iter()
+        .map(|row| match &row["mapTarget"] {
+            MemberValue::String(text) => text.clone(),
+            other => panic!("{other:?}"),
+        })
+        .collect();
+    assert_eq!(actual, expected);
+    assert_eq!(
+        codes(&store, "^[targetComponentId] 200001 {{M referencedComponentId = 300003, mapGroup = #2}}"),
+        (0..rows)
+            .filter(|&i| i % 5 != 0 && referenced[i] == 300003 && i % 4 == 2)
+            .map(|i| targets[i])
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>()
+    );
 }
