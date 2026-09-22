@@ -250,8 +250,25 @@ impl Context<'_> {
                 Ok(result)
             }
             Expr::Refined(focus, refinement) => {
-                let candidates = self.eval(focus, depth + 1)?;
                 let prepared = self.prepare(refinement, depth + 1, false)?;
+                // Test only concepts that can satisfy the refinement, when it
+                // names them; `*` then needn't be materialised at all.
+                let candidates = match Self::candidates(&prepared) {
+                    Some(bound) if matches!(focus.as_ref(), Expr::All) => {
+                        self.tick(bound.len())?;
+                        self.claim(bound.len())?;
+                        bound
+                    }
+                    Some(bound) => {
+                        let focus = self.eval(focus, depth + 1)?;
+                        self.tick(focus.len().min(bound.len()) + bound.len())?;
+                        let tested = refinement::intersect(&focus, &bound);
+                        self.release(focus);
+                        self.claim(tested.len())?;
+                        tested
+                    }
+                    None => self.eval(focus, depth + 1)?,
+                };
                 let mut result = self.reserve(candidates.len())?;
                 for &source in &candidates {
                     if self.matches_refinement(&prepared, source, None)? {

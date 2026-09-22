@@ -13,7 +13,10 @@ pub(super) enum Prepared {
         names: Vec<u32>,
         range: Range,
         comparison: Comparison,
-        reverse_counts: Option<Vec<u32>>,
+        /// Reverse attributes only: each concept something points at, with the
+        /// number of distinct sources pointing at it, sorted by concept. Sized
+        /// by the answer rather than the edition.
+        reverse_counts: Option<Vec<(u32, u32)>>,
     },
     Group(Cardinality, Box<Prepared>),
     And(Vec<Prepared>),
@@ -77,27 +80,29 @@ impl Context<'_> {
                     let Range::Concepts(sources) = &range else {
                         return Err(EvalError::InvalidAst);
                     };
-                    let n = self.store.ids.len();
-                    self.tick(n)?;
-                    let mut counts = self.reserve(n)?;
-                    counts.resize(n, 0);
                     let isa = self
                         .store
                         .ordinal(116680003)
                         .is_some_and(|kind| names.binary_search(&kind).is_ok());
-                    for source in 0..n as u32 {
+                    // `=` walks only the value set; `!=` still walks every other concept.
+                    let n = self.store.ids.len();
+                    let walk = if attribute.comparison == Comparison::Eq {
+                        self.tick(sources.len())?;
+                        Box::new(sources.iter().copied()) as Box<dyn Iterator<Item = u32>>
+                    } else {
+                        self.tick(n)?;
+                        Box::new((0..n as u32).filter(|s| sources.binary_search(s).is_err()))
+                    };
+                    let mut pointed = Vec::new();
+                    let mut targets = Vec::new();
+                    for source in walk {
                         if !self.store.is_active(source) {
-                            continue;
-                        }
-                        let selected = sources.binary_search(&source).is_ok();
-                        if selected != (attribute.comparison == Comparison::Eq) {
                             continue;
                         }
                         let rows = self.store.attributes.get(source);
                         let parents = self.store.parents.get(source);
                         self.tick(1 + rows.len() + if isa { parents.len() } else { 0 })?;
-                        let mut targets =
-                            self.reserve(rows.len() + if isa { parents.len() } else { 0 })?;
+                        targets.clear();
                         targets.extend(
                             rows.iter()
                                 .filter(|row| names.binary_search(&row.kind).is_ok())
@@ -106,14 +111,23 @@ impl Context<'_> {
                         if isa {
                             targets.extend(parents);
                         }
+                        // Reverse cardinality counts source concepts, not duplicate incoming rows.
                         targets.sort_unstable();
                         targets.dedup();
-                        // Reverse cardinality counts source concepts, not duplicate incoming rows.
-                        for &target in &targets {
-                            counts[target as usize] += 1;
-                        }
-                        self.release(targets);
+                        self.claim(targets.len())?;
+                        pointed.extend_from_slice(&targets);
                     }
+                    self.tick(pointed.len())?;
+                    pointed.sort_unstable();
+                    let mut counts: Vec<(u32, u32)> = Vec::new();
+                    for &target in &pointed {
+                        match counts.last_mut() {
+                            Some((last, count)) if *last == target => *count += 1,
+                            _ => counts.push((target, 1)),
+                        }
+                    }
+                    self.live -= pointed.len();
+                    self.claim(counts.len() * 2)?;
                     reverse_counts = Some(counts);
                 }
                 Ok(Prepared::Attribute {
@@ -160,7 +174,10 @@ impl Context<'_> {
                 reverse_counts,
             } => {
                 if let Some(counts) = reverse_counts {
-                    return Ok(cardinality.contains(counts[source as usize] as usize));
+                    let count = counts
+                        .binary_search_by_key(&source, |&(target, _)| target)
+                        .map_or(0, |i| counts[i].1);
+                    return Ok(cardinality.contains(count as usize));
                 }
                 let rows = match range {
                     Range::Concepts(_) => self.store.attributes.get(source),
@@ -244,6 +261,37 @@ impl Context<'_> {
             }
         }
     }
+    /// A sorted superset of the concepts that can satisfy `prepared`, when one
+    /// is known without testing each concept; `None` means test every concept.
+    ///
+    /// A reverse attribute needing at least one match holds only for concepts
+    /// something points at, so `* : R x = y` tests hundreds of concepts rather
+    /// than the edition. The per-concept test still decides every answer.
+    pub(super) fn candidates(prepared: &Prepared) -> Option<Vec<u32>> {
+        match prepared {
+            Prepared::Attribute {
+                cardinality,
+                reverse_counts: Some(counts),
+                ..
+            } if cardinality.min >= 1 => Some(counts.iter().map(|&(target, _)| target).collect()),
+            Prepared::Attribute { .. } => None,
+            Prepared::Group(cardinality, inner) if cardinality.min >= 1 => Self::candidates(inner),
+            Prepared::Group(..) => None,
+            Prepared::And(parts) => parts
+                .iter()
+                .filter_map(Self::candidates)
+                .reduce(|left, right| intersect(&left, &right)),
+            Prepared::Or(parts) => {
+                let mut union = Vec::new();
+                for part in parts {
+                    union.extend(Self::candidates(part)?);
+                }
+                union.sort_unstable();
+                union.dedup();
+                Some(union)
+            }
+        }
+    }
     pub(super) fn release_prepared(&mut self, prepared: Prepared) {
         match prepared {
             Prepared::Attribute {
@@ -257,7 +305,7 @@ impl Context<'_> {
                     Range::Concepts(values) | Range::Concrete(values) => self.release(values),
                 }
                 if let Some(counts) = reverse_counts {
-                    self.release(counts);
+                    self.live -= counts.len() * 2;
                 }
             }
             Prepared::Group(_, inner) => self.release_prepared(*inner),
@@ -345,6 +393,24 @@ impl Context<'_> {
         self.live -= n.div_ceil(4);
         Ok(QueryResult::Concepts(result))
     }
+}
+
+/// Both inputs sorted and unique.
+pub(super) fn intersect(left: &[u32], right: &[u32]) -> Vec<u32> {
+    let mut out = Vec::with_capacity(left.len().min(right.len()));
+    let (mut a, mut b) = (0, 0);
+    while a < left.len() && b < right.len() {
+        match left[a].cmp(&right[b]) {
+            std::cmp::Ordering::Less => a += 1,
+            std::cmp::Ordering::Greater => b += 1,
+            std::cmp::Ordering::Equal => {
+                out.push(left[a]);
+                a += 1;
+                b += 1;
+            }
+        }
+    }
+    out
 }
 
 fn decode_rf2_string(wire: &str) -> Result<String> {
