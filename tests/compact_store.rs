@@ -149,8 +149,8 @@ fn packed_store_preserves_lazy_sections_queries_displays_and_supplements() {
         serde_json::to_value(source_ids).unwrap(),
         serde_json::to_value(packed_ids).unwrap()
     );
-    let mut original_display = DisplayStore::open(&directory).unwrap();
-    let mut packed_display = DisplayStore::open(&packed).unwrap();
+    let original_display = DisplayStore::open(&directory).unwrap();
+    let packed_display = DisplayStore::open(&packed).unwrap();
     for ordinal in 0..source.ids.len() as u32 {
         assert_eq!(
             original_display.get(ordinal).unwrap(),
@@ -309,7 +309,7 @@ fn packed_section_readers_do_not_share_seek_positions() {
         for _ in 0..8 {
             let (path, store) = (&packed, &store);
             scope.spawn(move || {
-                let mut display = DisplayStore::open(path).unwrap();
+                let display = DisplayStore::open(path).unwrap();
                 for _ in 0..20 {
                     assert_eq!(
                         display
@@ -738,7 +738,7 @@ fn roundtrip_preserves_groups_precision_and_separate_displays() {
     assert!(store
         .concrete_values
         .contains(&ConcreteValue::Text("\"synthetic value\"".into())));
-    let mut display = DisplayStore::open(&destination).unwrap();
+    let display = DisplayStore::open(&destination).unwrap();
     assert_eq!(
         display.get(ordinal).unwrap().as_deref(),
         Some("Synthetic realm label")
@@ -1476,6 +1476,68 @@ fn batch_returns_labels_only_when_they_are_asked_for() {
 }
 
 #[test]
+fn batch_workers_answer_every_request_under_its_id() {
+    use std::process::{Command, Stdio};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let requests: Vec<String> = (0..200)
+        .map(|i| match i % 5 {
+            0 => format!("{{\"id\":{i},\"ecl\":\"<< {ROOT}\",\"display\":true}}"),
+            1 => format!("{{\"id\":\"r{i}\",\"ecl\":\"{LEAF}\",\"count_only\":true}}"),
+            2 => format!("{{\"id\":{i},\"concept\":\"{LEFT}\"}}"),
+            3 => format!("{{\"id\":{i},\"ecl\":\"<<\"}}"),
+            _ => format!("{{\"id\":{i},\"unknown\":true}}"),
+        })
+        .collect();
+    let run = |extra: &[&str]| -> Vec<serde_json::Value> {
+        let mut process = Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+            .arg("batch")
+            .arg(&destination)
+            .args(extra)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+        {
+            let mut input = process.stdin.take().unwrap();
+            for request in &requests {
+                writeln!(input, "{request}").unwrap();
+            }
+        }
+        let output = process.wait_with_output().unwrap();
+        assert!(output.status.success());
+        String::from_utf8(output.stdout)
+            .unwrap()
+            .lines()
+            .map(|line| {
+                let mut value: serde_json::Value = serde_json::from_str(line).unwrap();
+                value.as_object_mut().unwrap().retain(|k, _| !k.ends_with("_ms"));
+                value
+            })
+            .collect()
+    };
+    let sequential = run(&[]);
+    let mut concurrent = run(&["--workers", "4"]);
+    assert_eq!(sequential.len(), requests.len());
+    // Sequential answers come in order, each carrying its id.
+    for (i, answer) in sequential.iter().enumerate() {
+        let id = if i % 5 == 1 { serde_json::json!(format!("r{i}")) } else { serde_json::json!(i) };
+        assert_eq!(answer["id"], id, "{answer}");
+    }
+    assert!(sequential[3]["error"].is_string(), "a parse error still carries its id");
+    assert_eq!(sequential[4]["error"], "InvalidRequest");
+    // Workers may answer in any order, but the same answers under the same ids.
+    let key = |value: &serde_json::Value| value["id"].to_string();
+    concurrent.sort_by_key(key);
+    let mut expected = sequential.clone();
+    expected.sort_by_key(key);
+    assert_eq!(concurrent, expected);
+}
+
+#[test]
 fn cli_inspect_reports_what_an_archive_declares_before_importing() {
     let temp = TempDir::new().unwrap();
     let config = temp.path().join("config");
@@ -1717,7 +1779,7 @@ fn supplementary_refsets_preserve_base_semantics_and_provenance() {
         codes(&format!("{LEAF} : {KIND} = #0.100000000000000001")),
         [LEAF]
     );
-    let mut displays = DisplayStore::open(&output).unwrap();
+    let displays = DisplayStore::open(&output).unwrap();
     assert_eq!(
         displays
             .get(store.ordinal(LEAF).unwrap())

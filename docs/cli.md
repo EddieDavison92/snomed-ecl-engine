@@ -122,6 +122,17 @@ A request carrying `"concept"` returns that concept's descriptions, parents,
 children, relationship groups and reference set membership. Concrete values keep
 their published type. An unknown SCTID returns `{"error":"NotFound"}`.
 
+A request carrying `"history"` returns the concept's historical associations in
+both directions: `successors` (what it was replaced by, same as, and so on) and
+`predecessors`, each naming the association. It needs the history section; run
+`build-history STORE` on an index built before it existed.
+
+Any request may carry an `"id"`, any JSON value, which comes back on its
+response. `batch STORE --workers N` answers with N threads sharing one loaded
+index, writing each response as it finishes, so a slow request does not hold up
+quick ones behind it. Responses then arrive out of order; match them by `id`.
+Without `--workers`, requests are answered one at a time, in order.
+
 [Member projections](ecl-support.md) can return distinct typed values or rows. `expand` emits these as JSONL, and `--count` counts values or rows. `--display` requires concept results. Batch responses use `result_type: "values"` with `values`, or `result_type: "rows"` with `rows`, instead of `codes`; `count_only` omits the array. Concept result formats are unchanged.
 
 The presentation code uses Rust's standard library and belongs only to the CLI binary. Library users get no terminal output or UI dependencies. A full-screen workbench is deferred. Full ECL implementation remains required; [conformance](ecl-support.md) tracks the outstanding work.

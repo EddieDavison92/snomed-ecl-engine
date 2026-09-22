@@ -575,16 +575,18 @@ fn validate_offsets(offsets: &[u32], count: usize, values: usize) -> Result<()> 
 
 /// Opens only the display file and its manifest; text is fetched by ordinal on demand.
 pub struct DisplayStore {
-    input: BufReader<SectionReader>,
+    /// Shared by concurrent requests; each read is one seek and a few bytes.
+    input: std::sync::Mutex<BufReader<SectionReader>>,
     offsets: Vec<u32>,
     start: u64,
 }
 
 impl DisplayStore {
     fn verify_text(&mut self) -> Result<()> {
-        self.input.seek(SeekFrom::Start(self.start))?;
+        let input = self.input.get_mut().expect("display reader poisoned");
+        input.seek(SeekFrom::Start(self.start))?;
         let mut text = String::new();
-        self.input.read_to_string(&mut text)?;
+        input.read_to_string(&mut text)?;
         ensure!(
             self.offsets
                 .iter()
@@ -594,12 +596,13 @@ impl DisplayStore {
         Ok(())
     }
     #[cfg(feature = "import")]
-    pub(crate) fn into_labels(mut self) -> Result<Vec<Option<String>>> {
-        self.input.seek(SeekFrom::Start(self.start))?;
+    pub(crate) fn into_labels(self) -> Result<Vec<Option<String>>> {
+        let mut input = self.input.into_inner().expect("display reader poisoned");
+        input.seek(SeekFrom::Start(self.start))?;
         let mut labels = Vec::with_capacity(self.offsets.len() - 1);
         for offsets in self.offsets.windows(2) {
             let mut bytes = vec![0; (offsets[1] - offsets[0]) as usize];
-            self.input.read_exact(&mut bytes)?;
+            input.read_exact(&mut bytes)?;
             labels.push(if bytes.is_empty() {
                 None
             } else {
@@ -640,7 +643,7 @@ impl DisplayStore {
         validate_offsets(&offsets, manifest.concept_count, input.remaining as usize)?;
         let start = input.reader.stream_position()?;
         Ok(Self {
-            input: input.reader,
+            input: std::sync::Mutex::new(input.reader),
             offsets,
             start,
         })
@@ -655,17 +658,20 @@ impl DisplayStore {
         Some(self.offsets.get(i + 1)? - self.offsets.get(i)?)
     }
 
-    pub fn get(&mut self, ordinal: u32) -> Result<Option<String>> {
+    pub fn get(&self, ordinal: u32) -> Result<Option<String>> {
         let i = ordinal as usize;
         ensure!(i + 1 < self.offsets.len(), "Display ordinal out of range");
         let length = (self.offsets[i + 1] - self.offsets[i]) as usize;
         if length == 0 {
             return Ok(None);
         }
-        self.input
-            .seek(SeekFrom::Start(self.start + self.offsets[i] as u64))?;
+        let mut input = self
+            .input
+            .lock()
+            .map_err(|_| anyhow::anyhow!("Display reader poisoned"))?;
+        input.seek(SeekFrom::Start(self.start + self.offsets[i] as u64))?;
         let mut bytes = vec![0; length];
-        self.input.read_exact(&mut bytes)?;
+        input.read_exact(&mut bytes)?;
         Ok(Some(String::from_utf8(bytes)?))
     }
 }
