@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import zipfile
 
-from benchmark_ecl import digest
+from common import digest
 from check_membership_rf2 import rows
 
 

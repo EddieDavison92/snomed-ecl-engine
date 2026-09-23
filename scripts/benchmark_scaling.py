@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 
-from benchmark_ecl import IMAGE, ROOT, summary
+from common import IMAGE, ROOT, summary
 
 
 def checksum(path):
@@ -41,9 +41,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--binary', default='target/linux-unicode/release/examples/benchmark_scaling')
-    parser.add_argument('--store', default='data/compact-store/v2-uk-ecl-completion.ecl')
+    parser.add_argument('--store', default='data/uk.ecl')
     parser.add_argument('--corpus', default='validation/ecl-10000.json')
-    parser.add_argument('--baseline', default='validation/ecl-10000-completion-results.json')
+    parser.add_argument('--baseline', default='validation/engine-10000-results.json')
     parser.add_argument('--samples', type=int, default=5)
     parser.add_argument('--configuration', action='append', help='CPU count,memory MiB,worker threads; repeat to compare')
     args = parser.parse_args()
@@ -93,7 +93,7 @@ def main():
             with raw_path.open('w', encoding='utf-8') as output, log_path.open('w', encoding='utf-8') as log:
                 result = subprocess.run(command, stdout=output, stderr=log, timeout=1800, check=True)
             raw = json.loads(raw_path.read_text(encoding='utf-8'))
-            assert raw['verified_complete_sets'] == len(baseline['result_digests'])
+            assert raw['verified_complete_sets'] == len(baseline.get('result_digests', baseline.get('results', [])))
             assert raw['cpu_max'].split() == [str(cpus * 100000), '100000']
             assert int(raw['memory_max']) == memory * 1024 * 1024
             run = compact(raw)

@@ -1,5 +1,0 @@
-[
-  {"id":"reverse-group-boundary","ecl":"(195967001 . 363698007) : { R 363698007 = 195967001 }","probe":true},
-  {"id":"reverse-ungrouped-control","ecl":"(195967001 . 363698007) : R 363698007 = 195967001","probe":true},
-  {"id":"member-without-operator","ecl":"900000000000527005 {{M referencedComponentId=67415000}}","probe":true}
-]

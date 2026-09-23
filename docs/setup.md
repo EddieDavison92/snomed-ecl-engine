@@ -104,7 +104,3 @@ unless a completed MAIN snapshot import is evidenced, the advertised edition
 matches the index, and two release sentinels agree. An accidental reimport or a
 mismatched release stops the run instead of producing numbers.
 
-Do not benchmark OneLondon's shared Ontoserver. Its latency and shared load make
-it unsuitable, and repeated load adds no correctness evidence. Small pinned
-correctness probes are fine: `scripts/Test-Ontoserver.ps1` refreshes them and
-writes to `data/validation`.

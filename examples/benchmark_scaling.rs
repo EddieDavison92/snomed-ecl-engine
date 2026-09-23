@@ -36,6 +36,8 @@ struct Baseline {
     container_sha256: String,
     edition: String,
     archive_sha256: String,
+    /// A corpus report names these `results`; each row carries the same fields.
+    #[serde(alias = "results")]
     result_digests: Vec<Expected>,
 }
 #[derive(Serialize)]

@@ -30,7 +30,9 @@ parser.add_argument("--repeat", type=int, default=1, help="evaluations per case;
 args = parser.parse_args()
 
 cases = json.loads(pathlib.Path(args.corpus).read_text())["cases"]
-expected = {r["id"]: r for r in json.loads(pathlib.Path(args.digests).read_text())["result_digests"]}
+report = json.loads(pathlib.Path(args.digests).read_text())
+# A benchmark report's results carry the same id, status, total and sha256.
+expected = {r["id"]: r for r in report.get("result_digests", report.get("results", []))}
 requests = "".join(json.dumps({"ecl": case["ecl"]}) + "\n" for case in cases for _ in range(args.repeat))
 
 run = subprocess.run(

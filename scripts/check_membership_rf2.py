@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 import zipfile
 
-from benchmark_ecl import ROOT, IMAGE, digest
+from common import ROOT, IMAGE, digest
 
 
 def rows(archive, name):

@@ -1,9 +1,0 @@
-{
-  "ecl": "195967001 {{D type=fsn}}",
-  "memory_limit_mib": 256,
-  "cpus": 1,
-  "exit_code": 137,
-  "oom_killed": true,
-  "complete_response": false,
-  "scope": "First description query with complete uncompressed description index. Failed runs are retained; numeric-only measurements are separate."
-}
