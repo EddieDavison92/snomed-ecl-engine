@@ -1,15 +1,25 @@
 [package]
 name = "snomed-ecl-engine"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.93"
-publish = false
 description = "Compact SNOMED CT ECL engine and RF2 index builder"
 license = "MIT"
 readme = "README.md"
 categories = ["command-line-utilities", "science"]
 repository = "https://github.com/EddieDavison92/snomed-ecl-engine"
 keywords = ["snomed", "ecl", "terminology", "rf2"]
+# Source only: the evidence under validation/ and the charts stay in the repository.
+include = ["/src", "/build.rs", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE"]
+
+# `cargo binstall snomed-ecl-engine` fetches the release executable instead of compiling.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }-default{ archive-suffix }"
+bin-dir = "{ name }-v{ version }-{ target }-default/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
 
 [dependencies]
 anyhow = "1"
