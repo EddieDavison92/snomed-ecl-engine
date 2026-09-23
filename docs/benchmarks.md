@@ -112,10 +112,18 @@ As ratios of medians:
 | Faster than Snowstorm by | 15.3x | 38.8x |
 | Faster than Snowstorm Lite by | 5.3x | 7.7x |
 
-Summed over each matched set of expressions rather than per expression,
-enumeration takes 1.07 s against Snowstorm's 101.6 s (95x) and 0.73 s against
-Lite's 22.8 s (31x). The totals differ from the medians because the largest
-results dominate them.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/batch-dark.svg">
+  <img alt="Expanding the 1,000-expression batch, summed over the expressions each server answered alike. On the 879 expressions Snowstorm also answered: this engine 1.07 s on 1 CPU and 256 MiB, Snowstorm 101.6 s on 8 CPUs and 12 GiB, 95 times longer. On the 587 Snowstorm Lite also answered: 0.73 s against 22.8 s on 1 CPU and 2 GiB, 31 times longer." src="images/batch-light.svg">
+</picture>
+
+Run as one batch, every matched expression enumerated in turn, the engine
+takes 1.07 s against Snowstorm's 101.6 s (95x) and 0.73 s against Lite's 22.8 s
+(31x). Counting instead, the batches take 0.85 s against 13.2 s (16x) and
+0.54 s against 5.9 s (11x). The batch ratios are larger than the medians
+because the largest results dominate a batch, and that is where transport and
+paging cost the servers most. Starting the engine and opening its index adds
+about 0.16 s once per batch.
 
 Timings include transport: JSONL to a child process for the engine, loopback
 HTTP with paging for the servers. Five seeded shuffled batches, no result cache,

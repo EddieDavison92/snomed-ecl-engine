@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="370" viewBox="0 0 720 370" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-label="Expanding the 1,000-expression batch">
+<rect width="720" height="370" fill="#fcfcfb"/>
+<text x="24" y="28" font-size="16" font-weight="600" fill="#0b0b0b">Expanding the 1,000-expression batch</text>
+<text x="24" y="48" font-size="12" fill="#52514e">Every code of each expression both engines answered alike, one after another, summed.</text>
+<text x="24" y="74" font-size="12.5" font-weight="600" fill="#0b0b0b">The 879 expressions Snowstorm also answered: 95x longer on the server</text>
+<text x="138" y="108.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
+<text x="138" y="121.0" font-size="10" text-anchor="end" fill="#52514e">1 CPU, 256 MiB</text>
+<path d="M150,98.0 H150.98694525922218 A4,4 0 0 1 154.98694525922218,102.0 V116.0 A4,4 0 0 1 150.98694525922218,120.0 H150 Z" fill="#2a78d6"/>
+<text x="164.98694525922218" y="113.0" font-size="12" font-weight="600" fill="#0b0b0b">1.07 s</text>
+<text x="138" y="150.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm</text>
+<text x="138" y="163.0" font-size="10" text-anchor="end" fill="#52514e">8 CPUs, 12 GiB</text>
+<path d="M150,140.0 H620.0 A4,4 0 0 1 624.0,144.0 V158.0 A4,4 0 0 1 620.0,162.0 H150 Z" fill="#1baf7a"/>
+<text x="634.0" y="155.0" font-size="12" font-weight="600" fill="#0b0b0b">101.6 s</text>
+<line x1="150" y1="86" x2="150" y2="170" stroke="#e4e3df" stroke-width="1"/>
+<text x="24" y="206" font-size="12.5" font-weight="600" fill="#0b0b0b">The 587 expressions Snowstorm Lite also answered: 31x longer on the server</text>
+<text x="138" y="240.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
+<text x="138" y="253.0" font-size="10" text-anchor="end" fill="#52514e">1 CPU, 256 MiB</text>
+<path d="M150,230.0 H161.17872717336977 A4,4 0 0 1 165.17872717336977,234.0 V248.0 A4,4 0 0 1 161.17872717336977,252.0 H150 Z" fill="#2a78d6"/>
+<text x="175.17872717336977" y="245.0" font-size="12" font-weight="600" fill="#0b0b0b">0.73 s</text>
+<text x="138" y="282.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
+<text x="138" y="295.0" font-size="10" text-anchor="end" fill="#52514e">1 CPU, 2 GiB</text>
+<path d="M150,272.0 H620.0 A4,4 0 0 1 624.0,276.0 V290.0 A4,4 0 0 1 620.0,294.0 H150 Z" fill="#eb6834"/>
+<text x="634.0" y="287.0" font-size="12" font-weight="600" fill="#0b0b0b">22.8 s</text>
+<line x1="150" y1="218" x2="150" y2="302" stroke="#e4e3df" stroke-width="1"/>
+<text x="24" y="342" font-size="11" fill="#52514e">Counting instead of enumerating, the same batches take Snowstorm 16x and Snowstorm Lite 11x longer on the</text>
+<text x="24" y="356" font-size="11" fill="#52514e">servers. The engine's process start and index open, about 0.16 s, is paid once per batch and not included.</text>
+</svg>

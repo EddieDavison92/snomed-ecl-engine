@@ -109,9 +109,10 @@ def panels_svg(theme_name, title, subtitle, panels, note, allocations=False):
         row = ROW + (8 if allocations else 0)
         widest = max(v for v, _ in panel["values"])
         span = WIDTH - LEFT - RIGHT
-        for index, (value, label) in enumerate(panel["values"]):
-            row_y = y + index * row
-            centre = row_y + row / 2
+        # A panel may show a subset of engines; each keeps its own colour.
+        engines = panel.get("engines", range(len(panel["values"])))
+        for position, (index, (value, label)) in enumerate(zip(engines, panel["values"])):
+            centre = y + position * row + row / 2
             length = max(2.0, span * value / widest)
             if allocations:
                 out.append(
@@ -286,6 +287,44 @@ def write(name, builder, *args, **options):
         print("wrote", path.relative_to(OUT.parent.parent))
 
 
+def batch_totals():
+    """Whole-batch time on each server's matched expressions, read from the reports."""
+    import json
+    import statistics
+    root = OUT.parent.parent / "validation"
+    engine = {r["id"]: r for r in json.loads(
+        (root / "engine-1000-results.json").read_text(encoding="utf-8"))["results"]}
+    panels, counts = [], []
+    for name, index in (("snowstorm", 2), ("lite", 1)):
+        report = json.loads((root / f"{name}-1000-results.json").read_text(encoding="utf-8"))
+        # Expressions where both engines returned the same code set.
+        matched = [r for r in report["results"] if r.get("matches_snowstorm")]
+        ours = sum(engine[r["id"]]["rust_enumeration_ms"] for r in matched) / 1000
+        theirs = sum(r["snowstorm_enumeration_ms"] for r in matched) / 1000
+        ours_count = sum(statistics.median(engine[r["id"]]["rust_request_samples_ms"])
+                         for r in matched) / 1000
+        theirs_count = sum(statistics.median(r["snowstorm_count_samples_ms"])
+                           for r in matched) / 1000
+        counts.append(f"{ENGINES[index]} {theirs_count / ours_count:.0f}x")
+        panels.append({
+            "title": f"The {len(matched)} expressions {ENGINES[index]} also answered: "
+                     f"{theirs / ours:.0f}x longer on the server",
+            "engines": [0, index],
+            "values": [(ours, f"{ours:.2f} s"), (theirs, f"{theirs:.1f} s")],
+        })
+    write(
+        "batch",
+        panels_svg,
+        "Expanding the 1,000-expression batch",
+        "Every code of each expression both engines answered alike, one after another, summed.",
+        panels,
+        "Counting instead of enumerating, the same batches take "
+        + " and ".join(counts) + " longer on the servers. The engine's process "
+        "start and index open, about 0.16 s, is paid once per batch and not included.",
+        allocations=True,
+    )
+
+
 def expansion_scaling():
     """Read the ladder results so the chart cannot drift from the measurements."""
     import json
@@ -359,4 +398,5 @@ if __name__ == "__main__":
         "transport: JSONL to a child process, or loopback HTTP with paging.",
         allocations=True,
     )
+    batch_totals()
     expansion_scaling()
