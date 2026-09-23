@@ -1,6 +1,88 @@
 use super::*;
 use crate::ecl::{Comparison, ConceptFilter, DescriptionFilter};
-use crate::store::DescriptionIndex;
+use crate::store::{DescriptionIndex, DescriptionRow};
+
+/// A focus up to this size reads its concepts' descriptions one concept at a
+/// time, about 0.2 ms each, rather than loading every description's metadata,
+/// which takes 0.65 to 6 s once per process.
+const SEEK_FOCUS: usize = 1000;
+
+/// One description, from the loaded index or read for a single concept.
+trait Row {
+    fn active(&self) -> bool;
+    fn language(&self) -> [u8; 2];
+    fn id(&self) -> u64;
+    fn kind(&self) -> u32;
+    fn module(&self) -> u32;
+    fn effective_time(&self) -> u32;
+    #[cfg(feature = "unicode")]
+    fn term_bytes(&self) -> usize;
+    fn dialects(&self) -> Vec<(u32, u32)>;
+    #[cfg(feature = "unicode")]
+    fn with_term<T>(&self, visit: impl FnOnce(&str) -> T) -> anyhow::Result<T>;
+}
+impl Row for (&DescriptionIndex, usize) {
+    fn active(&self) -> bool {
+        self.0.active(self.1)
+    }
+    fn language(&self) -> [u8; 2] {
+        self.0.language(self.1)
+    }
+    fn id(&self) -> u64 {
+        self.0.id(self.1)
+    }
+    fn kind(&self) -> u32 {
+        self.0.kind(self.1)
+    }
+    fn module(&self) -> u32 {
+        self.0.module(self.1)
+    }
+    fn effective_time(&self) -> u32 {
+        self.0.effective_time(self.1)
+    }
+    #[cfg(feature = "unicode")]
+    fn term_bytes(&self) -> usize {
+        self.0.term_bytes(self.1)
+    }
+    fn dialects(&self) -> Vec<(u32, u32)> {
+        self.0.dialects(self.1).collect()
+    }
+    #[cfg(feature = "unicode")]
+    fn with_term<T>(&self, visit: impl FnOnce(&str) -> T) -> anyhow::Result<T> {
+        self.0.with_term(self.1, visit)
+    }
+}
+impl Row for DescriptionRow {
+    fn active(&self) -> bool {
+        self.active
+    }
+    fn language(&self) -> [u8; 2] {
+        self.language
+    }
+    fn id(&self) -> u64 {
+        self.id
+    }
+    fn kind(&self) -> u32 {
+        self.kind
+    }
+    fn module(&self) -> u32 {
+        self.module
+    }
+    fn effective_time(&self) -> u32 {
+        self.effective_time
+    }
+    #[cfg(feature = "unicode")]
+    fn term_bytes(&self) -> usize {
+        self.term.len()
+    }
+    fn dialects(&self) -> Vec<(u32, u32)> {
+        self.dialects.clone()
+    }
+    #[cfg(feature = "unicode")]
+    fn with_term<T>(&self, visit: impl FnOnce(&str) -> T) -> anyhow::Result<T> {
+        Ok(visit(&self.term))
+    }
+}
 
 enum Prepared<'a> {
     #[cfg(feature = "unicode")]
@@ -33,14 +115,25 @@ impl Context<'_> {
                 "Term matching requires the unicode Cargo feature",
             ));
         }
-        let index = self
-            .store
-            .descriptions
-            .get()
-            .map_err(|e| EvalError::Index(e.to_string()))?
-            .ok_or(EvalError::Unsupported(
+        let descriptions = &self.store.descriptions;
+        if !descriptions.is_available() {
+            return Err(EvalError::Unsupported(
                 "Store has no description index; rebuild from RF2",
-            ))?;
+            ));
+        }
+        // A small focus reads its own rows unless the index is already loaded.
+        let index = if candidates.len() <= SEEK_FOCUS && !descriptions.is_loaded() {
+            None
+        } else {
+            Some(
+                descriptions
+                    .get()
+                    .map_err(|e| EvalError::Index(e.to_string()))?
+                    .ok_or(EvalError::Unsupported(
+                        "Store has no description index; rebuild from RF2",
+                    ))?,
+            )
+        };
         let mut prepared = Vec::new();
         let mut active_explicit = false;
         for filter in filters {
@@ -112,24 +205,21 @@ impl Context<'_> {
         for read in 0..candidates.len() {
             self.tick(1)?;
             let concept = candidates[read];
-            let mut found = false;
-            for row in index.for_concept(concept) {
-                self.tick(1)?;
-                if !active_explicit && !index.active(row) {
-                    continue;
+            let found = match index {
+                Some(index) => {
+                    let rows = index.for_concept(concept).map(|row| (index, row));
+                    self.any_row_matches(rows, active_explicit, &mut prepared)?
                 }
-                let mut matches = true;
-                for predicate in &mut prepared {
-                    if !self.description_matches(index, row, predicate)? {
-                        matches = false;
-                        break;
-                    }
+                None => {
+                    let rows = descriptions
+                        .concept_rows(concept)
+                        .map_err(|e| EvalError::Index(e.to_string()))?
+                        .ok_or(EvalError::Unsupported(
+                            "Store has no description index; rebuild from RF2",
+                        ))?;
+                    self.any_row_matches(rows.into_iter(), active_explicit, &mut prepared)?
                 }
-                if matches {
-                    found = true;
-                    break;
-                }
-            }
+            };
             if found {
                 candidates[write] = concept;
                 write += 1;
@@ -150,51 +240,68 @@ impl Context<'_> {
         Ok(candidates)
     }
 
-    fn description_matches(
+    fn any_row_matches(
         &mut self,
-        index: &DescriptionIndex,
-        row: usize,
-        predicate: &mut Prepared<'_>,
+        rows: impl Iterator<Item = impl Row>,
+        active_explicit: bool,
+        prepared: &mut [Prepared<'_>],
     ) -> Result<bool> {
+        for row in rows {
+            self.tick(1)?;
+            if !active_explicit && !row.active() {
+                continue;
+            }
+            let mut matches = true;
+            for predicate in prepared.iter_mut() {
+                if !self.description_matches(&row, predicate)? {
+                    matches = false;
+                    break;
+                }
+            }
+            if matches {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    fn description_matches(&mut self, row: &impl Row, predicate: &mut Prepared<'_>) -> Result<bool> {
         self.tick(1)?;
         let (op, member) = match predicate {
             #[cfg(feature = "unicode")]
             Prepared::Term(op, terms) => {
-                self.tick(terms.work_bytes(index.term_bytes(row)))?;
-                let matches = index
-                    .with_term(row, |text| {
+                self.tick(terms.work_bytes(row.term_bytes()))?;
+                let language = row.language();
+                let matches = row
+                    .with_term(|text| {
                         terms
-                            .matches(text, index.language(row))
+                            .matches(text, language)
                             .map_err(|e| EvalError::Text(format!("{e:?}")))
                     })
                     .map_err(|e| EvalError::Index(e.to_string()))??;
                 (*op, matches)
             }
-            Prepared::Active(op, value) => (*op, value.is_none_or(|v| v == index.active(row))),
+            Prepared::Active(op, value) => (*op, value.is_none_or(|v| v == row.active())),
             Prepared::Language(op, values) => {
                 self.tick(values.len())?;
-                (*op, values.contains(&index.language(row)))
+                (*op, values.contains(&row.language()))
             }
             Prepared::Id(op, values) => {
                 self.tick(values.len())?;
-                (*op, values.contains(&index.id(row)))
+                (*op, values.contains(&row.id()))
             }
             Prepared::Metadata(op, kind, values) => {
                 self.tick(values.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
                 (
                     *op,
                     values
-                        .binary_search(&if *kind {
-                            index.kind(row)
-                        } else {
-                            index.module(row)
-                        })
+                        .binary_search(&if *kind { row.kind() } else { row.module() })
                         .is_ok(),
                 )
             }
             Prepared::Date(op, values) => {
                 self.tick(values.len())?;
-                let date = index.effective_time(row);
+                let date = row.effective_time();
                 let actual = (date != 0).then_some(date);
                 (
                     *op,
@@ -211,7 +318,7 @@ impl Context<'_> {
             }
             Prepared::Dialect(op, dialects) => {
                 let mut found = false;
-                for (refset, acceptability) in index.dialects(row) {
+                for (refset, acceptability) in row.dialects() {
                     for (values, allowed) in dialects.iter() {
                         self.tick(
                             values.len().checked_ilog2().unwrap_or(0) as usize + allowed.len() + 1,

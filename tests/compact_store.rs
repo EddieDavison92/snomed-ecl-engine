@@ -1538,6 +1538,131 @@ fn batch_workers_answer_every_request_under_its_id() {
 }
 
 #[test]
+fn one_concept_reads_the_same_descriptions_as_the_loaded_index() {
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let packed = temp.path().join("store.ecl");
+    snomed_ecl_engine::store::pack(&destination, &packed).unwrap();
+    for path in [&destination, &packed] {
+        let loaded = NumericStore::open(path).unwrap();
+        loaded.descriptions.get().unwrap().unwrap();
+        let seeking = NumericStore::open(path).unwrap();
+        let mut seen = 0;
+        for concept in 0..loaded.ids.len() as u32 {
+            let expected = loaded.descriptions.concept_rows(concept).unwrap().unwrap();
+            let read = seeking.descriptions.concept_rows(concept).unwrap().unwrap();
+            assert_eq!(read, expected, "concept {}", loaded.ids[concept as usize]);
+            seen += read.len();
+        }
+        assert!(seen > 0, "the fixture has descriptions");
+        assert!(seeking.descriptions.concept_rows(loaded.ids.len() as u32).is_err());
+    }
+}
+
+#[test]
+fn search_within_an_expression_keeps_only_its_concepts() {
+    use std::process::{Command, Stdio};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    // Import builds the word index.
+    let mut process = Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .arg("batch")
+        .arg(&destination)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    {
+        let mut input = process.stdin.take().unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"<< {LEFT}\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"{ROOT}\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"{LEFT}\"}}").unwrap();
+        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"<<\"}}").unwrap();
+    }
+    let output = process.wait_with_output().unwrap();
+    assert!(output.status.success());
+    let lines: Vec<serde_json::Value> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    let codes = |line: &serde_json::Value| -> Vec<String> {
+        let mut codes: Vec<String> = line["concepts"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|c| c["code"].as_str().unwrap().to_owned())
+            .collect();
+        codes.sort();
+        codes
+    };
+    // RIGHT matches through its text definition.
+    assert_eq!(
+        codes(&lines[0]),
+        [ROOT.to_string(), RIGHT.to_string(), LEAF.to_string()]
+    );
+    assert_eq!(codes(&lines[1]), [LEAF.to_string()]);
+    assert_eq!(lines[1]["total"], 1);
+    assert_eq!(codes(&lines[2]), [ROOT.to_string()]);
+    assert_eq!(lines[3]["total"], 0);
+    assert_eq!(lines[4]["error"], "Syntax");
+}
+
+#[test]
+fn description_filters_on_a_small_focus_agree_with_the_loaded_index() {
+    use snomed_ecl_engine::{ecl::parse, eval::evaluate};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let destination = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    let packed = temp.path().join("store.ecl");
+    snomed_ecl_engine::store::pack(&destination, &packed).unwrap();
+    let mut queries = vec![
+        format!("* {{{{ D active = 0 }}}}"),
+        format!("* {{{{ D active = 1 }}}}"),
+        format!("<< {ROOT} {{{{ D type = fsn }}}}"),
+        format!("<< {ROOT} {{{{ D type != fsn }}}}"),
+        format!("* {{{{ D language = en }}}}"),
+        format!("* {{{{ D language != en }}}}"),
+        format!("* {{{{ D id = 6000012 }}}}"),
+        format!("* {{{{ D moduleId = {ROOT} }}}}"),
+        format!("* {{{{ D effectiveTime >= \"20260826\" }}}}"),
+        format!("* {{{{ D dialect = en-gb }}}}"),
+        format!("* {{{{ D dialect = en-gb (prefer) }}}}"),
+        format!("* {{{{ D dialect != en-gb }}}}"),
+        format!("* {{{{ D active = *, type = syn }}}}"),
+        format!("<< {LEFT} {{{{ D active = 0 }}}} {{{{ D language = en }}}}"),
+    ];
+    if cfg!(feature = "unicode") {
+        queries.push(format!("* {{{{ D term = \"synthetic\" }}}}"));
+        queries.push(format!("* {{{{ D term = wild:\"*label\" }}}}"));
+    }
+    for path in [&destination, &packed] {
+        let loaded = NumericStore::open(path).unwrap();
+        loaded.descriptions.get().unwrap().unwrap();
+        for query in &queries {
+            let expression = parse(query).unwrap_or_else(|e| panic!("{query}: {e}"));
+            // A fresh store has not loaded the index, so a small focus reads rows.
+            let fresh = NumericStore::open(path).unwrap();
+            assert_eq!(
+                evaluate(&fresh, &expression),
+                evaluate(&loaded, &expression),
+                "{query}"
+            );
+            assert!(!fresh.descriptions.is_loaded(), "{query} loaded the index");
+        }
+    }
+}
+
+#[test]
 fn cli_inspect_reports_what_an_archive_declares_before_importing() {
     let temp = TempDir::new().unwrap();
     let config = temp.path().join("config");

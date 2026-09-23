@@ -150,17 +150,17 @@ pub fn describe(
 
     let mut fsn = None;
     let mut descriptions = Vec::new();
-    if let Some(index) = store.descriptions.get()? {
-        for row in index.for_concept(ordinal) {
-            let kind_ordinal = index.kind(row);
+    if let Some(rows) = store.descriptions.concept_rows(ordinal)? {
+        for row in rows {
+            let kind_ordinal = row.kind;
             let kind = store.ids[kind_ordinal as usize];
-            let term = index.term(row)?;
-            let active = index.active(row);
+            let term = row.term;
+            let active = row.active;
             if kind == FSN && active && fsn.is_none() {
                 fsn = Some(term.clone());
             }
             let (mut preferred_in, mut acceptable_in) = (Vec::new(), Vec::new());
-            for (refset, acceptability) in index.dialects(row) {
+            for (refset, acceptability) in row.dialects {
                 let target = if store.ids[acceptability as usize] == PREFERRED {
                     &mut preferred_in
                 } else {
@@ -168,9 +168,9 @@ pub fn describe(
                 };
                 target.push(label(refset)?);
             }
-            let language = index.language(row);
+            let language = row.language;
             descriptions.push(Description {
-                id: index.id(row).to_string(),
+                id: row.id.to_string(),
                 term,
                 kind: label(kind_ordinal)?,
                 active,
