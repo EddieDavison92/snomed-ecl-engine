@@ -324,11 +324,11 @@ if __name__ == "__main__":
         [
             {
                 "title": "Index on disk",
-                "values": [(388.7, "389 MiB"), (483.3, "483 MiB"), (6256.6, "6.11 GiB")],
+                "values": [(152.0, "152 MiB"), (483.3, "483 MiB"), (6256.6, "6.11 GiB")],
             },
             {
                 "title": "Reading the release and building the indexes (one-off)",
-                "values": [(128.6, "2.1 min"), (1057.0, "17.6 min"), (4360.0, "72.7 min")],
+                "values": [(138.3, "2.3 min"), (1057.0, "17.6 min"), (4360.0, "72.7 min")],
             },
             {
                 "title": "Memory allocated to answer queries",

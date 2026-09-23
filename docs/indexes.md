@@ -1,7 +1,8 @@
 # Indexes
 
 An index is built once from one verified RF2 Snapshot and never changes. Queries
-read it; nothing writes to it. Sizes and timings are in [benchmarks](benchmarks.md).
+read it; nothing writes to it. Sizes and timings are in [benchmarks](benchmarks.md);
+encodings and compression in [how the index is built](index-format.md).
 
 ## Build one
 
@@ -96,21 +97,18 @@ snomed-ecl-engine expand uk.ecl '<< 64572001' --count
 component byte, manifest value and checksum. Both layouts work everywhere a store
 is accepted. A query-only build can pack and verify without the ZIP importer.
 
-The default is zstd level 3 over independent 64 KiB blocks, with no dictionary.
-Labels (`display.bin`) stay raw: they are read a few bytes at a time, and a
-compressed label costs decoding its whole block, so a search reading 400 labels
-took 21 ms against 0.5 ms raw, for 55 MB more on disk in the UK edition.
-Descriptions use 8 KiB blocks: describing a concept reads about a dozen small
-arrays, each a block decode, so the smaller blocks cut a lookup from 1.3 ms to
-0.2 ms for 6 MB more. A lookup reads only that concept's rows; the whole
-description index loads only for ECL description filters.
+The default is zstd level 15 over independent 64 KiB blocks. Descriptions use
+8 KiB blocks, so describing one concept decodes only small blocks. Labels
+(`display.bin`) are compressed one frame each at import and stored raw, so a
+label is one positional read. [How the index is built, compressed and
+read](index-format.md) explains each choice and what it saved.
 `--block-kib` accepts powers of two from 4 to 1,024; `--uncompressed` isolates the
 container layout from compression. The destination must be new; packing spools
 beside it and publishes with a hard link, so the filesystem must support hard
 links and have room for roughly twice the resulting container.
 
 Compression reduces stored bytes. It does not reduce the resident working set:
-the evaluator still loads complete numeric columns.
+the evaluator still loads whole numeric columns.
 
 ### Container format
 
