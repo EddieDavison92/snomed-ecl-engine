@@ -24,6 +24,7 @@ const PLATFORMS = [
   { target: "x86_64-pc-windows-msvc", os: "win32", cpu: "x64" },
 ];
 
+const KEYWORDS = ["snomed", "snomed-ct", "ecl", "terminology", "rf2"];
 const common = {
   version,
   license: "MIT",
@@ -51,10 +52,23 @@ for (const platform of PLATFORMS) {
   fs.chmodSync(path.join(dir, "bin", executable), 0o755);
   fs.copyFileSync(path.join(root, "LICENSE"), path.join(dir, "LICENSE"));
   fs.rmSync(scratch, { recursive: true, force: true });
+  const label = `${{ linux: "Linux", darwin: "macOS", win32: "Windows" }[platform.os]} ${platform.cpu}`;
+  fs.writeFileSync(path.join(dir, "README.md"), `# ${name}
+
+The prebuilt \`snomed-ecl-engine\` executable for ${label}${platform.libc ? " (glibc)" : ""}.
+
+Install [snomed-ecl-engine](https://www.npmjs.com/package/snomed-ecl-engine)
+instead: it selects this package on ${label} and runs the executable. The
+executable is built from [the repository](https://github.com/EddieDavison92/snomed-ecl-engine)
+by its release workflow and published with provenance.
+
+MIT licensed. SNOMED CT is not included and is licensed separately.
+`);
   const manifest = {
     name,
     ...common,
-    description: `The snomed-ecl-engine executable for ${platform.os} ${platform.cpu}.`,
+    description: `Prebuilt snomed-ecl-engine executable for ${label}, a SNOMED CT ECL engine.`,
+    keywords: KEYWORDS,
     os: [platform.os],
     cpu: [platform.cpu],
     ...(platform.libc ? { libc: [platform.libc] } : {}),
@@ -74,7 +88,7 @@ const manifest = {
   name: "snomed-ecl-engine",
   ...common,
   description: "Evaluate SNOMED CT ECL against a local index, without a terminology server.",
-  keywords: ["snomed", "snomed-ct", "ecl", "terminology", "rf2"],
+  keywords: KEYWORDS,
   bin: { "snomed-ecl-engine": "bin/snomed-ecl-engine.js" },
   files: ["bin/"],
   engines: { node: ">=18" },

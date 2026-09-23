@@ -66,7 +66,7 @@ the detail.
 
 ## Status
 
-Version 0.1.1, on [crates.io](https://crates.io/crates/snomed-ecl-engine) and
+Version 0.1.2, on [crates.io](https://crates.io/crates/snomed-ecl-engine) and
 [npm](https://www.npmjs.com/package/snomed-ecl-engine). The index format may
 change between releases without a migration: rebuild the index from your RF2
 archive when you upgrade.

@@ -141,19 +141,26 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
 
+  # crates.io and npm trust this workflow by OIDC, so neither needs a stored token.
   crates:
     name: crates.io
     needs: [version, github]
     runs-on: ubuntu-latest
     container: rust:1.93.1-bookworm
-    env:
-      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - name: Package
         run: cargo publish --locked --dry-run
+      - uses: rust-lang/crates-io-auth-action@v1
+        if: env.PUBLISH == 'true'
+        id: auth
       - name: Publish
-        if: env.PUBLISH == 'true' && env.CARGO_REGISTRY_TOKEN != ''
+        if: env.PUBLISH == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         run: cargo publish --locked
 
   npm:
@@ -165,13 +172,15 @@ jobs:
       id-token: write
     env:
       VERSION: ${{ needs.version.outputs.version }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
+      - name: Update npm
+        # Trusted publishing needs npm 11.5.1 or later.
+        run: npm install --global npm@11
       - uses: actions/download-artifact@v4
         with:
           name: release
@@ -187,13 +196,19 @@ jobs:
       - name: Pack
         run: for dir in npm-dist/*/; do (cd "$dir" && npm pack --dry-run); done
       - name: Publish
-        if: env.PUBLISH == 'true' && env.NODE_AUTH_TOKEN != ''
-        # Platform packages first, so the launcher never points at a missing one.
+        if: env.PUBLISH == 'true'
+        # Platform packages first, so the launcher never points at a missing
+        # one. A version already on the registry is skipped, so a rerun is safe.
         run: |
-          for dir in npm-dist/snomed-ecl-engine-*/; do
-            (cd "$dir" && npm publish --access public --provenance)
+          for dir in npm-dist/snomed-ecl-engine-*/ npm-dist/snomed-ecl-engine/; do
+            name=$(node -p "require('./$dir/package.json').name")
+            # Compare the answer, so a failed lookup is not mistaken for a published version.
+            if [ "$(npm view "$name@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+              echo "$name@$VERSION is already published"
+            else
+              (cd "$dir" && npm publish --access public)
+            fi
           done
-          cd npm-dist/snomed-ecl-engine && npm publish --access public --provenance
 
   homebrew:
     name: Homebrew tap
