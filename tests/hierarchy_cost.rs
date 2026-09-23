@@ -125,3 +125,67 @@ fn repeated_traversals_in_one_query_do_not_leak_into_each_other() {
     let answer = evaluate(&store, &expression).unwrap();
     assert_eq!(answer.len(), 900, "the first three hundred subtrees of three");
 }
+
+/// A many-parent hierarchy: concept `i` has up to three parents below `i`.
+fn dag(n: usize, seed: u64) -> NumericStore {
+    let mut state = seed;
+    let mut below = |k: usize| {
+        state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        (state >> 33) as usize % k
+    };
+    let mut pairs = Vec::new();
+    for child in 1..n {
+        for _ in 0..1 + below(3) {
+            pairs.push((child as u32, below(child) as u32));
+        }
+    }
+    pairs.sort_unstable();
+    pairs.dedup();
+    let store = NumericStore {
+        ids: (0..n).map(|i| BASE + i as u64).collect(),
+        modules: vec![0; n],
+        effective_times: vec![20260826; n],
+        flags: vec![1; n],
+        parents: Adjacency::build(n, pairs.clone()).unwrap(),
+        children: Adjacency::build(n, pairs.iter().map(|&(c, p)| (p, c)).collect()).unwrap(),
+        attributes: Attributes::build(n, vec![]).unwrap(),
+        concrete: Attributes::build(n, vec![]).unwrap(),
+        ..NumericStore::default()
+    };
+    store.validate().unwrap();
+    store
+}
+
+#[test]
+fn top_walks_up_and_agrees_with_removing_descendants() {
+    for seed in 0..5 {
+        let store = dag(3_000, seed);
+        for i in 0..60usize {
+            let a = code((i * 37 + seed as usize) % 3_000);
+            let b = code((i * 101 + 7) % 3_000);
+            let set = match i % 4 {
+                0 => format!("({a} OR {b})"),
+                1 => format!("(<< {a} OR {b})"),
+                2 => format!("(< {a} OR << {b})"),
+                _ => format!("(>> {a} OR > {b})"),
+            };
+            let top = evaluate(&store, &parse(&format!("!!> {set}")).unwrap()).unwrap();
+            let expected =
+                evaluate(&store, &parse(&format!("{set} MINUS (< {set})")).unwrap()).unwrap();
+            assert_eq!(top, expected, "!!> {set}");
+        }
+    }
+}
+
+#[test]
+fn the_top_of_a_few_concepts_does_not_pay_for_their_descendants() {
+    // The root and one leaf: the root's descendants are the whole store.
+    let store = forest(20_000, 10);
+    let limits = Limits {
+        max_work: 200,
+        max_live_set_values: 1_000,
+    };
+    let top = parse(&format!("!!> ({} OR {})", code(0), code(10))).unwrap();
+    let answer = evaluate_with_limits(&store, &top, limits, None).expect("two short walks up");
+    assert_eq!(answer, vec![0]);
+}

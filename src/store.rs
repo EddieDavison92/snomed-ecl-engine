@@ -133,6 +133,8 @@ pub struct Attribute {
 pub struct Attributes {
     pub offsets: Vec<u32>,
     pub rows: Vec<Attribute>,
+    /// Value to sources, built on first use.
+    inverse: std::sync::OnceLock<(Vec<u32>, Vec<u32>)>,
 }
 
 impl Attributes {
@@ -141,6 +143,7 @@ impl Attributes {
         let mut result = Self {
             offsets: vec![0; count + 1],
             rows: Vec::with_capacity(rows.len()),
+            inverse: Default::default(),
         };
         for (source, attribute) in rows {
             ensure!((source as usize) < count, "Invalid attribute source");
@@ -154,6 +157,36 @@ impl Attributes {
     pub fn get(&self, ordinal: u32) -> &[Attribute] {
         &self.rows
             [self.offsets[ordinal as usize] as usize..self.offsets[ordinal as usize + 1] as usize]
+    }
+
+    /// Concepts with a row whose value is `value`, ascending, once per row.
+    /// The inverse costs four bytes a row and is built on first call.
+    pub fn sources(&self, value: u32) -> &[u32] {
+        let (offsets, sources) = self.inverse.get_or_init(|| {
+            let n = self.offsets.len().saturating_sub(1);
+            let mut offsets = vec![0u32; n + 1];
+            for row in &self.rows {
+                offsets[row.value as usize + 1] += 1;
+            }
+            for i in 1..offsets.len() {
+                offsets[i] += offsets[i - 1];
+            }
+            let mut next = offsets.clone();
+            let mut sources = vec![0u32; self.rows.len()];
+            for source in 0..n {
+                for row in self.get(source as u32) {
+                    let slot = &mut next[row.value as usize];
+                    sources[*slot as usize] = source as u32;
+                    *slot += 1;
+                }
+            }
+            (offsets, sources)
+        });
+        let value = value as usize;
+        match (offsets.get(value), offsets.get(value + 1)) {
+            (Some(&start), Some(&end)) => &sources[start as usize..end as usize],
+            _ => &[],
+        }
     }
 }
 
@@ -450,7 +483,11 @@ impl NumericStore {
                 kind: u32::from_le_bytes([b[4], b[5], b[6], b[7]]),
                 value: u32::from_le_bytes([b[8], b[9], b[10], b[11]]),
             })?;
-            Ok(Attributes { offsets, rows })
+            Ok(Attributes {
+                offsets,
+                rows,
+                inverse: Default::default(),
+            })
         };
         let attributes_index = attributes()?;
         let concrete = attributes()?;

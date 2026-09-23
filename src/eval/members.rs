@@ -23,7 +23,8 @@ impl QueryResult {
     }
 }
 enum Prepared<'a> {
-    Concepts(Vec<u32>),
+    /// Identifiers of the allowed concepts, sorted.
+    Concepts(Vec<u64>),
     Number(&'a Decimal),
     Boolean(Option<bool>),
     Dates(&'a [Option<u32>]),
@@ -113,7 +114,10 @@ impl Context<'_> {
                 MemberPredicate::Concepts(expr)
                     if matches!(op, Comparison::Eq | Comparison::Ne) =>
                 {
-                    Prepared::Concepts(self.eval(expr, depth + 1)?)
+                    let ordinals = self.eval(expr, depth + 1)?;
+                    let ids = self.identifiers(&ordinals)?;
+                    self.release(ordinals);
+                    Prepared::Concepts(ids)
                 }
                 MemberPredicate::Number(value) => Prepared::Number(value),
                 MemberPredicate::Boolean(value)
@@ -161,6 +165,11 @@ impl Context<'_> {
         if !terminal && requested.len() != 1 {
             return Err(EvalError::TypeMismatch);
         }
+        let referenced = if query.reverse {
+            self.identifiers(&candidates)?
+        } else {
+            Vec::new()
+        };
         let mut rows = Vec::new();
         let mut values = std::collections::BTreeSet::new();
         let words = self.store.ids.len().div_ceil(32);
@@ -211,18 +220,59 @@ impl Context<'_> {
             let MemberColumn::Id(references) = &table.columns[5] else {
                 return Err(EvalError::TypeMismatch);
             };
-            for row in 0..table.len() {
+            // The smallest `=` concept set on an identifier column names the
+            // only rows that can match; the rest of the table is not read.
+            let mut drive: Option<(usize, &[u64])> = query.reverse.then_some((5, &referenced[..]));
+            for ((filter, column), predicate) in
+                query.filters.iter().zip(&filter_columns).zip(&prepared)
+            {
+                if let (Comparison::Eq, MemberColumn::Id(_), Prepared::Concepts(ids)) =
+                    (filter.comparison, column, predicate)
+                {
+                    if drive.is_none_or(|(_, best)| ids.len() < best.len()) {
+                        let position = table
+                            .names
+                            .iter()
+                            .position(|n| n.eq_ignore_ascii_case(&filter.field))
+                            .unwrap();
+                        drive = Some((position, ids));
+                    }
+                }
+            }
+            let probe = table.len().checked_ilog2().unwrap_or(0) as usize + 1;
+            let driven = match drive {
+                Some((position, ids)) if ids.len().saturating_mul(probe) < table.len() => {
+                    let order = index
+                        .order(refset, position)
+                        .map_err(|e| EvalError::Index(e.to_string()))?
+                        .ok_or(EvalError::TypeMismatch)?;
+                    let MemberColumn::Id(keys) = &table.columns[position] else {
+                        unreachable!()
+                    };
+                    self.tick(ids.len() * probe)?;
+                    let mut found = Vec::new();
+                    for &id in ids {
+                        let start = order.partition_point(|&r| keys[r as usize] < id);
+                        let end = start + order[start..].partition_point(|&r| keys[r as usize] == id);
+                        self.claim(end - start)?;
+                        found.extend_from_slice(&order[start..end]);
+                    }
+                    self.tick(found.len())?;
+                    found.sort_unstable();
+                    Some(found)
+                }
+                _ => None,
+            };
+            let scanned = driven.as_ref().map_or(table.len(), Vec::len);
+            for step in 0..scanned {
+                let row = driven.as_ref().map_or(step, |rows| rows[step] as usize);
                 self.tick(1)?;
                 if !active_explicit && active[row] == 0 {
                     continue;
                 }
                 if query.reverse {
-                    self.tick(candidates.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
-                    if self
-                        .store
-                        .ordinal(references[row])
-                        .is_none_or(|o| candidates.binary_search(&o).is_err())
-                    {
+                    self.tick(referenced.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
+                    if referenced.binary_search(&references[row]).is_err() {
                         continue;
                     }
                 }
@@ -305,12 +355,16 @@ impl Context<'_> {
                     rows.push(values);
                 }
             }
-        }
-        for predicate in prepared {
-            if let Prepared::Concepts(values) = predicate {
-                self.release(values);
+            if let Some(found) = driven {
+                self.live -= found.len();
             }
         }
+        for predicate in prepared {
+            if let Prepared::Concepts(ids) = predicate {
+                self.live -= ids.len() * 2;
+            }
+        }
+        self.live -= referenced.len() * 2;
         self.release(candidates);
         if has_scalar_values && !row_result {
             for (word, &bits) in marked.iter().enumerate() {
@@ -345,6 +399,14 @@ impl Context<'_> {
         Ok(QueryResult::Concepts(result))
     }
 
+    /// The identifiers of sorted ordinals, which are sorted too since
+    /// ordinals follow identifier order. Claims two values per identifier.
+    fn identifiers(&mut self, ordinals: &[u32]) -> Result<Vec<u64>> {
+        self.tick(ordinals.len())?;
+        self.claim(ordinals.len() * 2)?;
+        Ok(ordinals.iter().map(|&o| self.store.ids[o as usize]).collect())
+    }
+
     fn member_matches(
         &mut self,
         column: &MemberColumn,
@@ -356,9 +418,7 @@ impl Context<'_> {
         let member = match (column, predicate) {
             (MemberColumn::Id(values), Prepared::Concepts(allowed)) => {
                 self.tick(allowed.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
-                self.store
-                    .ordinal(values[row])
-                    .is_some_and(|v| allowed.binary_search(&v).is_ok())
+                allowed.binary_search(&values[row]).is_ok()
             }
             (MemberColumn::Integer(values), Prepared::Number(value)) => {
                 return Ok(op.matches(Decimal::parse(&values[row].to_string()).unwrap().cmp(value)))

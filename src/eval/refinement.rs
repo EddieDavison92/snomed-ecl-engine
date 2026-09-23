@@ -5,6 +5,8 @@ use crate::store::ConcreteValue;
 
 pub(super) enum Range {
     Concepts(Vec<u32>),
+    /// `*`: every concept, which every concept-valued row holds.
+    AnyConcept,
     Concrete(Vec<u32>),
 }
 pub(super) enum Prepared {
@@ -13,7 +15,10 @@ pub(super) enum Prepared {
         names: Vec<u32>,
         range: Range,
         comparison: Comparison,
-        reverse_counts: Option<Vec<u32>>,
+        /// Reverse attributes only: each concept something points at, with the
+        /// number of distinct sources pointing at it, sorted by concept. Sized
+        /// by the answer rather than the edition.
+        reverse_counts: Option<Vec<(u32, u32)>>,
     },
     Group(Cardinality, Box<Prepared>),
     And(Vec<Prepared>),
@@ -41,6 +46,11 @@ impl Context<'_> {
                 }
                 let names = self.eval(&attribute.name, depth + 1)?;
                 let range = match &attribute.value {
+                    AttributeValue::Concepts(expr)
+                        if !attribute.reverse && matches!(**expr, Expr::All) =>
+                    {
+                        Range::AnyConcept
+                    }
                     AttributeValue::Concepts(expr) => Range::Concepts(self.eval(expr, depth + 1)?),
                     value => {
                         let mut matching = self.reserve(self.store.concrete_values.len())?;
@@ -77,27 +87,29 @@ impl Context<'_> {
                     let Range::Concepts(sources) = &range else {
                         return Err(EvalError::InvalidAst);
                     };
-                    let n = self.store.ids.len();
-                    self.tick(n)?;
-                    let mut counts = self.reserve(n)?;
-                    counts.resize(n, 0);
                     let isa = self
                         .store
                         .ordinal(116680003)
                         .is_some_and(|kind| names.binary_search(&kind).is_ok());
-                    for source in 0..n as u32 {
+                    // `=` walks only the value set; `!=` still walks every other concept.
+                    let n = self.store.ids.len();
+                    let walk = if attribute.comparison == Comparison::Eq {
+                        self.tick(sources.len())?;
+                        Box::new(sources.iter().copied()) as Box<dyn Iterator<Item = u32>>
+                    } else {
+                        self.tick(n)?;
+                        Box::new((0..n as u32).filter(|s| sources.binary_search(s).is_err()))
+                    };
+                    let mut pointed = Vec::new();
+                    let mut targets = Vec::new();
+                    for source in walk {
                         if !self.store.is_active(source) {
-                            continue;
-                        }
-                        let selected = sources.binary_search(&source).is_ok();
-                        if selected != (attribute.comparison == Comparison::Eq) {
                             continue;
                         }
                         let rows = self.store.attributes.get(source);
                         let parents = self.store.parents.get(source);
                         self.tick(1 + rows.len() + if isa { parents.len() } else { 0 })?;
-                        let mut targets =
-                            self.reserve(rows.len() + if isa { parents.len() } else { 0 })?;
+                        targets.clear();
                         targets.extend(
                             rows.iter()
                                 .filter(|row| names.binary_search(&row.kind).is_ok())
@@ -106,14 +118,23 @@ impl Context<'_> {
                         if isa {
                             targets.extend(parents);
                         }
+                        // Reverse cardinality counts source concepts, not duplicate incoming rows.
                         targets.sort_unstable();
                         targets.dedup();
-                        // Reverse cardinality counts source concepts, not duplicate incoming rows.
-                        for &target in &targets {
-                            counts[target as usize] += 1;
-                        }
-                        self.release(targets);
+                        self.claim(targets.len())?;
+                        pointed.extend_from_slice(&targets);
                     }
+                    self.tick(pointed.len())?;
+                    pointed.sort_unstable();
+                    let mut counts: Vec<(u32, u32)> = Vec::new();
+                    for &target in &pointed {
+                        match counts.last_mut() {
+                            Some((last, count)) if *last == target => *count += 1,
+                            _ => counts.push((target, 1)),
+                        }
+                    }
+                    self.live -= pointed.len();
+                    self.claim(counts.len() * 2)?;
                     reverse_counts = Some(counts);
                 }
                 Ok(Prepared::Attribute {
@@ -160,10 +181,13 @@ impl Context<'_> {
                 reverse_counts,
             } => {
                 if let Some(counts) = reverse_counts {
-                    return Ok(cardinality.contains(counts[source as usize] as usize));
+                    let count = counts
+                        .binary_search_by_key(&source, |&(target, _)| target)
+                        .map_or(0, |i| counts[i].1);
+                    return Ok(cardinality.contains(count as usize));
                 }
                 let rows = match range {
-                    Range::Concepts(_) => self.store.attributes.get(source),
+                    Range::Concepts(_) | Range::AnyConcept => self.store.attributes.get(source),
                     Range::Concrete(_) => self.store.concrete.get(source),
                 };
                 self.tick(rows.len())?;
@@ -179,6 +203,7 @@ impl Context<'_> {
                             values.binary_search(&row.value).is_ok()
                                 == (*comparison == Comparison::Eq)
                         }
+                        Range::AnyConcept => *comparison == Comparison::Eq,
                         Range::Concrete(values) => values.binary_search(&row.value).is_ok(),
                     };
                     if matches {
@@ -191,15 +216,22 @@ impl Context<'_> {
                         .ordinal(116680003)
                         .is_some_and(|kind| names.binary_search(&kind).is_ok())
                 {
-                    if let Range::Concepts(values) = range {
-                        let parents = self.store.parents.get(source);
-                        self.tick(parents.len())?;
-                        count += parents
-                            .iter()
-                            .filter(|p| {
-                                values.binary_search(p).is_ok() == (*comparison == Comparison::Eq)
-                            })
-                            .count();
+                    let parents = self.store.parents.get(source);
+                    match range {
+                        Range::Concepts(values) => {
+                            self.tick(parents.len())?;
+                            count += parents
+                                .iter()
+                                .filter(|p| {
+                                    values.binary_search(p).is_ok()
+                                        == (*comparison == Comparison::Eq)
+                                })
+                                .count();
+                        }
+                        Range::AnyConcept if *comparison == Comparison::Eq => {
+                            count += parents.len();
+                        }
+                        _ => {}
                     }
                 }
                 Ok(cardinality.contains(count))
@@ -244,6 +276,92 @@ impl Context<'_> {
             }
         }
     }
+    /// A sorted superset of the concepts that can satisfy `prepared`, when one
+    /// is cheaper to name than testing `limit` focus concepts one by one;
+    /// `None` means test every focus concept.
+    ///
+    /// An attribute needing at least one match holds only for concepts with a
+    /// matching row. For a reverse attribute those are the keys of its counts;
+    /// for a forward one, the sources pointing at a value in its range, plus
+    /// the children of those values when the name includes is-a. So
+    /// `* : 363698007 = << 39057004` tests the concepts with a lung site
+    /// rather than the edition. The per-concept test still decides every
+    /// answer.
+    pub(super) fn candidates(
+        &mut self,
+        prepared: &Prepared,
+        limit: usize,
+    ) -> Result<Option<Vec<u32>>> {
+        Ok(match prepared {
+            Prepared::Attribute { cardinality, .. } if cardinality.min == 0 => None,
+            Prepared::Attribute {
+                reverse_counts: Some(counts),
+                ..
+            } => Some(counts.iter().map(|&(target, _)| target).collect()),
+            Prepared::Attribute {
+                names,
+                range: Range::Concepts(values),
+                comparison: Comparison::Eq,
+                ..
+            } if values.len() <= limit => {
+                let store = self.store;
+                let isa = store
+                    .ordinal(116680003)
+                    .is_some_and(|kind| names.binary_search(&kind).is_ok());
+                self.tick(values.len())?;
+                let mut total = 0usize;
+                for &value in values {
+                    total += store.attributes.sources(value).len();
+                    if isa {
+                        total += store.children.get(value).len();
+                    }
+                }
+                if total > limit {
+                    return Ok(None);
+                }
+                self.tick(total)?;
+                let mut bound = Vec::with_capacity(total);
+                for &value in values {
+                    bound.extend_from_slice(store.attributes.sources(value));
+                    if isa {
+                        bound.extend_from_slice(store.children.get(value));
+                    }
+                }
+                bound.sort_unstable();
+                bound.dedup();
+                Some(bound)
+            }
+            Prepared::Attribute { .. } => None,
+            Prepared::Group(cardinality, inner) if cardinality.min >= 1 => {
+                self.candidates(inner, limit)?
+            }
+            Prepared::Group(..) => None,
+            Prepared::And(parts) => {
+                let mut bound: Option<Vec<u32>> = None;
+                for part in parts {
+                    if let Some(set) = self.candidates(part, limit)? {
+                        bound = Some(match bound {
+                            None => set,
+                            Some(current) => intersect(&current, &set),
+                        });
+                    }
+                }
+                bound
+            }
+            Prepared::Or(parts) => {
+                let mut union = Vec::new();
+                for part in parts {
+                    let Some(set) = self.candidates(part, limit)? else {
+                        return Ok(None);
+                    };
+                    union.extend(set);
+                }
+                union.sort_unstable();
+                union.dedup();
+                Some(union)
+            }
+        })
+    }
     pub(super) fn release_prepared(&mut self, prepared: Prepared) {
         match prepared {
             Prepared::Attribute {
@@ -255,9 +373,10 @@ impl Context<'_> {
                 self.release(names);
                 match range {
                     Range::Concepts(values) | Range::Concrete(values) => self.release(values),
+                    Range::AnyConcept => {}
                 }
                 if let Some(counts) = reverse_counts {
-                    self.release(counts);
+                    self.live -= counts.len() * 2;
                 }
             }
             Prepared::Group(_, inner) => self.release_prepared(*inner),
@@ -269,10 +388,7 @@ impl Context<'_> {
         }
     }
     pub(super) fn project(&mut self, seeds: &[u32], names: &[u32]) -> Result<QueryResult> {
-        let n = self.store.ids.len();
-        self.tick(n)?;
-        self.claim(n.div_ceil(4))?;
-        let mut selected = vec![false; n];
+        let mut selected = Vec::new();
         let mut values = std::collections::BTreeSet::new();
         let isa = self
             .store
@@ -283,14 +399,15 @@ impl Context<'_> {
             self.tick(1 + rows.len())?;
             for row in rows {
                 if names.binary_search(&row.kind).is_ok() && self.store.is_active(row.value) {
-                    selected[row.value as usize] = true;
+                    self.claim(1)?;
+                    selected.push(row.value);
                 }
             }
             if isa {
-                self.tick(self.store.parents.get(seed).len())?;
-                for &parent in self.store.parents.get(seed) {
-                    selected[parent as usize] = true;
-                }
+                let parents = self.store.parents.get(seed);
+                self.tick(parents.len())?;
+                self.claim(parents.len())?;
+                selected.extend_from_slice(parents);
             }
             self.tick(self.store.concrete.get(seed).len())?;
             for row in self.store.concrete.get(seed) {
@@ -322,29 +439,43 @@ impl Context<'_> {
                 }
             }
         }
+        self.tick(selected.len())?;
+        let claimed = selected.len();
+        selected.sort_unstable();
+        selected.dedup();
         if !values.is_empty() {
-            for (i, &included) in selected.iter().enumerate() {
+            for &i in &selected {
                 self.tick(1)?;
-                if included {
-                    let value = crate::store::MemberValue::Concept(self.store.ids[i].to_string());
-                    self.claim(super::values::value_cost(&value))?;
-                    values.insert(value);
-                }
+                let value = crate::store::MemberValue::Concept(self.store.ids[i as usize].to_string());
+                self.claim(super::values::value_cost(&value))?;
+                values.insert(value);
             }
-            self.live -= n.div_ceil(4);
+            self.live -= claimed;
             return Ok(QueryResult::Values(values.into_iter().collect()));
         }
-        let mut result = self.reserve(selected.iter().filter(|&&s| s).count())?;
-        result.extend(
-            selected
-                .iter()
-                .enumerate()
-                .filter(|(_, s)| **s)
-                .map(|(i, _)| i as u32),
-        );
-        self.live -= n.div_ceil(4);
-        Ok(QueryResult::Concepts(result))
+        selected.shrink_to_fit();
+        self.live -= claimed;
+        self.claim(selected.capacity())?;
+        Ok(QueryResult::Concepts(selected))
     }
+}
+
+/// Both inputs sorted and unique.
+pub(super) fn intersect(left: &[u32], right: &[u32]) -> Vec<u32> {
+    let mut out = Vec::with_capacity(left.len().min(right.len()));
+    let (mut a, mut b) = (0, 0);
+    while a < left.len() && b < right.len() {
+        match left[a].cmp(&right[b]) {
+            std::cmp::Ordering::Less => a += 1,
+            std::cmp::Ordering::Greater => b += 1,
+            std::cmp::Ordering::Equal => {
+                out.push(left[a]);
+                a += 1;
+                b += 1;
+            }
+        }
+    }
+    out
 }
 
 fn decode_rf2_string(wire: &str) -> Result<String> {
