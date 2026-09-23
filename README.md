@@ -46,9 +46,10 @@ The evidence:
 
 - **Grammar.** A differential test generates sentences covering every
   alternative, optional part and repetition count of both official ECL 2.3
-  grammars, about 35,000 samples, and leaves no unexplained disagreement. It
-  exercises 179 of their 180 rules; the last is never referenced by another
-  rule, so no expression can contain it. All 121 official syntax examples parse.
+  grammars, about 35,000 samples, and leaves no unexplained disagreement. The
+  two grammars define the same 180 rules, and the test exercises 179 of them.
+  The remaining rule, `stringValue`, is never referenced by any other rule, so
+  no expression can contain it. All 121 official syntax examples parse.
 - **Answers.** Two corpora of 1,000 and 10,000 expressions across 25 categories
   return the code sets recorded for them, and scripts check result sets against
   the RF2 files directly. Of the 880 corpus expressions Snowstorm could answer,
