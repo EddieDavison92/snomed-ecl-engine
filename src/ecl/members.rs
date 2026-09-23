@@ -70,13 +70,6 @@ impl Parser<'_> {
         self.pos = saved;
         Ok(result)
     }
-    /// Whether the filter at the current `{{` opens with the member letter.
-    pub(super) fn starts_member_filter_letter(&mut self) -> bool {
-        let mark = self.mark();
-        let found = self.take("{{") && self.ws().is_ok() && self.rest().starts_with(['m', 'M']);
-        self.reset(mark);
-        found
-    }
     pub(super) fn member_filters(&mut self, depth: usize) -> Result<Vec<MemberFilter>> {
         if depth > MAX_DEPTH {
             return Err(self.error(ParseErrorKind::Limit, "Filter nesting exceeds 64"));

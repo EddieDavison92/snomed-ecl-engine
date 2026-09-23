@@ -129,11 +129,12 @@ impl Parser<'_> {
                     separated = self.ws()?;
                 }
                 if self.take(")") {
-                    return if values.len() == 1 {
-                        Ok(values.remove(0))
-                    } else {
-                        self.node(Expr::Or(values))
-                    };
+                    if values.len() == 1 {
+                        // `(x)` is also a bracketed subexpression, which filters may
+                        // follow: `moduleId = (x) {{ C active = 1 }}`.
+                        break;
+                    }
+                    return self.node(Expr::Or(values));
                 }
                 if !separated {
                     break;

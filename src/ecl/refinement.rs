@@ -72,12 +72,16 @@ impl Parser<'_> {
         }
     }
     /// A value keyword, which the grammar lets run straight into a following
-    /// operator: `true or` may be written `trueor`, `ANY MINUS` `ANYMINUS`.
+    /// operator: `true or` may be written `trueor`, `ANY MINUS` `ANYMINUS`, and
+    /// an attribute named `ANY NOT = x` `ANYNOT = x`.
     pub(super) fn value_keyword(&mut self, word: &str) -> bool {
         let found = self.word();
+        let rest = found.get(word.len()..).unwrap_or("");
         let joined = found.len() > word.len()
             && found[..word.len()].eq_ignore_ascii_case(word)
-            && ["and", "or", "minus"].iter().any(|op| found[word.len()..].eq_ignore_ascii_case(op));
+            && (["and", "or", "minus"].iter().any(|op| rest.eq_ignore_ascii_case(op))
+                || rest.eq_ignore_ascii_case("not")
+                    && skip_space(&self.rest()[found.len()..]).starts_with('='));
         if found.eq_ignore_ascii_case(word) || joined {
             self.pos += word.len();
             true
@@ -95,14 +99,7 @@ impl Parser<'_> {
         ];
         let name = self.word().to_ascii_lowercase();
         if let Some(keyword) = name.strip_suffix("not") {
-            let mut after = &self.rest()[name.len()..];
-            loop {
-                after = after.trim_start_matches([' ', '\t', '\r', '\n']);
-                match after.strip_prefix("/*").and_then(|c| c.find("*/").map(|end| &c[end + 2..])) {
-                    Some(rest) => after = rest,
-                    None => break,
-                }
-            }
+            let after = skip_space(&self.rest()[name.len()..]);
             if KNOWN.contains(&keyword) && after.starts_with('=') {
                 return keyword.to_owned();
             }
@@ -463,5 +460,16 @@ impl Parser<'_> {
         } else {
             Refinement::Or(parts)
         })
+    }
+}
+
+/// Text after any whitespace and comments.
+fn skip_space(mut text: &str) -> &str {
+    loop {
+        text = text.trim_start_matches([' ', '\t', '\r', '\n']);
+        match text.strip_prefix("/*").and_then(|c| c.find("*/").map(|end| &c[end + 2..])) {
+            Some(rest) => text = rest,
+            None => return text,
+        }
     }
 }

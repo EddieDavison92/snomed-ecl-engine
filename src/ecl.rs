@@ -493,9 +493,6 @@ impl Parser<'_> {
                 inner: Box::new(expression),
             })?;
         }
-        // The fallback to a member filter below only reads a refused form, so
-        // it applies before any other filter and without a refset operator.
-        let mut filtered = refset_operator.is_some();
         while self.rest().starts_with("{{") {
             let saved = self.pos;
             self.take("{{");
@@ -511,48 +508,11 @@ impl Parser<'_> {
             } else if concept {
                 let filters = self.concept_filters(depth + 1)?;
                 expression = self.node(Expr::ConceptFiltered(Box::new(expression), filters))?;
-                filtered = true;
             } else {
-                let mark = self.mark();
-                match self.description_filters(depth + 1) {
-                    Ok(filters) => {
-                        expression =
-                            self.node(Expr::DescriptionFiltered(Box::new(expression), filters))?;
-                        // `{{moduleid = *}}` also reads as the member filter `m oduleid`,
-                        // and then a member filter may still follow it.
-                        let end = self.mark();
-                        self.reset(mark.clone());
-                        let member = !filtered
-                            && self.starts_member_filter_letter()
-                            && self.member_filters(depth + 1).is_ok()
-                            && self.pos == end.pos;
-                        self.reset(end);
-                        if member {
-                            self.ws()?;
-                            continue;
-                        }
-                    }
-                    Err(error) => {
-                        // `{{moduleid = *, x = *}}` is also `{{m oduleid = *, x = *}}`, a
-                        // member filter, which the grammar admits without a refset operator.
-                        self.reset(mark.clone());
-                        if filtered
-                            || !self.starts_member_filter_letter()
-                            || self.member_filters(depth + 1).is_err()
-                        {
-                            self.reset(mark);
-                            return Err(error);
-                        }
-                        self.refuse(
-                            mark.pos,
-                            "Member filters require a refset operator (^ or ^R); ECL defines them only over memberOf rows",
-                        );
-                        // More member filters may follow this one.
-                        self.ws()?;
-                        continue;
-                    }
-                }
-                filtered = true;
+                // A filter that names no type is a description filter (6.8), so
+                // `{{moduleId = x}}` is never the member filter `m oduleId`.
+                let filters = self.description_filters(depth + 1)?;
+                expression = self.node(Expr::DescriptionFiltered(Box::new(expression), filters))?;
             }
             self.ws()?;
         }

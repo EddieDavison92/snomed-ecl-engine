@@ -17,9 +17,12 @@ impl Parser<'_> {
     }
     pub(super) fn starts_alternate(&self) -> bool {
         let rest = self.rest().strip_prefix('"').unwrap_or(self.rest());
-        rest.bytes()
-            .find(|b| !(b.is_ascii_alphanumeric() || *b == b'-'))
-            == Some(b'#')
+        // A scheme alias starts with a letter, so `"#5"` is a string, not an identifier.
+        rest.starts_with(|c: char| c.is_ascii_alphabetic())
+            && rest
+                .bytes()
+                .find(|b| !(b.is_ascii_alphanumeric() || *b == b'-'))
+                == Some(b'#')
     }
     /// Gives back an operator that an unquoted code swallowed, as in `x#a-or *`,
     /// where the grammar reads code `a-` and then `or`. Only when what follows

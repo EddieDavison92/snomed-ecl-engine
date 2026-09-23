@@ -45,14 +45,12 @@ Both grammars have 180 productions:
 
 | Status | Productions | Meaning |
 |---|---:|---|
-| Implemented | 18 | Exhaustive positive and negative syntax evidence |
-| Partial | 161 | Implemented, with evidence that is not exhaustive across alternatives and lexical edges |
-| Pending | 1 | `stringValue`: no evidence recorded in the inventory |
+| Implemented | 179 | Every alternative, optional part and repetition count exercised by the grammar differential below, with no unexplained disagreement |
+| Pending | 1 | `stringValue`: no other rule refers to it, so no expression can contain it |
 
-"Partial" describes how thorough the tests are, not whether the feature works.
-The figure is not a percentage of the language, and parsing a production says
-nothing about whether the engine evaluates it correctly. All 121 official syntax
-examples parse.
+The figure describes syntax evidence, not a percentage of the language, and
+parsing a production says nothing about whether the engine evaluates it
+correctly. All 121 official syntax examples parse.
 
 ### Grammar differential
 
@@ -64,29 +62,40 @@ compares the recogniser's verdict with the parser's. Results are in
 
 | Grammar | Samples | Grammatical | Disagreements | Unexplained |
 |---|---:|---:|---:|---:|
-| Brief | 17,607 | 5,427 | 19 | 2 |
-| Long | 17,620 | 5,427 | 29 | 3 |
+| Brief | 17,607 | 5,427 | 20 | 0 |
+| Long | 17,620 | 5,427 | 29 | 0 |
 
-179 of 180 productions in each grammar are exercised completely; `stringValue`
-is referenced by no other rule. A parser refusal of kind `Semantic`, `Limit` or
-`Unsupported` counts as accepting the syntax. Explained disagreements come from
-two comment quirks in the grammar: a comment cannot close after a second star,
-so `/***/` never ends, and quoted search terms admit comments inside the quotes.
-The parser treats both as a reader would.
+A second seed also leaves none unexplained. A parser refusal of kind
+`Semantic`, `Limit` or `Unsupported` counts as accepting the syntax. Every
+remaining disagreement arises only under the literal ABNF, in one of three
+places where the text of the ABNF and the specification part company:
 
-The unexplained five are genuine ambiguities the parser resolves one way. After
-a refset operator, `{{moduleid = *}}` is read as a moduleId filter, although the
-grammar also reads it as a member filter on a field named `oduleid`; and an
-alternate identifier's code can run into what follows it. Until these reach
-zero, productions stay "Partial" in the inventory, with their coverage recorded
-beside them.
+- **A comment cannot close after a second star.** `comment` pairs each star
+  with the byte after it, so `/***/` never ends. The parser ends a comment at
+  its first `*/`.
+- **Quoted search terms admit comments.** `matchSearchTermSet` puts `ws`, which
+  includes comments, inside the quotes, so `"a/*b*/c"` would be two words. The
+  parser treats the quotes as holding text.
+- **An untyped filter is a description filter.** Because no space is required
+  after a filter's type letter, the ABNF also reads `{{moduleId = x}}` as the
+  member filter `M` on a field named `oduleId`. 6.8 settles it: "If the type of
+  a filter constraint is not specified … it is assumed that the constraint is a
+  description constraint." So `^ X {{moduleId = *}} {{M active = 1}}` is a
+  syntax error, since a member filter cannot follow a description filter.
+
+The script's second recogniser applies these three readings, and only a
+disagreement that survives it counts as unexplained.
 
 The check also changed the parser: a refusal is now reported only once the
 whole text parses, so malformed text is a syntax error; reversed cardinalities,
 impossible dates and unbracketed mixes of conjunction and disjunction are
 grammatical and refused as `Semantic` (6.4 requires brackets because the
 grammar derives such a mix more than one way); and long-syntax `NOT`, `OR` and
-`ANY` may follow a keyword without a space.
+`ANY` may follow a keyword without a space. It also found three outright
+parser bugs: a crash on multi-byte text after `^`; a bracketed single concept in
+a filter value, `{{D moduleId = (x) {{C active = 1}}}}`, refusing the filters
+that follow it; and a concrete string beginning with `#`, as in `* : x = "#5"`,
+being taken for an alternate identifier.
 
 ## Open questions
 

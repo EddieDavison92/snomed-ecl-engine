@@ -48,8 +48,8 @@
         {
           "production": "expressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -59,8 +59,8 @@
         {
           "production": "refinedExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -70,8 +70,8 @@
         {
           "production": "compoundExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -82,7 +82,7 @@
           "production": "conjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -93,7 +93,7 @@
           "production": "disjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -104,7 +104,7 @@
           "production": "exclusionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -114,8 +114,8 @@
         {
           "production": "dottedExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -125,8 +125,8 @@
         {
           "production": "dottedExpressionAttribute",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -136,8 +136,8 @@
         {
           "production": "subExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 20,
             "covered": 20,
@@ -147,8 +147,8 @@
         {
           "production": "eclFocusConcept",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -158,8 +158,8 @@
         {
           "production": "dot",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -169,8 +169,8 @@
         {
           "production": "refsetOperator",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/membership.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -180,8 +180,8 @@
         {
           "production": "memberOf",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/membership.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -191,8 +191,8 @@
         {
           "production": "refsetContainingAny",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/membership.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -202,8 +202,8 @@
         {
           "production": "refsetFieldNameSet",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -213,8 +213,8 @@
         {
           "production": "refsetFieldName",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -225,7 +225,7 @@
           "production": "eclConceptReference",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -235,8 +235,8 @@
         {
           "production": "eclConceptReferenceSet",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -247,7 +247,7 @@
           "production": "conceptId",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -257,8 +257,8 @@
         {
           "production": "term",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -268,8 +268,8 @@
         {
           "production": "altIdentifier",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -279,8 +279,8 @@
         {
           "production": "altIdentifierSchemeAlias",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -290,8 +290,8 @@
         {
           "production": "altIdentifierCodeWithinQuotes",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -301,8 +301,8 @@
         {
           "production": "altIdentifierCodeWithoutQuotes",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -313,7 +313,7 @@
           "production": "wildCard",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -323,8 +323,8 @@
         {
           "production": "constraintOperator",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -335,7 +335,7 @@
           "production": "descendantOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -346,7 +346,7 @@
           "production": "descendantOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -357,7 +357,7 @@
           "production": "childOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -368,7 +368,7 @@
           "production": "childOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -379,7 +379,7 @@
           "production": "ancestorOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -390,7 +390,7 @@
           "production": "ancestorOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -401,7 +401,7 @@
           "production": "parentOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -412,7 +412,7 @@
           "production": "parentOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -422,8 +422,8 @@
         {
           "production": "top",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -433,8 +433,8 @@
         {
           "production": "bottom",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -445,7 +445,7 @@
           "production": "conjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -456,7 +456,7 @@
           "production": "disjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -467,7 +467,7 @@
           "production": "exclusion",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -477,8 +477,8 @@
         {
           "production": "eclRefinement",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -488,8 +488,8 @@
         {
           "production": "conjunctionRefinementSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -499,8 +499,8 @@
         {
           "production": "disjunctionRefinementSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -510,8 +510,8 @@
         {
           "production": "subRefinement",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -521,8 +521,8 @@
         {
           "production": "eclAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -532,8 +532,8 @@
         {
           "production": "conjunctionAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -543,8 +543,8 @@
         {
           "production": "disjunctionAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -554,8 +554,8 @@
         {
           "production": "subAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -565,8 +565,8 @@
         {
           "production": "eclAttributeGroup",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -576,8 +576,8 @@
         {
           "production": "eclAttribute",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -587,8 +587,8 @@
         {
           "production": "cardinality",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -598,8 +598,8 @@
         {
           "production": "minValue",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -609,8 +609,8 @@
         {
           "production": "to",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -620,8 +620,8 @@
         {
           "production": "maxValue",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -631,8 +631,8 @@
         {
           "production": "many",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -642,8 +642,8 @@
         {
           "production": "reverseFlag",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -653,8 +653,8 @@
         {
           "production": "eclAttributeName",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -664,8 +664,8 @@
         {
           "production": "expressionComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -675,8 +675,8 @@
         {
           "production": "numericComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -686,8 +686,8 @@
         {
           "production": "timeComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -697,8 +697,8 @@
         {
           "production": "stringComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -708,8 +708,8 @@
         {
           "production": "booleanComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -719,8 +719,8 @@
         {
           "production": "idComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -730,8 +730,8 @@
         {
           "production": "descriptionFilterConstraint",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -741,8 +741,8 @@
         {
           "production": "descriptionFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -752,8 +752,8 @@
         {
           "production": "descriptionIdFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -763,8 +763,8 @@
         {
           "production": "descriptionIdKeyword",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -774,8 +774,8 @@
         {
           "production": "descriptionId",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -785,8 +785,8 @@
         {
           "production": "descriptionIdSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -796,8 +796,8 @@
         {
           "production": "termFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -807,8 +807,8 @@
         {
           "production": "termKeyword",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -818,8 +818,8 @@
         {
           "production": "typedSearchTerm",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -829,8 +829,8 @@
         {
           "production": "typedSearchTermSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -840,8 +840,8 @@
         {
           "production": "concreteStringSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -851,8 +851,8 @@
         {
           "production": "concreteString",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -862,8 +862,8 @@
         {
           "production": "concreteStringCharacters",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -873,8 +873,8 @@
         {
           "production": "wild",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -884,8 +884,8 @@
         {
           "production": "matchKeyword",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -895,8 +895,8 @@
         {
           "production": "matchSearchTerm",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -906,8 +906,8 @@
         {
           "production": "matchSearchTermSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -917,8 +917,8 @@
         {
           "production": "wildSearchTerm",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -928,8 +928,8 @@
         {
           "production": "wildSearchTermSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -939,8 +939,8 @@
         {
           "production": "languageFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -950,8 +950,8 @@
         {
           "production": "language",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 16,
             "covered": 16,
@@ -961,8 +961,8 @@
         {
           "production": "languageCode",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -972,8 +972,8 @@
         {
           "production": "languageCodeSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -983,8 +983,8 @@
         {
           "production": "typeFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -994,8 +994,8 @@
         {
           "production": "typeIdFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1005,8 +1005,8 @@
         {
           "production": "typeId",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -1016,8 +1016,8 @@
         {
           "production": "typeTokenFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1027,8 +1027,8 @@
         {
           "production": "type",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -1038,8 +1038,8 @@
         {
           "production": "typeToken",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1049,8 +1049,8 @@
         {
           "production": "typeTokenSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1060,8 +1060,8 @@
         {
           "production": "synonym",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -1071,8 +1071,8 @@
         {
           "production": "fullySpecifiedName",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -1082,8 +1082,8 @@
         {
           "production": "definition",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -1093,8 +1093,8 @@
         {
           "production": "dialectFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -1104,8 +1104,8 @@
         {
           "production": "dialectIdFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1115,8 +1115,8 @@
         {
           "production": "dialectId",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 18,
             "covered": 18,
@@ -1126,8 +1126,8 @@
         {
           "production": "dialectAliasFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1137,8 +1137,8 @@
         {
           "production": "dialect",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -1148,8 +1148,8 @@
         {
           "production": "dialectAlias",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -1159,8 +1159,8 @@
         {
           "production": "dialectAliasSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -1170,8 +1170,8 @@
         {
           "production": "dialectIdSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -1181,8 +1181,8 @@
         {
           "production": "acceptabilitySet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1192,8 +1192,8 @@
         {
           "production": "acceptabilityConceptReferenceSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1203,8 +1203,8 @@
         {
           "production": "acceptabilityTokenSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1214,8 +1214,8 @@
         {
           "production": "acceptabilityToken",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1225,8 +1225,8 @@
         {
           "production": "acceptable",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -1236,8 +1236,8 @@
         {
           "production": "preferred",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -1247,8 +1247,8 @@
         {
           "production": "conceptFilterConstraint",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -1258,8 +1258,8 @@
         {
           "production": "conceptFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -1269,8 +1269,8 @@
         {
           "production": "definitionStatusFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1280,8 +1280,8 @@
         {
           "production": "definitionStatusIdFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1291,8 +1291,8 @@
         {
           "production": "definitionStatusIdKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 36,
             "covered": 36,
@@ -1302,8 +1302,8 @@
         {
           "production": "definitionStatusTokenFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1313,8 +1313,8 @@
         {
           "production": "definitionStatusKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 32,
             "covered": 32,
@@ -1324,8 +1324,8 @@
         {
           "production": "definitionStatusToken",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1335,8 +1335,8 @@
         {
           "production": "definitionStatusTokenSet",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1346,8 +1346,8 @@
         {
           "production": "primitiveToken",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 18,
             "covered": 18,
@@ -1357,8 +1357,8 @@
         {
           "production": "definedToken",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -1368,8 +1368,8 @@
         {
           "production": "moduleFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1379,8 +1379,8 @@
         {
           "production": "moduleIdKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 16,
             "covered": 16,
@@ -1390,8 +1390,8 @@
         {
           "production": "effectiveTimeFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1401,8 +1401,8 @@
         {
           "production": "effectiveTimeKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 26,
             "covered": 26,
@@ -1412,8 +1412,8 @@
         {
           "production": "timeValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1423,8 +1423,8 @@
         {
           "production": "timeValueSet",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1434,8 +1434,8 @@
         {
           "production": "year",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1445,8 +1445,8 @@
         {
           "production": "month",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -1456,8 +1456,8 @@
         {
           "production": "day",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 31,
             "covered": 31,
@@ -1467,8 +1467,8 @@
         {
           "production": "activeFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1478,8 +1478,8 @@
         {
           "production": "activeKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -1489,8 +1489,8 @@
         {
           "production": "activeValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1500,8 +1500,8 @@
         {
           "production": "activeTrueValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1511,8 +1511,8 @@
         {
           "production": "activeFalseValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1522,8 +1522,8 @@
         {
           "production": "memberFilterConstraint",
           "area": "member_filters",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -1533,8 +1533,8 @@
         {
           "production": "memberFilter",
           "area": "member_filters",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -1544,8 +1544,8 @@
         {
           "production": "memberFieldFilter",
           "area": "member_filters",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -1555,8 +1555,8 @@
         {
           "production": "historySupplement",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -1566,8 +1566,8 @@
         {
           "production": "historyKeyword",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -1577,8 +1577,8 @@
         {
           "production": "historyProfileSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1588,8 +1588,8 @@
         {
           "production": "historyMinimumSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -1599,8 +1599,8 @@
         {
           "production": "historyModerateSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -1610,8 +1610,8 @@
         {
           "production": "historyMaximumSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -1621,8 +1621,8 @@
         {
           "production": "historySubset",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1632,8 +1632,8 @@
         {
           "production": "numericValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -1654,8 +1654,8 @@
         {
           "production": "integerValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -1665,8 +1665,8 @@
         {
           "production": "decimalValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1676,8 +1676,8 @@
         {
           "production": "booleanValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1687,8 +1687,8 @@
         {
           "production": "true",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -1698,8 +1698,8 @@
         {
           "production": "false",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -1709,8 +1709,8 @@
         {
           "production": "nonNegativeIntegerValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -1721,7 +1721,7 @@
           "production": "sctId",
           "area": "lexical",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1731,8 +1731,8 @@
         {
           "production": "ws",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -1742,8 +1742,8 @@
         {
           "production": "mws",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -1753,8 +1753,8 @@
         {
           "production": "comment",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -1764,8 +1764,8 @@
         {
           "production": "nonStarChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -1775,8 +1775,8 @@
         {
           "production": "starWithNonFSlash",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1786,8 +1786,8 @@
         {
           "production": "nonFSlash",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -1797,8 +1797,8 @@
         {
           "production": "SP",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1808,8 +1808,8 @@
         {
           "production": "HTAB",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1819,8 +1819,8 @@
         {
           "production": "CR",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1830,8 +1830,8 @@
         {
           "production": "LF",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1841,8 +1841,8 @@
         {
           "production": "QM",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1852,8 +1852,8 @@
         {
           "production": "BS",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1863,8 +1863,8 @@
         {
           "production": "star",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1874,8 +1874,8 @@
         {
           "production": "digit",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1885,8 +1885,8 @@
         {
           "production": "zero",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1896,8 +1896,8 @@
         {
           "production": "digitNonZero",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1907,8 +1907,8 @@
         {
           "production": "nonwsNonPipe",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -1918,8 +1918,8 @@
         {
           "production": "anyNonEscapedChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -1929,8 +1929,8 @@
         {
           "production": "escapedChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1940,8 +1940,8 @@
         {
           "production": "escapedWildChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -1951,8 +1951,8 @@
         {
           "production": "nonwsNonEscapedChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -1962,8 +1962,8 @@
         {
           "production": "alpha",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -1973,8 +1973,8 @@
         {
           "production": "dash",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1984,8 +1984,8 @@
         {
           "production": "UTF8-2",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -1995,8 +1995,8 @@
         {
           "production": "UTF8-3",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2006,8 +2006,8 @@
         {
           "production": "UTF8-4",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2017,8 +2017,8 @@
         {
           "production": "UTF8-tail",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2034,8 +2034,8 @@
         {
           "production": "expressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2045,8 +2045,8 @@
         {
           "production": "refinedExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2056,8 +2056,8 @@
         {
           "production": "compoundExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2068,7 +2068,7 @@
           "production": "conjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2079,7 +2079,7 @@
           "production": "disjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2090,7 +2090,7 @@
           "production": "exclusionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2100,8 +2100,8 @@
         {
           "production": "dottedExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2111,8 +2111,8 @@
         {
           "production": "dottedExpressionAttribute",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2122,8 +2122,8 @@
         {
           "production": "subExpressionConstraint",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 20,
             "covered": 20,
@@ -2133,8 +2133,8 @@
         {
           "production": "eclFocusConcept",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2144,8 +2144,8 @@
         {
           "production": "dot",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2155,8 +2155,8 @@
         {
           "production": "refsetOperator",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/membership.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2166,8 +2166,8 @@
         {
           "production": "memberOf",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/membership.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 22,
             "covered": 22,
@@ -2177,8 +2177,8 @@
         {
           "production": "refsetContainingAny",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/membership.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 40,
             "covered": 40,
@@ -2188,8 +2188,8 @@
         {
           "production": "refsetFieldNameSet",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2199,8 +2199,8 @@
         {
           "production": "refsetFieldName",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2211,7 +2211,7 @@
           "production": "eclConceptReference",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2221,8 +2221,8 @@
         {
           "production": "eclConceptReferenceSet",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2233,7 +2233,7 @@
           "production": "conceptId",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2243,8 +2243,8 @@
         {
           "production": "term",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -2254,8 +2254,8 @@
         {
           "production": "altIdentifier",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2265,8 +2265,8 @@
         {
           "production": "altIdentifierSchemeAlias",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -2276,8 +2276,8 @@
         {
           "production": "altIdentifierCodeWithinQuotes",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2287,8 +2287,8 @@
         {
           "production": "altIdentifierCodeWithoutQuotes",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/identifiers.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -2299,7 +2299,7 @@
           "production": "wildCard",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -2309,8 +2309,8 @@
         {
           "production": "constraintOperator",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2321,7 +2321,7 @@
           "production": "descendantOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 26,
             "covered": 26,
@@ -2332,7 +2332,7 @@
           "production": "descendantOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 38,
             "covered": 38,
@@ -2343,7 +2343,7 @@
           "production": "childOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 16,
             "covered": 16,
@@ -2354,7 +2354,7 @@
           "production": "childOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 28,
             "covered": 28,
@@ -2365,7 +2365,7 @@
           "production": "ancestorOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 22,
             "covered": 22,
@@ -2376,7 +2376,7 @@
           "production": "ancestorOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 34,
             "covered": 34,
@@ -2387,7 +2387,7 @@
           "production": "parentOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 18,
             "covered": 18,
@@ -2398,7 +2398,7 @@
           "production": "parentOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 30,
             "covered": 30,
@@ -2408,8 +2408,8 @@
         {
           "production": "top",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -2419,8 +2419,8 @@
         {
           "production": "bottom",
           "area": "expressions",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -2431,7 +2431,7 @@
           "production": "conjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -2442,7 +2442,7 @@
           "production": "disjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2453,7 +2453,7 @@
           "production": "exclusion",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2463,8 +2463,8 @@
         {
           "production": "eclRefinement",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2474,8 +2474,8 @@
         {
           "production": "conjunctionRefinementSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2485,8 +2485,8 @@
         {
           "production": "disjunctionRefinementSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2496,8 +2496,8 @@
         {
           "production": "subRefinement",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2507,8 +2507,8 @@
         {
           "production": "eclAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2518,8 +2518,8 @@
         {
           "production": "conjunctionAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2529,8 +2529,8 @@
         {
           "production": "disjunctionAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2540,8 +2540,8 @@
         {
           "production": "subAttributeSet",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2551,8 +2551,8 @@
         {
           "production": "eclAttributeGroup",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2562,8 +2562,8 @@
         {
           "production": "eclAttribute",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2573,8 +2573,8 @@
         {
           "production": "cardinality",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2584,8 +2584,8 @@
         {
           "production": "minValue",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2595,8 +2595,8 @@
         {
           "production": "to",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -2606,8 +2606,8 @@
         {
           "production": "maxValue",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2617,8 +2617,8 @@
         {
           "production": "many",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2628,8 +2628,8 @@
         {
           "production": "reverseFlag",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 20,
             "covered": 20,
@@ -2639,8 +2639,8 @@
         {
           "production": "eclAttributeName",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2650,8 +2650,8 @@
         {
           "production": "expressionComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2661,8 +2661,8 @@
         {
           "production": "numericComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -2672,8 +2672,8 @@
         {
           "production": "timeComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -2683,8 +2683,8 @@
         {
           "production": "stringComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2694,8 +2694,8 @@
         {
           "production": "booleanComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2705,8 +2705,8 @@
         {
           "production": "idComparisonOperator",
           "area": "refinements",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2716,8 +2716,8 @@
         {
           "production": "descriptionFilterConstraint",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -2727,8 +2727,8 @@
         {
           "production": "descriptionFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -2738,8 +2738,8 @@
         {
           "production": "descriptionIdFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2749,8 +2749,8 @@
         {
           "production": "descriptionIdKeyword",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2760,8 +2760,8 @@
         {
           "production": "descriptionId",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2771,8 +2771,8 @@
         {
           "production": "descriptionIdSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2782,8 +2782,8 @@
         {
           "production": "termFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2793,8 +2793,8 @@
         {
           "production": "termKeyword",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -2804,8 +2804,8 @@
         {
           "production": "typedSearchTerm",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2815,8 +2815,8 @@
         {
           "production": "typedSearchTermSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2826,8 +2826,8 @@
         {
           "production": "concreteStringSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2837,8 +2837,8 @@
         {
           "production": "concreteString",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2848,8 +2848,8 @@
         {
           "production": "concreteStringCharacters",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2859,8 +2859,8 @@
         {
           "production": "wild",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -2870,8 +2870,8 @@
         {
           "production": "matchKeyword",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -2881,8 +2881,8 @@
         {
           "production": "matchSearchTerm",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2892,8 +2892,8 @@
         {
           "production": "matchSearchTermSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2903,8 +2903,8 @@
         {
           "production": "wildSearchTerm",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -2914,8 +2914,8 @@
         {
           "production": "wildSearchTermSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2925,8 +2925,8 @@
         {
           "production": "languageFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2936,8 +2936,8 @@
         {
           "production": "language",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 16,
             "covered": 16,
@@ -2947,8 +2947,8 @@
         {
           "production": "languageCode",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -2958,8 +2958,8 @@
         {
           "production": "languageCodeSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -2969,8 +2969,8 @@
         {
           "production": "typeFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2980,8 +2980,8 @@
         {
           "production": "typeIdFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -2991,8 +2991,8 @@
         {
           "production": "typeId",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -3002,8 +3002,8 @@
         {
           "production": "typeTokenFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3013,8 +3013,8 @@
         {
           "production": "type",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -3024,8 +3024,8 @@
         {
           "production": "typeToken",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3035,8 +3035,8 @@
         {
           "production": "typeTokenSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3046,8 +3046,8 @@
         {
           "production": "synonym",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 16,
             "covered": 16,
@@ -3057,8 +3057,8 @@
         {
           "production": "fullySpecifiedName",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 44,
             "covered": 44,
@@ -3068,8 +3068,8 @@
         {
           "production": "definition",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 22,
             "covered": 22,
@@ -3079,8 +3079,8 @@
         {
           "production": "dialectFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -3090,8 +3090,8 @@
         {
           "production": "dialectIdFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3101,8 +3101,8 @@
         {
           "production": "dialectId",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 18,
             "covered": 18,
@@ -3112,8 +3112,8 @@
         {
           "production": "dialectAliasFilter",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3123,8 +3123,8 @@
         {
           "production": "dialect",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -3134,8 +3134,8 @@
         {
           "production": "dialectAlias",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -3145,8 +3145,8 @@
         {
           "production": "dialectAliasSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -3156,8 +3156,8 @@
         {
           "production": "dialectIdSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -3167,8 +3167,8 @@
         {
           "production": "acceptabilitySet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3178,8 +3178,8 @@
         {
           "production": "acceptabilityConceptReferenceSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3189,8 +3189,8 @@
         {
           "production": "acceptabilityTokenSet",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3200,8 +3200,8 @@
         {
           "production": "acceptabilityToken",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3211,8 +3211,8 @@
         {
           "production": "acceptable",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 22,
             "covered": 22,
@@ -3222,8 +3222,8 @@
         {
           "production": "preferred",
           "area": "description_filters",
-          "status": "partial",
-          "evidence": "tests/description_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 20,
             "covered": 20,
@@ -3233,8 +3233,8 @@
         {
           "production": "conceptFilterConstraint",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -3244,8 +3244,8 @@
         {
           "production": "conceptFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -3255,8 +3255,8 @@
         {
           "production": "definitionStatusFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3266,8 +3266,8 @@
         {
           "production": "definitionStatusIdFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3277,8 +3277,8 @@
         {
           "production": "definitionStatusIdKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 36,
             "covered": 36,
@@ -3288,8 +3288,8 @@
         {
           "production": "definitionStatusTokenFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3299,8 +3299,8 @@
         {
           "production": "definitionStatusKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 32,
             "covered": 32,
@@ -3310,8 +3310,8 @@
         {
           "production": "definitionStatusToken",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3321,8 +3321,8 @@
         {
           "production": "definitionStatusTokenSet",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3332,8 +3332,8 @@
         {
           "production": "primitiveToken",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 18,
             "covered": 18,
@@ -3343,8 +3343,8 @@
         {
           "production": "definedToken",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -3354,8 +3354,8 @@
         {
           "production": "moduleFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3365,8 +3365,8 @@
         {
           "production": "moduleIdKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 16,
             "covered": 16,
@@ -3376,8 +3376,8 @@
         {
           "production": "effectiveTimeFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3387,8 +3387,8 @@
         {
           "production": "effectiveTimeKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 26,
             "covered": 26,
@@ -3398,8 +3398,8 @@
         {
           "production": "timeValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3409,8 +3409,8 @@
         {
           "production": "timeValueSet",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3420,8 +3420,8 @@
         {
           "production": "year",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3431,8 +3431,8 @@
         {
           "production": "month",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -3442,8 +3442,8 @@
         {
           "production": "day",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 31,
             "covered": 31,
@@ -3453,8 +3453,8 @@
         {
           "production": "activeFilter",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3464,8 +3464,8 @@
         {
           "production": "activeKeyword",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 12,
             "covered": 12,
@@ -3475,8 +3475,8 @@
         {
           "production": "activeValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3486,8 +3486,8 @@
         {
           "production": "activeTrueValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3497,8 +3497,8 @@
         {
           "production": "activeFalseValue",
           "area": "concept_filters",
-          "status": "partial",
-          "evidence": "tests/concept_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3508,8 +3508,8 @@
         {
           "production": "memberFilterConstraint",
           "area": "member_filters",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -3519,8 +3519,8 @@
         {
           "production": "memberFilter",
           "area": "member_filters",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -3530,8 +3530,8 @@
         {
           "production": "memberFieldFilter",
           "area": "member_filters",
-          "status": "partial",
-          "evidence": "tests/member_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -3541,8 +3541,8 @@
         {
           "production": "historySupplement",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -3552,8 +3552,8 @@
         {
           "production": "historyKeyword",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 14,
             "covered": 14,
@@ -3563,8 +3563,8 @@
         {
           "production": "historyProfileSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3574,8 +3574,8 @@
         {
           "production": "historyMinimumSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -3585,8 +3585,8 @@
         {
           "production": "historyModerateSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -3596,8 +3596,8 @@
         {
           "production": "historyMaximumSuffix",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -3607,8 +3607,8 @@
         {
           "production": "historySubset",
           "area": "history",
-          "status": "partial",
-          "evidence": "tests/history.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3618,8 +3618,8 @@
         {
           "production": "numericValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -3640,8 +3640,8 @@
         {
           "production": "integerValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -3651,8 +3651,8 @@
         {
           "production": "decimalValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3662,8 +3662,8 @@
         {
           "production": "booleanValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3673,8 +3673,8 @@
         {
           "production": "true",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -3684,8 +3684,8 @@
         {
           "production": "false",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -3695,8 +3695,8 @@
         {
           "production": "nonNegativeIntegerValue",
           "area": "value_syntax",
-          "status": "partial",
-          "evidence": "tests/refinements.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -3707,7 +3707,7 @@
           "production": "sctId",
           "area": "lexical",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3717,8 +3717,8 @@
         {
           "production": "ws",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 8,
             "covered": 8,
@@ -3728,8 +3728,8 @@
         {
           "production": "mws",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 7,
             "covered": 7,
@@ -3739,8 +3739,8 @@
         {
           "production": "comment",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/basic_ecl.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -3750,8 +3750,8 @@
         {
           "production": "nonStarChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -3761,8 +3761,8 @@
         {
           "production": "starWithNonFSlash",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3772,8 +3772,8 @@
         {
           "production": "nonFSlash",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 9,
             "covered": 9,
@@ -3783,8 +3783,8 @@
         {
           "production": "SP",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3794,8 +3794,8 @@
         {
           "production": "HTAB",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3805,8 +3805,8 @@
         {
           "production": "CR",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3816,8 +3816,8 @@
         {
           "production": "LF",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3827,8 +3827,8 @@
         {
           "production": "QM",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3838,8 +3838,8 @@
         {
           "production": "BS",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3849,8 +3849,8 @@
         {
           "production": "star",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3860,8 +3860,8 @@
         {
           "production": "digit",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3871,8 +3871,8 @@
         {
           "production": "zero",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3882,8 +3882,8 @@
         {
           "production": "digitNonZero",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3893,8 +3893,8 @@
         {
           "production": "nonwsNonPipe",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 5,
             "covered": 5,
@@ -3904,8 +3904,8 @@
         {
           "production": "anyNonEscapedChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 10,
             "covered": 10,
@@ -3915,8 +3915,8 @@
         {
           "production": "escapedChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3926,8 +3926,8 @@
         {
           "production": "escapedWildChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/term_filters.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -3937,8 +3937,8 @@
         {
           "production": "nonwsNonEscapedChar",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 6,
             "covered": 6,
@@ -3948,8 +3948,8 @@
         {
           "production": "alpha",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 2,
             "covered": 2,
@@ -3959,8 +3959,8 @@
         {
           "production": "dash",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3970,8 +3970,8 @@
         {
           "production": "UTF8-2",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,
@@ -3981,8 +3981,8 @@
         {
           "production": "UTF8-3",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 4,
             "covered": 4,
@@ -3992,8 +3992,8 @@
         {
           "production": "UTF8-4",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 3,
             "covered": 3,
@@ -4003,8 +4003,8 @@
         {
           "production": "UTF8-tail",
           "area": "lexical",
-          "status": "partial",
-          "evidence": "tests/lexical.rs",
+          "status": "implemented",
+          "evidence": "scripts/grammar_differential.py",
           "differential": {
             "choices": 0,
             "covered": 0,

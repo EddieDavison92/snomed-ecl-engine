@@ -149,7 +149,8 @@ def element(stream):
 # ---------------------------------------------------------------- recogniser
 
 def conventional(rules):
-    """The grammar with its two comment quirks removed.
+    """The grammar as the specification reads it: the two comment quirks
+    removed, and a filter naming no type read as a description filter.
 
     `ws` admits comments, and `matchSearchTermSet` uses `ws` inside its quotes,
     so `"a/*b*/c"` holds two words rather than the text between the quotes.
@@ -171,6 +172,12 @@ class Recogniser:
     rule pairs every star with the byte after it, so a comment ending `**/`,
     such as `/***/`, never closes; that is a defect in the grammar rather than
     a form anyone intends, and this variant labels the disagreements it causes.
+
+    The same variant applies 6.8: "If the type of a filter constraint is not
+    specified ... it is assumed that the constraint is a description
+    constraint." The ABNF also reads `{{moduleId = x}}` as the member filter
+    `m` on a field `oduleId`, because it allows no space after the type letter;
+    here a member filter may not begin with `moduleId` run into its letter.
     """
 
     def __init__(self, rules, closing_comments=False):
@@ -190,6 +197,17 @@ class Recogniser:
             body = data[at + 2:end]
             ok = end >= 0 and all(b in (0x20, 0x09, 0x0D, 0x0A) or 0x21 <= b <= 0x7E or b >= 0x80 for b in body)
             return {end + 2} if ok else set()
+        if (isinstance(node, Ref) and node.name == "memberFilterConstraint"
+                and self.closing_comments):
+            body = data[at + 2:]
+            while True:  # whitespace and comments may sit between {{ and the name
+                body = body.lstrip(b" \t\r\n")
+                end = body.find(b"*/", 2) if body.startswith(b"/*") else -1
+                if end < 0:
+                    break
+                body = body[end + 2:]
+            if data[at:at + 2] == b"{{" and body[:8].lower() == b"moduleid":
+                return set()
         if isinstance(node, Ref):
             key = (node.name, at)
             if key not in self.memo:
@@ -427,7 +445,7 @@ def main():
             if valid != (verdict in GRAMMATICAL):
                 label = "grammar accepts" if valid else "grammar rejects"
                 if valid != corrected.accepts("expressionConstraint", sample):
-                    label += " only through a comment quirk"
+                    label += " only under the literal grammar"
                 reason = f"{verdict}: {detail[1]}" if detail else verdict
                 disagreements[(label, reason)].append(sample)
         minimal = {}
@@ -436,8 +454,9 @@ def main():
                 verdict, *detail = engine(args.binary, [candidate])[0]
                 got = f"{verdict}: {detail[1]}" if detail else verdict
                 valid = recogniser.accepts("expressionConstraint", candidate)
-                quirk = valid != corrected.accepts("expressionConstraint", candidate)
-                return got == reason and valid == label.startswith("grammar accepts") and quirk == ("quirk" in label)
+                literal = valid != corrected.accepts("expressionConstraint", candidate)
+                return (got == reason and valid == label.startswith("grammar accepts")
+                        and literal == ("literal grammar" in label))
             minimal[(label, reason)] = sorted({shrink(s, keep) for s in sorted(found, key=len)[:3]}, key=len)
         # Every generated positive must itself satisfy the recogniser.
         unrecognised = [s for s in positives if not recogniser.accepts("expressionConstraint", s)]
@@ -465,7 +484,7 @@ def main():
             ),
         }
         summary = report[name]
-        unexplained = sum(d["count"] for k, d in summary["disagreements"].items() if "quirk" not in k)
+        unexplained = sum(d["count"] for k, d in summary["disagreements"].items() if "literal grammar" not in k)
         summary["unexplained"] = unexplained
         print(f"{name}: {summary['samples']} samples, {grammar_valid} grammar-valid, "
               f"{sum(d['count'] for d in summary['disagreements'].values())} disagreements, "

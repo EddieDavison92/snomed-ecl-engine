@@ -419,10 +419,10 @@ fn grammatical_forms_found_by_the_differential_check() {
     same("< 1000001 {{D type NOT = syn}}", "< 1000001 {{D typeNOT/* c */= syn}}");
     // A field projected twice is grammatical but asks for nothing more.
     semantic_error("^[mapTarget, mapTarget] 200001");
-    // `{{moduleid = *, x = *}}` is a member filter `m oduleid`, refused without ^.
-    semantic_error("1000001 {{moduleid = *, x = *}}");
-    // After another filter no member filter is grammatical.
-    syntax_error("1000001 {{C active = 1}} {{moduleid = *, x = *}}");
+    // A filter naming no type is a description filter (6.8), although the ABNF
+    // also reads `{{moduleid = *, x = *}}` as a member filter on `oduleid`.
+    syntax_error("1000001 {{moduleid = *, x = *}}");
+    syntax_error("^ 1000001 {{moduleId = *}} {{M active = 1}}");
     // Switching operators between attribute sets is grammatical but ambiguous (6.4);
     // around a group it is not grammatical at all.
     semantic_error("* : { 1000001 = * }, 1000002 = *, 1000003 = * OR 1000004 = *");
@@ -435,8 +435,15 @@ fn operator_mixes_are_grammatical_only_where_groups_allow() {
     semantic_error("* : (1000001 = *, 1000002 = *) AND 1000003 = * OR 1000004 = * AND { 1000005 = * }");
     // Operators on both sides of a group must agree.
     syntax_error("* : 1000001 = * AND { 1000002 = * } OR 1000003 = *");
-    // A description filter that also reads as a member filter leaves room for one.
-    semantic_error("1000001 {{moduleid = *}} {{m d = *}}");
+    // A bracketed single concept is a subexpression, so filters may follow it.
+    same(
+        "< 1000001 {{D moduleId = (1000002) {{C active = 1}}}}",
+        "< 1000001 {{D moduleId = 1000002 {{C active = 1}}}}",
+    );
+    same("* : ANY NOT = 1000001", "* : ANYNOT = 1000001");
+    // A string may begin with `#`; only a letter starts an identifier scheme.
+    parses("* : 1000001 = \"#5\"");
+    parses("* : 1000001 != (\"#\" \"a\")");
 }
 
 #[test]
