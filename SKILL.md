@@ -31,41 +31,40 @@ The user must supply an RF2 Snapshot they are licensed to use, as one
 self-contained ZIP. UK Monolith is the tested edition. Do not download a release
 on the user's behalf without their credentials and consent, and never print or
 save a TRUD API response: its download URLs contain the API key. Keep archives
-and indexes under `data/`, which Git ignores.
+under `data/`, which Git ignores. `add` puts indexes in the library folder that
+`list` names.
 
 ```sh
 snomed-ecl-engine inspect data/rf2/ARCHIVE.zip
 ```
 
-`inspect` prints the archive's SHA-256, release date and edition URI, then the
-`import` command. Check that SHA-256 against the value the distributor published
-before importing: a checksum of the downloaded file alone does not show where it
-came from.
+`inspect` prints the archive's SHA-256, release date and edition URI. Check that
+SHA-256 against the value the distributor published: a checksum of the
+downloaded file alone does not show where it came from.
 
-## Build and pack the index
+## Build the index
 
 ```sh
-snomed-ecl-engine import data/rf2/ARCHIVE.zip data/index EDITION_URI SHA256 --json
-snomed-ecl-engine pack data/index data/uk.ecl
-snomed-ecl-engine verify data/uk.ecl
+snomed-ecl-engine add data/rf2/ARCHIVE.zip --sha256 DISTRIBUTOR_SHA256 --json
+snomed-ecl-engine list --json
 ```
 
-The destination must not exist; choose a new path rather than deleting one.
-Import reports stages on stderr and prints the manifest on stdout. Check the
-manifest's `edition`, `archive_sha256` and counts before reusing an index. A
-failed import can leave a `.store-building-*` directory: do not query it.
-
-Every command accepts either the directory or the packed file.
+`add` imports the archive, packs it into one file in the library folder, names
+it by edition and release date, such as `uk-20260826`, and selects it. Always
+pass `--sha256`: without a terminal, `add` refuses rather than asking. It
+refuses to overwrite an index of the same name; `remove NAME --yes` deletes one.
+Check the `edition` in its output before relying on the index.
 
 ## Expand ECL
 
-Pass the index path explicitly; `use` records a selection for people at a
-terminal, and `SNOMED_ECL_STORE` overrides it.
+Name the index explicitly: a library name such as `uk-20260826`, a release such
+as `uk@2026-08`, or a path. `use` records a selection for people at a terminal,
+and `SNOMED_ECL_STORE` overrides it.
 
 ```sh
-snomed-ecl-engine expand data/uk.ecl '<< 404684003' --count --json
-snomed-ecl-engine expand data/uk.ecl '404684003' --display --json
-snomed-ecl-engine expand data/uk.ecl '< 404684003 : 363698007 = << 39057004' --json
+snomed-ecl-engine expand uk-20260826 '<< 404684003' --count --json
+snomed-ecl-engine expand uk-20260826 '404684003' --display --json
+snomed-ecl-engine expand uk-20260826 '< 404684003 : 363698007 = << 39057004' --json
 ```
 
 Quote the whole expression. `--count --json` returns `{"total":...}`; `--json`
@@ -80,7 +79,7 @@ returns `added`, `removed` and `unchanged`.
 ## Answer many queries from one process
 
 ```sh
-snomed-ecl-engine batch data/uk.ecl
+snomed-ecl-engine batch uk-20260826
 ```
 
 Write one JSON object and a newline per request, flush, and read one response

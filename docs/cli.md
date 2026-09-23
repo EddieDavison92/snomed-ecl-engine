@@ -6,25 +6,40 @@ Install an executable from a release or build one; see the
 commands, names the selected index and suggests the next step.
 
 ```sh
-snomed-ecl-engine stores
-snomed-ecl-engine use data/uk.ecl
-snomed-ecl-engine stats
+snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 1330d2f2...
+snomed-ecl-engine list
 snomed-ecl-engine expand '404684003' --display
 snomed-ecl-engine expand '<< 404684003' --count
 ```
 
-## Choose an index once
+## Manage indexes
 
-`stores` lists the indexes directly inside the working directory and `data/`,
-or inside the paths given to it. Both index directories and packed
-files are listed; anything else is skipped. `use PATH` checks a path and records
-it in `state.json` under the platform's config directory, outside the
-repository. `use --clear` forgets it.
+`add ARCHIVE` builds an index from an RF2 Snapshot ZIP, packs it into one file
+in the library folder and selects it. It checks the archive against the
+checksum your distributor published: give it with `--sha256`, or confirm the one
+it shows when asked. The index is named by edition and release date, such as
+`uk-20260826`; `--name` chooses another, and `--edition` names the edition when
+the archive does not.
 
-`stats`, `verify`, `expand`, `query`, `batch` and `hierarchy` then take no path.
-Each resolves the index from its own argument first, then `SNOMED_ECL_STORE`,
-then the recorded selection, and says which of the three it used. Give the path
+`list` shows the library's indexes by name and release, then any other index
+directly inside the working directory or `data/`, or inside the folders given.
+`use` selects one, recorded outside the repository, and `use --clear` forgets
+it. `remove NAME` deletes one from the library after asking; `--yes` skips the
+question in scripts.
+
+Anywhere an index is expected, give a path, a library name such as
+`uk-20260826`, a release such as `uk@2026-08` or `uk@2026-08-26`, or an edition
+alone, such as `uk`, for its latest release. A partial date picks the latest
+release that matches it.
+
+`stats`, `verify`, `expand`, `query`, `batch` and `hierarchy` take no index when
+one is selected. Each resolves the index from its own argument first, then
+`SNOMED_ECL_STORE`, then the selection, and says which it used. Name the index
 explicitly in scripts and CI, where a developer's selection should not apply.
+
+The library folder is `SNOMED_ECL_HOME` if set, else `snomed-ecl-engine/indexes`
+in the platform's data folder: `%LOCALAPPDATA%` on Windows, `~/Library/Application
+Support` on macOS and `$XDG_DATA_HOME` or `~/.local/share` on Linux.
 
 ## Query interactively
 
@@ -54,7 +69,7 @@ what it gained and lost. Use it to see what a new release or a refset supplement
 changed:
 
 ```sh
-snomed-ecl-engine diff data/uk-2026-08.ecl data/uk-2026-11.ecl '< 900000000000455006' --display
+snomed-ecl-engine diff uk@2026-08 uk@2026-11 '< 900000000000455006' --display
 ```
 
 Each index is opened, evaluated and closed in turn, so only one is in memory at
@@ -80,8 +95,10 @@ with the value the distributor published. `import` verifies it before reading
 any content, and reports each of its eleven stages on stderr with the elapsed
 time. Stages take different times, so the stage number is not a percentage.
 
-[Indexes](indexes.md) covers what `import` accepts, `add-refsets` for
-supplements such as UK PCD, and `pack` and `verify` for single-file indexes.
+`add` runs `inspect`, `import` and `pack` in one step. Run them yourself to
+keep the unpacked directory, choose display refsets or build somewhere other
+than the library. [Indexes](indexes.md) covers what `import` accepts,
+`add-refsets` for supplements such as UK PCD, and `pack` and `verify`.
 
 ## Output
 

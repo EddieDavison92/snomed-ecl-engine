@@ -6,6 +6,7 @@ use snomed_ecl_engine::{ecl, eval};
 use std::io::{self, BufRead, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+mod library;
 mod presentation;
 mod workspace;
 
@@ -35,6 +36,194 @@ fn main() {
         );
         std::process::exit(1);
     }
+}
+
+/// Removes `--flag` from the arguments, reporting whether it was there.
+fn take_flag(args: &mut Vec<String>, flag: &str) -> bool {
+    let before = args.len();
+    args.retain(|arg| arg != flag);
+    args.len() != before
+}
+
+/// Removes `--option VALUE` from the arguments and returns the value.
+#[cfg(feature = "import")]
+fn take_option(args: &mut Vec<String>, option: &str) -> Result<Option<String>> {
+    let Some(position) = args.iter().position(|arg| arg == option) else {
+        return Ok(None);
+    };
+    ensure!(position + 1 < args.len(), "{option} needs a value");
+    let value = args.remove(position + 1);
+    args.remove(position);
+    ensure!(
+        !args.iter().any(|arg| arg == option),
+        "{option} may only be given once"
+    );
+    Ok(Some(value))
+}
+
+/// Asks a yes-or-no question on the terminal. Without one there is nobody to
+/// answer, so the caller must say what to pass instead.
+fn confirm(question: &str, otherwise: &str) -> Result<bool> {
+    use std::io::IsTerminal;
+    ensure!(
+        io::stdin().is_terminal() && io::stderr().is_terminal(),
+        "{otherwise}"
+    );
+    eprint!("{question} [y/N] ");
+    io::stderr().flush()?;
+    let mut answer = String::new();
+    io::stdin().lock().read_line(&mut answer)?;
+    Ok(matches!(
+        answer.trim().to_ascii_lowercase().as_str(),
+        "y" | "yes"
+    ))
+}
+
+/// Checks, imports and packs an RF2 archive into the library, then selects it.
+#[cfg(feature = "import")]
+fn add_release(
+    archive: &Path,
+    sha256: Option<String>,
+    name: Option<String>,
+    edition: Option<String>,
+    human: bool,
+) -> Result<()> {
+    let summary = snomed_ecl_engine::import::inspect_archive(archive)?;
+    ensure!(
+        summary.importable,
+        "{} is not a self-contained RF2 Snapshot; `inspect` shows what is missing",
+        archive.display()
+    );
+    let edition = match edition {
+        Some(uri) => uri,
+        None if summary.root_editions == 1 => summary.edition_uris[0].clone(),
+        None => bail!(
+            "The archive does not name one edition; choose one with --edition URI. \
+             `inspect` lists the candidates"
+        ),
+    };
+    // A checksum of the download shows it is intact, not where it came from,
+    // so it must match the distributor's published value.
+    match sha256 {
+        Some(expected) => ensure!(
+            expected.trim().eq_ignore_ascii_case(&summary.sha256),
+            "The archive's SHA-256 is {}, not the {} given. Check the download",
+            summary.sha256,
+            expected.trim()
+        ),
+        None => {
+            eprintln!("  SHA-256  {}", summary.sha256);
+            let confirmed = confirm(
+                "  Does this match the checksum your distributor published?",
+                "Give the distributor's published checksum with --sha256; \
+                 `inspect` prints this archive's",
+            )?;
+            ensure!(
+                confirmed,
+                "Not added. Check the archive against the distributor's checksum"
+            );
+        }
+    }
+    let name = match name {
+        Some(name) => name,
+        None => library::default_name(&edition)
+            .context("This edition URI has no release date; name the index with --name")?,
+    };
+    library::check_name(&name)?;
+    let home = library::home()?;
+    std::fs::create_dir_all(&home)
+        .with_context(|| format!("Cannot create the library folder {}", home.display()))?;
+    let destination = home.join(format!("{name}.ecl"));
+    ensure!(
+        !destination.exists(),
+        "The library already has {name}. Remove it with `remove {name}`, or choose another --name"
+    );
+    let staging = home.join(format!(".{name}.building-{}", std::process::id()));
+    let stages = snomed_ecl_engine::import::IMPORT_STAGES + 1;
+    let start = Instant::now();
+    let mut stage = 0;
+    let built = import_snapshot_with_progress(
+        archive,
+        &staging,
+        &ImportOptions {
+            edition: edition.clone(),
+            expected_sha256: summary.sha256.clone(),
+            display_refsets: UK_DISPLAY_REFSETS.to_vec(),
+        },
+        |message| {
+            stage += 1;
+            eprintln!(
+                "  [{stage}/{stages}] {message}  ({:.1}s elapsed)",
+                start.elapsed().as_secs_f64()
+            );
+        },
+    )
+    .and_then(|_| {
+        eprintln!(
+            "  [{stages}/{stages}] Packing into one file  ({:.1}s elapsed)",
+            start.elapsed().as_secs_f64()
+        );
+        snomed_ecl_engine::store::pack(&staging, &destination)
+    });
+    // The unpacked directory is only a step towards the file.
+    let _ = std::fs::remove_dir_all(&staging);
+    built?;
+    let path = std::fs::canonicalize(&destination)?;
+    workspace::save(&workspace::State {
+        store: Some(path.clone()),
+    })?;
+    let bytes = std::fs::metadata(&path)?.len();
+    if human {
+        println!(
+            "\n  Added {name}, {}, in {:.0}s. It is now selected:",
+            presentation::bytes(bytes),
+            start.elapsed().as_secs_f64()
+        );
+        println!("\n    snomed-ecl-engine query");
+        println!("    snomed-ecl-engine expand '<< 73211009 |Diabetes mellitus|' --display");
+    } else {
+        println!(
+            "{}",
+            serde_json::json!({
+                "name": name,
+                "store": path,
+                "edition": edition,
+                "bytes": bytes,
+                "elapsed_seconds": start.elapsed().as_secs_f64(),
+            })
+        );
+    }
+    Ok(())
+}
+
+/// Deletes one library index, after asking, and clears it if selected.
+fn remove_index(reference: &str, yes: bool) -> Result<()> {
+    let path = library::find(reference)?.with_context(|| {
+        format!("The library has no index {reference}; `list` shows the indexes it has")
+    })?;
+    let name = path
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or(reference)
+        .to_owned();
+    if !yes {
+        let bytes = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let question = format!("Remove {name} ({})?", presentation::bytes(bytes));
+        let confirmed = confirm(
+            &question,
+            &format!("Add --yes to remove {name} without a prompt"),
+        )?;
+        ensure!(confirmed, "Not removed");
+    }
+    std::fs::remove_file(&path).with_context(|| format!("Cannot remove {}", path.display()))?;
+    let selected = workspace::load().store;
+    if selected
+        .is_some_and(|selected| std::fs::canonicalize(&selected).is_err() || selected == path)
+    {
+        workspace::save(&workspace::State::default())?;
+    }
+    println!("Removed {name}.");
+    Ok(())
 }
 
 fn run() -> Result<()> {
@@ -77,19 +266,27 @@ fn run() -> Result<()> {
     let command = args.first().cloned().unwrap_or_default();
     match command.as_str() {
         "use" => {
-            ensure!(args.len() == 2, "Usage: use STORE | use --clear");
-            if args[1] == "--clear" {
+            ensure!(args.len() <= 2, "Usage: use [NAME | PATH | --clear]");
+            let Some(reference) = args.get(1) else {
+                // With nothing to select, say what is selected.
+                match workspace::load().store {
+                    Some(path) => println!("Selected: {}", path.display()),
+                    None => println!("No index selected. `list` shows the indexes available."),
+                }
+                return Ok(());
+            };
+            if reference == "--clear" {
                 workspace::save(&workspace::State::default())?;
                 println!("Cleared the selected index.");
                 return Ok(());
             }
             // Store an absolute path so the selection survives a change of
             // working directory, and reject anything that is not an index.
-            let path = std::fs::canonicalize(&args[1])
-                .with_context(|| format!("No such path: {}", args[1]))?;
+            let path = std::fs::canonicalize(library::resolve(reference)?)
+                .with_context(|| format!("No such path: {reference}"))?;
             let manifest = Manifest::read(&path).with_context(|| {
                 format!(
-                    "{} is not an index. `stores` lists the indexes it can find",
+                    "{} is not an index. `list` shows the indexes available",
                     path.display()
                 )
             })?;
@@ -106,7 +303,7 @@ fn run() -> Result<()> {
                 );
             }
         }
-        "stores" => {
+        "list" | "stores" => {
             let roots: Vec<_> = if args.len() > 1 {
                 args[1..].iter().map(PathBuf::from).collect()
             } else {
@@ -121,6 +318,7 @@ fn run() -> Result<()> {
                     println!(
                         "{}",
                         serde_json::json!({
+                            "name": entry.name,
                             "store": entry.path,
                             "edition": entry.edition,
                             "active_concepts": entry.active_concepts,
@@ -304,10 +502,10 @@ fn run() -> Result<()> {
             let style = Style::take(&mut args, human, json)?;
             ensure!(
                 args.len() == 4,
-                "Usage: diff OLD_STORE NEW_STORE ECL [--display|--count]"
+                "Usage: diff OLD NEW ECL [--display|--count]"
             );
             let expression = parse(&args[3])?;
-            let (old, new) = (PathBuf::from(&args[1]), PathBuf::from(&args[2]));
+            let (old, new) = (library::resolve(&args[1])?, library::resolve(&args[2])?);
             // Each index is opened, evaluated and dropped in turn so only one is
             // resident at a time.
             let (old_edition, old_codes) = evaluate_for_diff(&old, &expression, &query_config)?;
@@ -421,6 +619,24 @@ fn run() -> Result<()> {
             } else {
                 println!("{}", serde_json::to_string(&result)?);
             }
+        }
+        #[cfg(not(feature = "import"))]
+        "add" => bail!("Adding a release needs the importer; use the default build"),
+        #[cfg(feature = "import")]
+        "add" => {
+            let sha256 = take_option(&mut args, "--sha256")?;
+            let name = take_option(&mut args, "--name")?;
+            let edition = take_option(&mut args, "--edition")?;
+            ensure!(
+                args.len() == 2,
+                "Usage: add ARCHIVE [--sha256 HEX] [--name NAME] [--edition URI]"
+            );
+            add_release(Path::new(&args[1]), sha256, name, edition, human)?;
+        }
+        "remove" => {
+            let yes = take_flag(&mut args, "--yes");
+            ensure!(args.len() == 2, "Usage: remove NAME [--yes]");
+            remove_index(&args[1], yes)?;
         }
         #[cfg(not(feature = "import"))]
         "import" | "add-refsets" => {
