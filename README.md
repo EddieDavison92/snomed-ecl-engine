@@ -138,7 +138,12 @@ Snowstorm agreed on 879, disagreed on 1, where the RF2 rows support this
 engine's answer, and could not answer 120. Snowstorm Lite agreed on 587, returned
 13 wrong answers, and could not answer 400.
 
-| | |
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/latency-dark.svg">
+  <img alt="Warm count median: this engine 0.86 ms on 1 CPU and 256 MiB, Snowstorm Lite 4.56 ms on 1 CPU and 2 GiB, Snowstorm 13.19 ms on 8 CPUs and 12 GiB. Complete enumeration median: 0.94 ms, 7.15 ms and 36.40 ms on the same allocations." src="docs/images/latency-light.svg">
+</picture>
+
+| Measurement | This engine |
 |---|---:|
 | Packed index for the UK release | 152 MiB |
 | Open a packed index, one CPU | 156 ms |
