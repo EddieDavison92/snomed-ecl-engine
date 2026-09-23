@@ -3,6 +3,7 @@
 
 pub mod config;
 pub mod decimal;
+pub mod detail;
 pub mod ecl;
 pub mod eval;
 #[cfg(feature = "import")]

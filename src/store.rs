@@ -12,6 +12,7 @@ mod descriptions;
 mod identifiers;
 mod members;
 mod membership;
+mod search;
 mod term_storage;
 pub(crate) use container::IndexSource;
 pub use container::{pack, pack_with_options, verify, PackOptions, Verification};
@@ -23,6 +24,7 @@ pub use members::{
     MemberValue, TextColumn,
 };
 pub use membership::{MembershipIndex, MembershipManifest};
+pub use search::{search_pairs, words, SearchIndex, SearchManifest, SearchStore};
 
 pub const FORMAT: u32 = 1;
 const CORE_MAGIC: &[u8; 8] = b"SNECL001";
@@ -55,6 +57,9 @@ pub struct Manifest {
     pub member_tables: Option<Vec<MemberManifest>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub identifiers: Option<IdentifierManifest>,
+    /// Word index over description terms. Absent in indexes built before it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub search: Option<SearchManifest>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplements: Vec<RefsetSupplement>,
 }
@@ -211,6 +216,7 @@ pub struct NumericStore {
     /// Active refset member rows referencing concepts. None means the index was not built.
     pub membership: Option<MembershipIndex>,
     pub descriptions: DescriptionStore,
+    pub search: SearchStore,
     pub member_tables: MemberStore,
     pub identifiers: IdentifierStore,
     pub config: crate::config::QueryConfig,
@@ -465,6 +471,12 @@ impl NumericStore {
                 .map(|m| DescriptionStore::lazy(&source, m, count))
                 .transpose()?
                 .unwrap_or_default(),
+            search: manifest
+                .search
+                .as_ref()
+                .map(|m| SearchStore::lazy(&source, m.clone()))
+                .transpose()?
+                .unwrap_or_default(),
             member_tables: manifest
                 .member_tables
                 .map(|m| MemberStore::lazy(&source, m))
@@ -580,6 +592,15 @@ impl DisplayStore {
             offsets,
             start,
         })
+    }
+
+    /// Byte length of a concept's label, without reading it.
+    ///
+    /// The offsets are already in memory, so ranking thousands of candidates
+    /// by label length costs nothing. Only the survivors are then read.
+    pub fn label_bytes(&self, ordinal: u32) -> Option<u32> {
+        let i = ordinal as usize;
+        Some(self.offsets.get(i + 1)? - self.offsets.get(i)?)
     }
 
     pub fn get(&mut self, ordinal: u32) -> Result<Option<String>> {

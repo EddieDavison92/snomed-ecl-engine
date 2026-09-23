@@ -16,6 +16,7 @@ fn store(n: usize) -> NumericStore {
     flags[n - 1] = 0;
     NumericStore {
         descriptions: Default::default(),
+        search: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),

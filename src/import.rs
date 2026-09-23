@@ -442,6 +442,9 @@ pub fn import_snapshot_with_progress(
     let membership_manifest =
         membership.manifest(&membership_path, non_concept_rows, refset_files)?;
     let description_manifest = descriptions.write(&staging.join("descriptions.bin"))?;
+    progress("Indexing description words for search");
+    let search_manifest = crate::store::SearchIndex::build(crate::store::search_pairs(&descriptions, n)?)?
+        .write(&staging.join("search.bin"))?;
     drop(descriptions);
     progress("Indexing typed reference-set members");
     let member_tables =
@@ -485,6 +488,7 @@ pub fn import_snapshot_with_progress(
         descriptions: Some(description_manifest),
         member_tables: Some(member_tables),
         identifiers: Some(identifiers),
+        search: Some(search_manifest),
         supplements: Vec::new(),
     };
     let mut manifest_file = BufWriter::new(File::create_new(staging.join("manifest.json"))?);

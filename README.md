@@ -119,6 +119,28 @@ answered 587 and reported 320 as using features it does not implement.
 [Benchmarks](docs/benchmarks.md) has the method, the disagreements, where this
 engine is slower and what these numbers are not.
 
+## Finding concepts by name
+
+ECL answers which concepts, never what a concept is. A browser needs both, so
+the index carries a word index over active description terms and a lookup that
+returns a concept's descriptions, hierarchy neighbours, relationship groups and
+reference set membership.
+
+Searching the whole UK edition takes 3 to 18 ms. The same question asked as an
+ECL term filter takes over a second scoped to one hierarchy, and exceeds the
+work limit unscoped, because it scans the descriptions of everything in scope.
+Words are extracted once at build time instead, so a search is a binary search
+and a list intersection.
+
+The word index is 155,963 words over 12.5 million postings, a 50 MiB section
+that opening never touches. Normalisation happens at build time, so querying
+needs no collation library and works in the build without ICU.
+
+```sh
+echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch uk.ecl
+echo '{"concept":"709044004"}'               | snomed-ecl-engine batch uk.ecl
+```
+
 ## What it supports
 
 Every ECL 2.3 feature area: hierarchy and Boolean sets, refinements, groups and

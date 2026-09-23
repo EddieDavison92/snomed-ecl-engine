@@ -462,9 +462,20 @@ pub fn add_refsets_snapshot(
     let membership = staging.join("membership.bin");
     store.write(&core)?;
     DisplayStore::write(&display, &labels)?;
-    manifest.descriptions = descriptions
-        .map(|index| index.write(&staging.join("descriptions.bin")))
-        .transpose()?;
+    // A supplement can add concepts and descriptions, so the word index is
+    // rebuilt rather than inherited: the base one names rows that have moved.
+    manifest.search = None;
+    manifest.descriptions = match descriptions {
+        Some(index) => {
+            let written = index.write(&staging.join("descriptions.bin"))?;
+            manifest.search = Some(
+                crate::store::SearchIndex::build(crate::store::search_pairs(&index, n)?)?
+                    .write(&staging.join("search.bin"))?,
+            );
+            Some(written)
+        }
+        None => None,
+    };
     let index = store.membership.as_ref().unwrap();
     index.write(&membership)?;
     let previous = manifest.membership.as_ref().unwrap();
