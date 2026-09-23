@@ -190,7 +190,7 @@ impl Context<'_> {
                 .map_err(|e| EvalError::Index(e.to_string()))?
                 .unwrap();
             let names = if requested.is_empty() {
-                table.names[5..].to_vec()
+                table.names[crate::store::REFERENCES..].to_vec()
             } else {
                 requested.clone()
             };
@@ -214,15 +214,16 @@ impl Context<'_> {
             for (column, predicate) in filter_columns.iter().zip(&prepared) {
                 validate_type(column, predicate)?;
             }
-            let MemberColumn::Boolean(active) = &table.columns[2] else {
+            let MemberColumn::Boolean(active) = &table.columns[crate::store::ACTIVE] else {
                 return Err(EvalError::Index("Invalid member status".into()));
             };
-            let MemberColumn::Id(references) = &table.columns[5] else {
+            let MemberColumn::Id(references) = &table.columns[crate::store::REFERENCES] else {
                 return Err(EvalError::TypeMismatch);
             };
             // The smallest `=` concept set on an identifier column names the
             // only rows that can match; the rest of the table is not read.
-            let mut drive: Option<(usize, &[u64])> = query.reverse.then_some((5, &referenced[..]));
+            let mut drive: Option<(usize, &[u64])> =
+                query.reverse.then_some((crate::store::REFERENCES, &referenced[..]));
             for ((filter, column), predicate) in
                 query.filters.iter().zip(&filter_columns).zip(&prepared)
             {

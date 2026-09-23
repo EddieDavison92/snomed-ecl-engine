@@ -85,10 +85,10 @@ impl Context<'_> {
             let Some(MemberColumn::Id(targets)) = table.column("targetComponentId") else {
                 return Err(EvalError::InvalidField("targetComponentId".into()));
             };
-            let MemberColumn::Id(references) = &table.columns[5] else {
+            let MemberColumn::Id(references) = &table.columns[crate::store::REFERENCES] else {
                 return Err(EvalError::TypeMismatch);
             };
-            let MemberColumn::Boolean(active) = &table.columns[2] else {
+            let MemberColumn::Boolean(active) = &table.columns[crate::store::ACTIVE] else {
                 return Err(EvalError::TypeMismatch);
             };
             for row in 0..table.len() {

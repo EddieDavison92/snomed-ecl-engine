@@ -14,11 +14,9 @@ fn table() -> MemberTable {
     MemberTable {
         refset: 200001,
         names: [
-            "id",
             "effectiveTime",
             "active",
             "moduleId",
-            "refsetId",
             "referencedComponentId",
             "mapGroup",
             "mapTarget",
@@ -30,11 +28,9 @@ fn table() -> MemberTable {
         .map(str::to_owned)
         .collect(),
         columns: vec![
-            C::Uuid((1..=4).map(|i| [i; 16]).collect()),
             C::Time(vec![20260826, 20260731, 20260826, 0]),
             C::Boolean(vec![1, 1, 0, 1]),
             C::Id(vec![100001; 4]),
-            C::Id(vec![200001; 4]),
             C::Id(vec![300001, 300001, 300002, 300003]),
             C::Integer(vec![1, 2, 1, 2]),
             C::Text(text),
@@ -106,7 +102,7 @@ fn member_metadata_numeric_predicates_and_concept_projections_preserve_rows() {
 #[test]
 fn arbitrary_date_fields_resolve_ambiguous_quoted_values_from_the_column_type() {
     let mut table = table();
-    table.names[10] = "reviewDate".into();
+    table.names[8] = "reviewDate".into();
     let mut store = fixture();
     store.member_tables = MemberStore::loaded(vec![table]).unwrap();
     for (predicate, expected) in [
@@ -136,7 +132,7 @@ fn arbitrary_date_fields_resolve_ambiguous_quoted_values_from_the_column_type() 
         for value in ["20260826 suffix", "other", "20260826", "20260731"] {
             text.push(value).unwrap();
         }
-        table.columns[7] = C::Text(text);
+        table.columns[5] = C::Text(text);
         store.member_tables = MemberStore::loaded(vec![table]).unwrap();
         assert_eq!(
             codes(&store, r#"^200001 {{M mapTarget="20260826"}}"#),
@@ -157,7 +153,7 @@ fn member_text_collation_uses_the_configured_language() {
     for value in ["sjögren", "other", "other", "other"] {
         text.push(value).unwrap();
     }
-    table.columns[7] = C::Text(text);
+    table.columns[5] = C::Text(text);
     let mut store = fixture();
     store.member_tables = MemberStore::loaded(vec![table]).unwrap();
     assert_eq!(
@@ -223,7 +219,7 @@ fn scalar_projections_form_exact_typed_sets() {
     for value in ["+1.000", "1", "-0.00", "1.000000000000000001"] {
         numbers.push(value).unwrap();
     }
-    table.columns[6] = C::Number(numbers);
+    table.columns[4] = C::Number(numbers);
     store.member_tables = MemberStore::loaded(vec![table]).unwrap();
     for (query, expected) in [
         ("^[mapGroup]200001", vec!["1", "1.000000000000000001"]),
@@ -393,13 +389,11 @@ fn recovered_concepts_keep_numeric_order_and_evaluation_limits() {
 #[test]
 fn field_projection_across_refsets_keeps_each_columns_type() {
     let mut first = table();
-    first.names[6] = "target".into();
-    first.columns[6] = C::Id(vec![300001; 4]);
+    first.names[4] = "target".into();
+    first.columns[4] = C::Id(vec![300001; 4]);
     let mut second = first.clone();
     second.refset = 400001;
-    second.columns[0] = C::Uuid((5..=8).map(|i| [i; 16]).collect());
-    second.columns[4] = C::Id(vec![400001; 4]);
-    second.columns[6] = C::Integer(vec![300001; 4]);
+    second.columns[4] = C::Integer(vec![300001; 4]);
     let mut store = fixture();
     store.member_tables = MemberStore::loaded(vec![first, second]).unwrap();
     assert_eq!(
@@ -444,10 +438,10 @@ fn member_errors_are_explicit_and_store_tables_are_validated() {
         assert!(parse(invalid).is_err(), "{invalid}");
     }
     let mut corrupt = table();
-    corrupt.names[6] = "id".into();
+    corrupt.names[4] = "active".into();
     assert!(MemberStore::loaded(vec![corrupt]).is_err());
     let mut corrupt = table();
-    if let C::Text(text) = &mut corrupt.columns[7] {
+    if let C::Text(text) = &mut corrupt.columns[5] {
         text.offsets[1] = u32::MAX;
     }
     assert!(MemberStore::loaded(vec![corrupt]).is_err());
@@ -461,7 +455,7 @@ fn member_errors_are_explicit_and_store_tables_are_validated() {
 fn member_limits_and_dangling_inactive_references_never_return_partial_concept_sets() {
     use std::sync::atomic::AtomicBool;
     let mut table = table();
-    let C::Id(references) = &mut table.columns[5] else {
+    let C::Id(references) = &mut table.columns[3] else {
         panic!()
     };
     references[2] = 999001;
@@ -554,11 +548,9 @@ fn generated_member_queries_match_the_independent_row_scan() {
         tables.push(MemberTable {
             refset,
             names: [
-                "id",
                 "effectiveTime",
                 "active",
                 "moduleId",
-                "refsetId",
                 "referencedComponentId",
                 "mapGroup",
                 "mapTarget",
@@ -570,16 +562,6 @@ fn generated_member_queries_match_the_independent_row_scan() {
             .map(str::to_owned)
             .collect(),
             columns: vec![
-                C::Uuid(
-                    (0..rows)
-                        .map(|i| {
-                            let mut uuid = [0u8; 16];
-                            uuid[0] = t as u8 + 1;
-                            uuid[1] = i as u8;
-                            uuid
-                        })
-                        .collect(),
-                ),
                 C::Time(
                     (0..rows)
                         .map(|i| [20260826, 20260731, 0, 20250101][i % 4])
@@ -587,7 +569,6 @@ fn generated_member_queries_match_the_independent_row_scan() {
                 ),
                 C::Boolean((0..rows).map(|i| u8::from((i * 3 + t) % 4 != 0)).collect()),
                 C::Id((0..rows).map(|i| id(i % 2)).collect()),
-                C::Id(vec![refset; rows]),
                 C::Id((0..rows).map(|i| pick(i, 0)).collect()),
                 C::Integer((0..rows).map(|i| (i % 3) as i64 - 1).collect()),
                 C::Text(text),
@@ -604,7 +585,7 @@ fn generated_member_queries_match_the_independent_row_scan() {
     // Plain memberOf uses the active-membership index; keep it consistent with the tables.
     let mut membership = Vec::new();
     for table in &tables {
-        let (C::Boolean(active), C::Id(referenced)) = (&table.columns[2], &table.columns[5]) else {
+        let (C::Boolean(active), C::Id(referenced)) = (&table.columns[1], &table.columns[3]) else {
             panic!()
         };
         for row in 0..table.len() {
@@ -700,7 +681,7 @@ fn generated_member_queries_match_the_independent_row_scan() {
 #[test]
 fn projected_component_fields_return_identifiers_that_name_no_substrate_concept() {
     let mut projected = table();
-    let C::Id(targets) = &mut projected.columns[8] else {
+    let C::Id(targets) = &mut projected.columns[6] else {
         panic!()
     };
     // 999001 is a concept-partition identifier absent from the substrate.
@@ -767,10 +748,9 @@ fn projected_component_fields_return_identifiers_that_name_no_substrate_concept(
     for value in ["3", "99999999999999999999999", "-1", "0"] {
         numbers.push(value).unwrap();
     }
-    promoted.columns[6] = C::Number(numbers);
-    promoted.columns[0] = C::Uuid((5..=8).map(|i| [i; 16]).collect());
+    promoted.columns[4] = C::Number(numbers);
     base.append(promoted.clone()).unwrap();
-    let C::Number(merged) = &base.columns[6] else {
+    let C::Number(merged) = &base.columns[4] else {
         panic!()
     };
     assert_eq!(
@@ -788,7 +768,7 @@ fn projected_component_fields_return_identifiers_that_name_no_substrate_concept(
     );
     let mut reversed = promoted;
     reversed.append(table()).unwrap();
-    let C::Number(merged) = &reversed.columns[6] else {
+    let C::Number(merged) = &reversed.columns[4] else {
         panic!()
     };
     assert_eq!(merged.get(7), "2");
@@ -798,7 +778,7 @@ fn projected_component_fields_return_identifiers_that_name_no_substrate_concept(
 fn component_fields_keep_non_concept_identifiers_out_of_concept_sets() {
     // 400011 and 400012 carry the description partition; 400021 the relationship partition.
     let mut table = table();
-    let C::Id(targets) = &mut table.columns[8] else {
+    let C::Id(targets) = &mut table.columns[6] else {
         panic!()
     };
     *targets = vec![400001, 400011, 400021, 400012];
@@ -933,10 +913,6 @@ fn field_and_predicate_type_combinations_fail_with_type_mismatch() {
         "^200001 {{M sourceEffectiveTime=true}}",
         "^200001 {{M sourceEffectiveTime=#2026}}",
         "^200001 {{M sourceEffectiveTime=300001}}",
-        "^200001 {{M id=#1}}",
-        "^200001 {{M id=true}}",
-        "^200001 {{M id=300001}}",
-        "^200001 {{M refsetId=#1}}",
         "^200001 {{M mapGroup=#1, mapTarget=#1}}",
         // The wrong type fails even when an earlier predicate already excludes every row.
         "^200001 {{M mapGroup=#99}} {{M mapTarget=#1}}",
@@ -966,12 +942,6 @@ fn field_and_predicate_type_combinations_fail_with_type_mismatch() {
             "^200001 {{M mapTarget=wild:\"A*\"}}",
             concepts(&[300001, 300003]),
         ),
-        (
-            "^200001 {{M id=\"01010101-0101-0101-0101-010101010101\"}}",
-            concepts(&[300001]),
-        ),
-        ("^200001 {{M id=wild:\"0101*\"}}", concepts(&[300001])),
-        ("^200001 {{M id=wild:\"*0101\"}}", concepts(&[300001])),
         (
             "^200001 {{M effectiveTime=wild:\"2026*\"}}",
             Err(EvalError::TypeMismatch),
@@ -1009,9 +979,7 @@ fn member_queries_on_description_based_reference_sets_are_semantic_errors() {
     // concept-based reference set whose rows are all inactive.
     let mut inactive = table();
     inactive.refset = 400002;
-    inactive.columns[0] = C::Uuid((5..=8).map(|i| [i; 16]).collect());
-    inactive.columns[2] = C::Boolean(vec![0; 4]);
-    inactive.columns[4] = C::Id(vec![400002; 4]);
+    inactive.columns[1] = C::Boolean(vec![0; 4]);
     store.member_tables = MemberStore::loaded(vec![table(), inactive]).unwrap();
     let mut membership = MembershipIndex::build(store.ids.len(), vec![(1, 2), (1, 4)]).unwrap();
     membership.concept_refsets = Some(vec![200001, 400002]);
@@ -1105,11 +1073,9 @@ fn rows_found_through_an_identifier_column_keep_table_order() {
     }
     let mut base = table();
     base.columns = vec![
-        C::Uuid((0..rows).map(|i| [(i / 256) as u8 + 1, i as u8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]).collect()),
         C::Time(vec![20260826; rows]),
         C::Boolean((0..rows).map(|i| u8::from(i % 5 != 0)).collect()),
         C::Id(vec![100001; rows]),
-        C::Id(vec![200001; rows]),
         C::Id(referenced.clone()),
         C::Integer((0..rows).map(|i| (i % 4) as i64).collect()),
         C::Text(text),
@@ -1148,4 +1114,24 @@ fn rows_found_through_an_identifier_column_keep_table_order() {
             .into_iter()
             .collect::<Vec<_>>()
     );
+}
+
+#[test]
+fn member_uuid_and_refset_id_are_not_fields() {
+    // Appendix E names reference set fields from referencedComponentId on; the
+    // member UUID and refsetId are metadata ECL gives no meaning, and are not stored.
+    let store = fixture();
+    for (query, field) in [
+        ("^200001 {{M id=#1}}", "id"),
+        ("^200001 {{M id=\"01010101-0101-0101-0101-010101010101\"}}", "id"),
+        ("^[id] 200001", "id"),
+        ("^200001 {{M refsetId=200001}}", "refsetid"),
+        ("^[referencedComponentId, refsetId] 200001", "refsetid"),
+    ] {
+        assert_eq!(
+            evaluate_result(&store, &parse(query).unwrap()),
+            Err(EvalError::InvalidField(field.into())),
+            "{query}"
+        );
+    }
 }

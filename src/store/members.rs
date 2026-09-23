@@ -7,7 +7,23 @@ use std::io::{BufWriter, Write};
 use std::path::Path;
 use std::sync::OnceLock;
 
-const MAGIC: &[u8; 8] = b"SNMEM001";
+/// Tables written with the member UUID and refsetId columns, read by dropping them.
+const MAGIC_V1: &[u8; 8] = b"SNMEM001";
+const MAGIC: &[u8; 8] = b"SNMEM002";
+
+/// The RF2 metadata columns a table keeps, in order, before its own fields.
+///
+/// A member's `id` and `refsetId` are not stored. ECL names reference set
+/// fields from `referencedComponentId` on and gives no meaning to the member
+/// UUID (Appendix E), and every row of a table shares its refset. The UUID was
+/// 16 random bytes a row, a quarter of a packed UK index.
+pub const METADATA: [&str; 4] = ["effectiveTime", "active", "moduleId", "referencedComponentId"];
+/// Column of each row's active flag.
+pub const ACTIVE: usize = 1;
+/// Column of each row's referenced component.
+pub const REFERENCES: usize = 3;
+/// Where a table's own fields begin.
+pub const FIELDS: usize = 4;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MemberManifest {
@@ -205,20 +221,12 @@ impl MemberTable {
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.names.len() == self.columns.len()
-                && self.names.len() >= 6
+                && self.names.len() >= FIELDS
                 && self.names.len() <= 64,
             "Invalid member schema"
         );
         ensure!(
-            self.names[..6]
-                == [
-                    "id",
-                    "effectiveTime",
-                    "active",
-                    "moduleId",
-                    "refsetId",
-                    "referencedComponentId"
-                ],
+            self.names[..FIELDS] == METADATA,
             "Invalid member metadata fields"
         );
         let mut names = HashSet::new();
@@ -267,21 +275,16 @@ impl MemberTable {
             }
         }
         ensure!(
-            matches!(&self.columns[0], MemberColumn::Uuid(v) if v.iter().collect::<HashSet<_>>().len() == v.len()),
-            "Duplicate or invalid member UUID column"
-        );
-        ensure!(
-            matches!(&self.columns[1], MemberColumn::Time(_))
-                && matches!(&self.columns[2], MemberColumn::Boolean(_)),
+            matches!(&self.columns[0], MemberColumn::Time(_))
+                && matches!(&self.columns[ACTIVE], MemberColumn::Boolean(_)),
             "Invalid member status metadata"
         );
         ensure!(
-            matches!(&self.columns[3], MemberColumn::Id(_))
-                && matches!(&self.columns[4], MemberColumn::Id(v) if v.iter().all(|&r| r == self.refset)),
-            "Invalid member module or refset metadata"
+            matches!(&self.columns[2], MemberColumn::Id(_)),
+            "Invalid member module metadata"
         );
         ensure!(
-            matches!(&self.columns[5], MemberColumn::Id(v) if v.iter().all(|id| matches!((id / 10) % 100, 0 | 10))),
+            matches!(&self.columns[REFERENCES], MemberColumn::Id(v) if v.iter().all(|id| matches!((id / 10) % 100, 0 | 10))),
             "Refset does not reference concepts"
         );
         Ok(())
@@ -356,12 +359,13 @@ impl MemberTable {
         })
     }
     pub(super) fn open(source: &IndexSource, metadata: &MemberManifest) -> Result<Self> {
-        let mut input = Input::open(
+        let (mut input, version) = Input::open_versions(
             &source.section(&format!("members/{}.bin", metadata.refset))?,
-            MAGIC,
+            &[MAGIC_V1, MAGIC],
         )?;
+        let legacy = version == 0;
         let refset = input.u64()?;
-        let names: Vec<String> = serde_json::from_slice(&input.bytes()?)?;
+        let mut names: Vec<String> = serde_json::from_slice(&input.bytes()?)?;
         ensure!(
             names.len() <= 64 && names == metadata.fields,
             "Member schema differs from manifest"
@@ -402,15 +406,31 @@ impl MemberTable {
                 _ => bail!("Unknown member field type"),
             });
         }
+        ensure!(
+            input.remaining == 0 && refset == metadata.refset,
+            "Member manifest counts differ or trailing bytes"
+        );
+        if legacy {
+            // An earlier layout stored the member UUID and refsetId; drop both.
+            ensure!(
+                names.len() >= 6 && names[0] == "id" && names[4] == "refsetId",
+                "Invalid member metadata fields"
+            );
+            ensure!(
+                matches!(&columns[4], MemberColumn::Id(v) if v.iter().all(|&r| r == refset)),
+                "Invalid member refset metadata"
+            );
+            for index in [4, 0] {
+                names.remove(index);
+                columns.remove(index);
+            }
+        }
         let table = Self {
             refset,
             names,
             columns,
         };
-        ensure!(
-            input.remaining == 0 && refset == metadata.refset && table.len() == metadata.rows,
-            "Member manifest counts differ or trailing bytes"
-        );
+        ensure!(table.len() == metadata.rows, "Member manifest counts differ");
         table.validate()?;
         Ok(table)
     }
@@ -434,14 +454,27 @@ pub(crate) fn valid_time(value: u32) -> bool {
 #[derive(Debug)]
 struct Slot {
     meta: MemberManifest,
+    /// Field names in the current layout, whichever layout the manifest records.
+    fields: Vec<String>,
     table: OnceLock<std::result::Result<MemberTable, String>>,
     orders: Box<[OnceLock<Vec<u32>>]>,
 }
 impl Slot {
     fn new(meta: MemberManifest, table: OnceLock<std::result::Result<MemberTable, String>>) -> Self {
-        let orders = (0..meta.fields.len()).map(|_| OnceLock::new()).collect();
+        let fields: Vec<String> = if meta.fields.first().is_some_and(|f| f == "id") {
+            meta.fields
+                .iter()
+                .enumerate()
+                .filter(|&(i, _)| i != 0 && i != 4)
+                .map(|(_, name)| name.clone())
+                .collect()
+        } else {
+            meta.fields.clone()
+        };
+        let orders = (0..fields.len()).map(|_| OnceLock::new()).collect();
         Self {
             meta,
+            fields,
             table,
             orders,
         }
@@ -504,7 +537,7 @@ impl MemberStore {
         self.tables.keys().copied()
     }
     pub fn fields(&self, refset: u64) -> Option<&[String]> {
-        self.tables.get(&refset).map(|slot| slot.meta.fields.as_slice())
+        self.tables.get(&refset).map(|slot| slot.fields.as_slice())
     }
     pub fn get(&self, refset: u64) -> Result<Option<&MemberTable>> {
         let Some(slot) = self.tables.get(&refset) else {

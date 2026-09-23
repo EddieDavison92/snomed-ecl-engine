@@ -603,7 +603,7 @@ fn rf2_descriptors_preserve_inherited_decimal_date_and_uuid_types() {
         MemberValue::String("00000000-0000-4000-8000-000000009001".into())
     );
     let mut table = store.member_tables.get(800001).unwrap().unwrap().clone();
-    let MemberColumn::Number(number) = &mut table.columns[6] else {
+    let MemberColumn::Number(number) = &mut table.columns[4] else {
         panic!()
     };
     number.text.replace_range(..3, "NaN");
@@ -612,7 +612,7 @@ fn rf2_descriptors_preserve_inherited_decimal_date_and_uuid_types() {
     // whether the type comes from the filename or from an Integer descriptor on a string column.
     for refset in [LEFT, KIND] {
         let wide = store.member_tables.get(refset).unwrap().unwrap();
-        assert!(matches!(wide.columns[6], MemberColumn::Number(_)));
+        assert!(matches!(wide.columns[4], MemberColumn::Number(_)));
         for (query, expected) in [
             (format!("^{refset} {{{{M sequence=#7}}}}"), vec![LEAF]),
             (
@@ -2106,4 +2106,18 @@ fn descriptions_load_lazily_preserve_definitions_and_reject_corruption() {
         .descriptions
         .get()
         .is_err());
+}
+
+#[test]
+fn import_reports_as_many_stages_as_it_announces() {
+    use snomed_ecl_engine::import::{import_snapshot_with_progress, IMPORT_STAGES};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    let mut stages = 0;
+    import_snapshot_with_progress(&archive, &temp.path().join("store"), &options(&archive), |_| {
+        stages += 1
+    })
+    .unwrap();
+    assert_eq!(stages, IMPORT_STAGES);
 }

@@ -32,6 +32,13 @@ project the association instead:
 ^ [targetComponentId] 900000000000527005 {{ M referencedComponentId = 397709008 }}
 ```
 
+**A member's UUID and refsetId are not fields.** [Appendix E](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/appendices/appendix-e-reference-set-fields)
+names reference set fields from `referencedComponentId` on, and 6.10 gives
+`moduleId`, `effectiveTime` and `active` their own filters; nothing gives the
+member `id` a meaning. The index does not store it or `refsetId`, so
+`^ [id] X` or `{{ M refsetId = … }}` fails with `InvalidField`, as any field the
+reference set lacks does.
+
 **Term matching is optional.** A build without `--features unicode` rejects term
 predicates explicitly rather than silently ignoring them. Metadata-only
 description filters work in either build.
