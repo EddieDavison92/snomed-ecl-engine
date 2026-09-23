@@ -1,14 +1,18 @@
+# Downloads an RF2 release from NHS England TRUD, checks its size and SHA-256
+# against TRUD's metadata, and writes a manifest beside it. Item 1799 is the UK
+# Monolith Edition Snapshot. Needs a TRUD API key with that item subscribed.
 param(
     [int]$Item = 1799,
     [string]$ReleaseId,
-    [string]$Destination = (Join-Path $PSScriptRoot '../data/rf2')
+    [string]$Destination = (Join-Path $PSScriptRoot '../data/rf2'),
+    [string]$ApiKey = $env:TRUD_API_KEY
 )
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 New-Item -ItemType Directory -Force -Path $Destination | Out-Null
-$key = (& op read 'op://Work/digital.nhs.uk/api-key' 2>$null)
-if ($LASTEXITCODE -ne 0 -or -not $key) { throw 'Unlock 1Password and enable CLI integration.' }
+$key = $ApiKey
+if (-not $key) { throw 'Set TRUD_API_KEY or pass -ApiKey.' }
 try {
     $suffix = if ($ReleaseId) { '' } else { '?latest' }
     $uri = 'https://isd.digital.nhs.uk/trud/api/v1/keys/' + $key.Trim() + '/items/' + $Item + '/releases' + $suffix
@@ -50,4 +54,4 @@ try {
     $manifest | ConvertTo-Json | Set-Content -LiteralPath ($archive + '.manifest.json') -Encoding utf8
     $manifest | ConvertTo-Json
 }
-finally { $key = $null; $uri = $null; $response = $null; $release = $null; $downloadUri = $null }
+finally { $key = $null; $ApiKey = $null; $uri = $null; $response = $null; $release = $null; $downloadUri = $null }

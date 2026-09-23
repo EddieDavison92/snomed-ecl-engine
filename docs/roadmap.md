@@ -1,45 +1,44 @@
 # Roadmap
 
 The engine evaluates ECL 2.3 across every feature area, so what is left is not
-missing features. It is a handful of performance and memory costs we can name
-and measure, three grammar defects to raise upstream, and a resource figure that
-only covers the numeric core.
+missing features. It is a handful of performance and memory costs that can be
+named and measured, three grammar defects to raise upstream, and three forms
+the specification does not define.
 
 ## Now
 
-**Description filters on a broad focus load the whole index.** A focus of up to
-1,000 concepts reads only its concepts' descriptions, about 0.2 ms each. A larger
-focus loads every description's metadata once per process, up to 5,940 ms, and
-later filters then take about 1 ms. Reading rows for larger foci in parallel, or
-a metadata-only section, would narrow that further.
+**A broad description filter loads the whole index.** A focus of
+up to 1,000 concepts reads only its concepts' descriptions, about 0.2 ms each. A
+larger focus loads every description's metadata once per process, about 0.74 s
+on one core, after which filters take about 2 ms. A serverless function pays
+that on every invocation that needs it. Reading rows for larger foci in
+parallel, or a metadata-only section, would narrow it.
 
-**Cold start.** Opening an index takes 94 ms uncompressed and 177 ms packed.
-Opening checks that stored indexes are in range; it does not re-derive the
-semantic invariants that import proved and the checksum protects. What is left,
-measured with `examples/open_breakdown.rs`:
+**Cold start.** Opening an index takes 78 ms uncompressed and 156 ms packed on
+one CPU. Opening checks that stored indexes are in range; it does not re-derive
+the semantic invariants that import proved. What is left, measured with
+`examples/open_breakdown.rs`:
 
-- *Decompression, about 83 ms of the packed figure.* zstd expands 14.6 MiB into
+- *Decompression, about 78 ms of the packed figure.* zstd expands 14.6 MiB into
   the 86 MiB core before a query can run. Decoding blocks on demand, which the
   container format already supports through its per-block table and hashes,
   would move that cost to the queries that need those bytes.
-- *Attributes the query never uses.* Attribute rows are roughly 35 MiB of the
-  86 MiB core and only refinements need them. A hierarchy or Boolean query
-  reads and decodes them for nothing. Making them lazy, as
-  descriptions and member tables already are, would cut the core a query must
-  touch to about 41 MiB.
+- *Attributes the query never uses.* Attribute rows are about 35 MiB of the
+  86 MiB core, and only refinements need them. Making them lazy, as descriptions
+  and member tables already are, would cut the core a hierarchy or Boolean query
+  must read to about 51 MiB.
 - *Reading the core at all.* Memory-mapping an uncompressed index would make
-  opening it close to free and let pages fault in on demand. It needs `unsafe`
-  and careful alignment, and rules out compression, so it is a separate layout
+  opening close to free and let pages load on demand. It needs `unsafe` and
+  careful alignment, and rules out compression, so it would be a separate layout
   rather than a replacement.
 
-The second is worth doing next: it halves what a serverless invocation must read
-and is the difference between fitting a 128 MiB budget and not.
+Lazy attributes are worth doing next: they cut about 40% of what a serverless
+invocation must read before its first hierarchy or Boolean query.
 
-**A comparison on the broad corpus.** The 10,000-expression corpus has no
-server comparison: several of its
-expansions take minutes each to page out of Snowstorm, so that run has never
-finished. Either sample it, or report engine-only figures for that corpus and
-say why. See [benchmarks](benchmarks.md).
+**Workers do not scale.** On the 10,000-expression corpus, two library workers
+are 26% faster than one, and four are slower than two. Find the contention
+before recommending `batch --workers` beyond two. See
+[benchmarks](benchmarks.md#engine-only-measurements).
 
 ## Next
 
@@ -50,22 +49,21 @@ space is required after a filter's type letter, so `{{moduleId = x}}` also reads
 as a member filter. Raise them with the ECL specification's maintainers. See
 [ECL support](ecl-support.md#grammar-differential).
 
-**Memory for the full corpus.** The 10,000-expression corpus, which loads every
-semantic index, now peaks at 266 MiB against 227 MiB, so it no longer fits the
-256 MiB it used to. Shrinking the file did not help: the peak is decoded
-sections, not file cache. The attribute inverse costs about 16 MB and could
-shrink by keying only the values that occur rather than every concept, and the
-full description metadata remains the largest single load.
+**Memory with every index loaded.** The 10,000-expression corpus, which loads
+all description metadata and the other semantic indexes, peaks at 266 MiB and
+needs a 320 MiB allocation; the target is 256 MiB. The peak is decoded
+sections, not file cache. The attribute index that refinements use costs about
+16 MB and could shrink by keying only the values that occur, and the
+description metadata is the largest single load.
 
-**Full-engine resource measurement.** Current figures measure the numeric core
-with data loaded on demand. Measure the complete engine with every semantic index
-resident, including typed member tables and the Unicode backend, and report the
-minimum allocation at which the whole workload completes.
+**Full-engine resource measurement.** Measure the engine with every section
+resident at once, including all 582 member tables of the UK release and the
+term-matching build, and report the smallest allocation at which that workload
+completes.
 
 **Warm-up.** A server's first scoped search or attribute refinement builds the
-attribute inverse, about 20 ms, and its first search loads the word index, about
-100 ms. The refset client asks for both at start-up; the engine could do it
-itself for `batch --workers`.
+attribute index, about 20 ms, and its first search loads the word index, about
+100 ms. `batch --workers` could build both at start-up.
 
 ## Blocked
 
@@ -79,16 +77,16 @@ specification:
 Issues [#10](https://github.com/IHTSDO/snomed-expression-constraint-language/issues/10)
 and [#11](https://github.com/IHTSDO/snomed-expression-constraint-language/issues/11)
 cover the second and third, and both are unanswered. Until these are ruled on,
-this engine cannot claim full ECL 2.3, and guessing an interpretation would
-produce results that silently differ from other engines. The reasoning for each
-is in [open questions](ecl-support.md#open-questions).
+guessing an interpretation would produce results that silently differ from
+other engines. The reasoning for each is in [open
+questions](ecl-support.md#open-questions).
 
 ## Out of scope
 
-This repository owns the library, index format, offline importer, CLI,
-conformance tests and benchmarks. It gains no HTTP server, authentication, cloud
-SDK, index distribution or deployment configuration: a deployment wrapper belongs
-in a separate application that depends on this library.
+This repository is the library, index format, offline importer, CLI,
+conformance tests and benchmarks. It will not gain an HTTP server,
+authentication, cloud SDKs, index distribution or deployment configuration:
+those belong in the applications that use it.
 
 The engine reads the published inferred relationship view. It does not classify,
 and will not gain a reasoner.

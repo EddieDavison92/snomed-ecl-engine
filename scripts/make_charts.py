@@ -311,7 +311,7 @@ def expansion_scaling():
         ],
         "Snowstorm caches an expansion once asked, so its second answer is far quicker than "
         "its first. This engine has no result cache; every ask costs the same. Opening the "
-        "index is a separate one-off of 116 to 293 ms.",
+        "index is a separate one-off of about 156 ms per process.",
     )
 
 
@@ -347,11 +347,11 @@ if __name__ == "__main__":
         [
             {
                 "title": "Warm count — total only",
-                "values": [(0.78, "0.78 ms"), (4.56, "4.56 ms"), (13.19, "13.19 ms")],
+                "values": [(0.86, "0.86 ms"), (4.56, "4.56 ms"), (13.19, "13.19 ms")],
             },
             {
                 "title": "Complete enumeration — every code returned",
-                "values": [(0.93, "0.93 ms"), (7.15, "7.15 ms"), (36.40, "36.40 ms")],
+                "values": [(0.94, "0.94 ms"), (7.15, "7.15 ms"), (36.40, "36.40 ms")],
             },
         ],
         "Engine cost is flat between the two; server cost is not. Snowstorm's "

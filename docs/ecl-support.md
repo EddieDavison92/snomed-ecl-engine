@@ -18,7 +18,7 @@ with an explicit error; no query returns a partial answer as a success.
 | Top and bottom | Supported | Relative selection over the input set |
 | Concept filters | Supported | Active status, definition status, module, effective time |
 | [Description filters](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.8-description-filters) | Supported | Metadata always; term matching needs `--features unicode` |
-| Dialects and acceptability | Supported | Standard aliases plus [configured aliases](cli.md#aliases) |
+| Dialects and acceptability | Supported | Standard aliases plus [configured aliases](indexes.md#query-configuration) |
 | [Member filters and projections](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.10-member-filters) | Supported | Typed fields from RF2 descriptors; returns concepts, scalar values or rows |
 | [History supplements](https://docs.snomed.org/snomed-ct-specifications/snomed-ct-expression-constraint-language/behaviour-specification-with-examples/6.11-history-supplements) | Supported | `HISTORY-MIN`, `-MOD`, `-MAX` and explicit subsets, one association step |
 | Alternate identifiers | Supported | RF2 Identifier components with configured scheme aliases |
@@ -93,23 +93,16 @@ places where the text of the ABNF and the specification part company:
 The script's second recogniser applies these three readings, and only a
 disagreement that survives it counts as unexplained.
 
-The check also changed the parser: a refusal is now reported only once the
-whole text parses, so malformed text is a syntax error; reversed cardinalities,
-impossible dates and unbracketed mixes of conjunction and disjunction are
-grammatical and refused as `Semantic` (6.4 requires brackets because the
-grammar derives such a mix more than one way); and long-syntax `NOT`, `OR` and
-`ANY` may follow a keyword without a space. It also found three outright
-parser bugs: a crash on multi-byte text after `^`; a bracketed single concept in
-a filter value, `{{D moduleId = (x) {{C active = 1}}}}`, refusing the filters
-that follow it; and a concrete string beginning with `#`, as in `* : x = "#5"`,
-being taken for an alternate identifier.
+A refusal is reported only once the whole text parses, so malformed text is a
+`Syntax` error. Reversed cardinalities, impossible dates and unbracketed mixes
+of conjunction and disjunction are grammatical and refused as `Semantic`: 6.4
+requires brackets because the grammar derives such a mix more than one way.
 
 ## Open questions
 
 Three grammar-valid forms have no clear meaning in the specification. The
-parser returns a `Semantic` error for each, which is distinct from `Unsupported`.
-Neither the error nor its name resolves the question, and each remains an
-acceptance item.
+parser returns a `Semantic` error for each, which is distinct from `Unsupported`,
+until the specification settles them.
 
 **Reverse flag inside an attribute group**, as in `* : { R 363698007 = X }`. Both
 grammars admit it. Reversal is defined through relationship source and

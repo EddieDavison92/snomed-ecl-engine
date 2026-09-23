@@ -5,25 +5,153 @@ server.
 
 Most ways to run ECL assume a server: a JVM that stays up, a search cluster
 beside it, gigabytes of memory. This is a Rust library and a CLI instead. You
-point it at a SNOMED release, it builds an index once, and you query that index
-inside your own process.
+point it at a SNOMED CT release, it builds an index once, and you query that
+index inside your own process.
 
 ```sh
-snomed-ecl-engine use uk.ecl
+snomed-ecl-engine use data/uk.ecl
 snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 ```
 
-## Why it is small
+## Status
 
-Underneath, evaluating ECL is set algebra over a graph that is already sitting
-on your disk. Running a search cluster to do it is a lot of machinery, and the
-cost of that machinery is that ECL can only live where the machinery lives.
+Version 0.1.0. The engine evaluates every ECL 2.3 feature area; [ECL
+support](docs/ecl-support.md) lists the three grammar forms it refuses and why.
+Releases publish Linux x86-64 executables. The crate is not on crates.io.
 
-Here, the terminology is one file and the query engine is a function call.
+The index format may change between releases without a migration: rebuild the
+index from your RF2 archive when you upgrade.
 
-### How the index got small
+## Install
 
-The UK Monolith release packs into one 152 MiB file, down from 389 MiB:
+Download an executable from [Releases](https://github.com/EddieDavison92/snomed-ecl-engine/releases).
+Each release has three builds:
+
+| Build | Size | For |
+|---|---:|---|
+| `query` | 2.5 MiB | Querying an existing index, packing and verifying |
+| `default` | 3.3 MiB | The above, plus importing RF2 |
+| `unicode` | 34.5 MiB | The above, plus term matching in description filters |
+
+Or build from source with Rust 1.93 or later:
+
+```sh
+cargo install --locked --git https://github.com/EddieDavison92/snomed-ecl-engine
+```
+
+Add `--features unicode` for term matching, which needs ICU 72 or later
+(`libicu-dev` and `pkg-config` on Debian or Ubuntu). [Developer
+setup](docs/setup.md) covers other platforms and Docker.
+
+## Quick start
+
+You need a SNOMED CT RF2 Snapshot that you are licensed to use; see
+[licence](#licence). UK Monolith is the tested edition: download it from NHS
+England's [TRUD](https://isd.digital.nhs.uk/trud/) and note the SHA-256 shown on
+its download page.
+
+```sh
+# Read the archive's release metadata; prints the import command for it.
+snomed-ecl-engine inspect uk_sct2mo_42.5.0_20260826000001Z.zip
+
+# Build the index, then keep it in one compressed file.
+snomed-ecl-engine import uk_sct2mo_42.5.0_20260826000001Z.zip data/index EDITION_URI SHA256
+snomed-ecl-engine pack data/index data/uk.ecl
+
+# Choose it once; later commands need no path.
+snomed-ecl-engine use data/uk.ecl
+snomed-ecl-engine expand '<< 195967001 |Asthma|' --count
+snomed-ecl-engine query
+```
+
+`import` checks the SHA-256 you supply before reading anything. Compare it with
+the value the distributor published: a checksum of your own download shows it is
+intact, not where it came from.
+
+| Command | |
+|---|---|
+| `inspect` | Read an archive's release metadata and print its import command |
+| `import` · `add-refsets` | Build an index; add simple refsets such as UK PCD |
+| `pack` · `verify` | Write one compressed file; check every section |
+| `stores` · `use` · `stats` | Find indexes, select one, inspect it |
+| `query` | Evaluate expressions interactively against one open index |
+| `expand` · `batch` | Evaluate one expression; or JSONL on stdin for scripts and agents |
+| `hierarchy` | List a concept's parents, children, ancestors or descendants |
+| `diff` | Compare one expression across two indexes |
+
+The [CLI guide](docs/cli.md) is the full reference.
+
+## Why use it
+
+Evaluating ECL is set algebra over a graph that is already on your disk. Here
+the terminology is one file and the query engine is a function call, so ECL can
+run wherever your code runs:
+
+- **Serverless functions.** The query-only executable is 2.5 MiB, 1.1 MiB
+  gzipped, and the index is one file. Starting the process, opening the index
+  and answering a query takes 163 ms on one CPU.
+- **A small server.** One CPU and 256 MiB serve the whole UK release for
+  typical workloads; one that loads every index at once needs 320 MiB.
+- **Offline.** The index sits beside your application and needs no network at
+  query time. It never changes after it is built.
+- **Agents and tooling.** One process reads expressions as JSONL and answers
+  thousands of them without reopening the index. [SKILL.md](SKILL.md) takes an
+  agent from a clone to a first query.
+
+Counting the concepts an expression selects takes 0.86 ms, and returning every
+one of them takes 0.94 ms. They are nearly the same because evaluating the
+expression already built the set; an HTTP API has to serialise the concepts and
+page them back, and that cost grows with the answer.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/expansion-scaling-dark.svg">
+  <img alt="Cost of a complete expansion against the number of concepts returned, both axes logarithmic. This engine runs from about 0.8 ms at one concept to 0.33 s at 839,000. Snowstorm asked for the first time runs from about 35 ms to 30 s; once cached, from about 30 ms to 2 s." src="docs/images/expansion-scaling-light.svg">
+</picture>
+
+So expanding a definition in full is cheap enough to do routinely:
+
+- **Convert code lists.** Turning static code lists into ECL definitions means
+  expanding each candidate in full and diffing it against the original list. At
+  about a millisecond each, hundreds of lists take under a second.
+- **Check a code list against a new release.** `diff` runs one expression
+  across two indexes and reports what the release added and removed.
+- **Test definitions in CI.** An executable of under 3 MiB and an index file let
+  a pipeline assert that every definition still resolves.
+
+This is not a replacement for a terminology server. Snowstorm does a great deal
+this engine does not; expanding ECL is the one job both do.
+[Benchmarks](docs/benchmarks.md#is-this-a-fair-comparison) sets out where the
+comparison is and is not fair.
+
+## Measurements
+
+Against the UK Monolith release of 26 August 2026: 1.15 million concepts.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/footprint-dark.svg">
+  <img alt="Index on disk: this engine 152 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.3, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
+</picture>
+
+Speed only counts if the answers match, so the corpus compares whole code sets
+rather than totals. This engine returned a set for all 1,000 expressions.
+Snowstorm agreed on 879, disagreed on 1, where the RF2 rows support this
+engine's answer, and could not answer 120. Snowstorm Lite agreed on 587, returned
+13 wrong answers, and could not answer 400.
+
+| | |
+|---|---:|
+| Packed index for the UK release | 152 MiB |
+| Open a packed index, one CPU | 156 ms |
+| 1,000-expression corpus, median count / enumeration | 0.86 ms / 0.94 ms |
+| 10,000-expression corpus through the CLI, one CPU | 11.5 s per batch |
+| Same corpus through the library, one CPU | 2.0 s per batch |
+
+[Benchmarks](docs/benchmarks.md) has the method, every figure's evidence file,
+the disagreements and where this engine is slower.
+
+### How the index is so small
+
+The UK release is 903 MiB as a directory of sections and 152 MiB packed:
 
 - Concepts are four-byte ordinals from the first read on, never 18-digit codes.
 - Sorted lists, such as the concepts sharing a word, store the gaps between
@@ -36,130 +164,26 @@ The UK Monolith release packs into one 152 MiB file, down from 389 MiB:
 - Sections are packed as independent zstd blocks, small for descriptions so
   describing a concept decodes only what it reads.
 
-Queries did not slow down. Sections read whole decode once into the arrays
-queries already used; labels and single-concept lookups still read only what
-they need. [How the index is built, compressed and read](docs/index-format.md)
-has the details and what each step saved.
-
-### What it is designed for
-
-- **Serverless functions.** You only pay for compute when a query arrives. The
-  query-only executable is 2.55 MiB, 1.10 MiB gzipped, and the index is a
-  single file.
-- **A small VPS.** One CPU and a few hundred megabytes serve the whole UK
-  release, so an ECL API does not need a cluster behind it.
-- **Portable devices.** The index sits beside your application and needs no
-  network at query time. Built once it never changes, and it checks its own
-  checksums when opened.
-- **Agents and tooling.** One persistent process reads expressions as JSONL and
-  answers thousands of them without reopening the index.
-
-Everything measured here ran on x86-64 Linux.
-
-There is no HTTP server in this repository, on purpose. This repository owns the
-library, index format, importer, CLI, conformance tests and benchmarks. A
-deployment application depends on it and owns the hosting.
-
-## What it is good for
-
-Here is the number that matters. Counting how many concepts an expression
-selects takes 0.78 ms. Getting every one of those concepts back takes 0.93 ms.
-
-Those are nearly the same, and for a reason: evaluating the expression already
-built the whole set, so handing it to you is a write. An HTTP API has to
-serialise those concepts and page them back, and that cost grows with the answer.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/expansion-scaling-dark.svg">
-  <img alt="Cost of a complete expansion against the number of concepts returned, both axes logarithmic. This engine runs from 0.8 ms at one concept to 0.4 s at 839,000. Snowstorm asked for the first time runs from 31 ms to 30 s; once cached, from 28 ms to 2 s." src="docs/images/expansion-scaling-light.svg">
-</picture>
-
-Ask for ten concepts and Snowstorm takes 35 ms the first time against 0.8 ms
-here. Ask for 839,000 and this engine takes 0.4 seconds against Snowstorm's 30
-the first time, or 2 seconds once Snowstorm has cached it. This engine has no result cache and
-does not need one.
-
-None of which is an argument for replacing a terminology server. Snowstorm does
-a great deal this does not, and the only job both do is expanding ECL. One path
-here can be slower than on either server: the first description filter over a
-broad focus in a process, which loads the whole description index. It is
-[open work](docs/roadmap.md). Where the comparison is and is not fair is
-[set out in full](docs/benchmarks.md#is-this-a-fair-comparison).
-
-So expanding a definition in full stops being something you do sparingly.
-
-- **Expand hundreds of codelists at once.** Turning a directory of static code
-  lists into ECL definitions means expanding every one in full and diffing it
-  against the original. At about a millisecond each, 274 lists take a fraction
-  of a second.
-- **Check a codelist against a new release.** `diff` runs one expression across
-  two indexes and tells you what the release added and removed.
-- **Put it in CI.** A binary of under 3 MiB and an index file let a pipeline
-  assert that every definition in your repository still resolves.
-
-### Authoring with an assistant
-
-Today, giving someone ECL means provisioning a terminology server account or
-issuing them an API key. Here you install one binary and point it at a release
-you are already licensed for. Nothing to host, no key to issue, no rate limit
-and nobody to ask. An agent can do the setup for you: [SKILL.md](SKILL.md) takes
-it from a clone to a working index and a first query.
-
-That is what makes interactive terminology work practical. Replacing a static
-code list with an ECL definition means walking up the hierarchy from every code
-in it, sizing each ancestor that could subsume them, then comparing what each
-candidate returns against the list you started with. A five-code list takes about
-thirty expansions and a hundred-code list about five hundred, so an assistant can
-propose a definition, show you exactly which concepts it adds and drops, and try
-another, in about a second.
-
-## Measurements
-
-Against the UK Monolith release, 1.15 million concepts.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/footprint-dark.svg">
-  <img alt="Index on disk: this engine 152 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.3, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
-</picture>
-
-Speed only counts if the answers match, so the corpus compares complete code
-sets rather than totals. This engine evaluated all 1,000 expressions and
-returned a complete set for every one. Snowstorm answered 879 and agreed on all
-879; its parser rejected 80, its concept endpoint could not return 40, and it
-answered 1 differently, where the RF2 rows support our answer. Snowstorm Lite
-answered 587 and reported 320 as using features it does not implement.
-
-| | |
-|---|---:|
-| Query-only Linux executable | 2.55 MiB (1.10 MiB gzipped) |
-| 10,000-expression corpus, one CPU and 320 MiB | 10.27 s per warm batch |
-| Same corpus, four CPUs and four workers | 2.15 s |
-| Open a packed index | 177 ms |
-| Open an uncompressed index | 94 ms |
-
-[Benchmarks](docs/benchmarks.md) has the method, the disagreements, where this
-engine is slower and what these numbers are not.
+None of this slows queries: sections read whole decode once into plain arrays,
+and labels and single-concept lookups still read only what they need. [How the
+index is built](docs/index-format.md) explains each technique and what it saves.
 
 ## Finding concepts by name
 
 ECL answers which concepts, never what a concept is. A browser needs both, so
-the index carries a word index over active description terms and a lookup that
-returns a concept's descriptions, hierarchy neighbours, relationship groups and
-reference set membership.
+the index also holds a word index over active description terms, and a lookup
+that returns a concept's descriptions, hierarchy neighbours, relationship groups
+and reference set membership.
 
-Searching the whole UK edition takes under a millisecond once the index is warm, and a search can be limited to an expression's answer with `within`. The same question asked as an
-ECL term filter takes over a second scoped to one hierarchy, and exceeds the
-work limit unscoped, because it scans the descriptions of everything in scope.
-Words are extracted once at build time instead, so a search is a binary search
-and a list intersection.
-
-The word index is 155,940 words over 12.5 million postings, a 7.6 MiB packed
-section that opening never touches. Normalisation happens at build time, so querying
-needs no collation library and works in the build without ICU.
+A search of the whole UK edition takes under a millisecond once the word index
+is loaded, and `within` limits it to an expression's answer. The same question
+asked as an ECL term filter scans every description in scope. Words are
+extracted when the index is built, so a search is a binary search and a list
+intersection, and it needs no collation library at query time.
 
 ```sh
-echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch uk.ecl
-echo '{"concept":"709044004"}'               | snomed-ecl-engine batch uk.ecl
+echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch data/uk.ecl
+echo '{"concept":"709044004"}'               | snomed-ecl-engine batch data/uk.ecl
 ```
 
 ## What it supports
@@ -170,77 +194,43 @@ and bottom, membership, concept filters, description filters, member filters and
 projections, history supplements and alternate identifiers.
 
 Three forms are valid under the grammar but have no clear meaning in the
-specification, so the parser refuses them rather than guess:
+specification, so the parser refuses them rather than guess. Two have open
+questions with SNOMED International. Unsupported input fails with an explicit
+error; no query returns a partial answer as a success.
 
-- a reverse flag inside an attribute group, `* : { R 363698007 = X }`
-- a member filter with no refset operator, `X {{ M active = true }}`
-- a reverse flag applied to a concrete value
-
-Two of those have questions open with SNOMED International, still unanswered.
-Everything else in ECL 2.3 evaluates. Unsupported input fails with an explicit
-error, and no query ever hands you a partial answer as though it were complete.
-
-Decimals keep their exact spelling, and the evaluator never compares them as
-binary floating point. Relationship groups survive import. The engine reads the
-published inferred view and does not classify.
-
-## Get started
-
-```sh
-cargo build --locked --release --bin snomed-ecl-engine
-
-# What does this archive declare? Prints the import command for it.
-snomed-ecl-engine inspect uk_release.zip
-
-# Build an immutable index, then keep it in one compressed file.
-snomed-ecl-engine import uk_release.zip index/ EDITION_URI SHA256
-snomed-ecl-engine pack index/ uk.ecl
-
-# Choose it once; later commands need no path.
-snomed-ecl-engine use uk.ecl
-snomed-ecl-engine query
-```
-
-Bring your own licensed RF2 Snapshot. This repository contains no release
-content, and `import` verifies the checksum you supply before reading anything.
-
-| Command | |
-|---|---|
-| `inspect` | Read an archive's release metadata and print its import command |
-| `import` · `add-refsets` | Build an index; add simple refsets such as UK PCD |
-| `pack` · `verify` | One compressed file; check every section |
-| `stores` · `use` · `stats` | Find indexes, select one, inspect it |
-| `query` | Evaluate expressions against one open index |
-| `expand` · `batch` | One expression; or JSONL on stdin for scripts and agents |
-| `diff` | Compare one expression across two indexes |
-
-The [CLI guide](docs/cli.md) is the full reference.
+Decimals keep their exact spelling and are never compared as binary floating
+point. Relationship groups survive import. The engine reads the published
+inferred view and does not classify.
 
 ## Embed it
 
 ```rust
-let store = NumericStore::open(Path::new("uk.ecl"))?;
+use snomed_ecl_engine::{ecl, eval, store::NumericStore};
+use std::path::Path;
+
+let store = NumericStore::open(Path::new("data/uk.ecl"))?;
 let expression = ecl::parse("<< 64572001 |Disease|")?;
-let ordinals = eval::evaluate_with_limits(&store, &expression, limits)?;
-let codes = ordinals.iter().map(|&o| store.ids[o as usize]);
+let ordinals = eval::evaluate(&store, &expression)?;
+let codes: Vec<u64> = ordinals.iter().map(|&o| store.ids[o as usize]).collect();
 ```
 
-Keep the store open across queries. Results are concept ordinals that resolve
-through `store.ids`, and display labels are a separate lookup. Use
-`eval::evaluate_result_with_limits` if you want member projections, which return
-typed scalars or rows as well as concept sets. `--no-default-features` drops the
-ZIP importer for a query-only build.
+Open the store once and keep it for every query. Results are concept ordinals
+that resolve through `store.ids`; display labels are a separate lookup through
+`DisplayStore`. `eval::evaluate_result` also returns member projections, which
+can be typed values or rows rather than concepts, and the `_with_limits`
+variants bound the work a query may do. Build with `default-features = false`
+to leave out the RF2 importer.
 
 ## Documentation
 
-- [CLI guide](docs/cli.md) covers commands, output formats and scripting.
-- [ECL support](docs/ecl-support.md) lists what evaluates and the open questions.
-- [Indexes](docs/indexes.md) covers building, packing, the format and configuration.
-- [How the index is built](docs/index-format.md) covers encodings, compression and reads.
-- [Benchmarks](docs/benchmarks.md) has the method, results and comparisons.
-- [Roadmap](docs/roadmap.md) lists the open work.
-- [Developer setup](docs/setup.md) covers building, releases and comparison servers.
-- [SKILL.md](SKILL.md) is the agent workflow.
+- [CLI guide](docs/cli.md): commands, output formats and the batch protocol.
+- [ECL support](docs/ecl-support.md): what evaluates, and the open questions.
+- [Indexes](docs/indexes.md): building, supplements, packing, configuration.
+- [How the index is built](docs/index-format.md): encodings, compression and reads.
+- [Benchmarks](docs/benchmarks.md): method, results and comparisons.
+- [Roadmap](docs/roadmap.md): open work.
+- [Developer setup](docs/setup.md): building from source and reproducing the benchmarks.
+- [Contributing](CONTRIBUTING.md) and [security](SECURITY.md).
 
 ## Licence
 

@@ -1,0 +1,101 @@
+{
+  "recorded_at": "2026-09-23",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31",
+  "commit": "0a848d2d1e3a5c9489d7607a03cb9c1e7ea5ec12",
+  "scope": "Engine-only figures quoted in README.md and docs/benchmarks.md that no corpus report records. Linux x86-64 in the pinned image; open and process-start runs use one CPU (docker --cpus 1, taskset -c 0) with the index copied to the container filesystem and in the file cache.",
+  "import": {
+    "cpus": 2,
+    "memory_limit_mib": 3072,
+    "elapsed_seconds": 138.3,
+    "child_peak_rss_kib": 2340884,
+    "container_peak_bytes": 2408009728,
+    "command": "docker run --cpus 2 --memory 3g ... snomed-ecl-engine import ARCHIVE data/index EDITION_URI SHA256 --json, timed by the parent process"
+  },
+  "index": {
+    "directory_bytes": 946476363,
+    "packed_bytes": 159420416,
+    "packed_sha256": "ce0cceb3762f757c79f31af109ff54a18968a432beaa8b990cb6a4a379f665a6",
+    "pack_seconds": {
+      "cpus_2_bind_mount": 98,
+      "threads_24_local": 16
+    }
+  },
+  "executables": {
+    "query": {
+      "build": "cargo build --locked --release --no-default-features",
+      "bytes": 2644864,
+      "gzip_bytes": 1138545,
+      "sha256": "d8da104c39887e004cbe2d6e9074ac569e88470454d48795e0c2b6c762b8b68b"
+    },
+    "default": {
+      "build": "cargo build --locked --release",
+      "bytes": 3445560,
+      "gzip_bytes": 1505048,
+      "sha256": "79d03803f4a92c42b79d9d149f989533d1972db4b8e14bb89f3aebbb93103a2d"
+    },
+    "unicode": {
+      "build": "cargo build --locked --release --features unicode",
+      "bytes": 36202864,
+      "gzip_bytes": 14299445,
+      "sha256": "c65f89edb008d2916b60a0ac6fe39ff8ac0a78219e7aa76882079f14f9a9ef01"
+    }
+  },
+  "open_ms": {
+    "directory": {
+      "command": "taskset -c 0 /target/default/release/examples/open_breakdown /idx/dir",
+      "open_ms": [
+        133.031549,
+        77.319388,
+        78.271697
+      ],
+      "full_validate_ms": [
+        76.735154,
+        72.777831,
+        73.672284
+      ],
+      "median_open_ms": 78.3,
+      "median_full_validate_ms": 73.7
+    },
+    "packed": {
+      "command": "taskset -c 0 /target/default/release/examples/open_breakdown /idx/uk.ecl",
+      "open_ms": [
+        155.544714,
+        145.5671,
+        156.674503
+      ],
+      "full_validate_ms": [
+        87.59753500000001,
+        93.541257,
+        76.101477
+      ],
+      "median_open_ms": 155.5,
+      "median_full_validate_ms": 87.6
+    }
+  },
+  "process_start_open_one_query": {
+    "command": "taskset -c 0 /target/query/release/snomed-ecl-engine batch /idx/uk.ecl",
+    "request": "{\"ecl\":\"<< 195967001\",\"count_only\":true}",
+    "wall_ms": [
+      162.4,
+      163.8,
+      159.3,
+      163.1,
+      199.7
+    ],
+    "totals": [
+      129,
+      129,
+      129,
+      129,
+      129
+    ],
+    "median_ms": 163.1,
+    "correctness": "Every sample returned total 129, the same count `expand --count` gives for this expression on the uncompressed directory index."
+  },
+  "first_description_filter_ms": {
+    "method": "first description filter in a fresh batch process, packed index, one core, WSL2 host",
+    "median": 740
+  }
+}
