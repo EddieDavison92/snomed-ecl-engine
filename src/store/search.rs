@@ -12,7 +12,6 @@ use super::*;
 use std::sync::OnceLock;
 
 /// Postings as plain u32s.
-const MAGIC_V1: &[u8; 8] = b"SNECLSR1";
 /// Postings as varint deltas, a third of the size; decoded to u32s on load.
 const MAGIC: &[u8; 8] = b"SNECLSR2";
 
@@ -256,15 +255,11 @@ impl SearchIndex {
         manifest: &SearchManifest,
         concepts: usize,
     ) -> Result<Self> {
-        let (mut input, version) = Input::open_versions(section, &[MAGIC_V1, MAGIC])?;
+        let mut input = Input::open(section, MAGIC)?;
         let text_offsets = input.u32s()?;
         let text = input.bytes()?;
         let posting_offsets = input.u32s()?;
-        let postings = if version == 0 {
-            input.u32s()?
-        } else {
-            super::varint::decode(&posting_offsets, &input.bytes()?)?
-        };
+        let postings = super::varint::decode(&posting_offsets, &input.bytes()?)?;
         ensure!(input.remaining == 0, "Trailing search bytes");
         let index = Self {
             text,
@@ -277,7 +272,7 @@ impl SearchIndex {
             index.word_count() == manifest.words && index.posting_count() == manifest.postings,
             "Search index differs from manifest"
         );
-        // Legacy lists are not checked for order here, so every posting is.
+        // Order is only checked by `verify`, so every posting is bounded here.
         ensure!(
             index.postings.iter().all(|&p| (p as usize) < concepts),
             "Search posting outside the concept table"

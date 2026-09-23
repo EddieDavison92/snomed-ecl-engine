@@ -13,7 +13,6 @@ use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 use std::sync::Mutex;
 
-const MAGIC_V1: &[u8; 8] = b"SNDSP001";
 const MAGIC: &[u8; 8] = b"SNDSP002";
 
 /// Largest dictionary trained, in bytes. Beyond about 100 KiB the UK labels
@@ -38,8 +37,7 @@ pub struct DisplayStore {
     input: Mutex<BufReader<SectionReader>>,
     /// Where each label's stored bytes start, relative to `start`.
     offsets: Vec<u32>,
-    /// Present for compressed labels; a legacy file stores them as plain text.
-    frames: Option<Frames>,
+    frames: Frames,
     start: u64,
 }
 
@@ -97,10 +95,9 @@ impl DisplayStore {
         if stored.is_empty() {
             return Ok(None);
         }
-        let bytes = match &self.frames {
-            Some(frames) => frames.decode(stored, frames.lengths[i] as usize)?,
-            None => stored.to_vec(),
-        };
+        let bytes = self
+            .frames
+            .decode(stored, self.frames.lengths[i] as usize)?;
         Ok(Some(
             String::from_utf8(bytes).context("Invalid display UTF-8")?,
         ))
@@ -170,11 +167,9 @@ impl DisplayStore {
     }
 
     fn from_section(section: &Section, concept_count: usize) -> Result<Self> {
-        let (mut input, version) = Input::open_versions(section, &[MAGIC_V1, MAGIC])?;
+        let mut input = Input::open(section, MAGIC)?;
         let offsets = input.u32s()?;
-        let frames = if version == 0 {
-            None
-        } else {
+        let frames = {
             let lengths = input.u16s()?;
             ensure!(
                 lengths.len() == concept_count
@@ -185,11 +180,11 @@ impl DisplayStore {
                 "Invalid display lengths"
             );
             let dictionary = input.bytes()?;
-            Some(Frames {
+            Frames {
                 lengths,
                 dictionary,
                 decoders: Mutex::new(Vec::new()),
-            })
+            }
         };
         validate_offsets(&offsets, concept_count, input.remaining as usize)?;
         let start = input.reader.stream_position()?;
@@ -218,10 +213,7 @@ impl DisplayStore {
     /// by label length costs nothing. Only the survivors are then read.
     pub fn label_bytes(&self, ordinal: u32) -> Option<u32> {
         let i = ordinal as usize;
-        match &self.frames {
-            Some(frames) => frames.lengths.get(i).map(|&n| u32::from(n)),
-            None => Some(self.offsets.get(i + 1)? - self.offsets.get(i)?),
-        }
+        self.frames.lengths.get(i).map(|&n| u32::from(n))
     }
 
     pub fn get(&self, ordinal: u32) -> Result<Option<String>> {
@@ -268,7 +260,7 @@ mod tests {
             .collect();
         DisplayStore::write(&path, &labels).unwrap();
         let store = open(&path).unwrap();
-        assert!(!store.frames.as_ref().unwrap().dictionary.is_empty());
+        assert!(!store.frames.dictionary.is_empty());
         for (i, label) in labels.iter().enumerate() {
             assert_eq!(&store.get(i as u32).unwrap(), label);
             assert_eq!(
