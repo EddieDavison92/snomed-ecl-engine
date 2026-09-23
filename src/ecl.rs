@@ -430,9 +430,7 @@ impl Parser<'_> {
             inner
         } else if self.starts_alternate() {
             self.alternate_identifier()?
-        } else if self.take("*") {
-            self.node(Expr::All)?
-        } else if self.value_keyword("any") {
+        } else if self.take("*") || self.value_keyword("any") {
             self.node(Expr::All)?
         } else if self.rest().starts_with(|c: char| c.is_ascii_digit()) {
             let start = self.pos;

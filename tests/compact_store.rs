@@ -1642,8 +1642,8 @@ fn description_filters_on_a_small_focus_agree_with_the_loaded_index() {
         format!("<< {LEFT} {{{{ D active = 0 }}}} {{{{ D language = en }}}}"),
     ];
     if cfg!(feature = "unicode") {
-        queries.push(format!("* {{{{ D term = \"synthetic\" }}}}"));
-        queries.push(format!("* {{{{ D term = wild:\"*label\" }}}}"));
+        queries.push("* {{ D term = \"synthetic\" }}".to_string());
+        queries.push("* {{ D term = wild:\"*label\" }}".to_string());
     }
     for path in [&destination, &packed] {
         let loaded = NumericStore::open(path).unwrap();
