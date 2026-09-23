@@ -406,73 +406,6 @@ fn run() -> Result<()> {
                 );
             }
         }
-        "build-search" => {
-            ensure!(args.len() == 2, "Usage: build-search STORE_DIRECTORY");
-            let path = Path::new(&args[1]);
-            ensure!(
-                path.is_dir(),
-                "build-search needs an unpacked store directory; pack it again afterwards"
-            );
-            let start = Instant::now();
-            let store = NumericStore::open(path)?;
-            let mut manifest = Manifest::read(path)?;
-            let descriptions = store
-                .descriptions
-                .get()?
-                .context("This index has no descriptions to index words from")?;
-            let pairs =
-                snomed_ecl_engine::store::search_pairs(descriptions, manifest.concept_count)?;
-            let index = snomed_ecl_engine::store::SearchIndex::build(pairs)?;
-            manifest.search = Some(index.write(&path.join("search.bin"))?);
-            serde_json::to_writer(
-                std::io::BufWriter::new(std::fs::File::create(path.join("manifest.json"))?),
-                &manifest,
-            )?;
-            let summary = serde_json::json!({
-                "words": index.word_count(),
-                "postings": index.posting_count(),
-                "elapsed_seconds": start.elapsed().as_secs_f64(),
-            });
-            if human {
-                println!(
-                    "Indexed {} words over {} postings in {:.1}s",
-                    presentation::number(index.word_count()),
-                    presentation::number(index.posting_count()),
-                    start.elapsed().as_secs_f64()
-                );
-            } else {
-                println!("{summary}");
-            }
-        }
-        "build-history" => {
-            ensure!(args.len() == 2, "Usage: build-history STORE_DIRECTORY");
-            let path = Path::new(&args[1]);
-            ensure!(
-                path.is_dir(),
-                "build-history needs an unpacked store directory; pack it again afterwards"
-            );
-            let start = Instant::now();
-            let written = snomed_ecl_engine::store::add_history(path)?
-                .context("This index has no member tables to read associations from")?;
-            if human {
-                println!(
-                    "Indexed {} association rows from {} reference sets in {:.1}s",
-                    presentation::number(written.rows),
-                    written.refsets.len(),
-                    start.elapsed().as_secs_f64()
-                );
-            } else {
-                println!(
-                    "{}",
-                    serde_json::json!({
-                        "rows": written.rows,
-                        "skipped": written.skipped,
-                        "refsets": written.refsets,
-                        "elapsed_seconds": start.elapsed().as_secs_f64(),
-                    })
-                );
-            }
-        }
         "verify" => {
             ensure!(args.len() <= 2, "Usage: verify [STORE]");
             let (store, _) = workspace::resolve(args.get(1).map(String::as_str))?;
@@ -926,7 +859,7 @@ fn search_response(
         writeln!(
             out,
             "{}",
-            serde_json::json!({"error":"Unsupported","message":"This index has no word index; run build-search"})
+            serde_json::json!({"error":"Unsupported","message":"This index has no word index; rebuild it with import"})
         )?;
         return Ok(());
     };
@@ -1074,7 +1007,7 @@ fn history_response(
         writeln!(
             out,
             "{}",
-            serde_json::json!({"error":"Unsupported","message":"This index has no history section; run build-history"})
+            serde_json::json!({"error":"Unsupported","message":"This index has no history section; rebuild it with import"})
         )?;
         return Ok(());
     };

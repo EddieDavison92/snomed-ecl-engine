@@ -7,10 +7,6 @@ use std::io::{BufWriter, Write};
 use std::path::Path;
 use std::sync::OnceLock;
 
-/// Tables written with the member UUID and refsetId columns, read by dropping them.
-const MAGIC_V1: &[u8; 8] = b"SNMEM001";
-/// Tables with rows in release order and fixed-width referenced components.
-const MAGIC_V2: &[u8; 8] = b"SNMEM002";
 /// Rows sorted by referenced component, stored as varint gaps.
 const MAGIC: &[u8; 8] = b"SNMEM003";
 /// Field type of a sorted identifier column written as varint gaps.
@@ -409,13 +405,12 @@ impl MemberTable {
         })
     }
     pub(super) fn open(source: &IndexSource, metadata: &MemberManifest) -> Result<Self> {
-        let (mut input, version) = Input::open_versions(
+        let mut input = Input::open(
             &source.section(&format!("members/{}.bin", metadata.refset))?,
-            &[MAGIC_V1, MAGIC_V2, MAGIC],
+            MAGIC,
         )?;
-        let legacy = version == 0;
         let refset = input.u64()?;
-        let mut names: Vec<String> = serde_json::from_slice(&input.bytes()?)?;
+        let names: Vec<String> = serde_json::from_slice(&input.bytes()?)?;
         ensure!(
             names.len() <= 64 && names == metadata.fields,
             "Member schema differs from manifest"
@@ -453,7 +448,7 @@ impl MemberTable {
                     offsets: input.u32s()?,
                     text: String::from_utf8(input.bytes()?)?,
                 }),
-                SORTED_IDS if version == 2 => {
+                SORTED_IDS => {
                     let n = input.count(1)?;
                     MemberColumn::Id(super::varint::decode_u64(n, &input.bytes()?)?)
                 }
@@ -464,21 +459,6 @@ impl MemberTable {
             input.remaining == 0 && refset == metadata.refset,
             "Member manifest counts differ or trailing bytes"
         );
-        if legacy {
-            // An earlier layout stored the member UUID and refsetId; drop both.
-            ensure!(
-                names.len() >= 6 && names[0] == "id" && names[4] == "refsetId",
-                "Invalid member metadata fields"
-            );
-            ensure!(
-                matches!(&columns[4], MemberColumn::Id(v) if v.iter().all(|&r| r == refset)),
-                "Invalid member refset metadata"
-            );
-            for index in [4, 0] {
-                names.remove(index);
-                columns.remove(index);
-            }
-        }
         let table = Self {
             refset,
             names,
@@ -521,16 +501,7 @@ impl Slot {
         meta: MemberManifest,
         table: OnceLock<std::result::Result<MemberTable, String>>,
     ) -> Self {
-        let fields: Vec<String> = if meta.fields.first().is_some_and(|f| f == "id") {
-            meta.fields
-                .iter()
-                .enumerate()
-                .filter(|&(i, _)| i != 0 && i != 4)
-                .map(|(_, name)| name.clone())
-                .collect()
-        } else {
-            meta.fields.clone()
-        };
+        let fields = meta.fields.clone();
         let orders = (0..fields.len()).map(|_| OnceLock::new()).collect();
         Self {
             meta,

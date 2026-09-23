@@ -327,7 +327,7 @@ impl HistoryIndex {
 
 /// Builds the history index for a staged store and records it in the manifest.
 ///
-/// Import, supplements and `build-history` all end here, so every path that
+/// Import and supplements both end here, so every path that
 /// produces a store produces the same index from the same rows.
 pub fn add_history(directory: &Path) -> Result<Option<HistoryManifest>> {
     let store = NumericStore::open(directory)?;

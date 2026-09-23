@@ -618,10 +618,6 @@ impl Input {
     /// explicitly instead, so integrity is still checked, just not on the path
     /// that only wants to answer a question.
     fn open(section: &Section, magic: &[u8; 8]) -> Result<Self> {
-        Ok(Self::open_versions(section, &[magic])?.0)
-    }
-    /// Opens a section whose header may be any of `magics`, returning which.
-    fn open_versions(section: &Section, magics: &[&[u8; 8]]) -> Result<(Self, usize)> {
         let size = section.length;
         ensure!(
             (8..=2 * 1024 * 1024 * 1024).contains(&size),
@@ -634,11 +630,8 @@ impl Input {
         };
         let mut actual = [0; 8];
         result.read(&mut actual)?;
-        let version = magics
-            .iter()
-            .position(|magic| **magic == actual)
-            .context("Unsupported store header")?;
-        Ok((result, version))
+        ensure!(&actual == magic, "Unsupported store header");
+        Ok(result)
     }
     fn read(&mut self, bytes: &mut [u8]) -> Result<()> {
         self.remaining = self

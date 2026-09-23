@@ -6,7 +6,6 @@ use std::io::{BufWriter, Write};
 use std::path::Path;
 
 /// Members as plain u32s.
-const MAGIC_V1: &[u8; 8] = b"SNECLM01";
 /// Members as varint deltas; decoded to u32s on open.
 const MAGIC: &[u8; 8] = b"SNECLM02";
 
@@ -156,15 +155,10 @@ impl MembershipIndex {
         metadata: &MembershipManifest,
         count: usize,
     ) -> Result<Self> {
-        let (mut input, version) =
-            Input::open_versions(&source.section("membership.bin")?, &[MAGIC_V1, MAGIC])?;
+        let mut input = Input::open(&source.section("membership.bin")?, MAGIC)?;
         let refsets = input.u32s()?;
         let offsets = input.u32s()?;
-        let members = if version == 0 {
-            input.u32s()?
-        } else {
-            super::varint::decode(&offsets, &input.bytes()?)?
-        };
+        let members = super::varint::decode(&offsets, &input.bytes()?)?;
         let index = Self {
             refsets,
             offsets,
