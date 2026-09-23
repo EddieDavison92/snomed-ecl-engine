@@ -54,6 +54,40 @@ The figure is not a percentage of the language, and parsing a production says
 nothing about whether the engine evaluates it correctly. All 121 official syntax
 examples parse.
 
+### Grammar differential
+
+`scripts/grammar_differential.py` builds a recogniser from each pinned ABNF
+alone, generates sentences covering every alternative, optional part and
+repetition count of every production, mutates them into near misses, and
+compares the recogniser's verdict with the parser's. Results are in
+[`validation/grammar-differential.json`](../validation/grammar-differential.json).
+
+| Grammar | Samples | Grammatical | Disagreements | Unexplained |
+|---|---:|---:|---:|---:|
+| Brief | 17,607 | 5,427 | 19 | 2 |
+| Long | 17,620 | 5,427 | 29 | 3 |
+
+179 of 180 productions in each grammar are exercised completely; `stringValue`
+is referenced by no other rule. A parser refusal of kind `Semantic`, `Limit` or
+`Unsupported` counts as accepting the syntax. Explained disagreements come from
+two comment quirks in the grammar: a comment cannot close after a second star,
+so `/***/` never ends, and quoted search terms admit comments inside the quotes.
+The parser treats both as a reader would.
+
+The unexplained five are genuine ambiguities the parser resolves one way. After
+a refset operator, `{{moduleid = *}}` is read as a moduleId filter, although the
+grammar also reads it as a member filter on a field named `oduleid`; and an
+alternate identifier's code can run into what follows it. Until these reach
+zero, productions stay "Partial" in the inventory, with their coverage recorded
+beside them.
+
+The check also changed the parser: a refusal is now reported only once the
+whole text parses, so malformed text is a syntax error; reversed cardinalities,
+impossible dates and unbracketed mixes of conjunction and disjunction are
+grammatical and refused as `Semantic` (6.4 requires brackets because the
+grammar derives such a mix more than one way); and long-syntax `NOT`, `OR` and
+`ANY` may follow a keyword without a space.
+
 ## Open questions
 
 Three grammar-valid forms have no clear meaning in the specification. The

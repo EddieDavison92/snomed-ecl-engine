@@ -389,14 +389,27 @@ impl Parser<'_> {
         }
         // ABNF quoted strings are case-insensitive (RFC 5234 2.3) and the parsing guidance
         // says keywords are case-insensitive, so "^R" admits ^r; only ECL.g4 restricts it to CAP_R.
-        let refset_operator = if self.take("^R") || self.take("^r") {
+        // `^R#x` and `^R-#x` are memberOf over the alternate identifiers `R#x` and
+        // `R-#x`: a scheme alias starts with a letter, so `^R` then `#x` or `-#x`
+        // has no reading.
+        let alternate_scheme_r = {
+            let bytes = self.rest().as_bytes();
+            bytes.len() > 2
+                && bytes[..2].eq_ignore_ascii_case(b"^r")
+                && !bytes[2].is_ascii_alphabetic()
+                && bytes[2..]
+                    .iter()
+                    .find(|b| !(b.is_ascii_alphanumeric() || **b == b'-'))
+                    == Some(&b'#')
+        };
+        let refset_operator = if !alternate_scheme_r && (self.take("^R") || self.take("^r")) {
             Some(true)
         } else if self.take("^") {
             Some(false)
-        } else if !self.starts_alternate() && self.keyword("memberOf") {
+        } else if !self.starts_alternate() && self.operator_keyword("memberOf") {
             self.ws()?;
             Some(false)
-        } else if !self.starts_alternate() && self.keyword("refsetContainingAny") {
+        } else if !self.starts_alternate() && self.operator_keyword("refsetContainingAny") {
             self.ws()?;
             Some(true)
         } else {
@@ -419,8 +432,7 @@ impl Parser<'_> {
             self.alternate_identifier()?
         } else if self.take("*") {
             self.node(Expr::All)?
-        } else if self.word().eq_ignore_ascii_case("any") {
-            self.pos += 3;
+        } else if self.value_keyword("any") {
             self.node(Expr::All)?
         } else if self.rest().starts_with(|c: char| c.is_ascii_digit()) {
             let start = self.pos;
@@ -481,6 +493,9 @@ impl Parser<'_> {
                 inner: Box::new(expression),
             })?;
         }
+        // The fallback to a member filter below only reads a refused form, so
+        // it applies before any other filter and without a refset operator.
+        let mut filtered = refset_operator.is_some();
         while self.rest().starts_with("{{") {
             let saved = self.pos;
             self.take("{{");
@@ -496,13 +511,66 @@ impl Parser<'_> {
             } else if concept {
                 let filters = self.concept_filters(depth + 1)?;
                 expression = self.node(Expr::ConceptFiltered(Box::new(expression), filters))?;
+                filtered = true;
             } else {
-                let filters = self.description_filters(depth + 1)?;
-                expression = self.node(Expr::DescriptionFiltered(Box::new(expression), filters))?;
+                let mark = self.mark();
+                match self.description_filters(depth + 1) {
+                    Ok(filters) => {
+                        expression =
+                            self.node(Expr::DescriptionFiltered(Box::new(expression), filters))?;
+                        // `{{moduleid = *}}` also reads as the member filter `m oduleid`,
+                        // and then a member filter may still follow it.
+                        let end = self.mark();
+                        self.reset(mark.clone());
+                        let member = !filtered
+                            && self.starts_member_filter_letter()
+                            && self.member_filters(depth + 1).is_ok()
+                            && self.pos == end.pos;
+                        self.reset(end);
+                        if member {
+                            self.ws()?;
+                            continue;
+                        }
+                    }
+                    Err(error) => {
+                        // `{{moduleid = *, x = *}}` is also `{{m oduleid = *, x = *}}`, a
+                        // member filter, which the grammar admits without a refset operator.
+                        self.reset(mark.clone());
+                        if filtered
+                            || !self.starts_member_filter_letter()
+                            || self.member_filters(depth + 1).is_err()
+                        {
+                            self.reset(mark);
+                            return Err(error);
+                        }
+                        self.refuse(
+                            mark.pos,
+                            "Member filters require a refset operator (^ or ^R); ECL defines them only over memberOf rows",
+                        );
+                        // More member filters may follow this one.
+                        self.ws()?;
+                        continue;
+                    }
+                }
+                filtered = true;
             }
             self.ws()?;
         }
         Ok(expression)
+    }
+    /// A long-syntax operator that the grammar lets run into `ANY`, as in
+    /// `memberOfANY`.
+    fn operator_keyword(&mut self, word: &str) -> bool {
+        let found = self.word();
+        let joined = found.len() == word.len() + 3
+            && found[..word.len()].eq_ignore_ascii_case(word)
+            && found[word.len()..].eq_ignore_ascii_case("any");
+        if found.eq_ignore_ascii_case(word) || joined {
+            self.pos += word.len();
+            true
+        } else {
+            false
+        }
     }
     fn unexpected(&self) -> ParseError {
         self.error(

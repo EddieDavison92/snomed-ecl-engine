@@ -49,1081 +49,1981 @@
           "production": "expressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 15087
+          }
         },
         {
           "production": "refinedExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 3169
+          }
         },
         {
           "production": "compoundExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 3157
+          }
         },
         {
           "production": "conjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1407
+          }
         },
         {
           "production": "disjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 895
+          }
         },
         {
           "production": "exclusionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 855
+          }
         },
         {
           "production": "dottedExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 3178
+          }
         },
         {
           "production": "dottedExpressionAttribute",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4860
+          }
         },
         {
           "production": "subExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 20,
+            "covered": 20,
+            "generated": 58278
+          }
         },
         {
           "production": "eclFocusConcept",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 48192
+          }
         },
         {
           "production": "dot",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4860
+          }
         },
         {
           "production": "refsetOperator",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/membership.rs"
+          "evidence": "tests/membership.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 5079
+          }
         },
         {
           "production": "memberOf",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/membership.rs"
+          "evidence": "tests/membership.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 3023
+          }
         },
         {
           "production": "refsetContainingAny",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/membership.rs"
+          "evidence": "tests/membership.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2056
+          }
         },
         {
           "production": "refsetFieldNameSet",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 383
+          }
         },
         {
           "production": "refsetFieldName",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 9903
+          }
         },
         {
           "production": "eclConceptReference",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 16598
+          }
         },
         {
           "production": "eclConceptReferenceSet",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 4937
+          }
         },
         {
           "production": "conceptId",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 16598
+          }
         },
         {
           "production": "term",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 6684
+          }
         },
         {
           "production": "altIdentifier",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 2747
+          }
         },
         {
           "production": "altIdentifierSchemeAlias",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 2747
+          }
         },
         {
           "production": "altIdentifierCodeWithinQuotes",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1045
+          }
         },
         {
           "production": "altIdentifierCodeWithoutQuotes",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 1702
+          }
         },
         {
           "production": "wildCard",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 45495
+          }
         },
         {
           "production": "constraintOperator",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 11646
+          }
         },
         {
           "production": "descendantOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 3308
+          }
         },
         {
           "production": "descendantOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 946
+          }
         },
         {
           "production": "childOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 895
+          }
         },
         {
           "production": "childOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 939
+          }
         },
         {
           "production": "ancestorOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 924
+          }
         },
         {
           "production": "ancestorOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 924
+          }
         },
         {
           "production": "parentOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 956
+          }
         },
         {
           "production": "parentOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 923
+          }
         },
         {
           "production": "top",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 933
+          }
         },
         {
           "production": "bottom",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 898
+          }
         },
         {
           "production": "conjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 5961
+          }
         },
         {
           "production": "disjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 4986
+          }
         },
         {
           "production": "exclusion",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 855
+          }
         },
         {
           "production": "eclRefinement",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 5105
+          }
         },
         {
           "production": "conjunctionRefinementSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1125
+          }
         },
         {
           "production": "disjunctionRefinementSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 976
+          }
         },
         {
           "production": "subRefinement",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 8251
+          }
         },
         {
           "production": "eclAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 10428
+          }
         },
         {
           "production": "conjunctionAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1704
+          }
         },
         {
           "production": "disjunctionAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1386
+          }
         },
         {
           "production": "subAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 14874
+          }
         },
         {
           "production": "eclAttributeGroup",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1975
+          }
         },
         {
           "production": "eclAttribute",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 10761
+          }
         },
         {
           "production": "cardinality",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2341
+          }
         },
         {
           "production": "minValue",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2341
+          }
         },
         {
           "production": "to",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2341
+          }
         },
         {
           "production": "maxValue",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 2341
+          }
         },
         {
           "production": "many",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1575
+          }
         },
         {
           "production": "reverseFlag",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1616
+          }
         },
         {
           "production": "eclAttributeName",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 15621
+          }
         },
         {
           "production": "expressionComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 14999
+          }
         },
         {
           "production": "numericComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 1480
+          }
         },
         {
           "production": "timeComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 10436
+          }
         },
         {
           "production": "stringComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 3321
+          }
         },
         {
           "production": "booleanComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 44873
+          }
         },
         {
           "production": "idComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1934
+          }
         },
         {
           "production": "descriptionFilterConstraint",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 14512
+          }
         },
         {
           "production": "descriptionFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 24469
+          }
         },
         {
           "production": "descriptionIdFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1934
+          }
         },
         {
           "production": "descriptionIdKeyword",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 1934
+          }
         },
         {
           "production": "descriptionId",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2624
+          }
         },
         {
           "production": "descriptionIdSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 792
+          }
         },
         {
           "production": "termFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1946
+          }
         },
         {
           "production": "termKeyword",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1946
+          }
         },
         {
           "production": "typedSearchTerm",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 3407
+          }
         },
         {
           "production": "typedSearchTermSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 1040
+          }
         },
         {
           "production": "concreteStringSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 354
+          }
         },
         {
           "production": "concreteString",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1094
+          }
         },
         {
           "production": "concreteStringCharacters",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 1094
+          }
         },
         {
           "production": "wild",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1101
+          }
         },
         {
           "production": "matchKeyword",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 518
+          }
         },
         {
           "production": "matchSearchTerm",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 3325
+          }
         },
         {
           "production": "matchSearchTermSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 2306
+          }
         },
         {
           "production": "wildSearchTerm",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 1101
+          }
         },
         {
           "production": "wildSearchTermSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1101
+          }
         },
         {
           "production": "languageFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1940
+          }
         },
         {
           "production": "language",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 16,
+            "covered": 16,
+            "generated": 1940
+          }
         },
         {
           "production": "languageCode",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2673
+          }
         },
         {
           "production": "languageCodeSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 812
+          }
         },
         {
           "production": "typeFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1946
+          }
         },
         {
           "production": "typeIdFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 759
+          }
         },
         {
           "production": "typeId",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 759
+          }
         },
         {
           "production": "typeTokenFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1187
+          }
         },
         {
           "production": "type",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1187
+          }
         },
         {
           "production": "typeToken",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 1473
+          }
         },
         {
           "production": "typeTokenSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 332
+          }
         },
         {
           "production": "synonym",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 1002
+          }
         },
         {
           "production": "fullySpecifiedName",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 197
+          }
         },
         {
           "production": "definition",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 274
+          }
         },
         {
           "production": "dialectFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 1951
+          }
         },
         {
           "production": "dialectIdFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 779
+          }
         },
         {
           "production": "dialectId",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 18,
+            "covered": 18,
+            "generated": 779
+          }
         },
         {
           "production": "dialectAliasFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1172
+          }
         },
         {
           "production": "dialect",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 1172
+          }
         },
         {
           "production": "dialectAlias",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 1425
+          }
         },
         {
           "production": "dialectAliasSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 306
+          }
         },
         {
           "production": "dialectIdSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 316
+          }
         },
         {
           "production": "acceptabilitySet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1206
+          }
         },
         {
           "production": "acceptabilityConceptReferenceSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 471
+          }
         },
         {
           "production": "acceptabilityTokenSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 735
+          }
         },
         {
           "production": "acceptabilityToken",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1199
+          }
         },
         {
           "production": "acceptable",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 839
+          }
         },
         {
           "production": "preferred",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 360
+          }
         },
         {
           "production": "conceptFilterConstraint",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 11076
+          }
         },
         {
           "production": "conceptFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 20987
+          }
         },
         {
           "production": "definitionStatusFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 3991
+          }
         },
         {
           "production": "definitionStatusIdFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 2384
+          }
         },
         {
           "production": "definitionStatusIdKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 36,
+            "covered": 36,
+            "generated": 2384
+          }
         },
         {
           "production": "definitionStatusTokenFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1607
+          }
         },
         {
           "production": "definitionStatusKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 32,
+            "covered": 32,
+            "generated": 1607
+          }
         },
         {
           "production": "definitionStatusToken",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 2133
+          }
         },
         {
           "production": "definitionStatusTokenSet",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 641
+          }
         },
         {
           "production": "primitiveToken",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 18,
+            "covered": 18,
+            "generated": 666
+          }
         },
         {
           "production": "definedToken",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 1467
+          }
         },
         {
           "production": "moduleFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 9692
+          }
         },
         {
           "production": "moduleIdKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 16,
+            "covered": 16,
+            "generated": 9692
+          }
         },
         {
           "production": "effectiveTimeFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 9806
+          }
         },
         {
           "production": "effectiveTimeKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 26,
+            "covered": 26,
+            "generated": 9806
+          }
         },
         {
           "production": "timeValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 14094
+          }
         },
         {
           "production": "timeValueSet",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 4194
+          }
         },
         {
           "production": "year",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4513
+          }
         },
         {
           "production": "month",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 4513
+          }
         },
         {
           "production": "day",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 31,
+            "covered": 31,
+            "generated": 4513
+          }
         },
         {
           "production": "activeFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 23929
+          }
         },
         {
           "production": "activeKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 23929
+          }
         },
         {
           "production": "activeValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 23929
+          }
         },
         {
           "production": "activeTrueValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 19217
+          }
         },
         {
           "production": "activeFalseValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 2389
+          }
         },
         {
           "production": "memberFilterConstraint",
           "area": "member_filters",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 11032
+          }
         },
         {
           "production": "memberFilter",
           "area": "member_filters",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 20826
+          }
         },
         {
           "production": "memberFieldFilter",
           "area": "member_filters",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 9147
+          }
         },
         {
           "production": "historySupplement",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 11576
+          }
         },
         {
           "production": "historyKeyword",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 11576
+          }
         },
         {
           "production": "historyProfileSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 2595
+          }
         },
         {
           "production": "historyMinimumSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1485
+          }
         },
         {
           "production": "historyModerateSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 559
+          }
         },
         {
           "production": "historyMaximumSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 551
+          }
         },
         {
           "production": "historySubset",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2001
+          }
         },
         {
           "production": "numericValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 1480
+          }
         },
         {
           "production": "stringValue",
           "area": "value_syntax",
           "status": "pending",
-          "evidence": null
+          "evidence": null,
+          "differential": {
+            "choices": 4,
+            "covered": 0,
+            "generated": 0
+          }
         },
         {
           "production": "integerValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 2272
+          }
         },
         {
           "production": "decimalValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 572
+          }
         },
         {
           "production": "booleanValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1424
+          }
         },
         {
           "production": "true",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 849
+          }
         },
         {
           "production": "false",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 575
+          }
         },
         {
           "production": "nonNegativeIntegerValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 3107
+          }
         },
         {
           "production": "sctId",
           "area": "lexical",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 19222
+          }
         },
         {
           "production": "ws",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 617326
+          }
         },
         {
           "production": "mws",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 24551
+          }
         },
         {
           "production": "comment",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 12437
+          }
         },
         {
           "production": "nonStarChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 6048
+          }
         },
         {
           "production": "starWithNonFSlash",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4815
+          }
         },
         {
           "production": "nonFSlash",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 4815
+          }
         },
         {
           "production": "SP",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 31619
+          }
         },
         {
           "production": "HTAB",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 13727
+          }
         },
         {
           "production": "CR",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 13574
+          }
         },
         {
           "production": "LF",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 13358
+          }
         },
         {
           "production": "QM",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 40489
+          }
         },
         {
           "production": "BS",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2798
+          }
         },
         {
           "production": "star",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 241
+          }
         },
         {
           "production": "digit",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 25961
+          }
         },
         {
           "production": "zero",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1731
+          }
         },
         {
           "production": "digitNonZero",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 10078
+          }
         },
         {
           "production": "nonwsNonPipe",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 19512
+          }
         },
         {
           "production": "anyNonEscapedChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 3704
+          }
         },
         {
           "production": "escapedChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1149
+          }
         },
         {
           "production": "escapedWildChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 975
+          }
         },
         {
           "production": "nonwsNonEscapedChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 3174
+          }
         },
         {
           "production": "alpha",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 22703
+          }
         },
         {
           "production": "dash",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1305
+          }
         },
         {
           "production": "UTF8-2",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 3688
+          }
         },
         {
           "production": "UTF8-3",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 3621
+          }
         },
         {
           "production": "UTF8-4",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 3767
+          }
         },
         {
           "production": "UTF8-tail",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 17236
+          }
         }
       ]
     },
@@ -1135,1081 +2035,1981 @@
           "production": "expressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 14828
+          }
         },
         {
           "production": "refinedExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 3068
+          }
         },
         {
           "production": "compoundExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 3137
+          }
         },
         {
           "production": "conjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1375
+          }
         },
         {
           "production": "disjunctionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 888
+          }
         },
         {
           "production": "exclusionExpressionConstraint",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 874
+          }
         },
         {
           "production": "dottedExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 3077
+          }
         },
         {
           "production": "dottedExpressionAttribute",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4746
+          }
         },
         {
           "production": "subExpressionConstraint",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 20,
+            "covered": 20,
+            "generated": 55959
+          }
         },
         {
           "production": "eclFocusConcept",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 46098
+          }
         },
         {
           "production": "dot",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4746
+          }
         },
         {
           "production": "refsetOperator",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/membership.rs"
+          "evidence": "tests/membership.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 4898
+          }
         },
         {
           "production": "memberOf",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/membership.rs"
+          "evidence": "tests/membership.rs",
+          "differential": {
+            "choices": 22,
+            "covered": 22,
+            "generated": 2847
+          }
         },
         {
           "production": "refsetContainingAny",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/membership.rs"
+          "evidence": "tests/membership.rs",
+          "differential": {
+            "choices": 40,
+            "covered": 40,
+            "generated": 2051
+          }
         },
         {
           "production": "refsetFieldNameSet",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 328
+          }
         },
         {
           "production": "refsetFieldName",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 9553
+          }
         },
         {
           "production": "eclConceptReference",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 15880
+          }
         },
         {
           "production": "eclConceptReferenceSet",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 4698
+          }
         },
         {
           "production": "conceptId",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 15880
+          }
         },
         {
           "production": "term",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 6662
+          }
         },
         {
           "production": "altIdentifier",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 2649
+          }
         },
         {
           "production": "altIdentifierSchemeAlias",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 2649
+          }
         },
         {
           "production": "altIdentifierCodeWithinQuotes",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 979
+          }
         },
         {
           "production": "altIdentifierCodeWithoutQuotes",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/identifiers.rs"
+          "evidence": "tests/identifiers.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 1670
+          }
         },
         {
           "production": "wildCard",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 43628
+          }
         },
         {
           "production": "constraintOperator",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 11327
+          }
         },
         {
           "production": "descendantOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 26,
+            "covered": 26,
+            "generated": 3281
+          }
         },
         {
           "production": "descendantOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 38,
+            "covered": 38,
+            "generated": 835
+          }
         },
         {
           "production": "childOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 16,
+            "covered": 16,
+            "generated": 895
+          }
         },
         {
           "production": "childOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 28,
+            "covered": 28,
+            "generated": 846
+          }
         },
         {
           "production": "ancestorOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 22,
+            "covered": 22,
+            "generated": 932
+          }
         },
         {
           "production": "ancestorOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 34,
+            "covered": 34,
+            "generated": 867
+          }
         },
         {
           "production": "parentOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 18,
+            "covered": 18,
+            "generated": 944
+          }
         },
         {
           "production": "parentOrSelfOf",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 30,
+            "covered": 30,
+            "generated": 895
+          }
         },
         {
           "production": "top",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 897
+          }
         },
         {
           "production": "bottom",
           "area": "expressions",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 935
+          }
         },
         {
           "production": "conjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 5492
+          }
         },
         {
           "production": "disjunction",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 4537
+          }
         },
         {
           "production": "exclusion",
           "area": "expressions",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 874
+          }
         },
         {
           "production": "eclRefinement",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 4778
+          }
         },
         {
           "production": "conjunctionRefinementSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 994
+          }
         },
         {
           "production": "disjunctionRefinementSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 871
+          }
         },
         {
           "production": "subRefinement",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 7570
+          }
         },
         {
           "production": "eclAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 9521
+          }
         },
         {
           "production": "conjunctionAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1582
+          }
         },
         {
           "production": "disjunctionAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1221
+          }
         },
         {
           "production": "subAttributeSet",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 13549
+          }
         },
         {
           "production": "eclAttributeGroup",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1770
+          }
         },
         {
           "production": "eclAttribute",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 9888
+          }
         },
         {
           "production": "cardinality",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2131
+          }
         },
         {
           "production": "minValue",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2131
+          }
         },
         {
           "production": "to",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 2131
+          }
         },
         {
           "production": "maxValue",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 2131
+          }
         },
         {
           "production": "many",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 1429
+          }
         },
         {
           "production": "reverseFlag",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 20,
+            "covered": 20,
+            "generated": 1407
+          }
         },
         {
           "production": "eclAttributeName",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 14634
+          }
         },
         {
           "production": "expressionComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 14222
+          }
         },
         {
           "production": "numericComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 1307
+          }
         },
         {
           "production": "timeComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 10094
+          }
         },
         {
           "production": "stringComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 3228
+          }
         },
         {
           "production": "booleanComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 43541
+          }
         },
         {
           "production": "idComparisonOperator",
           "area": "refinements",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 1997
+          }
         },
         {
           "production": "descriptionFilterConstraint",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 14209
+          }
         },
         {
           "production": "descriptionFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 24079
+          }
         },
         {
           "production": "descriptionIdFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1997
+          }
         },
         {
           "production": "descriptionIdKeyword",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 1997
+          }
         },
         {
           "production": "descriptionId",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2746
+          }
         },
         {
           "production": "descriptionIdSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 812
+          }
         },
         {
           "production": "termFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1923
+          }
         },
         {
           "production": "termKeyword",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1923
+          }
         },
         {
           "production": "typedSearchTerm",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 3399
+          }
         },
         {
           "production": "typedSearchTermSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 1042
+          }
         },
         {
           "production": "concreteStringSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 303
+          }
         },
         {
           "production": "concreteString",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 948
+          }
         },
         {
           "production": "concreteStringCharacters",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 948
+          }
         },
         {
           "production": "wild",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1121
+          }
         },
         {
           "production": "matchKeyword",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 493
+          }
         },
         {
           "production": "matchSearchTerm",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 3204
+          }
         },
         {
           "production": "matchSearchTermSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 2278
+          }
         },
         {
           "production": "wildSearchTerm",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 1121
+          }
         },
         {
           "production": "wildSearchTermSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1121
+          }
         },
         {
           "production": "languageFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1931
+          }
         },
         {
           "production": "language",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 16,
+            "covered": 16,
+            "generated": 1931
+          }
         },
         {
           "production": "languageCode",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2679
+          }
         },
         {
           "production": "languageCodeSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 798
+          }
         },
         {
           "production": "typeFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1923
+          }
         },
         {
           "production": "typeIdFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 765
+          }
         },
         {
           "production": "typeId",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 765
+          }
         },
         {
           "production": "typeTokenFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1158
+          }
         },
         {
           "production": "type",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1158
+          }
         },
         {
           "production": "typeToken",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 1395
+          }
         },
         {
           "production": "typeTokenSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 320
+          }
         },
         {
           "production": "synonym",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 16,
+            "covered": 16,
+            "generated": 963
+          }
         },
         {
           "production": "fullySpecifiedName",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 44,
+            "covered": 44,
+            "generated": 219
+          }
         },
         {
           "production": "definition",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 22,
+            "covered": 22,
+            "generated": 213
+          }
         },
         {
           "production": "dialectFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 1940
+          }
         },
         {
           "production": "dialectIdFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 770
+          }
         },
         {
           "production": "dialectId",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 18,
+            "covered": 18,
+            "generated": 770
+          }
         },
         {
           "production": "dialectAliasFilter",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1170
+          }
         },
         {
           "production": "dialect",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 1170
+          }
         },
         {
           "production": "dialectAlias",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 1465
+          }
         },
         {
           "production": "dialectAliasSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 325
+          }
         },
         {
           "production": "dialectIdSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 310
+          }
         },
         {
           "production": "acceptabilitySet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1257
+          }
         },
         {
           "production": "acceptabilityConceptReferenceSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 488
+          }
         },
         {
           "production": "acceptabilityTokenSet",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 769
+          }
         },
         {
           "production": "acceptabilityToken",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1176
+          }
         },
         {
           "production": "acceptable",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 22,
+            "covered": 22,
+            "generated": 837
+          }
         },
         {
           "production": "preferred",
           "area": "description_filters",
           "status": "partial",
-          "evidence": "tests/description_filters.rs"
+          "evidence": "tests/description_filters.rs",
+          "differential": {
+            "choices": 20,
+            "covered": 20,
+            "generated": 339
+          }
         },
         {
           "production": "conceptFilterConstraint",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 10689
+          }
         },
         {
           "production": "conceptFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 20294
+          }
         },
         {
           "production": "definitionStatusFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 3696
+          }
         },
         {
           "production": "definitionStatusIdFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 2218
+          }
         },
         {
           "production": "definitionStatusIdKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 36,
+            "covered": 36,
+            "generated": 2218
+          }
         },
         {
           "production": "definitionStatusTokenFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1478
+          }
         },
         {
           "production": "definitionStatusKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 32,
+            "covered": 32,
+            "generated": 1478
+          }
         },
         {
           "production": "definitionStatusToken",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1962
+          }
         },
         {
           "production": "definitionStatusTokenSet",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 592
+          }
         },
         {
           "production": "primitiveToken",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 18,
+            "covered": 18,
+            "generated": 646
+          }
         },
         {
           "production": "definedToken",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 1316
+          }
         },
         {
           "production": "moduleFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 9447
+          }
         },
         {
           "production": "moduleIdKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 16,
+            "covered": 16,
+            "generated": 9447
+          }
         },
         {
           "production": "effectiveTimeFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 9489
+          }
         },
         {
           "production": "effectiveTimeKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 26,
+            "covered": 26,
+            "generated": 9489
+          }
         },
         {
           "production": "timeValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 13690
+          }
         },
         {
           "production": "timeValueSet",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 4038
+          }
         },
         {
           "production": "year",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4371
+          }
         },
         {
           "production": "month",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 4371
+          }
         },
         {
           "production": "day",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 31,
+            "covered": 31,
+            "generated": 4371
+          }
         },
         {
           "production": "activeFilter",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 23254
+          }
         },
         {
           "production": "activeKeyword",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 12,
+            "covered": 12,
+            "generated": 23254
+          }
         },
         {
           "production": "activeValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 23254
+          }
         },
         {
           "production": "activeTrueValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 18535
+          }
         },
         {
           "production": "activeFalseValue",
           "area": "concept_filters",
           "status": "partial",
-          "evidence": "tests/concept_filters.rs"
+          "evidence": "tests/concept_filters.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 2335
+          }
         },
         {
           "production": "memberFilterConstraint",
           "area": "member_filters",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 10662
+          }
         },
         {
           "production": "memberFilter",
           "area": "member_filters",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 20128
+          }
         },
         {
           "production": "memberFieldFilter",
           "area": "member_filters",
           "status": "partial",
-          "evidence": "tests/member_filters.rs"
+          "evidence": "tests/member_filters.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 8901
+          }
         },
         {
           "production": "historySupplement",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 11291
+          }
         },
         {
           "production": "historyKeyword",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 14,
+            "covered": 14,
+            "generated": 11291
+          }
         },
         {
           "production": "historyProfileSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 2453
+          }
         },
         {
           "production": "historyMinimumSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 1437
+          }
         },
         {
           "production": "historyModerateSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 519
+          }
         },
         {
           "production": "historyMaximumSuffix",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 497
+          }
         },
         {
           "production": "historySubset",
           "area": "history",
           "status": "partial",
-          "evidence": "tests/history.rs"
+          "evidence": "tests/history.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1967
+          }
         },
         {
           "production": "numericValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 1307
+          }
         },
         {
           "production": "stringValue",
           "area": "value_syntax",
           "status": "pending",
-          "evidence": null
+          "evidence": null,
+          "differential": {
+            "choices": 4,
+            "covered": 0,
+            "generated": 0
+          }
         },
         {
           "production": "integerValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 2145
+          }
         },
         {
           "production": "decimalValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 499
+          }
         },
         {
           "production": "booleanValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1350
+          }
         },
         {
           "production": "true",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 822
+          }
         },
         {
           "production": "false",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 528
+          }
         },
         {
           "production": "nonNegativeIntegerValue",
           "area": "value_syntax",
           "status": "partial",
-          "evidence": "tests/refinements.rs"
+          "evidence": "tests/refinements.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 2833
+          }
         },
         {
           "production": "sctId",
           "area": "lexical",
           "status": "implemented",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 18626
+          }
         },
         {
           "production": "ws",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 8,
+            "covered": 8,
+            "generated": 604127
+          }
         },
         {
           "production": "mws",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 7,
+            "covered": 7,
+            "generated": 28048
+          }
         },
         {
           "production": "comment",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/basic_ecl.rs"
+          "evidence": "tests/basic_ecl.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 12441
+          }
         },
         {
           "production": "nonStarChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 6127
+          }
         },
         {
           "production": "starWithNonFSlash",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 4895
+          }
         },
         {
           "production": "nonFSlash",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 9,
+            "covered": 9,
+            "generated": 4895
+          }
         },
         {
           "production": "SP",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 31458
+          }
         },
         {
           "production": "HTAB",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 13357
+          }
         },
         {
           "production": "CR",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 13183
+          }
         },
         {
           "production": "LF",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 13509
+          }
         },
         {
           "production": "QM",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 39172
+          }
         },
         {
           "production": "BS",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 2559
+          }
         },
         {
           "production": "star",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 141
+          }
         },
         {
           "production": "digit",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 24960
+          }
         },
         {
           "production": "zero",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1567
+          }
         },
         {
           "production": "digitNonZero",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 9645
+          }
         },
         {
           "production": "nonwsNonPipe",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 5,
+            "covered": 5,
+            "generated": 19296
+          }
         },
         {
           "production": "anyNonEscapedChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 10,
+            "covered": 10,
+            "generated": 3563
+          }
         },
         {
           "production": "escapedChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 1365
+          }
         },
         {
           "production": "escapedWildChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/term_filters.rs"
+          "evidence": "tests/term_filters.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 555
+          }
         },
         {
           "production": "nonwsNonEscapedChar",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 6,
+            "covered": 6,
+            "generated": 3128
+          }
         },
         {
           "production": "alpha",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 2,
+            "covered": 2,
+            "generated": 22223
+          }
         },
         {
           "production": "dash",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 1343
+          }
         },
         {
           "production": "UTF8-2",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 3791
+          }
         },
         {
           "production": "UTF8-3",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 4,
+            "covered": 4,
+            "generated": 3728
+          }
         },
         {
           "production": "UTF8-4",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 3,
+            "covered": 3,
+            "generated": 3664
+          }
         },
         {
           "production": "UTF8-tail",
           "area": "lexical",
           "status": "partial",
-          "evidence": "tests/lexical.rs"
+          "evidence": "tests/lexical.rs",
+          "differential": {
+            "choices": 0,
+            "covered": 0,
+            "generated": 17290
+          }
         }
       ]
     }

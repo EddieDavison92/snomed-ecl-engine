@@ -38,11 +38,11 @@ impl Parser<'_> {
         } else {
             loop {
                 let field = self.word().to_ascii_lowercase();
-                if field.is_empty()
-                    || !field.bytes().all(|b| b.is_ascii_alphabetic())
-                    || fields.contains(&field)
-                {
+                if field.is_empty() || !field.bytes().all(|b| b.is_ascii_alphabetic()) {
                     return Err(self.unexpected());
+                }
+                if fields.contains(&field) {
+                    self.refuse(self.pos, "A field is projected twice");
                 }
                 self.pos += field.len();
                 fields.push(field);
@@ -63,12 +63,19 @@ impl Parser<'_> {
         let saved = self.pos;
         let result = if self.take("{{") {
             self.ws()?;
-            self.rest().starts_with(['m', 'M']) && !self.word().eq_ignore_ascii_case("moduleId")
+            self.rest().starts_with(['m', 'M']) && self.filter_name() != "moduleid"
         } else {
             false
         };
         self.pos = saved;
         Ok(result)
+    }
+    /// Whether the filter at the current `{{` opens with the member letter.
+    pub(super) fn starts_member_filter_letter(&mut self) -> bool {
+        let mark = self.mark();
+        let found = self.take("{{") && self.ws().is_ok() && self.rest().starts_with(['m', 'M']);
+        self.reset(mark);
+        found
     }
     pub(super) fn member_filters(&mut self, depth: usize) -> Result<Vec<MemberFilter>> {
         if depth > MAX_DEPTH {
@@ -110,9 +117,34 @@ impl Parser<'_> {
                 || quoted && !matches!(comparison, Comparison::Eq | Comparison::Ne)
                 || self.rest().starts_with("\"\"")
             {
+                let mark = self.mark();
                 let list = self.take("(");
                 self.ws()?;
-                let mut dates = vec![self.filter_date()?];
+                let first = self.filter_date();
+                if first.is_err()
+                    && dated
+                    && matches!(comparison, Comparison::Eq | Comparison::Ne)
+                {
+                    // Not a date, so the grammar reads it as a string compared with a
+                    // field that happens to be named effectiveTime; evaluation types it.
+                    self.reset(mark);
+                    let terms = self.search_terms()?;
+                    result.push(MemberFilter {
+                        field,
+                        comparison,
+                        value: MemberPredicate::Text(terms),
+                    });
+                    self.ws()?;
+                    if self.take("}}") {
+                        return Ok(result);
+                    }
+                    if !self.take(",") {
+                        return Err(self.unexpected());
+                    }
+                    self.ws()?;
+                    continue;
+                }
+                let mut dates = vec![first?];
                 loop {
                     let spaced = self.ws()?;
                     if !list || self.take(")") {

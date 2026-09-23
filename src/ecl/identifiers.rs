@@ -21,6 +21,35 @@ impl Parser<'_> {
             .find(|b| !(b.is_ascii_alphanumeric() || *b == b'-'))
             == Some(b'#')
     }
+    /// Gives back an operator that an unquoted code swallowed, as in `x#a-or *`,
+    /// where the grammar reads code `a-` and then `or`. Only when what follows
+    /// the whole code could not continue an expression, so `x#color` stays.
+    fn release_operator(&mut self, start: usize) {
+        let mark = self.mark();
+        let continues = self.ws().is_ok() && {
+            let rest = self.rest();
+            let word = self.word().to_ascii_lowercase();
+            rest.is_empty()
+                || rest.starts_with([')', ':', '.', ',', '|', '{', '}'])
+                || ["and", "or", "minus"].contains(&word.as_str())
+        };
+        let end = mark.pos;
+        self.reset(mark);
+        if continues {
+            return;
+        }
+        let code = self.text[start..end].to_ascii_lowercase();
+        for operator in ["minus", "and", "or"] {
+            if code.len() > operator.len() && code.ends_with(operator) {
+                let cut = end - operator.len();
+                // The operator needs whitespace or a comment after it.
+                if self.text[end..].starts_with([' ', '\t', '\r', '\n']) || self.text[end..].starts_with("/*") {
+                    self.pos = cut;
+                }
+                return;
+            }
+        }
+    }
     /// Whether an attribute name parses after the dot at the current position.
     fn dot_starts_attribute(&mut self) -> bool {
         let mark = self.mark();
@@ -54,6 +83,9 @@ impl Parser<'_> {
                 break;
             }
             self.pos += c.len_utf8();
+        }
+        if !quoted {
+            self.release_operator(start);
         }
         let code = self.text[start..self.pos].to_owned();
         if code.is_empty() || quoted && !self.take("\"") {

@@ -24,8 +24,8 @@ impl Parser<'_> {
         self.take("{{");
         self.ws()?;
         if self.rest().starts_with(['d', 'D'])
-            && !self.word().eq_ignore_ascii_case("dialect")
-            && !self.word().eq_ignore_ascii_case("dialectId")
+            && self.filter_name() != "dialect"
+            && self.filter_name() != "dialectid"
         {
             self.pos += 1;
             self.ws()?;

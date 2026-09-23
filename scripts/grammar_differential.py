@@ -75,8 +75,12 @@ def tokens(text):
 
 
 def parse_rules(path):
+    return parse_text(path.read_text(encoding="utf-8-sig"))
+
+
+def parse_text(text):
     rules = {}
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
+    for line in text.splitlines():
         if not line.strip() or "=" not in line:
             continue
         name, body = line.split("=", 1)
@@ -143,6 +147,22 @@ def element(stream):
 
 
 # ---------------------------------------------------------------- recogniser
+
+def conventional(rules):
+    """The grammar with its two comment quirks removed.
+
+    `ws` admits comments, and `matchSearchTermSet` uses `ws` inside its quotes,
+    so `"a/*b*/c"` holds two words rather than the text between the quotes.
+    Search terms here take plain whitespace instead.
+    """
+    rules = dict(rules)
+    rules.update(parse_text("\n".join([
+        "matchSearchTermSet = QM wsx matchSearchTerm *(mwsx matchSearchTerm) wsx QM",
+        "wsx = *( SP / HTAB / CR / LF )",
+        "mwsx = 1*( SP / HTAB / CR / LF )",
+    ])))
+    return rules
+
 
 class Recogniser:
     """The set of end positions each node can reach from a start position.
@@ -221,6 +241,7 @@ class Generator:
         self.cost = {}
         self.choices = {}  # id(node) -> (production, description)
         self.seen = Counter()
+        self.reached = Counter()
         self.label(rules)
         self.minimum()
 
@@ -284,6 +305,7 @@ class Generator:
     def emit(self, node, out, budget):
         deep = budget <= 0
         if isinstance(node, Ref):
+            self.reached[node.name] += 1
             if node.name == "sctId" and self.rng.random() < 0.9:
                 out += self.rng.choice(SCTIDS).encode()
                 return
@@ -388,7 +410,7 @@ def main():
     for name in ("abnf-brief.txt", "abnf-long.txt"):
         rules = parse_rules(GRAMMARS / name)
         recogniser = Recogniser(rules)
-        conventional = Recogniser(rules, closing_comments=True)
+        corrected = Recogniser(conventional(rules), closing_comments=True)
         generator = Generator(rules, rng)
         positives = [generator.sentence("expressionConstraint", rng.choice([8, 16, 30])) for _ in range(args.sentences)]
         alphabet = sorted({b for s in positives for b in s} | set(b" \t\r\n()[]{}<>!=^*:,.|\"#-+/\\"))
@@ -404,8 +426,8 @@ def main():
             engine_kinds[verdict] += 1
             if valid != (verdict in GRAMMATICAL):
                 label = "grammar accepts" if valid else "grammar rejects"
-                if not valid and conventional.accepts("expressionConstraint", sample):
-                    label = "grammar rejects only through its comment rule"
+                if valid != corrected.accepts("expressionConstraint", sample):
+                    label += " only through a comment quirk"
                 reason = f"{verdict}: {detail[1]}" if detail else verdict
                 disagreements[(label, reason)].append(sample)
         minimal = {}
@@ -414,8 +436,8 @@ def main():
                 verdict, *detail = engine(args.binary, [candidate])[0]
                 got = f"{verdict}: {detail[1]}" if detail else verdict
                 valid = recogniser.accepts("expressionConstraint", candidate)
-                return got == reason and valid == label.startswith("grammar accepts") and (
-                    valid or (label.startswith("grammar rejects only")) == conventional.accepts("expressionConstraint", candidate))
+                quirk = valid != corrected.accepts("expressionConstraint", candidate)
+                return got == reason and valid == label.startswith("grammar accepts") and quirk == ("quirk" in label)
             minimal[(label, reason)] = sorted({shrink(s, keep) for s in sorted(found, key=len)[:3]}, key=len)
         # Every generated positive must itself satisfy the recogniser.
         unrecognised = [s for s in positives if not recogniser.accepts("expressionConstraint", s)]
@@ -426,7 +448,8 @@ def main():
         productions = {}
         for production in rules:
             covered, total = coverage.get(production, [0, 0])
-            productions[production] = {"choices": total, "covered": covered}
+            productions[production] = {"choices": total, "covered": covered,
+                                       "generated": generator.reached[production]}
         report[name] = {
             "samples": len(samples),
             "grammar_valid": grammar_valid,
@@ -442,8 +465,11 @@ def main():
             ),
         }
         summary = report[name]
+        unexplained = sum(d["count"] for k, d in summary["disagreements"].items() if "quirk" not in k)
+        summary["unexplained"] = unexplained
         print(f"{name}: {summary['samples']} samples, {grammar_valid} grammar-valid, "
               f"{sum(d['count'] for d in summary['disagreements'].values())} disagreements, "
+              f"{unexplained} unexplained, "
               f"{len(summary['uncovered'])} uncovered choices, {len(unrecognised)} generator errors")
         for label, detail in summary["disagreements"].items():
             print(f"  {label}: {detail['count']}")

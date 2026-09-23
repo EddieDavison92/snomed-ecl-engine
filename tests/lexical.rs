@@ -121,8 +121,6 @@ fn member_field_values_follow_numeric_time_string_and_boolean_lexemes() {
         "^200001 {{M mapGroup=#}}",
         "^200001 {{M mapGroup=# 1}}",
         "^200001 {{M mapGroup=1}}",
-        "^200001 {{M effectiveTime=\"2026-08-26\"}}",
-        "^200001 {{M effectiveTime=\"20261301\"}}",
         "^200001 {{M effectiveTime=(\"20260826\",\"\")}}",
         "^200001 {{M effectiveTime=()}}",
         "^200001 {{M mapTarget=\"a\u{1}b\"}}",
@@ -397,6 +395,11 @@ fn long_syntax_keywords_may_run_into_not_and_boolean_operators() {
     same("* : 1000001 = true OR 1000002 = *", "* : 1000001 = trueOR 1000002 = *");
     // A field that merely ends in `not` stays a field.
     parses("^200001 {{M cannot = 1000001}}");
+    // Not a date, so a string compared with a field named effectiveTime.
+    parses("^200001 {{M effectiveTime=\"2026-08-26\"}}");
+    parses("^200001 {{M effectiveTime=\"20261301\"}}");
+    // An ordering needs a date, so there is no string reading to fall back on.
+    syntax_error("^200001 {{M effectiveTime>\"20261301\"}}");
 }
 
 #[test]
@@ -405,4 +408,51 @@ fn a_dot_ends_an_alternate_code_only_before_an_attribute() {
     same("x#a..1000001", "x#a. . 1000001");
     parses("x#a.b");
     parses("x#1.2");
+}
+
+#[test]
+fn grammatical_forms_found_by_the_differential_check() {
+    // Long memberOf takes no mandatory space, so it may run into ANY.
+    same("memberOf ANY", "memberOfANY");
+    same("refsetContainingAny ANY", "refsetContainingAnyANY");
+    // NOT may follow a keyword across a comment.
+    same("< 1000001 {{D type NOT = syn}}", "< 1000001 {{D typeNOT/* c */= syn}}");
+    // A field projected twice is grammatical but asks for nothing more.
+    semantic_error("^[mapTarget, mapTarget] 200001");
+    // `{{moduleid = *, x = *}}` is a member filter `m oduleid`, refused without ^.
+    semantic_error("1000001 {{moduleid = *, x = *}}");
+    // After another filter no member filter is grammatical.
+    syntax_error("1000001 {{C active = 1}} {{moduleid = *, x = *}}");
+    // Switching operators between attribute sets is grammatical but ambiguous (6.4);
+    // around a group it is not grammatical at all.
+    semantic_error("* : { 1000001 = * }, 1000002 = *, 1000003 = * OR 1000004 = *");
+    syntax_error("* : 1000001 = *, { 1000002 = * } OR { 1000003 = * }");
+}
+
+#[test]
+fn operator_mixes_are_grammatical_only_where_groups_allow() {
+    // `(a, b) AND c OR d AND {g}` derives as `(a, b) AND (c OR d) AND {g}`.
+    semantic_error("* : (1000001 = *, 1000002 = *) AND 1000003 = * OR 1000004 = * AND { 1000005 = * }");
+    // Operators on both sides of a group must agree.
+    syntax_error("* : 1000001 = * AND { 1000002 = * } OR 1000003 = *");
+    // A description filter that also reads as a member filter leaves room for one.
+    semantic_error("1000001 {{moduleid = *}} {{m d = *}}");
+}
+
+#[test]
+fn an_alternate_code_gives_back_an_operator_it_swallowed() {
+    same("x#a-or *", "x#a- OR *");
+    same("x#aAND *", "x#a AND *");
+    // A code that merely ends in the letters stays whole where it can.
+    parses("x#color");
+    parses("x#color OR *");
+    // `^R#x` is memberOf over the identifier `R#x`.
+    same("^R#x", "^ R#x");
+    same("^R-#3", "^ R-#3");
+    same("^RX#3", "^R X#3");
+    same("ANY OR 1000001", "ANYOR 1000001");
+    same("ANY MINUS 1000001", "anyminus 1000001");
+    // Multi-byte text after a caret or a trailing dot is an error, never a panic.
+    syntax_error("^\u{e9}");
+    parses("x#2.|\u{f684}|");
 }

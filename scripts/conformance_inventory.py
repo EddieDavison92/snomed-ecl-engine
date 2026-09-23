@@ -54,18 +54,39 @@ BOUNDARIES = {
 }
 
 
+DIFFERENTIAL = ROOT / "validation/grammar-differential.json"
+
+
+def differential(name):
+    """Per-production coverage from the grammar differential, and the
+    productions it exercised completely. Those count as implemented only if
+    the run left no unexplained disagreement for this grammar."""
+    if not DIFFERENTIAL.exists():
+        return {}, set()
+    run = json.loads(DIFFERENTIAL.read_text(encoding="utf-8"))["grammars"].get(name)
+    if not run:
+        return {}, set()
+    complete = {production for production, seen in run["productions"].items()
+                if seen["generated"] > 0 and seen["covered"] == seen["choices"]}
+    return run["productions"], complete if run.get("unexplained", 1) == 0 else set()
+
+
 def inventory():
     grammars = []
     for name in ("abnf-brief.txt", "abnf-long.txt"):
+        coverage, exhaustive = differential(name)
         path = ROOT / "references/snomed-expression-constraint-language/syntax" / name
         raw = path.read_text(encoding="utf-8-sig").encode("utf-8")
         group = "expressions"
         rules = []
         for rule in re.findall(r"^([A-Za-z][A-Za-z0-9-]*)\s*=", raw.decode("utf-8-sig"), re.M):
             group = BOUNDARIES.get(rule, group)
-            status = "implemented" if rule in IMPLEMENTED else "partial" if rule in PARTIAL else "pending"
+            status = "implemented" if rule in IMPLEMENTED or rule in exhaustive else "partial" if rule in PARTIAL else "pending"
             rules.append({"production": rule, "area": group, "status": status,
-                          "evidence": "tests/lexical.rs" if rule in LEXICAL else "tests/history.rs" if rule in HISTORY else "tests/identifiers.rs" if rule in IDENTIFIERS else "tests/member_filters.rs" if rule in MEMBER_FILTERS else "tests/term_filters.rs" if rule in TERM_FILTERS else "tests/description_filters.rs" if rule in DESCRIPTION_FILTERS else "tests/concept_filters.rs" if rule in CONCEPT_FILTERS else "tests/membership.rs" if rule in MEMBERSHIP else "tests/refinements.rs" if rule in REFINEMENTS else "tests/basic_ecl.rs" if status != "pending" else None})
+                          "evidence": "scripts/grammar_differential.py" if rule in exhaustive else "tests/lexical.rs" if rule in LEXICAL else "tests/history.rs" if rule in HISTORY else "tests/identifiers.rs" if rule in IDENTIFIERS else "tests/member_filters.rs" if rule in MEMBER_FILTERS else "tests/term_filters.rs" if rule in TERM_FILTERS else "tests/description_filters.rs" if rule in DESCRIPTION_FILTERS else "tests/concept_filters.rs" if rule in CONCEPT_FILTERS else "tests/membership.rs" if rule in MEMBERSHIP else "tests/refinements.rs" if rule in REFINEMENTS else "tests/basic_ecl.rs" if status != "pending" else None})
+        for r in rules:
+            if r["production"] in coverage:
+                r["differential"] = coverage[r["production"]]
         assert len({r["production"] for r in rules}) == len(rules)
         grammars.append({"file": name, "sha256_utf8_lf": hashlib.sha256(raw).hexdigest(), "productions": rules})
     return {"version": "2.3", "reference_commit": "b0e07105ae395821bcc953f3d6084b57dc7bef2c",

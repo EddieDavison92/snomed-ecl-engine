@@ -72,12 +72,12 @@ impl Parser<'_> {
         }
     }
     /// A value keyword, which the grammar lets run straight into a following
-    /// `and` or `or`: `true or` may be written `trueor`.
+    /// operator: `true or` may be written `trueor`, `ANY MINUS` `ANYMINUS`.
     pub(super) fn value_keyword(&mut self, word: &str) -> bool {
         let found = self.word();
         let joined = found.len() > word.len()
             && found[..word.len()].eq_ignore_ascii_case(word)
-            && ["and", "or"].iter().any(|op| found[word.len()..].eq_ignore_ascii_case(op));
+            && ["and", "or", "minus"].iter().any(|op| found[word.len()..].eq_ignore_ascii_case(op));
         if found.eq_ignore_ascii_case(word) || joined {
             self.pos += word.len();
             true
@@ -95,7 +95,14 @@ impl Parser<'_> {
         ];
         let name = self.word().to_ascii_lowercase();
         if let Some(keyword) = name.strip_suffix("not") {
-            let after = self.rest()[name.len()..].trim_start_matches([' ', '\t', '\r', '\n']);
+            let mut after = &self.rest()[name.len()..];
+            loop {
+                after = after.trim_start_matches([' ', '\t', '\r', '\n']);
+                match after.strip_prefix("/*").and_then(|c| c.find("*/").map(|end| &c[end + 2..])) {
+                    Some(rest) => after = rest,
+                    None => break,
+                }
+            }
             if KNOWN.contains(&keyword) && after.starts_with('=') {
                 return keyword.to_owned();
             }
@@ -315,10 +322,10 @@ impl Parser<'_> {
             value,
         }))
     }
-    /// One operand of a refinement: an attribute set, a group, or a bracketed
-    /// refinement. Also returns the operator joining an unbracketed attribute
-    /// set, which the enclosing refinement must not mix with another.
-    fn subrefinement(&mut self, depth: usize) -> Result<(Refinement, Option<Boolean>)> {
+    /// One operand of a refinement: an attribute or bracketed attribute set,
+    /// which may also join an attribute set, or else a group or a bracketed
+    /// refinement. The flag says which.
+    fn operand(&mut self, depth: usize) -> Result<(Refinement, bool)> {
         if depth > MAX_DEPTH {
             return Err(self.error(ParseErrorKind::Limit, "Refinement nesting exceeds 64"));
         }
@@ -336,12 +343,12 @@ impl Parser<'_> {
             if !self.take("}") {
                 return Err(self.unexpected());
             }
-            return Ok((Refinement::Group(cardinality, Box::new(inner.0)), None));
+            return Ok((Refinement::Group(cardinality, Box::new(inner)), false));
         }
         self.reset(start.clone());
-        let set = self.attribute_set(depth, false);
-        if set.is_ok() || !self.text[start.pos..].starts_with('(') {
-            return set;
+        let attribute = self.subattribute(depth, false);
+        if attribute.is_ok() || !self.text[start.pos..].starts_with('(') {
+            return attribute.map(|a| (a, true));
         }
         self.reset(start);
         self.take("(");
@@ -350,21 +357,14 @@ impl Parser<'_> {
         if !self.take(")") {
             return Err(self.unexpected());
         }
-        Ok((inner, None))
+        Ok((inner, false))
     }
 
     /// Attributes joined by one operator, as the grammar's `eclAttributeSet`,
-    /// with that operator. An operator is left for the enclosing refinement
-    /// when what follows it is not an attribute, or when it differs from the
-    /// set's own.
-    fn attribute_set(
-        &mut self,
-        depth: usize,
-        grouped: bool,
-    ) -> Result<(Refinement, Option<Boolean>)> {
-        let first = self.subattribute(depth, grouped)?;
+    /// which is all a group or a bracketed attribute set may hold.
+    fn attribute_set(&mut self, depth: usize, grouped: bool) -> Result<Refinement> {
+        let mut parts = vec![self.subattribute(depth, grouped)?];
         let mut operator = None;
-        let mut parts = vec![first];
         loop {
             let before = self.mark();
             let Some(next) = self.boolean()? else { break };
@@ -372,24 +372,14 @@ impl Parser<'_> {
                 self.reset(before);
                 break;
             }
-            match self.subattribute(depth, grouped) {
-                Ok(part) => {
-                    operator = Some(next);
-                    parts.push(part);
-                }
-                Err(_) if !grouped => {
-                    self.reset(before);
-                    break;
-                }
-                Err(error) => return Err(error),
-            }
+            operator = Some(next);
+            parts.push(self.subattribute(depth, grouped)?);
         }
-        let set = match operator {
+        Ok(match operator {
             None => parts.pop().expect("one part"),
             Some(Boolean::And) => Refinement::And(parts),
             Some(_) => Refinement::Or(parts),
-        };
-        Ok((set, operator))
+        })
     }
 
     /// An attribute, or a bracketed attribute set.
@@ -411,7 +401,7 @@ impl Parser<'_> {
         }
         self.reset(start);
         self.take("(");
-        let (inner, _) = self.attribute_set(depth + 1, grouped)?;
+        let inner = self.attribute_set(depth + 1, grouped)?;
         self.ws()?;
         if !self.take(")") {
             return Err(self.unexpected());
@@ -419,41 +409,50 @@ impl Parser<'_> {
         Ok(inner)
     }
 
-    /// Refinement operands joined by one operator.
+    /// Operands joined by operators.
     ///
-    /// The grammar lets an unbracketed attribute set sit inside a refinement
-    /// joined by the other operator, so `a, b OR c` derives both as
-    /// `(a, b) OR c` and as `a, (b OR c)`. 6.4 makes brackets mandatory
-    /// whenever conjunction and disjunction are mixed, so that form is refused
-    /// as ambiguous rather than read one way.
+    /// The grammar nests attribute sets, each with one operator, inside a
+    /// refinement with one operator, and only attributes may join a set. So an
+    /// unbracketed mix of conjunction and disjunction is grammatical exactly
+    /// when every operator beside a group or bracketed refinement agrees; it
+    /// then derives more than one way, as `a, b OR c` reads both `(a, b) OR c`
+    /// and `a, (b OR c)`. 6.4 makes brackets mandatory for such a mix, so it is
+    /// refused as ambiguous rather than read one way. Otherwise it is a syntax
+    /// error.
     pub(super) fn refinement(&mut self, depth: usize) -> Result<Refinement> {
         let start = self.pos;
-        let (first, inner) = self.subrefinement(depth)?;
-        let Some(operator) = self.boolean()? else {
-            return Ok(first);
-        };
-        if operator == Boolean::Minus {
-            return Err(self.error(
-                ParseErrorKind::Syntax,
-                "Exclusion is not a refinement operator",
-            ));
+        let (first, attribute) = self.operand(depth)?;
+        let mut parts = vec![first];
+        let mut attributes = vec![attribute];
+        let mut operators = Vec::new();
+        while let Some(operator) = self.boolean()? {
+            if operator == Boolean::Minus {
+                return Err(self.error(
+                    ParseErrorKind::Syntax,
+                    "Exclusion is not a refinement operator",
+                ));
+            }
+            let (part, attribute) = self.operand(depth)?;
+            parts.push(part);
+            attributes.push(attribute);
+            operators.push(operator);
         }
-        let mut mixed = inner.is_some_and(|op| op != operator);
-        let (second, inner) = self.subrefinement(depth)?;
-        mixed |= inner.is_some_and(|op| op != operator);
-        let mut parts = vec![first, second];
-        while let Some(next) = self.boolean()? {
-            if next != operator {
+        let Some(&operator) = operators.first() else {
+            return Ok(parts.pop().expect("one part"));
+        };
+        if operators.iter().any(|&op| op != operator) {
+            let mut beside_groups = operators
+                .iter()
+                .enumerate()
+                .filter(|&(i, _)| !attributes[i] || !attributes[i + 1])
+                .map(|(_, &op)| op);
+            let first = beside_groups.next();
+            if beside_groups.any(|op| Some(op) != first) {
                 return Err(self.error(
                     ParseErrorKind::Syntax,
                     "Mixed refinement operators require parentheses",
                 ));
             }
-            let (part, inner) = self.subrefinement(depth)?;
-            mixed |= inner.is_some_and(|op| op != operator);
-            parts.push(part);
-        }
-        if mixed {
             self.refuse(
                 start,
                 "Conjunction and disjunction together require brackets (6.4)",
