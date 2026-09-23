@@ -29,7 +29,7 @@ parser.add_argument("--output", required=True, type=Path)
 parser.add_argument("--ladder", type=Path, default=Path("validation/expansion-ladder.json"))
 parser.add_argument("--binary", default="target/linux-core/release/snomed-ecl-engine")
 parser.add_argument("--store-directory", type=Path,
-                    default=Path("data/compact-store/v1-ecl-completion"))
+                    default=Path("data/index"))
 parser.add_argument("--snowstorm",
                     help="Loopback full Snowstorm URL; requires a completed MAIN import")
 parser.add_argument("--snowstorm-report", type=Path,

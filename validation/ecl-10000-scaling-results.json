@@ -2,14 +2,14 @@
   "edition": "http://snomed.info/sct/83821000000107/version/20260826",
   "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
   "corpus_sha256": "b3e5b35afc0882598cf2efb0c218c918bbe345f8d85bb87131bcb1018eaf8848",
-  "container_sha256": "dc9e6793951f3384f73fdaa25fe904033be595eb4d1ad657047d554d470c8ef0",
-  "recorded_at": "2026-09-20T13:25:28.104038+00:00",
+  "container_sha256": "ce0cceb3762f757c79f31af109ff54a18968a432beaa8b990cb6a4a379f665a6",
+  "recorded_at": "2026-09-23T13:12:23.656777+00:00",
   "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31",
-  "binary_sha256": "405ae31ea347d1bc4e988f44e0b24f67f809486a4815e03a9306ba72ecf44c32",
-  "example_source_sha256": "e9318077d67c20a0aacdecc8f69b96fb6c525f05003345e2cce865431e0e2b2e",
-  "runner_source_sha256": "4f55333910a8a1bdff06415c699554d7239087fe3c26aa28cf15d075a534dc62",
-  "baseline_sha256": "b62fe6151fb90ed58d44c434f80c7d61459a61a1396dc59b39246f8fdf430e56",
-  "git_head": "a29ef5ced22378cf4d5a95c472b751793e7aff34",
+  "binary_sha256": "2d13fdb1d2c7aa97d3165519a2f64ac0c316fcd797b35bdb5fbe160135334cda",
+  "example_source_sha256": "9ade63f9ff47bfa3061a31ee554680e66c7d5f96ce993999ddce4aecd5d3d22a",
+  "runner_source_sha256": "d43ecadb8b91f47f061a29d997264ce6b1dc145223dc0e6df56d716ee0a68920",
+  "baseline_sha256": "5fe2710664af0b52a4e61a2f4c77e9c435a80dd203c8b681ec41aad58b58b6d1",
+  "git_head": "2236bb25e4f8543accc3eb96a7018a40c03837e7",
   "docker_info": {
     "NCPU": 24,
     "MemTotal": 16728469504,
@@ -23,1071 +23,1071 @@
   "runs": [
     {
       "cpu_max": "100000 100000",
-      "cpu_stat": "nr_periods 1471\nnr_throttled 905\nthrottled_time 7442995900\n",
+      "cpu_stat": "nr_periods 205\nnr_throttled 1\nthrottled_time 3149500\n",
       "memory_events": "0\n",
       "memory_max": "536870912\n",
-      "memory_peak_bytes": 297676800,
+      "memory_peak_bytes": 289796096,
       "samples": 5,
       "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
-      "store_open_ms": 910.804619,
+      "store_open_ms": 331.269642,
       "verified_complete_sets": 10000,
       "workers": 1,
       "batch_wall": {
         "samples_ms": [
-          23602.694177,
-          24118.149559999998,
-          22587.120628,
-          22545.778817,
-          25065.994286999998
+          2065.929695,
+          1962.387675,
+          1977.5312330000002,
+          1965.230282,
+          2006.487808
         ],
-        "median_ms": 23602.694177,
-        "p95_ms": 25065.994286999998
+        "median_ms": 1977.5312330000002,
+        "p95_ms": 2065.929695
       },
       "request": {
-        "median_ms": 0.9171665,
-        "p95_ms": 10.010496,
+        "median_ms": 0.004532,
+        "p95_ms": 0.902218,
         "sample_count": 50000
       },
       "evaluation": {
-        "median_ms": 0.9138725000000001,
-        "p95_ms": 10.00826,
+        "median_ms": 0.003043,
+        "p95_ms": 0.9008240000000001,
         "sample_count": 50000
       },
       "categories": {
         "ancestors": {
-          "median_ms": 0.7832195,
-          "p95_ms": 0.998632,
+          "median_ms": 0.0041245,
+          "p95_ms": 0.012884000000000001,
           "sample_count": 1600
         },
         "ancestors-or-self": {
-          "median_ms": 0.7842065,
-          "p95_ms": 0.970926,
+          "median_ms": 0.0038145,
+          "p95_ms": 0.011526999999999999,
           "sample_count": 500
         },
         "attribute-cardinality": {
-          "median_ms": 0.934428,
-          "p95_ms": 1.2214800000000001,
+          "median_ms": 0.0036160000000000003,
+          "p95_ms": 0.00832,
           "sample_count": 1600
         },
         "attribute-equality": {
-          "median_ms": 0.7840070000000001,
-          "p95_ms": 0.973971,
+          "median_ms": 0.004158,
+          "p95_ms": 0.009385000000000001,
           "sample_count": 1600
         },
         "attribute-inequality": {
-          "median_ms": 0.7849315,
-          "p95_ms": 0.997825,
+          "median_ms": 0.0039570000000000004,
+          "p95_ms": 0.009165,
           "sample_count": 1600
         },
         "bottom": {
-          "median_ms": 0.7876295,
-          "p95_ms": 0.983756,
+          "median_ms": 0.005634500000000001,
+          "p95_ms": 0.015187,
           "sample_count": 1600
         },
         "children": {
-          "median_ms": 0.7798700000000001,
-          "p95_ms": 0.972607,
+          "median_ms": 0.001813,
+          "p95_ms": 0.003015,
           "sample_count": 1600
         },
         "children-or-self": {
-          "median_ms": 0.777081,
-          "p95_ms": 0.950069,
+          "median_ms": 0.0016920000000000001,
+          "p95_ms": 0.0027719999999999997,
           "sample_count": 500
         },
         "concept-active": {
-          "median_ms": 0.7826695,
-          "p95_ms": 0.961785,
+          "median_ms": 0.0026,
+          "p95_ms": 0.004960999999999999,
           "sample_count": 500
         },
         "concept-effective-time": {
-          "median_ms": 0.7839769999999999,
-          "p95_ms": 1.027055,
+          "median_ms": 0.0027625,
+          "p95_ms": 0.0046559999999999995,
           "sample_count": 500
         },
         "concept-filter": {
-          "median_ms": 0.0045405,
-          "p95_ms": 0.008624999999999999,
+          "median_ms": 0.0022965,
+          "p95_ms": 0.00366,
           "sample_count": 1600
         },
         "concept-module": {
-          "median_ms": 1.5609035,
-          "p95_ms": 1.8815279999999999,
+          "median_ms": 0.0063265,
+          "p95_ms": 0.011268,
           "sample_count": 500
         },
         "concrete": {
-          "median_ms": 0.8814580000000001,
-          "p95_ms": 1.073142,
+          "median_ms": 0.10108600000000001,
+          "p95_ms": 0.116548,
           "sample_count": 1600
         },
         "descendants": {
-          "median_ms": 0.7791815,
-          "p95_ms": 0.955081,
+          "median_ms": 0.001879,
+          "p95_ms": 0.004456,
           "sample_count": 1600
         },
         "description-all-active-states": {
-          "median_ms": 0.7916045,
-          "p95_ms": 0.976745,
+          "median_ms": 0.003689,
+          "p95_ms": 0.007359,
           "sample_count": 500
         },
         "description-dialect": {
-          "median_ms": 0.7889485,
-          "p95_ms": 1.00047,
+          "median_ms": 0.0051475,
+          "p95_ms": 0.010229,
           "sample_count": 500
         },
         "description-filter": {
-          "median_ms": 0.007826,
-          "p95_ms": 0.03218,
+          "median_ms": 0.003536,
+          "p95_ms": 0.0056289999999999995,
           "sample_count": 1600
         },
         "description-type-negation": {
-          "median_ms": 0.7856215,
-          "p95_ms": 0.9971540000000001,
+          "median_ms": 0.003712,
+          "p95_ms": 0.0074800000000000005,
           "sample_count": 500
         },
         "dotted": {
-          "median_ms": 1.4547815,
-          "p95_ms": 1.75966,
+          "median_ms": 0.0034029999999999998,
+          "p95_ms": 0.007474,
           "sample_count": 1600
         },
         "exclusion": {
-          "median_ms": 1.6584025000000002,
-          "p95_ms": 3.81336,
+          "median_ms": 0.017571499999999997,
+          "p95_ms": 2.915464,
           "sample_count": 1600
         },
         "group": {
-          "median_ms": 0.7862009999999999,
-          "p95_ms": 0.983862,
+          "median_ms": 0.004464999999999999,
+          "p95_ms": 0.009786999999999999,
           "sample_count": 1600
         },
         "group-cardinality": {
-          "median_ms": 0.9327044999999999,
-          "p95_ms": 1.244937,
+          "median_ms": 0.0038835,
+          "p95_ms": 0.008812,
           "sample_count": 1600
         },
         "group-conjunction": {
-          "median_ms": 0.935365,
-          "p95_ms": 1.243618,
+          "median_ms": 0.0055815,
+          "p95_ms": 0.012386,
           "sample_count": 500
         },
         "history": {
-          "median_ms": 10.617870499999999,
-          "p95_ms": 19.783997,
+          "median_ms": 0.022585,
+          "p95_ms": 0.034981000000000005,
           "sample_count": 1600
         },
         "history-maximum": {
-          "median_ms": 26.0934195,
-          "p95_ms": 39.45568,
+          "median_ms": 0.026834,
+          "p95_ms": 0.038804000000000005,
           "sample_count": 500
         },
         "history-moderate": {
-          "median_ms": 19.628821000000002,
-          "p95_ms": 31.010563,
+          "median_ms": 0.0244645,
+          "p95_ms": 0.035512999999999996,
           "sample_count": 500
         },
         "intersection": {
-          "median_ms": 1.6613594999999999,
-          "p95_ms": 3.847983,
+          "median_ms": 0.0172265,
+          "p95_ms": 2.822466,
           "sample_count": 1600
         },
         "member-projection": {
-          "median_ms": 6.624618,
-          "p95_ms": 10.470223,
+          "median_ms": 0.058055999999999996,
+          "p95_ms": 0.074415,
           "sample_count": 1600
         },
         "membership": {
-          "median_ms": 1.2110465000000001,
-          "p95_ms": 1.463778,
+          "median_ms": 0.4121435,
+          "p95_ms": 0.48395000000000005,
           "sample_count": 1600
         },
         "nested-hierarchy": {
-          "median_ms": 0.7994835,
-          "p95_ms": 1.675184,
+          "median_ms": 0.002163,
+          "p95_ms": 0.004866,
           "sample_count": 1600
         },
         "nested-value": {
-          "median_ms": 1.5630600000000001,
-          "p95_ms": 1.920428,
+          "median_ms": 0.004634999999999999,
+          "p95_ms": 0.028807,
           "sample_count": 1600
         },
         "parents": {
-          "median_ms": 0.7786455000000001,
-          "p95_ms": 0.968158,
+          "median_ms": 0.002131,
+          "p95_ms": 0.003422,
           "sample_count": 1600
         },
         "parents-or-self": {
-          "median_ms": 0.7792595,
-          "p95_ms": 0.9909770000000001,
+          "median_ms": 0.00201,
+          "p95_ms": 0.003335,
           "sample_count": 500
         },
         "refinement-conjunction": {
-          "median_ms": 0.936185,
-          "p95_ms": 1.205304,
+          "median_ms": 0.0056775,
+          "p95_ms": 0.011392000000000001,
           "sample_count": 500
         },
         "refinement-disjunction": {
-          "median_ms": 0.9373910000000001,
-          "p95_ms": 1.219272,
+          "median_ms": 0.005677,
+          "p95_ms": 0.011946,
           "sample_count": 500
         },
         "refset-containing": {
-          "median_ms": 0.09710650000000001,
-          "p95_ms": 0.155728,
+          "median_ms": 0.069288,
+          "p95_ms": 0.096809,
           "sample_count": 500
         },
         "reverse": {
-          "median_ms": 6.894682,
-          "p95_ms": 8.959787,
+          "median_ms": 0.0034249999999999997,
+          "p95_ms": 0.0057350000000000005,
           "sample_count": 1600
         },
         "reverse-cardinality": {
-          "median_ms": 6.8841155,
-          "p95_ms": 8.688095,
+          "median_ms": 0.003575,
+          "p95_ms": 0.005658,
           "sample_count": 500
         },
         "strict-descendants": {
-          "median_ms": 0.777617,
-          "p95_ms": 0.9907710000000001,
+          "median_ms": 0.001825,
+          "p95_ms": 0.0038449999999999995,
           "sample_count": 500
         },
         "term-prefix": {
-          "median_ms": 1.1482085,
-          "p95_ms": 2.860886,
+          "median_ms": 0.9605764999999999,
+          "p95_ms": 5.614014,
           "sample_count": 500
         },
         "term-set": {
-          "median_ms": 1.1579245,
-          "p95_ms": 2.8699149999999998,
+          "median_ms": 0.956851,
+          "p95_ms": 5.640479,
           "sample_count": 500
         },
         "term-wildcard": {
-          "median_ms": 1.1464195,
-          "p95_ms": 4.234374,
+          "median_ms": 0.9397895,
+          "p95_ms": 6.217442,
           "sample_count": 500
         },
         "top": {
-          "median_ms": 0.853202,
-          "p95_ms": 2.9165319999999997,
+          "median_ms": 0.0052425,
+          "p95_ms": 0.013648,
           "sample_count": 1600
         },
         "union": {
-          "median_ms": 1.6585189999999999,
-          "p95_ms": 3.832228,
+          "median_ms": 0.01759,
+          "p95_ms": 2.9179269999999997,
           "sample_count": 1600
         },
         "wildcard-name": {
-          "median_ms": 0.936008,
-          "p95_ms": 1.269844,
+          "median_ms": 0.1520085,
+          "p95_ms": 0.242582,
           "sample_count": 1600
         }
       },
-      "expressions_per_second": 423.68044618163333,
+      "expressions_per_second": 5056.810144449435,
       "cpus": 1,
       "memory_mib": 512,
-      "raw_report": "data\\validation\\ecl-10000-scaling-results-1-1cpu-512m-1workers.json",
-      "raw_sha256": "80774de2d9222d2618ffc0fc3a2ef2c6d84beb0fcd35be47818e4d4174b90602",
+      "raw_report": "data\\validation\\scaling-1-1cpu-512m-1workers.json",
+      "raw_sha256": "58a5651d7ece13b6e3513a01316ec27a29f7afacf2de1f701c6c646bc2eb1887",
       "exit_code": 0,
       "throughput_speedup_vs_first": 1.0
     },
     {
       "cpu_max": "400000 100000",
-      "cpu_stat": "nr_periods 1475\nnr_throttled 0\nthrottled_time 0\n",
+      "cpu_stat": "nr_periods 202\nnr_throttled 0\nthrottled_time 0\n",
       "memory_events": "0\n",
       "memory_max": "1073741824\n",
-      "memory_peak_bytes": 287506432,
+      "memory_peak_bytes": 289947648,
       "samples": 5,
       "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
-      "store_open_ms": 868.642098,
+      "store_open_ms": 346.01458,
       "verified_complete_sets": 10000,
       "workers": 1,
       "batch_wall": {
         "samples_ms": [
-          23159.724433,
-          22468.633535999998,
-          22951.625708000003,
-          23963.524619,
-          27324.299054
+          2012.2309710000002,
+          1960.771995,
+          2062.786902,
+          2227.151108,
+          2192.813513
         ],
-        "median_ms": 23159.724433,
-        "p95_ms": 27324.299054
+        "median_ms": 2062.786902,
+        "p95_ms": 2227.151108
       },
       "request": {
-        "median_ms": 0.9601905,
-        "p95_ms": 9.940252000000001,
+        "median_ms": 0.00529,
+        "p95_ms": 0.94467,
         "sample_count": 50000
       },
       "evaluation": {
-        "median_ms": 0.9563600000000001,
-        "p95_ms": 9.936077,
+        "median_ms": 0.003705,
+        "p95_ms": 0.942627,
         "sample_count": 50000
       },
       "categories": {
         "ancestors": {
-          "median_ms": 0.798216,
-          "p95_ms": 1.103166,
+          "median_ms": 0.0049655,
+          "p95_ms": 0.014552,
           "sample_count": 1600
         },
         "ancestors-or-self": {
-          "median_ms": 0.7972105,
-          "p95_ms": 1.1278830000000002,
+          "median_ms": 0.0044315,
+          "p95_ms": 0.013178,
           "sample_count": 500
         },
         "attribute-cardinality": {
-          "median_ms": 0.97465,
-          "p95_ms": 1.476297,
+          "median_ms": 0.0041545,
+          "p95_ms": 0.010074,
           "sample_count": 1600
         },
         "attribute-equality": {
-          "median_ms": 0.7984985,
-          "p95_ms": 1.157365,
+          "median_ms": 0.004817500000000001,
+          "p95_ms": 0.011148,
           "sample_count": 1600
         },
         "attribute-inequality": {
-          "median_ms": 0.800385,
-          "p95_ms": 1.0822029999999998,
+          "median_ms": 0.004612,
+          "p95_ms": 0.012012,
           "sample_count": 1600
         },
         "bottom": {
-          "median_ms": 0.802022,
-          "p95_ms": 1.147047,
+          "median_ms": 0.0066045,
+          "p95_ms": 0.017529,
           "sample_count": 1600
         },
         "children": {
-          "median_ms": 0.794773,
-          "p95_ms": 1.091447,
+          "median_ms": 0.002091,
+          "p95_ms": 0.0038580000000000003,
           "sample_count": 1600
         },
         "children-or-self": {
-          "median_ms": 0.7896135,
-          "p95_ms": 1.105397,
+          "median_ms": 0.002129,
+          "p95_ms": 0.003676,
           "sample_count": 500
         },
         "concept-active": {
-          "median_ms": 0.7988375,
-          "p95_ms": 1.0704259999999999,
+          "median_ms": 0.0030369999999999998,
+          "p95_ms": 0.0065320000000000005,
           "sample_count": 500
         },
         "concept-effective-time": {
-          "median_ms": 0.800508,
-          "p95_ms": 1.1834090000000002,
+          "median_ms": 0.0031904999999999998,
+          "p95_ms": 0.006169,
           "sample_count": 500
         },
         "concept-filter": {
-          "median_ms": 0.005094,
-          "p95_ms": 0.010917000000000001,
+          "median_ms": 0.002626,
+          "p95_ms": 0.004652,
           "sample_count": 1600
         },
         "concept-module": {
-          "median_ms": 1.5948419999999999,
-          "p95_ms": 2.437462,
+          "median_ms": 0.0073160000000000005,
+          "p95_ms": 0.016057,
           "sample_count": 500
         },
         "concrete": {
-          "median_ms": 0.9017295000000001,
-          "p95_ms": 1.197978,
+          "median_ms": 0.1019645,
+          "p95_ms": 0.125641,
           "sample_count": 1600
         },
         "descendants": {
-          "median_ms": 0.7909809999999999,
-          "p95_ms": 1.082918,
+          "median_ms": 0.0021969999999999997,
+          "p95_ms": 0.005347,
           "sample_count": 1600
         },
         "description-all-active-states": {
-          "median_ms": 0.804568,
-          "p95_ms": 1.065304,
+          "median_ms": 0.0042205,
+          "p95_ms": 0.009769000000000002,
           "sample_count": 500
         },
         "description-dialect": {
-          "median_ms": 0.8062125,
-          "p95_ms": 1.1767329999999998,
+          "median_ms": 0.0059229999999999994,
+          "p95_ms": 0.013369,
           "sample_count": 500
         },
         "description-filter": {
-          "median_ms": 0.0086355,
-          "p95_ms": 0.035071,
+          "median_ms": 0.0038970000000000003,
+          "p95_ms": 0.006875,
           "sample_count": 1600
         },
         "description-type-negation": {
-          "median_ms": 0.8038164999999999,
-          "p95_ms": 1.154408,
+          "median_ms": 0.004143999999999999,
+          "p95_ms": 0.008527,
           "sample_count": 500
         },
         "dotted": {
-          "median_ms": 1.487281,
-          "p95_ms": 2.064486,
+          "median_ms": 0.004030000000000001,
+          "p95_ms": 0.008738,
           "sample_count": 1600
         },
         "exclusion": {
-          "median_ms": 1.6984905000000001,
-          "p95_ms": 3.9979760000000004,
+          "median_ms": 0.020215499999999997,
+          "p95_ms": 2.986135,
           "sample_count": 1600
         },
         "group": {
-          "median_ms": 0.7986455,
-          "p95_ms": 1.121143,
+          "median_ms": 0.0051615,
+          "p95_ms": 0.011201,
           "sample_count": 1600
         },
         "group-cardinality": {
-          "median_ms": 0.9696775,
-          "p95_ms": 1.40196,
+          "median_ms": 0.004431999999999999,
+          "p95_ms": 0.010848,
           "sample_count": 1600
         },
         "group-conjunction": {
-          "median_ms": 0.969184,
-          "p95_ms": 1.3812570000000002,
+          "median_ms": 0.0063035,
+          "p95_ms": 0.015474000000000002,
           "sample_count": 500
         },
         "history": {
-          "median_ms": 11.2746925,
-          "p95_ms": 16.90043,
+          "median_ms": 0.0234715,
+          "p95_ms": 0.060427,
           "sample_count": 1600
         },
         "history-maximum": {
-          "median_ms": 27.2509455,
-          "p95_ms": 39.342189,
+          "median_ms": 0.027635,
+          "p95_ms": 0.069593,
           "sample_count": 500
         },
         "history-moderate": {
-          "median_ms": 20.626216,
-          "p95_ms": 30.688189,
+          "median_ms": 0.025772500000000004,
+          "p95_ms": 0.058689,
           "sample_count": 500
         },
         "intersection": {
-          "median_ms": 1.7149655,
-          "p95_ms": 3.847429,
+          "median_ms": 0.020707,
+          "p95_ms": 2.9138200000000003,
           "sample_count": 1600
         },
         "member-projection": {
-          "median_ms": 7.2730475,
-          "p95_ms": 11.26845,
+          "median_ms": 0.060489,
+          "p95_ms": 0.102977,
           "sample_count": 1600
         },
         "membership": {
-          "median_ms": 1.2292265,
-          "p95_ms": 1.6438780000000002,
+          "median_ms": 0.4185685,
+          "p95_ms": 0.507408,
           "sample_count": 1600
         },
         "nested-hierarchy": {
-          "median_ms": 0.8361795000000001,
-          "p95_ms": 1.742517,
+          "median_ms": 0.0024835,
+          "p95_ms": 0.005903,
           "sample_count": 1600
         },
         "nested-value": {
-          "median_ms": 1.588656,
-          "p95_ms": 2.2037459999999998,
+          "median_ms": 0.0054150000000000005,
+          "p95_ms": 0.032476,
           "sample_count": 1600
         },
         "parents": {
-          "median_ms": 0.79269,
-          "p95_ms": 1.0882830000000001,
+          "median_ms": 0.0023970000000000003,
+          "p95_ms": 0.004135,
           "sample_count": 1600
         },
         "parents-or-self": {
-          "median_ms": 0.7968664999999999,
-          "p95_ms": 1.2413809999999998,
+          "median_ms": 0.00234,
+          "p95_ms": 0.0038770000000000002,
           "sample_count": 500
         },
         "refinement-conjunction": {
-          "median_ms": 0.984407,
-          "p95_ms": 1.452959,
+          "median_ms": 0.006359500000000001,
+          "p95_ms": 0.015002,
           "sample_count": 500
         },
         "refinement-disjunction": {
-          "median_ms": 0.982082,
-          "p95_ms": 1.4399490000000001,
+          "median_ms": 0.006355,
+          "p95_ms": 0.014629,
           "sample_count": 500
         },
         "refset-containing": {
-          "median_ms": 0.10572300000000001,
-          "p95_ms": 0.190898,
+          "median_ms": 0.08232700000000001,
+          "p95_ms": 0.11793100000000001,
           "sample_count": 500
         },
         "reverse": {
-          "median_ms": 6.9946435000000005,
-          "p95_ms": 8.240226999999999,
+          "median_ms": 0.003925,
+          "p95_ms": 0.006992,
           "sample_count": 1600
         },
         "reverse-cardinality": {
-          "median_ms": 6.994894,
-          "p95_ms": 8.576497,
+          "median_ms": 0.004073500000000001,
+          "p95_ms": 0.006667,
           "sample_count": 500
         },
         "strict-descendants": {
-          "median_ms": 0.792945,
-          "p95_ms": 1.0283200000000001,
+          "median_ms": 0.00212,
+          "p95_ms": 0.004593,
           "sample_count": 500
         },
         "term-prefix": {
-          "median_ms": 1.1992605,
-          "p95_ms": 2.350835,
+          "median_ms": 1.0088845,
+          "p95_ms": 6.0743979999999995,
           "sample_count": 500
         },
         "term-set": {
-          "median_ms": 1.203302,
-          "p95_ms": 2.535931,
+          "median_ms": 1.01271,
+          "p95_ms": 6.00296,
           "sample_count": 500
         },
         "term-wildcard": {
-          "median_ms": 1.197626,
-          "p95_ms": 2.3999249999999996,
+          "median_ms": 1.0219269999999998,
+          "p95_ms": 5.876942,
           "sample_count": 500
         },
         "top": {
-          "median_ms": 0.8825735,
-          "p95_ms": 2.969546,
+          "median_ms": 0.005979,
+          "p95_ms": 0.016701,
           "sample_count": 1600
         },
         "union": {
-          "median_ms": 1.7205560000000002,
-          "p95_ms": 3.924311,
+          "median_ms": 0.020573,
+          "p95_ms": 3.034696,
           "sample_count": 1600
         },
         "wildcard-name": {
-          "median_ms": 0.9726295,
-          "p95_ms": 1.390201,
+          "median_ms": 0.14570899999999998,
+          "p95_ms": 0.29574799999999996,
           "sample_count": 1600
         }
       },
-      "expressions_per_second": 431.7840667288392,
+      "expressions_per_second": 4847.810498653244,
       "cpus": 4,
       "memory_mib": 1024,
-      "raw_report": "data\\validation\\ecl-10000-scaling-results-2-4cpu-1024m-1workers.json",
-      "raw_sha256": "6e1a7e2873b54797ed08232f4e60347e97af8742990cdd1f59663f47dfe655d2",
+      "raw_report": "data\\validation\\scaling-2-4cpu-1024m-1workers.json",
+      "raw_sha256": "e4836be29d8687522079db50ccc4496aabb8244600760e57718bdbf275bbc96a",
       "exit_code": 0,
-      "throughput_speedup_vs_first": 1.0191267277502154
+      "throughput_speedup_vs_first": 0.9586696672752095
     },
     {
       "cpu_max": "200000 100000",
-      "cpu_stat": "nr_periods 838\nnr_throttled 716\nthrottled_time 7954440600\n",
+      "cpu_stat": "nr_periods 162\nnr_throttled 0\nthrottled_time 0\n",
       "memory_events": "0\n",
       "memory_max": "536870912\n",
-      "memory_peak_bytes": 299356160,
+      "memory_peak_bytes": 299417600,
       "samples": 5,
       "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
-      "store_open_ms": 1024.793474,
+      "store_open_ms": 369.269654,
       "verified_complete_sets": 10000,
       "workers": 2,
       "batch_wall": {
         "samples_ms": [
-          14391.979773,
-          12297.387924,
-          12191.704597,
-          12084.13835,
-          12701.295682
+          1313.782549,
+          1465.963865,
+          1508.7948230000002,
+          1323.392036,
+          1477.435189
         ],
-        "median_ms": 12297.387924,
-        "p95_ms": 14391.979773
+        "median_ms": 1465.963865,
+        "p95_ms": 1508.7948230000002
       },
       "request": {
-        "median_ms": 1.0196985,
-        "p95_ms": 10.722337,
+        "median_ms": 0.00493,
+        "p95_ms": 1.04399,
         "sample_count": 50000
       },
       "evaluation": {
-        "median_ms": 1.0156155,
-        "p95_ms": 10.718377,
+        "median_ms": 0.003356,
+        "p95_ms": 1.0415610000000002,
         "sample_count": 50000
       },
       "categories": {
         "ancestors": {
-          "median_ms": 0.7918625,
-          "p95_ms": 1.320943,
+          "median_ms": 0.0046630000000000005,
+          "p95_ms": 0.01448,
           "sample_count": 1600
         },
         "ancestors-or-self": {
-          "median_ms": 0.7862275,
-          "p95_ms": 1.309839,
+          "median_ms": 0.0040385,
+          "p95_ms": 0.011919,
           "sample_count": 500
         },
         "attribute-cardinality": {
-          "median_ms": 1.057527,
-          "p95_ms": 1.761617,
+          "median_ms": 0.003909999999999999,
+          "p95_ms": 0.008971999999999999,
           "sample_count": 1600
         },
         "attribute-equality": {
-          "median_ms": 0.7948445,
-          "p95_ms": 1.3255299999999999,
+          "median_ms": 0.004559,
+          "p95_ms": 0.010326,
           "sample_count": 1600
         },
         "attribute-inequality": {
-          "median_ms": 0.793854,
-          "p95_ms": 1.351834,
+          "median_ms": 0.0043525,
+          "p95_ms": 0.00964,
           "sample_count": 1600
         },
         "bottom": {
-          "median_ms": 0.793365,
-          "p95_ms": 1.305441,
+          "median_ms": 0.0061955,
+          "p95_ms": 0.016038,
           "sample_count": 1600
         },
         "children": {
-          "median_ms": 0.7860754999999999,
-          "p95_ms": 1.339549,
+          "median_ms": 0.001993,
+          "p95_ms": 0.003365,
           "sample_count": 1600
         },
         "children-or-self": {
-          "median_ms": 0.7867895,
-          "p95_ms": 1.310335,
+          "median_ms": 0.001935,
+          "p95_ms": 0.0031750000000000003,
           "sample_count": 500
         },
         "concept-active": {
-          "median_ms": 0.791486,
-          "p95_ms": 1.393537,
+          "median_ms": 0.002901,
+          "p95_ms": 0.005006,
           "sample_count": 500
         },
         "concept-effective-time": {
-          "median_ms": 0.795876,
-          "p95_ms": 1.330317,
+          "median_ms": 0.0030800000000000003,
+          "p95_ms": 0.0053809999999999995,
           "sample_count": 500
         },
         "concept-filter": {
-          "median_ms": 0.004619,
-          "p95_ms": 0.010557,
+          "median_ms": 0.0024965,
+          "p95_ms": 0.003909,
           "sample_count": 1600
         },
         "concept-module": {
-          "median_ms": 1.5833485,
-          "p95_ms": 2.3775760000000004,
+          "median_ms": 0.0071319999999999995,
+          "p95_ms": 0.0123,
           "sample_count": 500
         },
         "concrete": {
-          "median_ms": 0.8899509999999999,
-          "p95_ms": 1.43071,
+          "median_ms": 0.10246000000000001,
+          "p95_ms": 0.120256,
           "sample_count": 1600
         },
         "descendants": {
-          "median_ms": 0.7853485,
-          "p95_ms": 1.3159020000000001,
+          "median_ms": 0.002069,
+          "p95_ms": 0.004636,
           "sample_count": 1600
         },
         "description-all-active-states": {
-          "median_ms": 0.793134,
-          "p95_ms": 1.374107,
+          "median_ms": 0.0040195,
+          "p95_ms": 0.007847,
           "sample_count": 500
         },
         "description-dialect": {
-          "median_ms": 0.7932000000000001,
-          "p95_ms": 1.394081,
+          "median_ms": 0.005678,
+          "p95_ms": 0.011661000000000001,
           "sample_count": 500
         },
         "description-filter": {
-          "median_ms": 0.0079875,
-          "p95_ms": 0.016901,
+          "median_ms": 0.003718,
+          "p95_ms": 0.0058969999999999995,
           "sample_count": 1600
         },
         "description-type-negation": {
-          "median_ms": 0.794778,
-          "p95_ms": 1.266294,
+          "median_ms": 0.0039380000000000005,
+          "p95_ms": 0.007485,
           "sample_count": 500
         },
         "dotted": {
-          "median_ms": 1.4916885,
-          "p95_ms": 2.565973,
+          "median_ms": 0.0037275,
+          "p95_ms": 0.009033,
           "sample_count": 1600
         },
         "exclusion": {
-          "median_ms": 1.7275755,
-          "p95_ms": 4.266908,
+          "median_ms": 0.019718,
+          "p95_ms": 2.9869839999999996,
           "sample_count": 1600
         },
         "group": {
-          "median_ms": 0.7916595,
-          "p95_ms": 1.289325,
+          "median_ms": 0.004891,
+          "p95_ms": 0.010628,
           "sample_count": 1600
         },
         "group-cardinality": {
-          "median_ms": 1.0616539999999999,
-          "p95_ms": 1.727574,
+          "median_ms": 0.0041955,
+          "p95_ms": 0.009516,
           "sample_count": 1600
         },
         "group-conjunction": {
-          "median_ms": 1.068435,
-          "p95_ms": 1.676549,
+          "median_ms": 0.0060495,
+          "p95_ms": 0.013845,
           "sample_count": 500
         },
         "history": {
-          "median_ms": 11.3968945,
-          "p95_ms": 21.998823,
+          "median_ms": 0.023322000000000002,
+          "p95_ms": 0.037138000000000004,
           "sample_count": 1600
         },
         "history-maximum": {
-          "median_ms": 28.4410695,
-          "p95_ms": 47.067405,
+          "median_ms": 0.0279135,
+          "p95_ms": 0.04366,
           "sample_count": 500
         },
         "history-moderate": {
-          "median_ms": 21.017357500000003,
-          "p95_ms": 36.029028999999994,
+          "median_ms": 0.0253005,
+          "p95_ms": 0.034820000000000004,
           "sample_count": 500
         },
         "intersection": {
-          "median_ms": 1.734792,
-          "p95_ms": 4.123547,
+          "median_ms": 0.0194215,
+          "p95_ms": 2.884663,
           "sample_count": 1600
         },
         "member-projection": {
-          "median_ms": 6.582424,
-          "p95_ms": 13.520483,
+          "median_ms": 0.0587375,
+          "p95_ms": 0.07847,
           "sample_count": 1600
         },
         "membership": {
-          "median_ms": 1.2269744999999999,
-          "p95_ms": 1.942248,
+          "median_ms": 0.41574350000000004,
+          "p95_ms": 0.479786,
           "sample_count": 1600
         },
         "nested-hierarchy": {
-          "median_ms": 0.829016,
-          "p95_ms": 1.86008,
+          "median_ms": 0.0023534999999999997,
+          "p95_ms": 0.005276,
           "sample_count": 1600
         },
         "nested-value": {
-          "median_ms": 1.5961395,
-          "p95_ms": 2.683782,
+          "median_ms": 0.0050795,
+          "p95_ms": 0.032676,
           "sample_count": 1600
         },
         "parents": {
-          "median_ms": 0.782529,
-          "p95_ms": 1.3272430000000002,
+          "median_ms": 0.0022955,
+          "p95_ms": 0.0038229999999999996,
           "sample_count": 1600
         },
         "parents-or-self": {
-          "median_ms": 0.7824605,
-          "p95_ms": 1.327478,
+          "median_ms": 0.002215,
+          "p95_ms": 0.003585,
           "sample_count": 500
         },
         "refinement-conjunction": {
-          "median_ms": 1.0657735,
-          "p95_ms": 1.764379,
+          "median_ms": 0.0061625,
+          "p95_ms": 0.012368,
           "sample_count": 500
         },
         "refinement-disjunction": {
-          "median_ms": 1.0568819999999999,
-          "p95_ms": 1.683535,
+          "median_ms": 0.006252499999999999,
+          "p95_ms": 0.012806999999999999,
           "sample_count": 500
         },
         "refset-containing": {
-          "median_ms": 0.115385,
-          "p95_ms": 0.183165,
+          "median_ms": 0.082623,
+          "p95_ms": 0.10627400000000001,
           "sample_count": 500
         },
         "reverse": {
-          "median_ms": 7.1079115,
-          "p95_ms": 11.394356,
+          "median_ms": 0.0037324999999999997,
+          "p95_ms": 0.006188,
           "sample_count": 1600
         },
         "reverse-cardinality": {
-          "median_ms": 7.1501395,
-          "p95_ms": 12.304312,
+          "median_ms": 0.003928,
+          "p95_ms": 0.006083,
           "sample_count": 500
         },
         "strict-descendants": {
-          "median_ms": 0.792773,
-          "p95_ms": 1.344535,
+          "median_ms": 0.0019760000000000003,
+          "p95_ms": 0.0036710000000000002,
           "sample_count": 500
         },
         "term-prefix": {
-          "median_ms": 1.2474955,
-          "p95_ms": 3.099528,
+          "median_ms": 1.570557,
+          "p95_ms": 8.388734,
           "sample_count": 500
         },
         "term-set": {
-          "median_ms": 1.2712505000000003,
-          "p95_ms": 3.2827680000000004,
+          "median_ms": 1.4936395,
+          "p95_ms": 9.022624,
           "sample_count": 500
         },
         "term-wildcard": {
-          "median_ms": 1.2511,
-          "p95_ms": 2.859636,
+          "median_ms": 1.5476485,
+          "p95_ms": 8.152282,
           "sample_count": 500
         },
         "top": {
-          "median_ms": 0.8888275,
-          "p95_ms": 3.182433,
+          "median_ms": 0.005673,
+          "p95_ms": 0.015082,
           "sample_count": 1600
         },
         "union": {
-          "median_ms": 1.7267000000000001,
-          "p95_ms": 4.246926,
+          "median_ms": 0.019216999999999998,
+          "p95_ms": 2.9885010000000003,
           "sample_count": 1600
         },
         "wildcard-name": {
-          "median_ms": 1.0720005,
-          "p95_ms": 1.753728,
+          "median_ms": 0.17548350000000001,
+          "p95_ms": 0.275715,
           "sample_count": 1600
         }
       },
-      "expressions_per_second": 813.1808203336954,
+      "expressions_per_second": 6821.450541006344,
       "cpus": 2,
       "memory_mib": 512,
-      "raw_report": "data\\validation\\ecl-10000-scaling-results-3-2cpu-512m-2workers.json",
-      "raw_sha256": "e3107dd671403d1972ea81c608c07e549afd03ee1353d1b95c9ec791c3d8c554",
+      "raw_report": "data\\validation\\scaling-3-2cpu-512m-2workers.json",
+      "raw_sha256": "2823b41884dafb41bed0cb5ea092473fe4176f2a37da504fbafbd668c3b048fc",
       "exit_code": 0,
-      "throughput_speedup_vs_first": 1.9193258212938196
+      "throughput_speedup_vs_first": 1.3489631499204793
     },
     {
       "cpu_max": "400000 100000",
-      "cpu_stat": "nr_periods 408\nnr_throttled 344\nthrottled_time 7170579100\n",
+      "cpu_stat": "nr_periods 202\nnr_throttled 0\nthrottled_time 0\n",
       "memory_events": "0\n",
       "memory_max": "1073741824\n",
-      "memory_peak_bytes": 311771136,
+      "memory_peak_bytes": 313954304,
       "samples": 5,
       "scope": "One shared NumericStore. Dynamic assignment, one evaluation per worker at a time. No result cache. Each timed request parses ECL and materialises its complete result. Request latency excludes queueing, transport, code serialisation and result destruction. Batch time includes dispatch, thread start/join and destruction. Complete sets checked before timings. Filesystem caches retained; index hash read before open. Peak includes verification, OS cache and measurement storage.",
-      "store_open_ms": 989.3132489999999,
+      "store_open_ms": 314.042218,
       "verified_complete_sets": 10000,
       "workers": 4,
       "batch_wall": {
         "samples_ms": [
-          5906.486752,
-          5847.779061,
-          5873.441188,
-          5860.987102,
-          5910.8996210000005
+          2272.574772,
+          2301.461142,
+          1958.007899,
+          2498.046255,
+          2124.687539
         ],
-        "median_ms": 5873.441188,
-        "p95_ms": 5910.8996210000005
+        "median_ms": 2272.574772,
+        "p95_ms": 2498.046255
       },
       "request": {
-        "median_ms": 0.950399,
-        "p95_ms": 9.459885,
+        "median_ms": 0.006689,
+        "p95_ms": 2.2760749999999996,
         "sample_count": 50000
       },
       "evaluation": {
-        "median_ms": 0.946942,
-        "p95_ms": 9.453389,
+        "median_ms": 0.004873,
+        "p95_ms": 2.274594,
         "sample_count": 50000
       },
       "categories": {
         "ancestors": {
-          "median_ms": 0.7554225,
-          "p95_ms": 1.255156,
+          "median_ms": 0.006431,
+          "p95_ms": 0.019091,
           "sample_count": 1600
         },
         "ancestors-or-self": {
-          "median_ms": 0.7498425,
-          "p95_ms": 1.2415919999999998,
+          "median_ms": 0.005896,
+          "p95_ms": 0.016568000000000003,
           "sample_count": 500
         },
         "attribute-cardinality": {
-          "median_ms": 0.9942065,
-          "p95_ms": 1.464636,
+          "median_ms": 0.00506,
+          "p95_ms": 0.01396,
           "sample_count": 1600
         },
         "attribute-equality": {
-          "median_ms": 0.7470095000000001,
-          "p95_ms": 1.1844100000000002,
+          "median_ms": 0.005967,
+          "p95_ms": 0.015785,
           "sample_count": 1600
         },
         "attribute-inequality": {
-          "median_ms": 0.7546755,
-          "p95_ms": 1.252979,
+          "median_ms": 0.005723,
+          "p95_ms": 0.016443000000000003,
           "sample_count": 1600
         },
         "bottom": {
-          "median_ms": 0.7565744999999999,
-          "p95_ms": 1.271268,
+          "median_ms": 0.008391000000000001,
+          "p95_ms": 0.022654999999999998,
           "sample_count": 1600
         },
         "children": {
-          "median_ms": 0.7454465,
-          "p95_ms": 1.2748080000000002,
+          "median_ms": 0.0025845,
+          "p95_ms": 0.004920000000000001,
           "sample_count": 1600
         },
         "children-or-self": {
-          "median_ms": 0.7433715,
-          "p95_ms": 1.072773,
+          "median_ms": 0.0025515,
+          "p95_ms": 0.0044340000000000004,
           "sample_count": 500
         },
         "concept-active": {
-          "median_ms": 0.749144,
-          "p95_ms": 1.183442,
+          "median_ms": 0.003927,
+          "p95_ms": 0.008027,
           "sample_count": 500
         },
         "concept-effective-time": {
-          "median_ms": 0.7478505,
-          "p95_ms": 1.2345030000000001,
+          "median_ms": 0.0039455,
+          "p95_ms": 0.008476,
           "sample_count": 500
         },
         "concept-filter": {
-          "median_ms": 0.003868,
-          "p95_ms": 0.010144,
+          "median_ms": 0.0032205000000000003,
+          "p95_ms": 0.005847,
           "sample_count": 1600
         },
         "concept-module": {
-          "median_ms": 1.5080144999999998,
-          "p95_ms": 2.170033,
+          "median_ms": 0.010128499999999999,
+          "p95_ms": 0.019559999999999998,
           "sample_count": 500
         },
         "concrete": {
-          "median_ms": 0.851268,
-          "p95_ms": 1.242827,
+          "median_ms": 0.10533,
+          "p95_ms": 0.145715,
           "sample_count": 1600
         },
         "descendants": {
-          "median_ms": 0.746898,
-          "p95_ms": 1.297084,
+          "median_ms": 0.002742,
+          "p95_ms": 0.007482,
           "sample_count": 1600
         },
         "description-all-active-states": {
-          "median_ms": 0.7473295,
-          "p95_ms": 1.242547,
+          "median_ms": 0.005378999999999999,
+          "p95_ms": 0.012661,
           "sample_count": 500
         },
         "description-dialect": {
-          "median_ms": 0.752904,
-          "p95_ms": 1.1672589999999998,
+          "median_ms": 0.007687,
+          "p95_ms": 0.016893,
           "sample_count": 500
         },
         "description-filter": {
-          "median_ms": 0.006285,
-          "p95_ms": 0.01675,
+          "median_ms": 0.004816,
+          "p95_ms": 0.009613,
           "sample_count": 1600
         },
         "description-type-negation": {
-          "median_ms": 0.7576955,
-          "p95_ms": 1.297689,
+          "median_ms": 0.005327,
+          "p95_ms": 0.014436999999999998,
           "sample_count": 500
         },
         "dotted": {
-          "median_ms": 1.462749,
-          "p95_ms": 2.2848289999999998,
+          "median_ms": 0.004997,
+          "p95_ms": 0.013205,
           "sample_count": 1600
         },
         "exclusion": {
-          "median_ms": 1.623353,
-          "p95_ms": 4.173336,
+          "median_ms": 0.0245135,
+          "p95_ms": 3.388099,
           "sample_count": 1600
         },
         "group": {
-          "median_ms": 0.7537445,
-          "p95_ms": 1.235445,
+          "median_ms": 0.006273,
+          "p95_ms": 0.016368,
           "sample_count": 1600
         },
         "group-cardinality": {
-          "median_ms": 1.0023689999999998,
-          "p95_ms": 1.5202639999999998,
+          "median_ms": 0.0054465,
+          "p95_ms": 0.013195,
           "sample_count": 1600
         },
         "group-conjunction": {
-          "median_ms": 1.0032075,
-          "p95_ms": 1.631653,
+          "median_ms": 0.0077765,
+          "p95_ms": 0.019358999999999998,
           "sample_count": 500
         },
         "history": {
-          "median_ms": 10.094052000000001,
-          "p95_ms": 19.426804,
+          "median_ms": 0.027535999999999998,
+          "p95_ms": 0.086397,
           "sample_count": 1600
         },
         "history-maximum": {
-          "median_ms": 26.938384,
-          "p95_ms": 39.968614,
+          "median_ms": 0.032811999999999994,
+          "p95_ms": 0.088699,
           "sample_count": 500
         },
         "history-moderate": {
-          "median_ms": 19.881729,
-          "p95_ms": 31.343771999999998,
+          "median_ms": 0.0293515,
+          "p95_ms": 0.086339,
           "sample_count": 500
         },
         "intersection": {
-          "median_ms": 1.6123725,
-          "p95_ms": 4.0656740000000005,
+          "median_ms": 0.0255455,
+          "p95_ms": 3.2638350000000003,
           "sample_count": 1600
         },
         "member-projection": {
-          "median_ms": 5.528271499999999,
-          "p95_ms": 9.599487,
+          "median_ms": 0.068725,
+          "p95_ms": 0.13689400000000002,
           "sample_count": 1600
         },
         "membership": {
-          "median_ms": 1.1866839999999999,
-          "p95_ms": 1.6883110000000001,
+          "median_ms": 0.427056,
+          "p95_ms": 0.601641,
           "sample_count": 1600
         },
         "nested-hierarchy": {
-          "median_ms": 0.7772655,
-          "p95_ms": 1.633386,
+          "median_ms": 0.003029,
+          "p95_ms": 0.0073100000000000005,
           "sample_count": 1600
         },
         "nested-value": {
-          "median_ms": 1.5115634999999998,
-          "p95_ms": 2.265149,
+          "median_ms": 0.006794,
+          "p95_ms": 0.036643999999999996,
           "sample_count": 1600
         },
         "parents": {
-          "median_ms": 0.744173,
-          "p95_ms": 1.252656,
+          "median_ms": 0.003007,
+          "p95_ms": 0.005370000000000001,
           "sample_count": 1600
         },
         "parents-or-self": {
-          "median_ms": 0.744936,
-          "p95_ms": 1.282313,
+          "median_ms": 0.0028959999999999997,
+          "p95_ms": 0.005293,
           "sample_count": 500
         },
         "refinement-conjunction": {
-          "median_ms": 0.9935935,
-          "p95_ms": 1.4858770000000001,
+          "median_ms": 0.008064499999999999,
+          "p95_ms": 0.018623,
           "sample_count": 500
         },
         "refinement-disjunction": {
-          "median_ms": 1.0087045,
-          "p95_ms": 1.572406,
+          "median_ms": 0.007983500000000001,
+          "p95_ms": 0.016149,
           "sample_count": 500
         },
         "refset-containing": {
-          "median_ms": 0.113032,
-          "p95_ms": 0.184025,
+          "median_ms": 0.1016945,
+          "p95_ms": 0.157696,
           "sample_count": 500
         },
         "reverse": {
-          "median_ms": 7.0119965,
-          "p95_ms": 10.345777,
+          "median_ms": 0.0047585,
+          "p95_ms": 0.009488,
           "sample_count": 1600
         },
         "reverse-cardinality": {
-          "median_ms": 7.023598,
-          "p95_ms": 10.940992,
+          "median_ms": 0.0048874999999999995,
+          "p95_ms": 0.009336,
           "sample_count": 500
         },
         "strict-descendants": {
-          "median_ms": 0.7477605,
-          "p95_ms": 1.213982,
+          "median_ms": 0.0026939999999999998,
+          "p95_ms": 0.00687,
           "sample_count": 500
         },
         "term-prefix": {
-          "median_ms": 1.2058024999999999,
-          "p95_ms": 3.070611,
+          "median_ms": 4.122280999999999,
+          "p95_ms": 22.909473,
           "sample_count": 500
         },
         "term-set": {
-          "median_ms": 1.2021205000000001,
-          "p95_ms": 3.509549,
+          "median_ms": 4.337400499999999,
+          "p95_ms": 21.481645,
           "sample_count": 500
         },
         "term-wildcard": {
-          "median_ms": 1.2049615,
-          "p95_ms": 3.237707,
+          "median_ms": 3.9442065,
+          "p95_ms": 19.175152,
           "sample_count": 500
         },
         "top": {
-          "median_ms": 0.8320084999999999,
-          "p95_ms": 3.142149,
+          "median_ms": 0.007709499999999999,
+          "p95_ms": 0.021537,
           "sample_count": 1600
         },
         "union": {
-          "median_ms": 1.6125255,
-          "p95_ms": 4.011487,
+          "median_ms": 0.0261615,
+          "p95_ms": 3.3910009999999997,
           "sample_count": 1600
         },
         "wildcard-name": {
-          "median_ms": 0.99928,
-          "p95_ms": 1.4111200000000002,
+          "median_ms": 0.276312,
+          "p95_ms": 0.474924,
           "sample_count": 1600
         }
       },
-      "expressions_per_second": 1702.5794044607023,
+      "expressions_per_second": 4400.2952612201225,
       "cpus": 4,
       "memory_mib": 1024,
-      "raw_report": "data\\validation\\ecl-10000-scaling-results-4-4cpu-1024m-4workers.json",
-      "raw_sha256": "09394d319d04657d0315aa8fd8f3fa32241736e9a6241d95bf0aaba77b728b40",
+      "raw_report": "data\\validation\\scaling-4-4cpu-1024m-4workers.json",
+      "raw_sha256": "afe037cba4801127996627c87a9355ddd1a97daa967b2523a49ee6aee62e0ed0",
       "exit_code": 0,
-      "throughput_speedup_vs_first": 4.018546099554475
+      "throughput_speedup_vs_first": 0.8701721313484686
     }
   ],
   "scope": "Sequential container runs on the same host; no competing task containers. One shared index per process. All CPU and RAM limits apply to the whole container, with no extra swap. Warm library calls, no JSONL or HTTP transport. Do not compare absolute times directly with the earlier CLI corpus benchmark. Filesystem caches retained. Host is not exclusively reserved. No full-ECL or serverless cold-start claim."

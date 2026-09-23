@@ -23,12 +23,18 @@ struct Corpus {
     archive_sha256: String,
     cases: Vec<Case>,
 }
-#[derive(Deserialize)]
 struct Expected {
-    id: String,
     status: String,
     total: usize,
     sha256: String,
+}
+/// A baseline row. Unsupported or failed rows in a report carry no digest.
+#[derive(Deserialize)]
+struct Row {
+    id: String,
+    status: String,
+    total: Option<usize>,
+    sha256: Option<String>,
 }
 #[derive(Deserialize)]
 struct Baseline {
@@ -36,7 +42,9 @@ struct Baseline {
     container_sha256: String,
     edition: String,
     archive_sha256: String,
-    result_digests: Vec<Expected>,
+    /// A corpus report names these `results`; each row carries the same fields.
+    #[serde(alias = "results")]
+    result_digests: Vec<Row>,
 }
 #[derive(Serialize)]
 struct Measurement {
@@ -169,11 +177,22 @@ fn main() -> Result<()> {
         "Changed RF2 archive"
     );
     let expected_count = baseline.result_digests.len();
+    // Every case must have a whole recorded set, or its answers cannot be checked.
     let expected: BTreeMap<_, _> = baseline
         .result_digests
         .into_iter()
-        .map(|row| (row.id.clone(), row))
-        .collect();
+        .map(|row| match (row.total, row.sha256) {
+            (Some(total), Some(sha256)) => Ok((
+                row.id,
+                Expected {
+                    status: row.status,
+                    total,
+                    sha256,
+                },
+            )),
+            _ => anyhow::bail!("Baseline has no complete result for {}", row.id),
+        })
+        .collect::<Result<_>>()?;
     ensure!(
         expected.len() == expected_count && expected.len() == corpus.cases.len(),
         "Case count differs"

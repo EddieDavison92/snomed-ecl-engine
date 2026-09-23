@@ -11,7 +11,7 @@ import subprocess
 import unicodedata
 import zipfile
 
-from benchmark_ecl import ROOT, IMAGE, digest
+from common import ROOT, IMAGE, digest
 from index_artifact import read_manifest
 from check_membership_rf2 import rows
 

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 
-from benchmark_ecl import ROOT, IMAGE
+from common import ROOT, IMAGE
 from index_artifact import read_manifest
 
 

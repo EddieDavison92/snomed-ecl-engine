@@ -13,7 +13,7 @@ import time
 import urllib.parse
 import urllib.error
 
-from benchmark_ecl import ROOT, IMAGE, digest, http, resource_snapshot, summary
+from common import ROOT, IMAGE, digest, http, resource_snapshot, summary
 from index_artifact import manifest_bytes, read_manifest
 
 
@@ -126,7 +126,7 @@ def main():
     parser.add_argument("--samples", type=int, default=5)
     parser.add_argument("--memory-mib", type=int, default=256, help="Container memory and swap limit; record larger semantic-index runs separately")
     parser.add_argument("--store-volume", help="Optional Docker volume holding core.bin and manifest.json")
-    parser.add_argument("--store-directory", type=Path, default=Path("data/compact-store/v1"), help="Store within this checkout; also supplies the manifest when using a Docker volume")
+    parser.add_argument("--store-directory", type=Path, default=Path("data/index"), help="Index directory within this checkout; also supplies the manifest when using a Docker volume")
     parser.add_argument("--snowstorm", help="Optional loopback full Snowstorm URL; requires a completed, release-matched MAIN import")
     parser.add_argument("--lite", help="Optional loopback Snowstorm Lite FHIR base URL, for example http://127.0.0.1:18081/fhir")
     parser.add_argument("--import-id", help="Completed local Snowstorm import job ID")
