@@ -105,7 +105,7 @@ pub struct Found {
 /// Directories searched when `stores` is given no path: the working directory
 /// and the conventional index location beneath it.
 pub fn default_roots() -> Vec<PathBuf> {
-    vec![PathBuf::from("."), PathBuf::from("data/compact-store")]
+    vec![PathBuf::from("."), PathBuf::from("data")]
 }
 
 /// Lists indexes directly inside each root, and each root that is itself an
