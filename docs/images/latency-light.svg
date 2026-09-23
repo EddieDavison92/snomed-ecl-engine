@@ -5,8 +5,8 @@
 <text x="24" y="74" font-size="12.5" font-weight="600" fill="#0b0b0b">Warm count — total only</text>
 <text x="138" y="108.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
 <text x="138" y="121.0" font-size="10" text-anchor="end" fill="#52514e">1 CPU, 256 MiB</text>
-<path d="M150,98.0 H225.05989385898408 A4,4 0 0 1 229.05989385898408,102.0 V116.0 A4,4 0 0 1 225.05989385898408,120.0 H150 Z" fill="#2a78d6"/>
-<text x="239.05989385898408" y="113.0" font-size="12" font-weight="600" fill="#0b0b0b">2.20 ms</text>
+<path d="M150,98.0 H174.0303260045489 A4,4 0 0 1 178.0303260045489,102.0 V116.0 A4,4 0 0 1 174.0303260045489,120.0 H150 Z" fill="#2a78d6"/>
+<text x="188.0303260045489" y="113.0" font-size="12" font-weight="600" fill="#0b0b0b">0.78 ms</text>
 <text x="138" y="150.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
 <text x="138" y="163.0" font-size="10" text-anchor="end" fill="#52514e">1 CPU, 2 GiB</text>
 <path d="M150,140.0 H309.8695981804397 A4,4 0 0 1 313.8695981804397,144.0 V158.0 A4,4 0 0 1 309.8695981804397,162.0 H150 Z" fill="#eb6834"/>
@@ -19,8 +19,8 @@
 <text x="24" y="248" font-size="12.5" font-weight="600" fill="#0b0b0b">Complete enumeration — every code returned</text>
 <text x="138" y="282.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
 <text x="138" y="295.0" font-size="10" text-anchor="end" fill="#52514e">1 CPU, 256 MiB</text>
-<path d="M150,272.0 H175.82032967032967 A4,4 0 0 1 179.82032967032967,276.0 V290.0 A4,4 0 0 1 175.82032967032967,294.0 H150 Z" fill="#2a78d6"/>
-<text x="189.82032967032967" y="287.0" font-size="12" font-weight="600" fill="#0b0b0b">2.29 ms</text>
+<path d="M150,272.0 H158.11043956043957 A4,4 0 0 1 162.11043956043957,276.0 V290.0 A4,4 0 0 1 158.11043956043957,294.0 H150 Z" fill="#2a78d6"/>
+<text x="172.11043956043957" y="287.0" font-size="12" font-weight="600" fill="#0b0b0b">0.93 ms</text>
 <text x="138" y="324.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
 <text x="138" y="337.0" font-size="10" text-anchor="end" fill="#52514e">1 CPU, 2 GiB</text>
 <path d="M150,314.0 H239.1071428571429 A4,4 0 0 1 243.1071428571429,318.0 V332.0 A4,4 0 0 1 239.1071428571429,336.0 H150 Z" fill="#eb6834"/>

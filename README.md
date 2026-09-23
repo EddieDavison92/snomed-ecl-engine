@@ -24,8 +24,8 @@ Here, the terminology is one file and the query engine is a function call.
 ### What it is designed for
 
 - **Serverless functions.** You only pay for compute when a query arrives. The
-  query-only executable is 2.13 MiB, under a megabyte gzipped, and the index is
-  a single file.
+  query-only executable is 2.55 MiB, 1.10 MiB gzipped, and the index is a
+  single file.
 - **A small VPS.** One CPU and a few hundred megabytes serve the whole UK
   release, so an ECL API does not need a cluster behind it.
 - **Portable devices.** The index sits beside your application and needs no
@@ -43,7 +43,7 @@ deployment application depends on it and owns the hosting.
 ## What it is good for
 
 Here is the number that matters. Counting how many concepts an expression
-selects takes 2.20 ms. Getting every one of those concepts back takes 2.29 ms.
+selects takes 0.78 ms. Getting every one of those concepts back takes 0.93 ms.
 
 Those are nearly the same, and for a reason: evaluating the expression already
 built the whole set, so handing it to you is a write. An HTTP API has to
@@ -51,18 +51,18 @@ serialise those concepts and page them back, and that cost grows with the answer
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/expansion-scaling-dark.svg">
-  <img alt="Cost of a complete expansion against the number of concepts returned, both axes logarithmic. This engine runs from 2 ms at one concept to 0.4 s at 839,000. Snowstorm asked for the first time runs from 31 ms to 30 s; once cached, from 28 ms to 2 s." src="docs/images/expansion-scaling-light.svg">
+  <img alt="Cost of a complete expansion against the number of concepts returned, both axes logarithmic. This engine runs from 0.8 ms at one concept to 0.4 s at 839,000. Snowstorm asked for the first time runs from 31 ms to 30 s; once cached, from 28 ms to 2 s." src="docs/images/expansion-scaling-light.svg">
 </picture>
 
-Ask for ten concepts and a terminology server is a few times slower. Ask for
-839,000 and this engine takes 0.4 seconds against Snowstorm's 30 the first time,
-or 2 seconds once Snowstorm has cached it. This engine has no result cache and
+Ask for ten concepts and Snowstorm takes 35 ms the first time against 0.8 ms
+here. Ask for 839,000 and this engine takes 0.4 seconds against Snowstorm's 30
+the first time, or 2 seconds once Snowstorm has cached it. This engine has no result cache and
 does not need one.
 
 None of which is an argument for replacing a terminology server. Snowstorm does
-a great deal this does not, and the only job both do is expanding ECL. Two paths
-here are slower than on either server: the first description-filter query in a
-process, and history supplements. Both are
+a great deal this does not, and the only job both do is expanding ECL. One path
+here can be slower than on either server: the first description filter over a
+broad focus in a process, which loads the whole description index. It is
 [open work](docs/roadmap.md). Where the comparison is and is not fair is
 [set out in full](docs/benchmarks.md#is-this-a-fair-comparison).
 
@@ -70,10 +70,11 @@ So expanding a definition in full stops being something you do sparingly.
 
 - **Expand hundreds of codelists at once.** Turning a directory of static code
   lists into ECL definitions means expanding every one in full and diffing it
-  against the original. At about 2 ms each, 274 lists take under a second.
+  against the original. At about a millisecond each, 274 lists take a fraction
+  of a second.
 - **Check a codelist against a new release.** `diff` runs one expression across
   two indexes and tells you what the release added and removed.
-- **Put it in CI.** A two-megabyte binary and an index file let a pipeline
+- **Put it in CI.** A binary of under 3 MiB and an index file let a pipeline
   assert that every definition in your repository still resolves.
 
 ### Authoring with an assistant
@@ -98,7 +99,7 @@ Against the UK Monolith release, 1.15 million concepts.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/footprint-dark.svg">
-  <img alt="Index on disk: this engine 290 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.0, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
+  <img alt="Index on disk: this engine 389 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.1, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
 </picture>
 
 Speed only counts if the answers match, so the corpus compares complete code
@@ -110,9 +111,9 @@ answered 587 and reported 320 as using features it does not implement.
 
 | | |
 |---|---:|
-| Query-only Linux executable | 2.13 MiB (0.91 MiB gzipped) |
-| 10,000-expression corpus, one CPU and 256 MiB | 35.05 s per warm batch |
-| Same corpus, four CPUs and four workers | 5.87 s |
+| Query-only Linux executable | 2.55 MiB (1.10 MiB gzipped) |
+| 10,000-expression corpus, one CPU and 320 MiB | 10.27 s per warm batch |
+| Same corpus, four CPUs and four workers | 2.15 s |
 | Open a packed index | 177 ms |
 | Open an uncompressed index | 94 ms |
 
