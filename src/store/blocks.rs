@@ -5,9 +5,9 @@ use std::io;
 const MAGIC: &[u8; 8] = b"SNZST001";
 const HEADER: u64 = 16;
 const ENTRY: u64 = 36;
-/// zstd level for packing. Decoding costs the same at any level; packing the
-/// UK edition at 15 takes under a minute and gives within 2% of level 19's
-/// size, which takes five. Levels below 15 leave about a sixth more bytes.
+/// zstd level for packing. Decoding costs the same at any level. On one
+/// thread, level 15 packs the UK edition in 2 minutes to within 1% of level
+/// 19's size, which takes 5; level 12 and below leave about 45% more bytes.
 const LEVEL: i32 = 15;
 
 #[derive(Debug)]

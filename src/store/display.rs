@@ -26,8 +26,10 @@ const SAMPLE_BYTES: usize = 100 * DICTIONARY_BYTES;
 /// Too few labels to train on, as in test fixtures: frames then use no dictionary.
 #[cfg(feature = "import")]
 const MINIMUM_SAMPLES: usize = 1000;
+/// Labels are short, so higher levels find little more: 12 packed the UK
+/// labels smallest, in under half the time of 19.
 #[cfg(feature = "import")]
-const LEVEL: i32 = 19;
+const LEVEL: i32 = 12;
 
 pub struct DisplayStore {
     /// Reads labels without a lock when the section is uncompressed.
