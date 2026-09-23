@@ -250,7 +250,12 @@ impl SearchIndex {
         })
     }
 
-    pub(super) fn open(section: &Section, manifest: &SearchManifest) -> Result<Self> {
+    /// Opens the section, refusing postings outside `concepts` ordinals.
+    pub(super) fn open(
+        section: &Section,
+        manifest: &SearchManifest,
+        concepts: usize,
+    ) -> Result<Self> {
         let (mut input, version) = Input::open_versions(section, &[MAGIC_V1, MAGIC])?;
         let text_offsets = input.u32s()?;
         let text = input.bytes()?;
@@ -271,6 +276,15 @@ impl SearchIndex {
         ensure!(
             index.word_count() == manifest.words && index.posting_count() == manifest.postings,
             "Search index differs from manifest"
+        );
+        // Lists are sorted, so each one's last posting is its largest.
+        ensure!(
+            index
+                .posting_offsets
+                .windows(2)
+                .filter(|w| w[0] < w[1])
+                .all(|w| (index.postings[w[1] as usize - 1] as usize) < concepts),
+            "Search posting outside the concept table"
         );
         Ok(index)
     }
@@ -321,11 +335,20 @@ mod tests {
 
     #[test]
     fn splits_and_folds_terms_into_searchable_words() {
-        assert_eq!(split("Type 2 diabetes mellitus"), ["type", "2", "diabetes", "mellitus"]);
+        assert_eq!(
+            split("Type 2 diabetes mellitus"),
+            ["type", "2", "diabetes", "mellitus"]
+        );
         // Punctuation separates; it never becomes part of a word.
-        assert_eq!(split("COPD - chronic/obstructive"), ["copd", "chronic", "obstructive"]);
+        assert_eq!(
+            split("COPD - chronic/obstructive"),
+            ["copd", "chronic", "obstructive"]
+        );
         // Accents fold, so a query typed without them still matches.
-        assert_eq!(split("\u{00c5}str\u{00f6}m's na\u{00ef}ve"), ["astrom", "s", "naive"]);
+        assert_eq!(
+            split("\u{00c5}str\u{00f6}m's na\u{00ef}ve"),
+            ["astrom", "s", "naive"]
+        );
         assert!(split("   -- ").is_empty());
     }
 
@@ -373,31 +396,37 @@ mod tests {
         assert_eq!(manifest.words, built.word_count());
 
         let source = Section::for_test(&path, manifest.bytes, manifest.sha256.clone());
-        let reopened = SearchIndex::open(&source, &manifest).unwrap();
+        let reopened = SearchIndex::open(&source, &manifest, 100).unwrap();
         assert_eq!(reopened.word_count(), built.word_count());
         assert_eq!(reopened.matches("asthma"), built.matches("asthma"));
         reopened.validate_order().unwrap();
 
-        // A manifest that disagrees with the bytes is refused.
+        // A posting past the last concept is refused.
+        assert!(SearchIndex::open(&source, &manifest, 4).is_err());
+        // So is a manifest that disagrees with the bytes.
         let wrong = SearchManifest {
             words: manifest.words + 1,
             ..manifest
         };
-        assert!(SearchIndex::open(&source, &wrong).is_err());
+        assert!(SearchIndex::open(&source, &wrong, 100).is_err());
     }
 }
 
 /// Opens the section on first use, like descriptions and member tables.
 #[derive(Debug, Default)]
 pub struct SearchStore {
-    source: Option<(Section, SearchManifest)>,
+    source: Option<(Section, SearchManifest, usize)>,
     loaded: OnceLock<std::result::Result<SearchIndex, String>>,
 }
 
 impl SearchStore {
-    pub(super) fn lazy(source: &IndexSource, metadata: SearchManifest) -> Result<Self> {
+    pub(super) fn lazy(
+        source: &IndexSource,
+        metadata: SearchManifest,
+        concepts: usize,
+    ) -> Result<Self> {
         Ok(Self {
-            source: Some((source.section("search.bin")?, metadata)),
+            source: Some((source.section("search.bin")?, metadata, concepts)),
             loaded: OnceLock::new(),
         })
     }
@@ -406,8 +435,8 @@ impl SearchStore {
             return Ok(None);
         }
         match self.loaded.get_or_init(|| {
-            let (section, manifest) = self.source.as_ref().unwrap();
-            SearchIndex::open(section, manifest).map_err(|e| e.to_string())
+            let (section, manifest, concepts) = self.source.as_ref().unwrap();
+            SearchIndex::open(section, manifest, *concepts).map_err(|e| e.to_string())
         }) {
             Ok(index) => Ok(Some(index)),
             Err(message) => bail!("Search index: {message}"),

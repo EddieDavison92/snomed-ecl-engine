@@ -524,7 +524,7 @@ impl NumericStore {
             search: manifest
                 .search
                 .as_ref()
-                .map(|m| SearchStore::lazy(&source, m.clone()))
+                .map(|m| SearchStore::lazy(&source, m.clone(), count))
                 .transpose()?
                 .unwrap_or_default(),
             history: manifest
