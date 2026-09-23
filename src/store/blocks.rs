@@ -141,11 +141,14 @@ pub(super) fn encode(
     output.seek(SeekFrom::Start(start + HEADER + count as u64 * ENTRY))?;
     // Blocks are independent, so a batch is compressed across all cores and
     // written in order; the output does not depend on the thread count.
+    // A batch holds its raw blocks and up to twice that encoded, kept under
+    // 64 MiB whatever the block size and core count.
     let threads = std::thread::available_parallelism().map_or(1, |n| n.get());
+    let per_batch = (64 * 1024 * 1024 / (3 * block_bytes as usize)).clamp(1, threads * 16);
     let mut remaining = length;
     while remaining > 0 {
         let mut batch = Vec::new();
-        while batch.len() < threads * 16 && remaining > 0 {
+        while batch.len() < per_batch && remaining > 0 {
             let size = remaining.min(block_bytes as u64) as usize;
             let mut block = vec![0; size];
             input.read_exact(&mut block)?;

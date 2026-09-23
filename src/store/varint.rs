@@ -36,7 +36,8 @@ pub(super) fn encode(offsets: &[u32], values: &[u32]) -> Result<Vec<u8>> {
 /// Decodes the lists `encode` wrote for `offsets`, checking every byte is used.
 pub(super) fn decode(offsets: &[u32], bytes: &[u8]) -> Result<Vec<u32>> {
     let total = offsets.last().copied().unwrap_or(0) as usize;
-    let mut values = Vec::with_capacity(total);
+    // Every value takes at least a byte, so a damaged offset cannot reserve more.
+    let mut values = Vec::with_capacity(total.min(bytes.len()));
     let mut at = 0;
     for bounds in offsets.windows(2) {
         ensure!(bounds[0] <= bounds[1], "Invalid list offsets");
