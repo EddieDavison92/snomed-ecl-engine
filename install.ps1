@@ -41,7 +41,9 @@ try {
     Remove-Item -Recurse -Force $tmp
 }
 
+# A profile may have no user Path at all.
 $path = [Environment]::GetEnvironmentVariable('Path', 'User')
+if (-not $path) { $path = '' }
 if (($path -split ';') -notcontains $dir) {
     [Environment]::SetEnvironmentVariable('Path', ($path.TrimEnd(';') + ";$dir").TrimStart(';'), 'User')
     Write-Output "Added $dir to your user PATH; open a new terminal to use it."
