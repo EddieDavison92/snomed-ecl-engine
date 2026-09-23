@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    # Built on Debian bookworm, so binaries run on glibc 2.36 or later.
+    container: rust:1.93.1-bookworm
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ICU and the GitHub CLI
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq libicu-dev pkg-config gh >/dev/null
+      - name: Check the tag matches Cargo.toml
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME does not match version $version"; exit 1; }
+      - name: Test
+        run: cargo test --locked --all-features
+      - name: Build three executables
+        run: |
+          cargo build --locked --release --no-default-features --target-dir target/query
+          cargo build --locked --release --target-dir target/default
+          cargo build --locked --release --features unicode --target-dir target/unicode
+      - name: Package
+        run: |
+          set -eu
+          mkdir dist
+          for variant in query default unicode; do
+            name="snomed-ecl-engine-$GITHUB_REF_NAME-x86_64-linux-gnu-$variant"
+            mkdir "$name"
+            cp "target/$variant/release/snomed-ecl-engine" README.md LICENSE-OGL LICENSE-MIT "$name/"
+            tar -czf "dist/$name.tar.gz" "$name"
+          done
+          cd dist && sha256sum *.tar.gz > SHA256SUMS
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag

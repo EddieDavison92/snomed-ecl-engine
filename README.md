@@ -241,3 +241,15 @@ ZIP importer for a query-only build.
 - [Roadmap](docs/roadmap.md) lists the open work.
 - [Developer setup](docs/setup.md) covers building, releases and comparison servers.
 - [SKILL.md](SKILL.md) is the agent workflow.
+
+## Licence
+
+The code is licensed under either the [Open Government Licence v3.0](LICENSE-OGL)
+or the [MIT licence](LICENSE-MIT), at your option.
+
+SNOMED CT is not included and is licensed separately. It is owned by SNOMED
+International, and you need a licence to use it: in the UK, through NHS England's
+[TRUD](https://isd.digital.nhs.uk/trud/); in other member countries, through the
+national release centre or [MLDS](https://mlds.ihtsdotools.org/). An index built
+from a release contains SNOMED CT content, so share it only as your licence
+allows.

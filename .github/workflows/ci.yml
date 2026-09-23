@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    # Same image as the benchmarks: Rust 1.93.1, glibc 2.36 and ICU 72.
+    container: rust:1.93.1-bookworm
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ICU and Python
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq libicu-dev pkg-config python3 >/dev/null
+          rustup component add rustfmt clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: |
+          cargo clippy --locked --all-targets --all-features -- -D warnings
+          cargo clippy --locked --all-targets --no-default-features -- -D warnings
+      - name: Test, default features
+        run: cargo test --locked
+      - name: Test, query-only build
+        run: cargo test --locked --no-default-features
+      - name: Test, with term matching
+        run: cargo test --locked --all-features
+      - name: Script tests
+        working-directory: scripts
+        run: python3 -m unittest test_benchmark_corpus test_corpus_rf2
