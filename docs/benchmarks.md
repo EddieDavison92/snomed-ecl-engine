@@ -114,7 +114,7 @@ As ratios of medians:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/batch-dark.svg">
-  <img alt="Expanding every expression in the 1,000-expression batch, summed. On the 879 expressions Snowstorm also answered: this engine 1.07 s on 1 CPU and 256 MiB, Snowstorm 101.6 s on 8 CPUs and 12 GiB, 95 times longer. On the 587 Snowstorm Lite also answered: 0.73 s against 22.8 s on 1 CPU and 2 GiB, 31 times longer." src="images/batch-light.svg">
+  <img alt="Expanding the 1,000-expression batch, summed over the expressions each server answered alike. On the 879 expressions Snowstorm also answered: this engine 1.07 s on 1 CPU and 256 MiB, Snowstorm 101.6 s on 8 CPUs and 12 GiB, 95 times longer. On the 587 Snowstorm Lite also answered: 0.73 s against 22.8 s on 1 CPU and 2 GiB, 31 times longer." src="images/batch-light.svg">
 </picture>
 
 Run as one batch, every matched expression enumerated in turn, the engine

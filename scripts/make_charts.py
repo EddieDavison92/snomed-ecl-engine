@@ -315,8 +315,8 @@ def batch_totals():
     write(
         "batch",
         panels_svg,
-        "Expanding the whole 1,000-expression batch",
-        "Every code of every expression, one after another, summed.",
+        "Expanding the 1,000-expression batch",
+        "Every code of each expression both engines answered alike, one after another, summed.",
         panels,
         "Counting instead of enumerating, the same batches take "
         + " and ".join(counts) + " longer on the servers. The engine's process "
