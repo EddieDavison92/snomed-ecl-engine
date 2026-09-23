@@ -61,6 +61,5 @@ British English. Keep each pull request to one logical change, and state how it
 was tested. Changes to evaluation should say which corpus or RF2 check they
 were verified against.
 
-By contributing, you agree that your contribution is licensed under the same
-terms as the project: the Open Government Licence v3.0 or the MIT licence, at
-the user's option.
+By contributing, you agree that your contribution is licensed under the
+project's [MIT licence](LICENSE).
