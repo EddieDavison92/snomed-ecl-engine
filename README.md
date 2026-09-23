@@ -178,15 +178,16 @@ engine's answer, and could not answer 120. Snowstorm Lite agreed on 587, returne
 13 wrong answers, and could not answer 400.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/latency-dark.svg">
-  <img alt="Warm count median: this engine 0.86 ms on 1 CPU and 256 MiB, Snowstorm Lite 4.56 ms on 1 CPU and 2 GiB, Snowstorm 13.19 ms on 8 CPUs and 12 GiB. Complete enumeration median: 0.94 ms, 7.15 ms and 36.40 ms on the same allocations." src="docs/images/latency-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/batch-dark.svg">
+  <img alt="Expanding every expression in the 1,000-expression batch, summed. On the 879 expressions Snowstorm also answered: this engine 1.07 s on 1 CPU and 256 MiB, Snowstorm 101.6 s on 8 CPUs and 12 GiB, 95 times longer. On the 587 Snowstorm Lite also answered: 0.73 s against 22.8 s on 1 CPU and 2 GiB, 31 times longer." src="docs/images/batch-light.svg">
 </picture>
 
 | Measurement | This engine |
 |---|---:|
 | Packed index for the UK release | 152 MiB |
 | Open a packed index, one CPU | 156 ms |
-| 1,000-expression corpus, median count / enumeration | 0.86 ms / 0.94 ms |
+| Whole 1,000-expression batch, every code, vs Snowstorm | 1.07 s against 101.6 s |
+| Median single expression, count / every code | 0.86 ms / 0.94 ms |
 | 10,000-expression corpus through the CLI, one CPU | 11.5 s per batch |
 | Same corpus through the library, one CPU | 2.0 s per batch |
 
