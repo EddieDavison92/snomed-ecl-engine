@@ -46,6 +46,7 @@ fn take_flag(args: &mut Vec<String>, flag: &str) -> bool {
 }
 
 /// Removes `--option VALUE` from the arguments and returns the value.
+#[cfg(feature = "import")]
 fn take_option(args: &mut Vec<String>, option: &str) -> Result<Option<String>> {
     let Some(position) = args.iter().position(|arg| arg == option) else {
         return Ok(None);

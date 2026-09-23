@@ -55,6 +55,7 @@ pub fn edition_parts(edition: &str) -> Option<(String, String)> {
 }
 
 /// The name an index gets when none is given, such as `uk-20260826`.
+#[cfg_attr(not(feature = "import"), allow(dead_code))]
 pub fn default_name(edition: &str) -> Option<String> {
     edition_parts(edition).map(|(family, date)| format!("{family}-{date}"))
 }
@@ -69,6 +70,7 @@ pub fn show_date(date: &str) -> String {
 }
 
 /// Names are also file names, so they are kept to a portable alphabet.
+#[cfg_attr(not(feature = "import"), allow(dead_code))]
 pub fn check_name(name: &str) -> Result<()> {
     let valid = !name.is_empty()
         && name.len() <= 64

@@ -31,7 +31,8 @@ The user must supply an RF2 Snapshot they are licensed to use, as one
 self-contained ZIP. UK Monolith is the tested edition. Do not download a release
 on the user's behalf without their credentials and consent, and never print or
 save a TRUD API response: its download URLs contain the API key. Keep archives
-and indexes under `data/`, which Git ignores.
+under `data/`, which Git ignores. `add` puts indexes in the library folder that
+`list` names.
 
 ```sh
 snomed-ecl-engine inspect data/rf2/ARCHIVE.zip
