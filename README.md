@@ -13,14 +13,53 @@ snomed-ecl-engine use data/uk.ecl
 snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 ```
 
+## Full ECL 2.3
+
+This is a whole ECL engine, not a subset. Every kind of expression in ECL 2.3
+evaluates against the real release:
+
+| Expression | Example |
+|---|---|
+| Hierarchy: self, descendants, ancestors, children, parents | `<< 73211009 \|Diabetes mellitus\|`, `>! 73211009` |
+| Top and bottom of a set | `!!> (<< 73211009)` |
+| Conjunction, disjunction, exclusion | `<< 73211009 MINUS << 46635009 \|Type 1 diabetes mellitus\|` |
+| Refinements, attribute groups, cardinality | `< 404684003 : [1..3] { 363698007 \|Finding site\| = << 39057004 }` |
+| Reverse attributes | `< 105590001 \|Substance\| : R 127489000 \|Has active ingredient\| = *` |
+| Dotted attributes | `< 19829001 \|Disorder of lung\| . 363698007 \|Finding site\|` |
+| Concrete values, compared as exact decimals | `< 763158003 : 1142135004 >= #500` |
+| Reference set membership | `^ 723264001 \|Lateralisable body structure reference set\|` |
+| Concept filters | `<< 73211009 {{ C definitionStatus = defined }}` |
+| Description filters: terms, types, languages, dialects | `<< 73211009 {{ D term = "type 2", dialect = en-gb (prefer) }}` |
+| Member filters and field projections | `^ [targetComponentId] 900000000000527005 {{ M referencedComponentId = 397709008 }}` |
+| History supplements | `<< 195967001 \|Asthma\| {{ + HISTORY-MOD }}` |
+| Alternate identifiers | `scheme#code`, with [configured schemes](docs/indexes.md#alternate-identifiers) |
+
+The evidence:
+
+- **Grammar.** A differential test generates sentences covering every
+  alternative, optional part and repetition count of both official ECL 2.3
+  grammars, about 35,000 samples, and leaves no unexplained disagreement. It
+  exercises 179 of their 180 rules; the last is never referenced by another
+  rule, so no expression can contain it. All 121 official syntax examples parse.
+- **Answers.** Two corpora of 1,000 and 10,000 expressions across 25 categories
+  return the code sets recorded for them, and scripts check result sets against
+  the RF2 files directly. Of the 880 corpus expressions Snowstorm could answer,
+  the two returned the same code set for 879; on the last, the RF2 rows support
+  this engine's answer.
+
+Three forms are valid under the grammar but have no defined meaning in the
+specification, such as a reverse flag inside an attribute group. The parser
+refuses them with a `Semantic` error rather than guess, and two have open
+questions with SNOMED International. Anything a build cannot evaluate, such as a
+term filter without the `unicode` feature, fails with an explicit error: no query
+returns a partial answer as a success. [ECL support](docs/ecl-support.md) has
+the detail.
+
 ## Status
 
-Version 0.1.0. The engine evaluates every ECL 2.3 feature area; [ECL
-support](docs/ecl-support.md) lists the three grammar forms it refuses and why.
-Releases publish Linux x86-64 executables. The crate is not on crates.io.
-
-The index format may change between releases without a migration: rebuild the
-index from your RF2 archive when you upgrade.
+Version 0.1.0. Releases publish Linux x86-64 executables; the crate is not on
+crates.io. The index format may change between releases without a migration:
+rebuild the index from your RF2 archive when you upgrade.
 
 ## Install
 
@@ -138,7 +177,12 @@ Snowstorm agreed on 879, disagreed on 1, where the RF2 rows support this
 engine's answer, and could not answer 120. Snowstorm Lite agreed on 587, returned
 13 wrong answers, and could not answer 400.
 
-| | |
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/latency-dark.svg">
+  <img alt="Warm count median: this engine 0.86 ms on 1 CPU and 256 MiB, Snowstorm Lite 4.56 ms on 1 CPU and 2 GiB, Snowstorm 13.19 ms on 8 CPUs and 12 GiB. Complete enumeration median: 0.94 ms, 7.15 ms and 36.40 ms on the same allocations." src="docs/images/latency-light.svg">
+</picture>
+
+| Measurement | This engine |
 |---|---:|
 | Packed index for the UK release | 152 MiB |
 | Open a packed index, one CPU | 156 ms |
@@ -186,17 +230,7 @@ echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch data/uk.e
 echo '{"concept":"709044004"}'               | snomed-ecl-engine batch data/uk.ecl
 ```
 
-## What it supports
-
-Every ECL 2.3 feature area: hierarchy and Boolean sets, refinements, groups and
-cardinalities, reverse and dotted attributes, exact concrete comparisons, top
-and bottom, membership, concept filters, description filters, member filters and
-projections, history supplements and alternate identifiers.
-
-Three forms are valid under the grammar but have no clear meaning in the
-specification, so the parser refuses them rather than guess. Two have open
-questions with SNOMED International. Unsupported input fails with an explicit
-error; no query returns a partial answer as a success.
+## Exact semantics
 
 Decimals keep their exact spelling and are never compared as binary floating
 point. Relationship groups survive import. The engine reads the published
