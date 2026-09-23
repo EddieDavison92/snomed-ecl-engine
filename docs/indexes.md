@@ -28,8 +28,8 @@ destination is rejected: choose a new path rather than deleting one in place. A
 failed write can leave a `.store-building-*` directory for inspection; do not
 query it.
 
-The format is versioned but still experimental. When it changes, rebuild from the
-pinned archive rather than migrating.
+The format is versioned and may change between releases. When it does, rebuild
+the index from your RF2 archive; there is no migration.
 
 ## What is stored
 
@@ -132,7 +132,7 @@ when distributing an artefact.
 Opening an index checks the header, table hash, section names, codecs, lengths
 and offsets. Component readers keep their own checksum and structural validation,
 and cold sections are checked when first loaded. `verify` checks every declared
-section, including UTF-8 display offsets, without holding all typed member tables
+section, decoding every display label, without holding all typed member tables
 at once.
 
 Readers each hold their own file handle and position. Concurrent lazy loads,

@@ -48,7 +48,7 @@ Tests use synthetic fixtures, so none of them needs a SNOMED CT release.
 ## Data and licensing
 
 SNOMED CT is licensed separately; see the [README](README.md#licence). Keep RF2
-archives, extracted files and built indexes out of Git: `data/`, `.local/` and
+archives, extracted files and built indexes out of Git: `data/` and
 `references/` are ignored. Test fixtures must be synthetic.
 
 Reference checkouts of other projects are for comparison only. Do not copy

@@ -1,28 +1,25 @@
 # Developer setup
 
-For using the built CLI, read the [CLI guide](cli.md). This page covers building
-the engine and reproducing its measurements.
+Building from source and reproducing the measurements. For using the CLI, read
+the [CLI guide](cli.md); for the checks a change must pass, read
+[CONTRIBUTING](../CONTRIBUTING.md).
 
 ## Build
 
 ```sh
 cargo build --locked --release --bin snomed-ecl-engine
-cargo test --locked
-cargo clippy --locked --all-targets -- -D warnings
-cargo fmt --check
 ```
 
-Use the toolchain pinned in `rust-toolchain.toml`; rustup selects it
-automatically. A native Windows build needs the MSVC C++ build tools and the
-Windows SDK.
+Rust 1.93 or later; rustup selects the version pinned in `rust-toolchain.toml`.
+A native Windows build needs the MSVC C++ build tools and the Windows SDK.
 
-`--no-default-features` omits the RF2 ZIP importer, giving a query-only
+`--no-default-features` leaves out the RF2 importer, giving a query-only
 executable that can still read, pack and verify existing indexes.
 
 ### Build with term matching
 
-Description term predicates need `--features unicode`, which links ICU4C. On
-Debian or Ubuntu:
+Description term predicates need `--features unicode`, which links ICU 72 or
+later statically. On Debian or Ubuntu:
 
 ```sh
 apt-get install -y libicu-dev pkg-config
@@ -31,76 +28,83 @@ cargo build --locked --release --features unicode
 
 A build without the feature rejects term predicates explicitly rather than
 ignoring them. Metadata-only description filters work either way. The feature
-adds materially to the executable; [benchmarks](benchmarks.md) records both sizes.
+adds about 31 MiB to the executable.
 
 ### Build in Docker
 
-Building on Windows without the MSVC toolchain, or reproducing the Linux
-measurements, is easiest in a container. Run this from PowerShell with Windows
-paths: Git Bash rewrites `/work` and the mount fails.
+The published executables and every benchmark use the `rust:1.93.1-bookworm`
+image. To build the same way:
 
-```powershell
-docker run --rm `
-  -v ${PWD}:/work `
-  -v snomed-rust-cargo:/usr/local/cargo/registry `
-  -v snomed-rust-rustup:/usr/local/rustup `
-  -e CARGO_TARGET_DIR=/work/target/linux `
-  -w /work rust:1.93.1-bookworm `
+```sh
+docker run --rm \
+  -v "$PWD":/work \
+  -v snomed-rust-cargo:/usr/local/cargo/registry \
+  -e CARGO_TARGET_DIR=/work/target/linux-core \
+  -w /work rust:1.93.1-bookworm \
   cargo build --locked --release --bin snomed-ecl-engine
 ```
 
-Give each concurrent build its own `CARGO_TARGET_DIR`; a git worktree must not
-share one with the main checkout.
+The benchmark scripts expect the default build in `target/linux-core` and the
+term-matching build in `target/linux-unicode`. On Windows, run Docker from
+PowerShell with `${PWD}`: Git Bash rewrites `/work` and the mount fails.
 
 ## Get an RF2 release
 
-Use an archive you are entitled to. Nothing licensed is in this repository, and
-`data/`, `.local/` and `references/` are ignored.
+Use a release you are licensed to use; see the [README](../README.md#licence).
+The importer takes one self-contained Snapshot ZIP, and the UK Monolith Edition
+is the tested input. Keep archives under `data/`, which Git ignores.
 
-With the 1Password CLI unlocked, `scripts/Get-Rf2Release.ps1` retrieves the UK
-Monolith from TRUD, verifies size and SHA-256 and writes a local manifest:
+In the UK, register with NHS England's [TRUD](https://isd.digital.nhs.uk/trud/),
+subscribe to the SNOMED CT UK Monolith Edition, RF2: Snapshot, and download it.
+Then check it before importing:
 
-```powershell
-./scripts/Get-Rf2Release.ps1                                        # latest
-./scripts/Get-Rf2Release.ps1 -ReleaseId uk_sct2mo_42.5.0_20260826000001Z.zip
+```sh
+snomed-ecl-engine inspect data/rf2/ARCHIVE.zip
 ```
 
-The script reads `op://Work/digital.nhs.uk/api-key` without printing it. TRUD
-embeds credentials in download URLs: never log or save a raw response.
+Compare the SHA-256 it prints with the value on TRUD's download page. The
+release behind the published figures is pinned in [release.json](release.json).
 
-Without that setup, download the archive yourself and check it with
-`snomed-ecl-engine inspect ARCHIVE.zip`, comparing the checksum against the
-value the distributor published. The pinned release for reproducing published
-figures is in [release.json](release.json).
+`scripts/Get-Rf2Release.ps1` downloads from TRUD's API, checks size and SHA-256
+and writes a manifest beside the archive. Set `TRUD_API_KEY` first, or pass
+`-ApiKey`. TRUD puts the key in its download URLs, so never log or save a raw
+API response.
 
 ## Reference checkouts
 
-```powershell
-foreach ($reference in (Get-Content docs/references.json -Raw | ConvertFrom-Json)) {
-    git clone $reference.remote ('references/' + $reference.name)
-    git -C ('references/' + $reference.name) checkout --detach $reference.commit
-}
+The grammar and comparison tooling read pinned checkouts of other projects from
+`references/`, which Git ignores. [references.json](references.json) lists them:
+
+```sh
+jq -r '.[] | "\(.name) \(.remote) \(.commit)"' docs/references.json |
+while read -r name remote commit; do
+  git clone "$remote" "references/$name"
+  git -C "references/$name" checkout --detach "$commit"
+done
 ```
 
-These are comparison targets and specification sources, pinned by commit. They
-have their own licences; do not copy their code without an explicit decision and
+They are comparison targets and specification sources. They have their own
+licences; do not copy their code without checking the licence and recording
 attribution.
 
 ## Comparison servers
 
-The benchmark harness drives Snowstorm and Snowstorm Lite over loopback only.
-Both keep their imported index in a Docker volume, so a finished import can be
-restarted for serving without importing again:
+The benchmark harness drives Snowstorm and Snowstorm Lite over loopback only:
+Snowstorm on port 18082 and Snowstorm Lite on 18081. The published runs used
+these images, recorded in the evidence files:
 
-```powershell
-docker start snomed-ecl-elasticsearch   # wait for cluster health
-docker start snomed-ecl-snowstorm       # wait for /branches/MAIN
-docker start snomed-ecl-serving         # Snowstorm Lite
-```
+| Server | Image | Allocation |
+|---|---|---|
+| Snowstorm 11.0.0 | `snomedinternational/snowstorm@sha256:fa9cce11…` | 4 CPUs, 6 GiB |
+| Elasticsearch, for Snowstorm | `docker.elastic.co/elasticsearch/elasticsearch@sha256:1b6a877f…` | 4 CPUs, 6 GiB |
+| Snowstorm Lite 2.7.0 | `snomedinternational/snowstorm-lite@sha256:ff167ec2…` | 1 CPU, 2 GiB |
 
-Never restart a preparation container that still has `--load` in its command: it
-will import a second time. `scripts/benchmark_corpus.py` refuses to compare
-unless a completed MAIN snapshot import is evidenced, the advertised edition
-matches the index, and two release sentinels agree. An accidental reimport or a
-mismatched release stops the run instead of producing numbers.
+Load each with the same RF2 release as the index, following the servers' own
+documentation. Keep their data in Docker volumes so a finished import can be
+restarted for serving without importing again, and never restart a container
+whose command still loads the release: it will import a second time.
 
+`scripts/benchmark_corpus.py` refuses to compare unless a finished MAIN snapshot
+import is evidenced, the advertised edition matches the index, and two release
+sentinels agree. An accidental reimport or a mismatched release stops the run
+instead of producing numbers.
