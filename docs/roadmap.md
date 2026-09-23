@@ -1,8 +1,8 @@
 # Roadmap
 
 The engine evaluates ECL 2.3 across every feature area, so what is left is not
-missing features. It is a handful of performance defects we can name and
-measure, test evidence that is thinner than it looks, and a resource figure that
+missing features. It is a handful of performance and memory costs we can name
+and measure, three grammar defects to raise upstream, and a resource figure that
 only covers the numeric core.
 
 ## Now
@@ -49,6 +49,12 @@ cannot close after a second star, quoted search terms admit comments, and no
 space is required after a filter's type letter, so `{{moduleId = x}}` also reads
 as a member filter. Raise them with the ECL specification's maintainers. See
 [ECL support](ecl-support.md#grammar-differential).
+
+**Memory for the full corpus.** The 10,000-expression corpus, which loads every
+semantic index, now peaks at 268 MiB against 227 MiB, so it no longer fits the
+256 MiB it used to. The attribute inverse costs about 16 MB and could shrink by
+keying only the values that occur rather than every concept, and the full
+description metadata remains the largest single load.
 
 **Full-engine resource measurement.** Current figures measure the numeric core
 with data loaded on demand. Measure the complete engine with every semantic index

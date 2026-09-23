@@ -324,11 +324,11 @@ if __name__ == "__main__":
         [
             {
                 "title": "Index on disk",
-                "values": [(289.5, "290 MiB"), (483.3, "483 MiB"), (6256.6, "6.11 GiB")],
+                "values": [(388.7, "389 MiB"), (483.3, "483 MiB"), (6256.6, "6.11 GiB")],
             },
             {
                 "title": "Reading the release and building the indexes (one-off)",
-                "values": [(119.8, "2.0 min"), (1057.0, "17.6 min"), (4360.0, "72.7 min")],
+                "values": [(128.6, "2.1 min"), (1057.0, "17.6 min"), (4360.0, "72.7 min")],
             },
             {
                 "title": "Memory allocated to answer queries",
@@ -336,7 +336,8 @@ if __name__ == "__main__":
             },
         ],
         "Allocations used in these runs, not measured minimums. Snowstorm counts "
-        "both its service and Elasticsearch.",
+        "both its service and Elasticsearch. The engine's index includes a word index "
+        "and a history section.",
     )
     write(
         "latency",
@@ -346,11 +347,11 @@ if __name__ == "__main__":
         [
             {
                 "title": "Warm count — total only",
-                "values": [(2.20, "2.20 ms"), (4.56, "4.56 ms"), (13.19, "13.19 ms")],
+                "values": [(0.78, "0.78 ms"), (4.56, "4.56 ms"), (13.19, "13.19 ms")],
             },
             {
                 "title": "Complete enumeration — every code returned",
-                "values": [(2.29, "2.29 ms"), (7.15, "7.15 ms"), (36.40, "36.40 ms")],
+                "values": [(0.93, "0.93 ms"), (7.15, "7.15 ms"), (36.40, "36.40 ms")],
             },
         ],
         "Engine cost is flat between the two; server cost is not. Snowstorm's "

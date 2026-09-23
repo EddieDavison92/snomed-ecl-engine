@@ -5,6 +5,11 @@ ladder of expressions chosen to be log-spaced by result size, so the shape of
 the relationship is visible and a reader can find their own workload on it.
 
 Both engines return every concept. Sets are compared before any timing counts.
+
+With --snowstorm-report, Snowstorm is not queried: its samples come from an
+earlier run of this script, and each rung counts only if this engine returns
+the code set that run recorded, which Snowstorm then matched. That re-measures
+this engine without standing up the comparison servers again.
 """
 import argparse
 import datetime
@@ -25,15 +30,21 @@ parser.add_argument("--ladder", type=Path, default=Path("validation/expansion-la
 parser.add_argument("--binary", default="target/linux-core/release/snomed-ecl-engine")
 parser.add_argument("--store-directory", type=Path,
                     default=Path("data/compact-store/v1-ecl-completion"))
-parser.add_argument("--snowstorm", required=True,
+parser.add_argument("--snowstorm",
                     help="Loopback full Snowstorm URL; requires a completed MAIN import")
-parser.add_argument("--import-report", required=True, type=Path)
+parser.add_argument("--snowstorm-report", type=Path,
+                    help="Earlier report of this script whose Snowstorm samples to reuse")
+parser.add_argument("--import-report", type=Path)
 parser.add_argument("--memory-mib", type=int, default=256)
 parser.add_argument("--repeats", type=int, default=4,
                     help="First is cold; the rest measure the server's warm cache")
 args = parser.parse_args()
 
-if urllib.parse.urlparse(args.snowstorm).hostname not in ("127.0.0.1", "localhost", "::1"):
+if (args.snowstorm is None) == (args.snowstorm_report is None):
+    parser.error("Give either --snowstorm or --snowstorm-report")
+if args.snowstorm and not args.import_report:
+    parser.error("--snowstorm needs --import-report")
+if args.snowstorm and urllib.parse.urlparse(args.snowstorm).hostname not in ("127.0.0.1", "localhost", "::1"):
     parser.error("This benchmark only permits loopback servers.")
 if args.output.exists():
     parser.error("Choose a new report path")
@@ -46,27 +57,38 @@ store_argument = store.relative_to(ROOT).as_posix()
 manifest = read_manifest(store)
 ladder = json.loads((ROOT / args.ladder).read_bytes())
 
-# Same provenance gate as the corpus benchmark: compare only when both sides
-# demonstrably hold the same release.
-evidence = (ROOT / args.import_report).read_bytes()
-prior = json.loads(evidence)
-if (prior["edition"] != manifest["edition"]
-        or prior["archive_sha256"].lower() != manifest["archive_sha256"].lower()):
-    raise ValueError("Prior import report is for a different release")
-imports = prior["snowstorm_imports"]
-if (imports.get("status") != "COMPLETED" or imports.get("branchPath") != "MAIN"
-        or imports.get("type") != "SNAPSHOT"):
-    raise ValueError("No completed MAIN import reported")
-systems = http(args.snowstorm, "/fhir/CodeSystem", {"url": "http://snomed.info/sct", "_count": 100})
-if manifest["edition"] not in [e["resource"].get("version") for e in systems.get("entry", [])]:
-    raise ValueError("Snowstorm does not advertise the pinned edition")
-branch_before = http(args.snowstorm, "/branches/MAIN", {})
-if branch_before != prior["snowstorm_branch_before"]:
-    raise ValueError("MAIN differs from the branch in the completed import report")
-for ecl, expected in [("*", manifest["active_concept_count"]), ("<< 404684003", 137834)]:
-    if http(args.snowstorm, "/MAIN/concepts",
-            {"ecl": ecl, "returnIdOnly": "true", "limit": 1})["total"] != expected:
-        raise ValueError("Snowstorm release sentinel differs")
+if args.snowstorm_report:
+    # Reused samples are only comparable against the same release and ladder.
+    evidence = (ROOT / args.snowstorm_report).read_bytes()
+    recorded = json.loads(evidence)
+    if (recorded["edition"] != manifest["edition"]
+            or recorded["archive_sha256"].lower() != manifest["archive_sha256"].lower()):
+        raise ValueError("Earlier report is for a different release")
+    if recorded["ladder_sha256"] != hashlib.sha256((ROOT / args.ladder).read_bytes()).hexdigest():
+        raise ValueError("Earlier report walked a different ladder")
+    recorded_rungs = {r["ecl"]: r for r in recorded["rungs"]}
+else:
+    # Same provenance gate as the corpus benchmark: compare only when both sides
+    # demonstrably hold the same release.
+    evidence = (ROOT / args.import_report).read_bytes()
+    prior = json.loads(evidence)
+    if (prior["edition"] != manifest["edition"]
+            or prior["archive_sha256"].lower() != manifest["archive_sha256"].lower()):
+        raise ValueError("Prior import report is for a different release")
+    imports = prior["snowstorm_imports"]
+    if (imports.get("status") != "COMPLETED" or imports.get("branchPath") != "MAIN"
+            or imports.get("type") != "SNAPSHOT"):
+        raise ValueError("No completed MAIN import reported")
+    systems = http(args.snowstorm, "/fhir/CodeSystem", {"url": "http://snomed.info/sct", "_count": 100})
+    if manifest["edition"] not in [e["resource"].get("version") for e in systems.get("entry", [])]:
+        raise ValueError("Snowstorm does not advertise the pinned edition")
+    branch_before = http(args.snowstorm, "/branches/MAIN", {})
+    if branch_before != prior["snowstorm_branch_before"]:
+        raise ValueError("MAIN differs from the branch in the completed import report")
+    for ecl, expected in [("*", manifest["active_concept_count"]), ("<< 404684003", 137834)]:
+        if http(args.snowstorm, "/MAIN/concepts",
+                {"ecl": ecl, "returnIdOnly": "true", "limit": 1})["total"] != expected:
+            raise ValueError("Snowstorm release sentinel differs")
 
 binary = (ROOT / args.binary).read_bytes()
 report = {
@@ -76,6 +98,8 @@ report = {
     "binary_sha256": hashlib.sha256(binary).hexdigest(),
     "manifest_sha256": hashlib.sha256(manifest_bytes(store)).hexdigest(),
     "import_evidence_sha256": hashlib.sha256(evidence).hexdigest(),
+    "snowstorm_samples": ("reused from an earlier run" if args.snowstorm_report
+                          else "measured in this run"),
     "memory_limit_mib": args.memory_mib,
     "repeats": args.repeats,
     "ladder_sha256": hashlib.sha256((ROOT / args.ladder).read_bytes()).hexdigest(),
@@ -123,7 +147,18 @@ try:
         ecl = case["ecl"]
         rung = {"ecl": ecl, "expected_total": case["expected_total"],
                 "engine_ms": [], "snowstorm_ms": []}
-        for attempt in range(args.repeats):
+        if args.snowstorm_report:
+            earlier = recorded_rungs[ecl]
+            for attempt in range(args.repeats):
+                start = time.perf_counter()
+                ours = engine(ecl)
+                rung["engine_ms"].append((time.perf_counter() - start) * 1000)
+                if digest(ours) != earlier["sha256"]:
+                    raise ValueError(f"Code set differs from the recorded one for {ecl}")
+            rung.update(total=len(ours), sha256=digest(ours), matches=True,
+                        only_engine=0, only_snowstorm=0,
+                        snowstorm_ms=earlier["snowstorm_ms"])
+        for attempt in range(0 if args.snowstorm_report else args.repeats):
             start = time.perf_counter()
             ours = engine(ecl)
             rung["engine_ms"].append((time.perf_counter() - start) * 1000)
@@ -167,10 +202,14 @@ finally:
     except subprocess.TimeoutExpired:
         process.kill()
 
-# The engine container is gone by now; the servers are still up.
-report["snowstorm_resources"] = resource_snapshot("snomed-ecl-snowstorm")
-report["elasticsearch_resources"] = resource_snapshot("snomed-ecl-elasticsearch")
-if http(args.snowstorm, "/branches/MAIN", {}) != branch_before:
-    raise ValueError("Snowstorm branch changed during the run")
+if args.snowstorm_report:
+    report["snowstorm_resources"] = recorded.get("snowstorm_resources")
+    report["elasticsearch_resources"] = recorded.get("elasticsearch_resources")
+else:
+    # The engine container is gone by now; the servers are still up.
+    report["snowstorm_resources"] = resource_snapshot("snomed-ecl-snowstorm")
+    report["elasticsearch_resources"] = resource_snapshot("snomed-ecl-elasticsearch")
+    if http(args.snowstorm, "/branches/MAIN", {}) != branch_before:
+        raise ValueError("Snowstorm branch changed during the run")
 args.output.write_text(json.dumps(report, indent=1), encoding="utf-8")
 print(json.dumps({"rungs": len(report["rungs"]), "output": str(args.output)}))

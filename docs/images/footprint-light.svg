@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="542" viewBox="0 0 720 542" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-label="Setting up and serving one UK release">
-<rect width="720" height="542" fill="#fcfcfb"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="556" viewBox="0 0 720 556" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-label="Setting up and serving one UK release">
+<rect width="720" height="556" fill="#fcfcfb"/>
 <text x="24" y="28" font-size="16" font-weight="600" fill="#0b0b0b">Setting up and serving one UK release</text>
 <text x="24" y="48" font-size="12" fill="#52514e">One RF2 Snapshot, 1.15 million concepts. Each panel has its own scale.</text>
 <text x="24" y="74" font-size="12.5" font-weight="600" fill="#0b0b0b">Index on disk</text>
 <text x="138" y="109.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
-<path d="M150,94.0 H167.9325192596618 A4,4 0 0 1 171.9325192596618,98.0 V112.0 A4,4 0 0 1 167.9325192596618,116.0 H150 Z" fill="#2a78d6"/>
-<text x="181.9325192596618" y="109.0" font-size="12" font-weight="600" fill="#0b0b0b">290 MiB</text>
+<path d="M150,94.0 H175.4479110059777 A4,4 0 0 1 179.4479110059777,98.0 V112.0 A4,4 0 0 1 175.4479110059777,116.0 H150 Z" fill="#2a78d6"/>
+<text x="189.4479110059777" y="109.0" font-size="12" font-weight="600" fill="#0b0b0b">389 MiB</text>
 <text x="138" y="143.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
 <path d="M150,128.0 H182.61480676405716 A4,4 0 0 1 186.61480676405716,132.0 V146.0 A4,4 0 0 1 182.61480676405716,150.0 H150 Z" fill="#eb6834"/>
 <text x="196.61480676405716" y="143.0" font-size="12" font-weight="600" fill="#0b0b0b">483 MiB</text>
@@ -15,8 +15,8 @@
 <line x1="150" y1="86" x2="150" y2="188" stroke="#e4e3df" stroke-width="1"/>
 <text x="24" y="224" font-size="12.5" font-weight="600" fill="#0b0b0b">Reading the release and building the indexes (one-off)</text>
 <text x="138" y="259.0" font-size="12" text-anchor="end" fill="#52514e">This engine</text>
-<path d="M150,244.0 H159.02412844036698 A4,4 0 0 1 163.02412844036698,248.0 V262.0 A4,4 0 0 1 159.02412844036698,266.0 H150 Z" fill="#2a78d6"/>
-<text x="173.02412844036698" y="259.0" font-size="12" font-weight="600" fill="#0b0b0b">2.0 min</text>
+<path d="M150,244.0 H159.9808256880734 A4,4 0 0 1 163.9808256880734,248.0 V262.0 A4,4 0 0 1 159.9808256880734,266.0 H150 Z" fill="#2a78d6"/>
+<text x="173.9808256880734" y="259.0" font-size="12" font-weight="600" fill="#0b0b0b">2.1 min</text>
 <text x="138" y="293.0" font-size="12" text-anchor="end" fill="#52514e">Snowstorm Lite</text>
 <path d="M150,278.0 H260.91238532110094 A4,4 0 0 1 264.91238532110094,282.0 V296.0 A4,4 0 0 1 260.91238532110094,300.0 H150 Z" fill="#eb6834"/>
 <text x="274.91238532110094" y="293.0" font-size="12" font-weight="600" fill="#0b0b0b">17.6 min</text>
@@ -35,5 +35,6 @@
 <path d="M150,462.0 H620.0 A4,4 0 0 1 624.0,466.0 V480.0 A4,4 0 0 1 620.0,484.0 H150 Z" fill="#1baf7a"/>
 <text x="634.0" y="477.0" font-size="12" font-weight="600" fill="#0b0b0b">12 GiB</text>
 <line x1="150" y1="386" x2="150" y2="488" stroke="#e4e3df" stroke-width="1"/>
-<text x="24" y="528" font-size="11" fill="#52514e">Allocations used in these runs, not measured minimums. Snowstorm counts both its service and Elasticsearch.</text>
+<text x="24" y="528" font-size="11" fill="#52514e">Allocations used in these runs, not measured minimums. Snowstorm counts both its service and Elasticsearch. The</text>
+<text x="24" y="542" font-size="11" fill="#52514e">engine's index includes a word index and a history section.</text>
 </svg>
