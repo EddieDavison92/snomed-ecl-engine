@@ -2149,3 +2149,107 @@ fn import_reports_as_many_stages_as_it_announces() {
     .unwrap();
     assert_eq!(stages, IMPORT_STAGES);
 }
+
+#[test]
+fn cli_adds_selects_and_removes_library_indexes() {
+    let temp = TempDir::new().unwrap();
+    let config = temp.path().join("config");
+    let home = temp.path().join("library");
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    let archive_text = archive.to_str().unwrap();
+    let edition = format!("http://snomed.info/sct/{ROOT}/version/20260826");
+    let checksum = sha256(&archive).unwrap();
+    // An isolated selection file and library, so tests never touch the
+    // developer's own.
+    let run = |arguments: &[&str]| {
+        std::process::Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+            .args(arguments)
+            .env("XDG_CONFIG_HOME", &config)
+            .env("APPDATA", &config)
+            .env("SNOMED_ECL_HOME", &home)
+            .env_remove("SNOMED_ECL_STORE")
+            .output()
+            .unwrap()
+    };
+    let text =
+        |output: &std::process::Output| String::from_utf8_lossy(&output.stdout).trim().to_owned();
+
+    // Without a terminal to confirm on, the distributor's checksum is required,
+    // and a wrong one is refused before anything is built.
+    let unconfirmed = run(&["add", archive_text, "--edition", &edition]);
+    assert!(!unconfirmed.status.success());
+    assert!(String::from_utf8_lossy(&unconfirmed.stderr).contains("--sha256"));
+    assert!(
+        !run(&["add", archive_text, "--edition", &edition, "--sha256", "00"])
+            .status
+            .success()
+    );
+    assert!(!home.join(format!("{ROOT}-20260826.ecl")).exists());
+
+    let added = run(&[
+        "add",
+        archive_text,
+        "--edition",
+        &edition,
+        "--sha256",
+        &checksum,
+    ]);
+    assert!(
+        added.status.success(),
+        "{}",
+        String::from_utf8_lossy(&added.stderr)
+    );
+    let report: serde_json::Value = serde_json::from_str(&text(&added)).unwrap();
+    let name = format!("{ROOT}-20260826");
+    assert_eq!(report["name"], name.as_str());
+    // Only the packed file stays in the library, and it is selected.
+    let files: Vec<_> = fs::read_dir(&home)
+        .unwrap()
+        .flatten()
+        .map(|e| e.file_name())
+        .collect();
+    assert_eq!(files, [std::ffi::OsString::from(format!("{name}.ecl"))]);
+    let total = text(&run(&["expand", "<< 1000001", "--count"]));
+    assert!(!total.is_empty());
+
+    // Adding the same release again is refused rather than overwritten.
+    assert!(!run(&[
+        "add",
+        archive_text,
+        "--edition",
+        &edition,
+        "--sha256",
+        &checksum
+    ])
+    .status
+    .success());
+
+    // A name, a release and an edition alone all find it.
+    for reference in [
+        name.clone(),
+        format!("{ROOT}@2026-08"),
+        format!("{ROOT}@20260826"),
+        ROOT.to_string(),
+    ] {
+        let found = run(&["expand", &reference, "<< 1000001", "--count"]);
+        assert!(found.status.success(), "{reference}");
+        assert_eq!(text(&found), total, "{reference}");
+    }
+    assert!(
+        !run(&["expand", &format!("{ROOT}@2025"), "<< 1000001", "--count"])
+            .status
+            .success()
+    );
+    let listed: serde_json::Value =
+        serde_json::from_str(&text(&run(&["list", home.to_str().unwrap()]))).unwrap();
+    assert_eq!(listed["name"], name.as_str());
+    assert_eq!(listed["selected"], true);
+
+    // Removal asks first; without a terminal it needs --yes. It clears the
+    // selection it removes.
+    assert!(!run(&["remove", &name]).status.success());
+    assert!(run(&["remove", &name, "--yes"]).status.success());
+    assert!(!home.join(format!("{name}.ecl")).exists());
+    assert!(!run(&["expand", "<< 1000001", "--count"]).status.success());
+}

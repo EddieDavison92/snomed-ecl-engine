@@ -72,27 +72,34 @@ impl Source {
 }
 
 /// Resolves the index to query: the explicit argument, else the environment
-/// variable, else the recorded selection. The path is not opened here.
+/// variable, else the recorded selection. The first two may be a path or a
+/// library reference such as `uk@2026-08`. The index is not opened here.
 pub fn resolve(explicit: Option<&str>) -> Result<(PathBuf, Source)> {
-    if let Some(path) = explicit {
-        return Ok((PathBuf::from(path), Source::Argument));
+    if let Some(reference) = explicit {
+        return Ok((crate::library::resolve(reference)?, Source::Argument));
     }
-    if let Some(path) = std::env::var_os(ENV_STORE).filter(|value| !value.is_empty()) {
-        return Ok((PathBuf::from(path), Source::Environment));
+    if let Some(reference) = std::env::var(ENV_STORE)
+        .ok()
+        .filter(|value| !value.is_empty())
+    {
+        return Ok((crate::library::resolve(&reference)?, Source::Environment));
     }
     if let Some(path) = load().store {
         return Ok((path, Source::Selected));
     }
     bail!(
-        "No index selected. Give the index path, or select one first:\n\
-         \x20 snomed-ecl-engine stores        list indexes found on disk\n\
-         \x20 snomed-ecl-engine use PATH      remember one index for later commands\n\
+        "No index selected. Give an index name or path, or select one first:\n\
+         \x20 snomed-ecl-engine add ARCHIVE   build an index from an RF2 release\n\
+         \x20 snomed-ecl-engine list          list the indexes available\n\
+         \x20 snomed-ecl-engine use NAME      remember one for later commands\n\
          Setting {ENV_STORE} overrides the selection for one shell."
     )
 }
 
 /// An index found on disk, with the manifest facts worth showing in a list.
 pub struct Found {
+    /// The library name, for an index in the library folder.
+    pub name: Option<String>,
     pub path: PathBuf,
     pub edition: String,
     pub active_concepts: usize,
@@ -102,10 +109,12 @@ pub struct Found {
     pub selected: bool,
 }
 
-/// Directories searched when `stores` is given no path: the working directory
-/// and the conventional index location beneath it.
+/// Directories searched when `list` is given no path: the library, the working
+/// directory and the conventional `data` folder beneath it.
 pub fn default_roots() -> Vec<PathBuf> {
-    vec![PathBuf::from("."), PathBuf::from("data")]
+    let mut roots: Vec<_> = crate::library::home().into_iter().collect();
+    roots.extend([PathBuf::from("."), PathBuf::from("data")]);
+    roots
 }
 
 /// Lists indexes directly inside each root, and each root that is itself an
@@ -130,7 +139,10 @@ pub fn discover(roots: &[PathBuf], selected: Option<&Path>) -> Vec<Found> {
             }
         }
     }
-    found.sort_by(|a, b| a.path.cmp(&b.path));
+    // Library indexes first, by name; others by path.
+    found.sort_by(|a, b| {
+        (a.name.is_none(), &a.name, &a.path).cmp(&(b.name.is_none(), &b.name, &b.path))
+    });
     found
 }
 
@@ -162,7 +174,23 @@ pub fn inspect(path: &Path, selected: Option<&Path>) -> Option<Found> {
         }
         _ => false,
     };
+    let home = crate::library::home()
+        .ok()
+        .and_then(|home| std::fs::canonicalize(home).ok());
+    let in_library = packed
+        && path.extension().is_some_and(|ext| ext == "ecl")
+        && canonical
+            .as_deref()
+            .and_then(Path::parent)
+            .is_some_and(|parent| Some(parent) == home.as_deref());
     Some(Found {
+        name: in_library
+            .then(|| {
+                path.file_stem()
+                    .and_then(|stem| stem.to_str())
+                    .map(str::to_owned)
+            })
+            .flatten(),
         bytes: size_of_index(path, packed),
         edition: manifest.edition,
         active_concepts: manifest.active_concept_count,

@@ -146,55 +146,71 @@ pub fn manifest(m: &Manifest, location: Option<&str>) {
 /// the version segment alone; `stats` gives the full URI.
 pub fn stores(found: &[crate::workspace::Found]) {
     println!("{}\n", heading("SNOMED ECL / indexes"));
+    let home = crate::library::home()
+        .map(|home| home.display().to_string())
+        .unwrap_or_else(|_| "not available".into());
     if found.is_empty() {
-        println!("  No indexes found. Build one with `import`, or give `stores` a path to search.");
+        println!("  No indexes yet. Build one from an RF2 release:\n");
+        println!("    snomed-ecl-engine add ARCHIVE.zip\n");
+        println!("  The library folder is {}.", clean(&home));
         return;
     }
-    let width = found
+    // Library indexes by name; others by path.
+    let labels: Vec<String> = found
         .iter()
-        .map(|entry| entry.path.display().to_string().chars().count())
+        .map(|entry| match &entry.name {
+            Some(name) => clean(name),
+            None => clean(&entry.path.display().to_string()),
+        })
+        .collect();
+    let width = labels
+        .iter()
+        .map(|label| label.chars().count())
         .max()
-        .unwrap_or(4)
-        .clamp(4, 48);
+        .unwrap_or(5)
+        .clamp(5, 48);
     println!(
-        "    {:<width$}  {:>9}  {:>10}  VERSION",
-        "INDEX", "CONCEPTS", "SIZE"
+        "    {:<width$}  {:<16}  {:>9}  {:>8}",
+        "INDEX", "RELEASE", "CONCEPTS", "SIZE"
     );
-    println!("  {}", "-".repeat(width + 36));
-    for entry in found {
-        let path = clean(&entry.path.display().to_string());
-        let version = entry
-            .edition
-            .rsplit_once("/version/")
-            .map_or(entry.edition.as_str(), |(_, version)| version);
+    println!("  {}", "-".repeat(width + 43));
+    for (entry, label) in found.iter().zip(&labels) {
+        let release = match crate::library::edition_parts(&entry.edition) {
+            Some((family, date)) => format!("{family} {}", crate::library::show_date(&date)),
+            None => clean(&entry.edition),
+        };
         println!(
-            "  {} {:<width$}  {:>9}  {:>10}  {}{}",
+            "  {} {:<width$}  {:<16}  {:>9}  {:>8}{}",
             if entry.selected { "*" } else { " " },
-            path,
+            label,
+            release,
             number(entry.active_concepts),
             bytes(entry.bytes),
-            clean(version),
-            if entry.packed { " (packed)" } else { "" },
+            if entry.packed { "" } else { "  directory" },
         );
     }
     println!("\n  * selected. Concepts are active concepts; `stats` has the full manifest.");
-    println!("  Select one with `use PATH`.");
+    println!("  Select one with `use NAME`, or `use uk` for the latest UK release.");
+    println!("  Library folder: {}", clean(&home));
 }
 
 /// The command list, with the selected index and the next useful step. Shown
 /// bare or with `help`, so it is the first thing most users read.
 fn root() {
-    println!("Import a verified RF2 Snapshot and query its local index.\n");
+    println!("Evaluate SNOMED CT ECL against a local index built from an RF2 release.\n");
     println!("Usage: snomed-ecl-engine COMMAND [ARGS] [--json|--plain]\n");
-    println!("Index:");
-    println!("  import      Build an immutable index from an RF2 archive");
-    println!("  add-refsets Add a simple RF2 refset supplement to an existing index");
-    println!("  inspect     Read an archive's release metadata and print its import command");
-    println!("  stores      List indexes found on disk");
-    println!("  use         Remember one index for later commands");
-    println!("  stats       Inspect edition, counts and index size");
-    println!("  verify      Check every index section");
-    println!("  pack        Build one compressed index file\n");
+    println!("Indexes:");
+    println!("  add         Build an index from an RF2 archive and select it");
+    println!("  list        List your indexes and their releases");
+    println!("  use         Select an index by name, such as uk or uk@2026-08");
+    println!("  remove      Delete an index from the library");
+    println!("  stats       Show an index's edition, counts and size");
+    println!("  verify      Check every section of an index\n");
+    println!("Building by hand:");
+    println!("  inspect     Read an archive's release metadata");
+    println!("  import      Build an index directory from an RF2 archive");
+    println!("  add-refsets Add a simple RF2 refset supplement to an index");
+    println!("  pack        Pack an index directory into one compressed file\n");
     println!("Query:");
     println!("  query       Evaluate ECL expressions against one open index");
     println!("  expand      Evaluate one ECL expression");
@@ -205,12 +221,14 @@ fn root() {
     match crate::workspace::load().store {
         Some(store) => {
             println!("Selected index: {}", clean(&store.display().to_string()));
-            println!("Commands taking [STORE] use it unless given a path or SNOMED_ECL_STORE.");
+            println!(
+                "Commands taking [STORE] use it unless given a name, a path or SNOMED_ECL_STORE."
+            );
             println!("\nNext: snomed-ecl-engine query");
         }
         None => {
             println!("No index selected.");
-            println!("\nNext: snomed-ecl-engine stores, then use PATH on one of them.");
+            println!("\nNext: snomed-ecl-engine add ARCHIVE.zip, or `list` to see your indexes.");
         }
     }
     println!("\nOutput:");
@@ -233,8 +251,10 @@ pub fn help(command: Option<&str>) -> anyhow::Result<()> {
         None | Some("help") => root(),
         Some("import") => println!("Usage: import ARCHIVE DESTINATION EDITION_URI SHA256 [DISPLAY_REFSET_IDS]\n\nRequires one self-contained Snapshot ZIP, a versioned edition URI and\na trusted archive SHA-256. DESTINATION must not exist.\nOptional display refsets are comma-separated IDs in preference order.\nThe default is NHS clinical realm, pharmacy realm, then GB English.\n\nStages and elapsed time go to stderr. Redirected stdout contains JSON.\nThis build {} import support.", if cfg!(feature = "import") { "includes" } else { "excludes" }),
         Some("add-refsets") => println!("Usage: add-refsets BASE_STORE ARCHIVE DESTINATION RELEASE_DATE SHA256\n\nLoad simple concept refsets from a verified RF2 Snapshot ZIP.\nInclude new defining concepts and inferred is-a relationships when supplied.\nRELEASE_DATE is YYYYMMDD. DESTINATION must not exist.\nExisting definitions and populated refsets cannot be replaced.\nFor an updated supplement, start from the original base store.\nDescriptions and typed simple members are preserved when the base has those indexes. Arbitrary maps are not imported.\nThe base display index is required. See docs/indexes.md for scope and provenance."),
-        Some("use") => println!("Usage: use STORE | use --clear\n\nRemember one index, so later commands need no path.\nThe path is checked and stored absolute, outside the repository.\nSNOMED_ECL_STORE overrides the selection for one shell.\nAn explicit path on any command overrides both."),
-        Some("stores") => println!("Usage: stores [PATH...]\n\nList indexes in the given directories, or directly inside . and data.\nEach directory holding manifest.json, and each packed index file, is listed.\nThe selected index is marked. Nothing else is reported as an error."),
+        Some("use") => println!("Usage: use [NAME | PATH | --clear]\n\nRemember one index, so later commands need no path. NAME is a library\nindex such as uk-20260826, a release such as uk@2026-08, or an edition\nalone, such as uk, for its latest release. With no argument, shows the\nselection. SNOMED_ECL_STORE overrides it for one shell."),
+        Some("list" | "stores") => println!("Usage: list [FOLDER...]\n\nList the library's indexes by name and release, then any other index\nfound directly inside . and data, or inside the folders given. The\nlibrary folder is set by SNOMED_ECL_HOME, or defaults to the platform's\ndata folder. `stores` is another name for this command."),
+        Some("add") => println!("Usage: add ARCHIVE [--sha256 HEX] [--name NAME] [--edition URI]\n\nBuild an index from an RF2 Snapshot ZIP, pack it into the library and\nselect it. The name defaults to the edition and release date, such as\nuk-20260826.\n\n  --sha256   The checksum your distributor published. Without it, the\n             archive's checksum is shown and you are asked to confirm it.\n  --name     Another name for the index.\n  --edition  The edition URI, when the archive does not name one.\n\nExample: snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 1330d2f2..."),
+        Some("remove") => println!("Usage: remove NAME [--yes]\n\nDelete one index from the library, after asking. NAME accepts the same\nforms as `use`. --yes skips the question, for scripts."),
         Some("query") => println!("Usage: query [STORE] [--display|--count] [--config FILE]\n\nOpen one index and evaluate ECL expressions until :quit.\nThe index is opened and verified once, so later expressions answer immediately.\n  :display  toggle result terms\n  :count    toggle totals only\n  :stats    show the index manifest\nParse and evaluation errors return to the prompt and do not end the session.\nResults are listed in pages; the total is always reported in full.\nUse expand for one expression, or batch for scripted JSONL queries."),
         Some("diff") => println!("Usage: diff OLD_STORE NEW_STORE ECL [--display|--count] [--config FILE]\n\nEvaluate one expression against two indexes and report added and removed codes.\nUse it to see what a release or refset version changed for a definition.\nBoth indexes are opened in turn, not together.\nTerms are resolved from the index each code belongs to, so removed concepts\nstill get the term the older index held.\nRedirected output, or --json, gives the complete added and removed code sets.\nConcept results only; member projections returning values or rows are refused."),
         Some("inspect") => println!("Usage: inspect ARCHIVE

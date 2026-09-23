@@ -9,7 +9,7 @@ point it at a SNOMED CT release, it builds an index once, and you query that
 index inside your own process.
 
 ```sh
-snomed-ecl-engine use data/uk.ecl
+snomed-ecl-engine use uk
 snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 ```
 
@@ -108,29 +108,23 @@ England's [TRUD](https://isd.digital.nhs.uk/trud/) and note the SHA-256 shown on
 its download page.
 
 ```sh
-# Read the archive's release metadata; prints the import command for it.
-snomed-ecl-engine inspect uk_sct2mo_42.5.0_20260826000001Z.zip
+# Build an index from the archive and select it. About two minutes.
+snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 SHA256_FROM_TRUD
 
-# Build the index, then keep it in one compressed file.
-snomed-ecl-engine import uk_sct2mo_42.5.0_20260826000001Z.zip data/index EDITION_URI SHA256
-snomed-ecl-engine pack data/index data/uk.ecl
-
-# Choose it once; later commands need no path.
-snomed-ecl-engine use data/uk.ecl
 snomed-ecl-engine expand '<< 195967001 |Asthma|' --count
 snomed-ecl-engine query
 ```
 
-`import` checks the SHA-256 you supply before reading anything. Compare it with
-the value the distributor published: a checksum of your own download shows it is
-intact, not where it came from.
+`add` checks the archive against the SHA-256 you give before reading anything.
+Use the value the distributor published: a checksum of your own download shows
+it is intact, not where it came from. Without `--sha256`, `add` shows the
+archive's checksum and asks you to confirm it.
 
 | Command | |
 |---|---|
-| `inspect` | Read an archive's release metadata and print its import command |
-| `import` · `add-refsets` | Build an index; add simple refsets such as UK PCD |
-| `pack` · `verify` | Write one compressed file; check every section |
-| `stores` · `use` · `stats` | Find indexes, select one, inspect it |
+| `add` · `list` · `use` · `remove` | Build an index from a release; list, select and delete indexes |
+| `inspect` · `import` · `pack` | The steps `add` runs, for building by hand |
+| `add-refsets` · `stats` · `verify` | Add simple refsets such as UK PCD; inspect and check an index |
 | `query` | Evaluate expressions interactively against one open index |
 | `expand` · `batch` | Evaluate one expression; or JSONL on stdin for scripts and agents |
 | `hierarchy` | List a concept's parents, children, ancestors or descendants |
@@ -240,8 +234,8 @@ extracted when the index is built, so a search is a binary search and a list
 intersection, and it needs no collation library at query time.
 
 ```sh
-echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch data/uk.ecl
-echo '{"concept":"709044004"}'               | snomed-ecl-engine batch data/uk.ecl
+echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch uk
+echo '{"concept":"709044004"}'               | snomed-ecl-engine batch uk
 ```
 
 ## Exact semantics
