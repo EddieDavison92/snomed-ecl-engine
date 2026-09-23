@@ -1,11 +1,14 @@
-use super::{put_u32s, sha256, validate_offsets, IndexSource, Input};
+use super::{put_u32s, put_u64, sha256, validate_offsets, IndexSource, Input};
 use anyhow::{ensure, Result};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
-const MAGIC: &[u8; 8] = b"SNECLM01";
+/// Members as plain u32s.
+const MAGIC_V1: &[u8; 8] = b"SNECLM01";
+/// Members as varint deltas; decoded to u32s on open.
+const MAGIC: &[u8; 8] = b"SNECLM02";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MembershipManifest {
@@ -122,7 +125,9 @@ impl MembershipIndex {
         out.write_all(MAGIC)?;
         put_u32s(&mut out, &self.refsets)?;
         put_u32s(&mut out, &self.offsets)?;
-        put_u32s(&mut out, &self.members)?;
+        let members = super::varint::encode(&self.offsets, &self.members)?;
+        put_u64(&mut out, members.len() as u64)?;
+        out.write_all(&members)?;
         out.flush()?;
         out.get_ref().sync_all()?;
         Ok(())
@@ -151,11 +156,19 @@ impl MembershipIndex {
         metadata: &MembershipManifest,
         count: usize,
     ) -> Result<Self> {
-        let mut input = Input::open(&source.section("membership.bin")?, MAGIC)?;
+        let (mut input, version) =
+            Input::open_versions(&source.section("membership.bin")?, &[MAGIC_V1, MAGIC])?;
+        let refsets = input.u32s()?;
+        let offsets = input.u32s()?;
+        let members = if version == 0 {
+            input.u32s()?
+        } else {
+            super::varint::decode(&offsets, &input.bytes()?)?
+        };
         let index = Self {
-            refsets: input.u32s()?,
-            offsets: input.u32s()?,
-            members: input.u32s()?,
+            refsets,
+            offsets,
+            members,
             concept_refsets: metadata.concept_refsets.clone(),
             non_concept_refsets: metadata.non_concept_refsets.clone(),
         };
