@@ -9,7 +9,12 @@ use std::sync::OnceLock;
 
 /// Tables written with the member UUID and refsetId columns, read by dropping them.
 const MAGIC_V1: &[u8; 8] = b"SNMEM001";
-const MAGIC: &[u8; 8] = b"SNMEM002";
+/// Tables with rows in release order and fixed-width referenced components.
+const MAGIC_V2: &[u8; 8] = b"SNMEM002";
+/// Rows sorted by referenced component, stored as varint gaps.
+const MAGIC: &[u8; 8] = b"SNMEM003";
+/// Field type of a sorted identifier column written as varint gaps.
+const SORTED_IDS: u32 = 7;
 
 /// The RF2 metadata columns a table keeps, in order, before its own fields.
 ///
@@ -17,7 +22,12 @@ const MAGIC: &[u8; 8] = b"SNMEM002";
 /// fields from `referencedComponentId` on and gives no meaning to the member
 /// UUID (Appendix E), and every row of a table shares its refset. The UUID was
 /// 16 random bytes a row, a quarter of a packed UK index.
-pub const METADATA: [&str; 4] = ["effectiveTime", "active", "moduleId", "referencedComponentId"];
+pub const METADATA: [&str; 4] = [
+    "effectiveTime",
+    "active",
+    "moduleId",
+    "referencedComponentId",
+];
 /// Column of each row's active flag.
 pub const ACTIVE: usize = 1;
 /// Column of each row's referenced component.
@@ -102,6 +112,28 @@ impl MemberColumn {
     }
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+    /// The rows at `order`, in that order.
+    fn select(&self, order: &[usize]) -> Result<Self> {
+        fn pick<T: Copy>(values: &[T], order: &[usize]) -> Vec<T> {
+            order.iter().map(|&row| values[row]).collect()
+        }
+        let text = |v: &TextColumn| -> Result<TextColumn> {
+            let mut out = TextColumn::default();
+            for &row in order {
+                out.push(v.get(row))?;
+            }
+            Ok(out)
+        };
+        Ok(match self {
+            Self::Id(v) => Self::Id(pick(v, order)),
+            Self::Integer(v) => Self::Integer(pick(v, order)),
+            Self::Number(v) => Self::Number(text(v)?),
+            Self::Boolean(v) => Self::Boolean(pick(v, order)),
+            Self::Time(v) => Self::Time(pick(v, order)),
+            Self::Text(v) => Self::Text(text(v)?),
+            Self::Uuid(v) => Self::Uuid(pick(v, order)),
+        })
     }
     pub fn value(&self, row: usize) -> MemberValue {
         match self {
@@ -289,8 +321,18 @@ impl MemberTable {
         );
         Ok(())
     }
+    /// Writes rows sorted by referenced component, ties in their current order.
+    ///
+    /// Sorted, the referenced components are small gaps from one row to the
+    /// next, and neighbouring rows of a map share most of their other fields
+    /// too: the UK tables pack to under half their size in release order.
     pub fn write(&self, directory: &Path) -> Result<MemberManifest> {
         self.validate()?;
+        let MemberColumn::Id(references) = &self.columns[REFERENCES] else {
+            bail!("Invalid member reference column");
+        };
+        let mut order: Vec<usize> = (0..self.len()).collect();
+        order.sort_by_key(|&row| references[row]);
         std::fs::create_dir_all(directory.join("members"))?;
         let path = directory
             .join("members")
@@ -301,8 +343,16 @@ impl MemberTable {
         let schema = serde_json::to_vec(&self.names)?;
         put_u64(&mut out, schema.len() as u64)?;
         out.write_all(&schema)?;
-        for column in &self.columns {
+        for (index, column) in self.columns.iter().enumerate() {
+            let column = &column.select(&order)?;
             match column {
+                MemberColumn::Id(v) if index == REFERENCES => {
+                    let bytes = super::varint::encode_u64(v)?;
+                    put_u32(&mut out, SORTED_IDS)?;
+                    put_u64(&mut out, v.len() as u64)?;
+                    put_u64(&mut out, bytes.len() as u64)?;
+                    out.write_all(&bytes)?;
+                }
                 MemberColumn::Id(v) => {
                     put_u32(&mut out, 0)?;
                     put_u64(&mut out, v.len() as u64)?;
@@ -361,7 +411,7 @@ impl MemberTable {
     pub(super) fn open(source: &IndexSource, metadata: &MemberManifest) -> Result<Self> {
         let (mut input, version) = Input::open_versions(
             &source.section(&format!("members/{}.bin", metadata.refset))?,
-            &[MAGIC_V1, MAGIC],
+            &[MAGIC_V1, MAGIC_V2, MAGIC],
         )?;
         let legacy = version == 0;
         let refset = input.u64()?;
@@ -403,6 +453,10 @@ impl MemberTable {
                     offsets: input.u32s()?,
                     text: String::from_utf8(input.bytes()?)?,
                 }),
+                SORTED_IDS if version == 2 => {
+                    let n = input.count(1)?;
+                    MemberColumn::Id(super::varint::decode_u64(n, &input.bytes()?)?)
+                }
                 _ => bail!("Unknown member field type"),
             });
         }
@@ -430,7 +484,10 @@ impl MemberTable {
             names,
             columns,
         };
-        ensure!(table.len() == metadata.rows, "Member manifest counts differ");
+        ensure!(
+            table.len() == metadata.rows,
+            "Member manifest counts differ"
+        );
         table.validate()?;
         Ok(table)
     }
@@ -460,7 +517,10 @@ struct Slot {
     orders: Box<[OnceLock<Vec<u32>>]>,
 }
 impl Slot {
-    fn new(meta: MemberManifest, table: OnceLock<std::result::Result<MemberTable, String>>) -> Self {
+    fn new(
+        meta: MemberManifest,
+        table: OnceLock<std::result::Result<MemberTable, String>>,
+    ) -> Self {
         let fields: Vec<String> = if meta.fields.first().is_some_and(|f| f == "id") {
             meta.fields
                 .iter()
