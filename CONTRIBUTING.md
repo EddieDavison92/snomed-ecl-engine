@@ -49,10 +49,11 @@ Tests use synthetic fixtures, so none of them needs a SNOMED CT release.
 
 Bump `version` in `Cargo.toml`, merge, then push a matching tag such as
 `v0.1.1`. The release workflow builds every platform and publishes to GitHub
-Releases, crates.io, npm, the Homebrew tap and ghcr.io. It skips a registry
-whose secret is missing: `CARGO_REGISTRY_TOKEN`, `NPM_TOKEN` and
-`HOMEBREW_TAP_TOKEN`, which needs write access to `EddieDavison92/homebrew-tap`.
-A pull request that changes packaging runs the same builds without publishing.
+Releases, crates.io, npm, the Homebrew tap and ghcr.io. crates.io and npm
+trust the workflow through OIDC trusted publishing, so they need no stored
+token. The tap needs `HOMEBREW_TAP_TOKEN`, with write access to
+`EddieDavison92/homebrew-tap`, and is skipped without it. A pull request that
+changes packaging runs the same builds without publishing.
 
 ## Data and licensing
 
