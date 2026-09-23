@@ -361,7 +361,11 @@ fn malformed_refinements_fail_and_long_syntax_agrees() {
         "* : 1005000 = *, 1006000 = * OR 1007000 = *, 1008000 = *",
         "* : 1005000 = *, 1006000 = * OR { 1007000 = * }",
     ] {
-        assert_eq!(parse(mixed).unwrap_err().kind, ParseErrorKind::Semantic, "{mixed}");
+        assert_eq!(
+            parse(mixed).unwrap_err().kind,
+            ParseErrorKind::Semantic,
+            "{mixed}"
+        );
     }
     assert!(parse("* : (1005000 = * OR 1006000 = *) AND 1007000 = *").is_ok());
     assert_eq!(

@@ -390,9 +390,18 @@ fn grammatical_values_that_name_nothing_are_refused_after_parsing() {
 
 #[test]
 fn long_syntax_keywords_may_run_into_not_and_boolean_operators() {
-    same("< 1000001 {{D id NOT = 1000002}}", "< 1000001 {{D idNOT= 1000002}}");
-    same("< 1000001 {{C active NOT = 0}}", "< 1000001 {{C activeNot=0}}");
-    same("* : 1000001 = true OR 1000002 = *", "* : 1000001 = trueOR 1000002 = *");
+    same(
+        "< 1000001 {{D id NOT = 1000002}}",
+        "< 1000001 {{D idNOT= 1000002}}",
+    );
+    same(
+        "< 1000001 {{C active NOT = 0}}",
+        "< 1000001 {{C activeNot=0}}",
+    );
+    same(
+        "* : 1000001 = true OR 1000002 = *",
+        "* : 1000001 = trueOR 1000002 = *",
+    );
     // A field that merely ends in `not` stays a field.
     parses("^200001 {{M cannot = 1000001}}");
     // Not a date, so a string compared with a field named effectiveTime.
@@ -416,7 +425,10 @@ fn grammatical_forms_found_by_the_differential_check() {
     same("memberOf ANY", "memberOfANY");
     same("refsetContainingAny ANY", "refsetContainingAnyANY");
     // NOT may follow a keyword across a comment.
-    same("< 1000001 {{D type NOT = syn}}", "< 1000001 {{D typeNOT/* c */= syn}}");
+    same(
+        "< 1000001 {{D type NOT = syn}}",
+        "< 1000001 {{D typeNOT/* c */= syn}}",
+    );
     // A field projected twice is grammatical but asks for nothing more.
     semantic_error("^[mapTarget, mapTarget] 200001");
     // A filter naming no type is a description filter (6.8), although the ABNF
@@ -432,7 +444,9 @@ fn grammatical_forms_found_by_the_differential_check() {
 #[test]
 fn operator_mixes_are_grammatical_only_where_groups_allow() {
     // `(a, b) AND c OR d AND {g}` derives as `(a, b) AND (c OR d) AND {g}`.
-    semantic_error("* : (1000001 = *, 1000002 = *) AND 1000003 = * OR 1000004 = * AND { 1000005 = * }");
+    semantic_error(
+        "* : (1000001 = *, 1000002 = *) AND 1000003 = * OR 1000004 = * AND { 1000005 = * }",
+    );
     // Operators on both sides of a group must agree.
     syntax_error("* : 1000001 = * AND { 1000002 = * } OR 1000003 = *");
     // A bracketed single concept is a subexpression, so filters may follow it.

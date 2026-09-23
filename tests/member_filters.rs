@@ -1065,7 +1065,9 @@ fn map_target_strings_use_the_same_row_as_numeric_filters() {
 fn rows_found_through_an_identifier_column_keep_table_order() {
     // Enough rows that one referenced concept is looked up rather than scanned.
     let rows = 400usize;
-    let referenced: Vec<u64> = (0..rows).map(|i| [300001, 300002, 300003][i * 7 % 3]).collect();
+    let referenced: Vec<u64> = (0..rows)
+        .map(|i| [300001, 300002, 300003][i * 7 % 3])
+        .collect();
     let targets: Vec<u64> = (0..rows).map(|i| [400001, 400002, 400003][i % 3]).collect();
     let mut text = TextColumn::default();
     for i in 0..rows {
@@ -1106,7 +1108,10 @@ fn rows_found_through_an_identifier_column_keep_table_order() {
         .collect();
     assert_eq!(actual, expected);
     assert_eq!(
-        codes(&store, "^[targetComponentId] 200001 {{M referencedComponentId = 300003, mapGroup = #2}}"),
+        codes(
+            &store,
+            "^[targetComponentId] 200001 {{M referencedComponentId = 300003, mapGroup = #2}}"
+        ),
         (0..rows)
             .filter(|&i| i % 5 != 0 && referenced[i] == 300003 && i % 4 == 2)
             .map(|i| targets[i])
@@ -1123,7 +1128,10 @@ fn member_uuid_and_refset_id_are_not_fields() {
     let store = fixture();
     for (query, field) in [
         ("^200001 {{M id=#1}}", "id"),
-        ("^200001 {{M id=\"01010101-0101-0101-0101-010101010101\"}}", "id"),
+        (
+            "^200001 {{M id=\"01010101-0101-0101-0101-010101010101\"}}",
+            "id",
+        ),
         ("^[id] 200001", "id"),
         ("^200001 {{M refsetId=200001}}", "refsetid"),
         ("^[referencedComponentId, refsetId] 200001", "refsetid"),

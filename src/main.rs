@@ -856,9 +856,7 @@ impl serde::Serialize for Labelled {
     ) -> std::result::Result<S::Ok, S::Error> {
         use serde::ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(Some(self.codes.len()))?;
-        for ((code, display), active) in
-            self.codes.iter().zip(&self.displays).zip(&self.actives)
-        {
+        for ((code, display), active) in self.codes.iter().zip(&self.displays).zip(&self.actives) {
             seq.serialize_element(&serde_json::json!({
                 "code": code.to_string(),
                 "display": display,
@@ -1028,7 +1026,10 @@ fn score(label: &str, query: &str, query_words: &[String]) -> i32 {
         score += 1000;
     }
     // The label opens with what was typed, so it reads as a continuation.
-    if label.to_ascii_lowercase().starts_with(&query.trim().to_ascii_lowercase()) {
+    if label
+        .to_ascii_lowercase()
+        .starts_with(&query.trim().to_ascii_lowercase())
+    {
         score += 200;
     }
     for (position, word) in query_words.iter().enumerate() {
@@ -1062,7 +1063,11 @@ fn history_response(
     out: &mut impl Write,
 ) -> Result<()> {
     let Some(ordinal) = sctid.parse::<u64>().ok().and_then(|id| store.ordinal(id)) else {
-        writeln!(out, "{}", serde_json::json!({"error":"NotFound","concept":sctid}))?;
+        writeln!(
+            out,
+            "{}",
+            serde_json::json!({"error":"NotFound","concept":sctid})
+        )?;
         return Ok(());
     };
     let Some(index) = store.history.get()? else {
@@ -1074,24 +1079,25 @@ fn history_response(
         return Ok(());
     };
     let labels = labels.get()?;
-    let describe = |rows: Vec<snomed_ecl_engine::store::Association>| -> Result<Vec<serde_json::Value>> {
-        rows.into_iter()
-            .map(|row| {
-                let association = store.ordinal(row.refset);
-                Ok(serde_json::json!({
-                    "association": {
-                        "code": row.refset.to_string(),
-                        "display": association.map(|o| labels.get(o)).transpose()?.flatten(),
-                    },
-                    "concept": {
-                        "code": store.ids[row.concept as usize].to_string(),
-                        "display": labels.get(row.concept)?,
-                        "active": store.is_active(row.concept),
-                    },
-                }))
-            })
-            .collect()
-    };
+    let describe =
+        |rows: Vec<snomed_ecl_engine::store::Association>| -> Result<Vec<serde_json::Value>> {
+            rows.into_iter()
+                .map(|row| {
+                    let association = store.ordinal(row.refset);
+                    Ok(serde_json::json!({
+                        "association": {
+                            "code": row.refset.to_string(),
+                            "display": association.map(|o| labels.get(o)).transpose()?.flatten(),
+                        },
+                        "concept": {
+                            "code": store.ids[row.concept as usize].to_string(),
+                            "display": labels.get(row.concept)?,
+                            "active": store.is_active(row.concept),
+                        },
+                    }))
+                })
+                .collect()
+        };
     let successors = describe(index.successors(ordinal))?;
     let predecessors = describe(index.predecessors(ordinal))?;
     serde_json::to_writer(
@@ -1169,7 +1175,10 @@ fn batch_line(
             let id = serde_json::from_slice::<serde_json::Value>(line)
                 .ok()
                 .and_then(|value| value.get("id").cloned());
-            (id, writeln!(out, "{{\"error\":\"InvalidRequest\"}}").map_err(Into::into))
+            (
+                id,
+                writeln!(out, "{{\"error\":\"InvalidRequest\"}}").map_err(Into::into),
+            )
         }
     };
     if let Err(error) = result {

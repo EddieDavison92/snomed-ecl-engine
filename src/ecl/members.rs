@@ -114,9 +114,7 @@ impl Parser<'_> {
                 let list = self.take("(");
                 self.ws()?;
                 let first = self.filter_date();
-                if first.is_err()
-                    && dated
-                    && matches!(comparison, Comparison::Eq | Comparison::Ne)
+                if first.is_err() && dated && matches!(comparison, Comparison::Eq | Comparison::Ne)
                 {
                     // Not a date, so the grammar reads it as a string compared with a
                     // field that happens to be named effectiveTime; evaluation types it.

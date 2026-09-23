@@ -446,8 +446,9 @@ pub fn import_snapshot_with_progress(
         membership.manifest(&membership_path, non_concept_rows, refset_files)?;
     let description_manifest = descriptions.write(&staging.join("descriptions.bin"))?;
     progress("Indexing description words for search");
-    let search_manifest = crate::store::SearchIndex::build(crate::store::search_pairs(&descriptions, n)?)?
-        .write(&staging.join("search.bin"))?;
+    let search_manifest =
+        crate::store::SearchIndex::build(crate::store::search_pairs(&descriptions, n)?)?
+            .write(&staging.join("search.bin"))?;
     drop(descriptions);
     progress("Indexing typed reference-set members");
     let member_tables =

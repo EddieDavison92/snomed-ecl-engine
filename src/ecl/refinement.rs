@@ -79,7 +79,9 @@ impl Parser<'_> {
         let rest = found.get(word.len()..).unwrap_or("");
         let joined = found.len() > word.len()
             && found[..word.len()].eq_ignore_ascii_case(word)
-            && (["and", "or", "minus"].iter().any(|op| rest.eq_ignore_ascii_case(op))
+            && (["and", "or", "minus"]
+                .iter()
+                .any(|op| rest.eq_ignore_ascii_case(op))
                 || rest.eq_ignore_ascii_case("not")
                     && skip_space(&self.rest()[found.len()..]).starts_with('='));
         if found.eq_ignore_ascii_case(word) || joined {
@@ -94,8 +96,18 @@ impl Parser<'_> {
     /// known keyword ending in `not` before `=` is read without it.
     pub(super) fn filter_name(&self) -> String {
         const KNOWN: &[&str] = &[
-            "term", "language", "type", "typeid", "dialect", "dialectid", "id", "moduleid",
-            "effectivetime", "active", "definitionstatus", "definitionstatusid",
+            "term",
+            "language",
+            "type",
+            "typeid",
+            "dialect",
+            "dialectid",
+            "id",
+            "moduleid",
+            "effectivetime",
+            "active",
+            "definitionstatus",
+            "definitionstatusid",
         ];
         let name = self.word().to_ascii_lowercase();
         if let Some(keyword) = name.strip_suffix("not") {
@@ -467,7 +479,10 @@ impl Parser<'_> {
 fn skip_space(mut text: &str) -> &str {
     loop {
         text = text.trim_start_matches([' ', '\t', '\r', '\n']);
-        match text.strip_prefix("/*").and_then(|c| c.find("*/").map(|end| &c[end + 2..])) {
+        match text
+            .strip_prefix("/*")
+            .and_then(|c| c.find("*/").map(|end| &c[end + 2..]))
+        {
             Some(rest) => text = rest,
             None => return text,
         }

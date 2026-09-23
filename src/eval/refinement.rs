@@ -446,7 +446,8 @@ impl Context<'_> {
         if !values.is_empty() {
             for &i in &selected {
                 self.tick(1)?;
-                let value = crate::store::MemberValue::Concept(self.store.ids[i as usize].to_string());
+                let value =
+                    crate::store::MemberValue::Concept(self.store.ids[i as usize].to_string());
                 self.claim(super::values::value_cost(&value))?;
                 values.insert(value);
             }

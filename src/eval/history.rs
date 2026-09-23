@@ -46,7 +46,12 @@ impl Context<'_> {
         let wanted = |refset: u64| {
             refset != MOVED_TO && (includes(refset) || refset == MOVED_FROM && moved_from)
         };
-        if let Some(index) = self.store.history.get().map_err(|e| EvalError::Index(e.to_string()))? {
+        if let Some(index) = self
+            .store
+            .history
+            .get()
+            .map_err(|e| EvalError::Index(e.to_string()))?
+        {
             // The index only holds association tables. A subset that selects
             // some other table keeps the scan below, and its behaviour.
             let covered = self

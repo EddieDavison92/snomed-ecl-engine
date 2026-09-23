@@ -15,7 +15,10 @@ const KINDS: [u32; 3] = [0, 1, 2];
 struct Rng(u64);
 impl Rng {
     fn below(&mut self, n: u64) -> u64 {
-        self.0 = self.0.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        self.0 = self
+            .0
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         (self.0 >> 33) % n
     }
 }
@@ -52,13 +55,15 @@ fn store(n: usize, seed: u64) -> NumericStore {
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
-        ids: (0..isa as u64).map(|i| 1_000_000 + i * 1000).chain([ISA]).collect(),
+        ids: (0..isa as u64)
+            .map(|i| 1_000_000 + i * 1000)
+            .chain([ISA])
+            .collect(),
         flags,
         modules: vec![0; total],
         effective_times: vec![20260826; total],
         parents: Adjacency::build(total, parents.clone()).unwrap(),
-        children: Adjacency::build(total, parents.iter().map(|&(c, p)| (p, c)).collect())
-            .unwrap(),
+        children: Adjacency::build(total, parents.iter().map(|&(c, p)| (p, c)).collect()).unwrap(),
         attributes: Attributes::build(total, rows).unwrap(),
         concrete: Attributes::build(total, vec![]).unwrap(),
         concrete_values: vec![],
@@ -71,8 +76,11 @@ fn code(store: &NumericStore, ordinal: u32) -> u64 {
 }
 
 fn run(store: &NumericStore, query: &str) -> Vec<u32> {
-    evaluate(store, &parse(query).unwrap_or_else(|e| panic!("{query}: {e}")))
-        .unwrap_or_else(|e| panic!("{query}: {e}"))
+    evaluate(
+        store,
+        &parse(query).unwrap_or_else(|e| panic!("{query}: {e}")),
+    )
+    .unwrap_or_else(|e| panic!("{query}: {e}"))
 }
 
 /// Distinct active sources whose `kind` (or is-a) points at each concept.
@@ -113,7 +121,13 @@ fn bounded_reverse_matches_a_brute_force_count() {
                 .collect();
             for eq in [true, false] {
                 let counts = pointed_at(&store, kind, &values, eq);
-                for (low, high) in [(1, None), (0, None), (0, Some(0)), (2, Some(3)), (1, Some(1))] {
+                for (low, high) in [
+                    (1, None),
+                    (0, None),
+                    (0, Some(0)),
+                    (2, Some(3)),
+                    (1, Some(1)),
+                ] {
                     let bound = high.map_or("*".into(), |h: usize| h.to_string());
                     let query = format!(
                         "* : [{low}..{bound}] R {} {} << {}",

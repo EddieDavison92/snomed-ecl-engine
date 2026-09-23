@@ -78,7 +78,9 @@ fn a_union_of_many_subsumptions_fits_where_forty_used_to_be_the_limit() {
     let store = forest(20_000, 10);
     // Four hundred separate subtrees in one expression, the shape a code list
     // produces. Against the edition-sized cost this ran out after about forty.
-    let terms: Vec<String> = (0..400).map(|b| format!("<< {}", code(1 + b * 10))).collect();
+    let terms: Vec<String> = (0..400)
+        .map(|b| format!("<< {}", code(1 + b * 10)))
+        .collect();
     let union = parse(&terms.join(" OR ")).unwrap();
     let limits = Limits {
         max_work: 50_000,
@@ -102,11 +104,17 @@ fn a_large_answer_is_still_complete_and_ordered() {
     let store = forest(2_000, 10);
     let everything = evaluate(&store, &parse(&format!("<< {}", code(0))).unwrap()).unwrap();
     assert_eq!(everything.len(), 20_001);
-    assert!(everything.windows(2).all(|w| w[0] < w[1]), "sorted and unique");
+    assert!(
+        everything.windows(2).all(|w| w[0] < w[1]),
+        "sorted and unique"
+    );
 
     let below = evaluate(&store, &parse(&format!("< {}", code(0))).unwrap()).unwrap();
     assert_eq!(below.len(), 20_000);
-    assert!(!below.contains(&0), "the root is excluded from its own descendants");
+    assert!(
+        !below.contains(&0),
+        "the root is excluded from its own descendants"
+    );
 }
 
 #[test]
@@ -115,7 +123,9 @@ fn repeated_traversals_in_one_query_do_not_leak_into_each_other() {
     // successive stamps, and wrap past the stamp's range. A stale marker would
     // surface as a concept that belongs to a different operator's answer.
     let store = forest(600, 3);
-    let terms: Vec<String> = (0..600).map(|b| format!("<< {}", code(1 + b * 3))).collect();
+    let terms: Vec<String> = (0..600)
+        .map(|b| format!("<< {}", code(1 + b * 3)))
+        .collect();
     let expression = parse(&format!(
         "({}) AND ({})",
         terms.join(" OR "),
@@ -123,14 +133,20 @@ fn repeated_traversals_in_one_query_do_not_leak_into_each_other() {
     ))
     .unwrap();
     let answer = evaluate(&store, &expression).unwrap();
-    assert_eq!(answer.len(), 900, "the first three hundred subtrees of three");
+    assert_eq!(
+        answer.len(),
+        900,
+        "the first three hundred subtrees of three"
+    );
 }
 
 /// A many-parent hierarchy: concept `i` has up to three parents below `i`.
 fn dag(n: usize, seed: u64) -> NumericStore {
     let mut state = seed;
     let mut below = |k: usize| {
-        state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         (state >> 33) as usize % k
     };
     let mut pairs = Vec::new();
