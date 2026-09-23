@@ -36,8 +36,9 @@ The UK Monolith release packs into one 152 MiB file, down from 389 MiB:
 - Sections are packed as independent zstd blocks, small for descriptions so
   describing a concept decodes only what it reads.
 
-Queries did not slow down: each section decodes once into the arrays queries
-already used. [How the index is built, compressed and read](docs/index-format.md)
+Queries did not slow down. Sections read whole decode once into the arrays
+queries already used; labels and single-concept lookups still read only what
+they need. [How the index is built, compressed and read](docs/index-format.md)
 has the details and what each step saved.
 
 ### What it is designed for

@@ -269,7 +269,7 @@ No comparison server involved.
 
 | Workload | Result |
 |---|---:|
-| 10,000-expression corpus, one CPU and 320 MiB | 10.27 s per warm batch, 0.82 ms median request, 266 MiB peak |
+| 10,000-expression corpus, one CPU and 320 MiB | 10.27 s per warm batch, 0.82 ms median request, 268 MiB peak |
 | Same corpus, four CPUs and four library workers | 2.15 s per batch, 298 MiB peak |
 | Query-only executable, `--no-default-features` | 2,669,936 B (2.55 MiB), 1,152,950 B gzipped |
 | Default build, with the RF2 importer | 3,388,216 B (3.23 MiB), 1,476,075 B gzipped |
@@ -359,10 +359,11 @@ semantic index, including all description metadata, and the peak rose from
 attribute inverse that refinements use, and the rest is the history and word
 index sections. The 1,000-expression corpus peaks at 144 MiB.
 
-A re-run after the index shrank peaked at 266 MiB and still needs 320 MiB: the
-peak is decoded sections, not file cache. Its batches took 11.4 s, which moved
-with the host rather than the build: interleaved 1,000-expression runs of the
-previous and current builds could not be told apart.
+The table's 10,000-expression row is from that run. A re-run after the index
+shrank peaked at 266 MiB and still needs 320 MiB: the peak is decoded sections,
+not file cache. Its batches took 11.4 s and its median request 0.89 ms, which
+moved with the host rather than the build: interleaved 1,000-expression runs of
+the previous and current builds could not be told apart.
 
 ## Reproducing
 
