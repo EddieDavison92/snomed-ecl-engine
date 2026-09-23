@@ -268,8 +268,7 @@ to leave out the RF2 importer.
 
 ## Licence
 
-The code is licensed under either the [Open Government Licence v3.0](LICENSE-OGL)
-or the [MIT licence](LICENSE-MIT), at your option.
+The code is licensed under the [MIT licence](LICENSE).
 
 SNOMED CT is not included and is licensed separately. It is owned by SNOMED
 International, and you need a licence to use it: in the UK, through NHS England's

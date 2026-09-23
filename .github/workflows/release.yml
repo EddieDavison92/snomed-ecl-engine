@@ -39,7 +39,7 @@ jobs:
           for variant in query default unicode; do
             name="snomed-ecl-engine-$GITHUB_REF_NAME-x86_64-linux-gnu-$variant"
             mkdir "$name"
-            cp "target/$variant/release/snomed-ecl-engine" README.md LICENSE-OGL LICENSE-MIT "$name/"
+            cp "target/$variant/release/snomed-ecl-engine" README.md LICENSE "$name/"
             tar -czf "dist/$name.tar.gz" "$name"
           done
           cd dist && sha256sum *.tar.gz > SHA256SUMS
