@@ -53,22 +53,18 @@ fn fixture() -> (NumericStore, Vec<Row>) {
         .map(|(refset, rows)| MemberTable {
             refset,
             names: [
-                "id",
                 "effectiveTime",
                 "active",
                 "moduleId",
-                "refsetId",
                 "referencedComponentId",
                 "targetComponentId",
             ]
             .map(str::to_owned)
             .to_vec(),
             columns: vec![
-                C::Uuid(rows.iter().map(|r| [r.0 as u8; 16]).collect()),
                 C::Time(vec![20260826; rows.len()]),
                 C::Boolean(rows.iter().map(|r| u8::from(r.3)).collect()),
                 C::Id(vec![100001001; rows.len()]),
-                C::Id(vec![refset; rows.len()]),
                 C::Id(rows.iter().map(|r| r.1).collect()),
                 C::Id(rows.iter().map(|r| r.2).collect()),
             ],

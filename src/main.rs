@@ -545,7 +545,8 @@ fn run() -> Result<()> {
                 |message| {
                     stage += 1;
                     eprintln!(
-                        "  [{stage}/9] {message}  ({:.1}s elapsed)",
+                        "  [{stage}/{}] {message}  ({:.1}s elapsed)",
+                        snomed_ecl_engine::import::IMPORT_STAGES,
                         start.elapsed().as_secs_f64()
                     );
                 },

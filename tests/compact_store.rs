@@ -287,10 +287,14 @@ fn opening_skips_the_core_checksum_that_verify_still_catches() {
     fs::write(&bad, &copy).unwrap();
 
     let store = NumericStore::open(&bad).expect("open does not hash the core");
-    store.validate().expect("the flip breaks no semantic invariant");
+    store
+        .validate()
+        .expect("the flip breaks no semantic invariant");
     assert_eq!(store.ids.len(), concepts);
 
-    let error = verify(&bad).expect_err("verify hashes every section").to_string();
+    let error = verify(&bad)
+        .expect_err("verify hashes every section")
+        .to_string();
     assert!(error.contains("checksum"), "unexpected error: {error}");
 }
 
@@ -588,22 +592,26 @@ fn rf2_descriptors_preserve_inherited_decimal_date_and_uuid_types() {
     }
     let QueryResult::Rows(rows) = evaluate_result(
         &store,
-        &parse("^[customAmount,reviewDate,linkUuid]800001").unwrap(),
+        &parse("^[referencedComponentId,customAmount,reviewDate,linkUuid]800001").unwrap(),
     )
     .unwrap() else {
         panic!()
     };
+    let leaf = rows
+        .iter()
+        .find(|row| row["referencedComponentId"] == MemberValue::Concept(LEAF.to_string()))
+        .unwrap();
     assert_eq!(
-        rows[0]["customAmount"],
+        leaf["customAmount"],
         MemberValue::Number("0.100000000000000001".into())
     );
-    assert_eq!(rows[0]["ReviewDate"], MemberValue::Time("20260801".into()));
+    assert_eq!(leaf["ReviewDate"], MemberValue::Time("20260801".into()));
     assert_eq!(
-        rows[0]["linkUuid"],
+        leaf["linkUuid"],
         MemberValue::String("00000000-0000-4000-8000-000000009001".into())
     );
     let mut table = store.member_tables.get(800001).unwrap().unwrap().clone();
-    let MemberColumn::Number(number) = &mut table.columns[6] else {
+    let MemberColumn::Number(number) = &mut table.columns[4] else {
         panic!()
     };
     number.text.replace_range(..3, "NaN");
@@ -612,7 +620,7 @@ fn rf2_descriptors_preserve_inherited_decimal_date_and_uuid_types() {
     // whether the type comes from the filename or from an Integer descriptor on a string column.
     for refset in [LEFT, KIND] {
         let wide = store.member_tables.get(refset).unwrap().unwrap();
-        assert!(matches!(wide.columns[6], MemberColumn::Number(_)));
+        assert!(matches!(wide.columns[4], MemberColumn::Number(_)));
         for (query, expected) in [
             (format!("^{refset} {{{{M sequence=#7}}}}"), vec![LEAF]),
             (
@@ -1514,7 +1522,10 @@ fn batch_workers_answer_every_request_under_its_id() {
             .lines()
             .map(|line| {
                 let mut value: serde_json::Value = serde_json::from_str(line).unwrap();
-                value.as_object_mut().unwrap().retain(|k, _| !k.ends_with("_ms"));
+                value
+                    .as_object_mut()
+                    .unwrap()
+                    .retain(|k, _| !k.ends_with("_ms"));
                 value
             })
             .collect()
@@ -1524,10 +1535,17 @@ fn batch_workers_answer_every_request_under_its_id() {
     assert_eq!(sequential.len(), requests.len());
     // Sequential answers come in order, each carrying its id.
     for (i, answer) in sequential.iter().enumerate() {
-        let id = if i % 5 == 1 { serde_json::json!(format!("r{i}")) } else { serde_json::json!(i) };
+        let id = if i % 5 == 1 {
+            serde_json::json!(format!("r{i}"))
+        } else {
+            serde_json::json!(i)
+        };
         assert_eq!(answer["id"], id, "{answer}");
     }
-    assert!(sequential[3]["error"].is_string(), "a parse error still carries its id");
+    assert!(
+        sequential[3]["error"].is_string(),
+        "a parse error still carries its id"
+    );
     assert_eq!(sequential[4]["error"], "InvalidRequest");
     // Workers may answer in any order, but the same answers under the same ids.
     let key = |value: &serde_json::Value| value["id"].to_string();
@@ -1558,7 +1576,10 @@ fn one_concept_reads_the_same_descriptions_as_the_loaded_index() {
             seen += read.len();
         }
         assert!(seen > 0, "the fixture has descriptions");
-        assert!(seeking.descriptions.concept_rows(loaded.ids.len() as u32).is_err());
+        assert!(seeking
+            .descriptions
+            .concept_rows(loaded.ids.len() as u32)
+            .is_err());
     }
 }
 
@@ -1581,7 +1602,11 @@ fn search_within_an_expression_keeps_only_its_concepts() {
     {
         let mut input = process.stdin.take().unwrap();
         writeln!(input, "{{\"search\":\"synthetic\"}}").unwrap();
-        writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"<< {LEFT}\"}}").unwrap();
+        writeln!(
+            input,
+            "{{\"search\":\"synthetic\",\"within\":\"<< {LEFT}\"}}"
+        )
+        .unwrap();
         writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"{ROOT}\"}}").unwrap();
         writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"{LEFT}\"}}").unwrap();
         writeln!(input, "{{\"search\":\"synthetic\",\"within\":\"<<\"}}").unwrap();
@@ -1642,8 +1667,8 @@ fn description_filters_on_a_small_focus_agree_with_the_loaded_index() {
         format!("<< {LEFT} {{{{ D active = 0 }}}} {{{{ D language = en }}}}"),
     ];
     if cfg!(feature = "unicode") {
-        queries.push(format!("* {{{{ D term = \"synthetic\" }}}}"));
-        queries.push(format!("* {{{{ D term = wild:\"*label\" }}}}"));
+        queries.push("* {{ D term = \"synthetic\" }}".to_string());
+        queries.push("* {{ D term = wild:\"*label\" }}".to_string());
     }
     for path in [&destination, &packed] {
         let loaded = NumericStore::open(path).unwrap();
@@ -2106,4 +2131,21 @@ fn descriptions_load_lazily_preserve_definitions_and_reject_corruption() {
         .descriptions
         .get()
         .is_err());
+}
+
+#[test]
+fn import_reports_as_many_stages_as_it_announces() {
+    use snomed_ecl_engine::import::{import_snapshot_with_progress, IMPORT_STAGES};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    let mut stages = 0;
+    import_snapshot_with_progress(
+        &archive,
+        &temp.path().join("store"),
+        &options(&archive),
+        |_| stages += 1,
+    )
+    .unwrap();
+    assert_eq!(stages, IMPORT_STAGES);
 }

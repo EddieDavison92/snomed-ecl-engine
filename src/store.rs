@@ -9,9 +9,11 @@ mod blocks;
 mod columns;
 mod container;
 mod descriptions;
+mod display;
 mod identifiers;
 mod members;
 mod history;
+mod varint;
 mod membership;
 mod search;
 mod term_storage;
@@ -19,10 +21,12 @@ pub(crate) use container::IndexSource;
 pub use container::{pack, pack_with_options, verify, PackOptions, Verification};
 use container::{Section, SectionReader};
 pub use descriptions::DescriptionRow;
+pub use display::DisplayStore;
 pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
 pub use identifiers::{Identifier, IdentifierIndex, IdentifierManifest, IdentifierStore};
 pub use members::{
     format_uuid, is_concept_id, parse_uuid, MemberColumn, MemberManifest, MemberStore, MemberTable,
+    ACTIVE, FIELDS, METADATA, REFERENCES,
     MemberValue, TextColumn,
 };
 pub use history::{
@@ -33,7 +37,6 @@ pub use search::{search_pairs, words, SearchIndex, SearchManifest, SearchStore};
 
 pub const FORMAT: u32 = 1;
 const CORE_MAGIC: &[u8; 8] = b"SNECL001";
-const DISPLAY_MAGIC: &[u8; 8] = b"SNDSP001";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manifest {
@@ -521,7 +524,7 @@ impl NumericStore {
             search: manifest
                 .search
                 .as_ref()
-                .map(|m| SearchStore::lazy(&source, m.clone()))
+                .map(|m| SearchStore::lazy(&source, m.clone(), count))
                 .transpose()?
                 .unwrap_or_default(),
             history: manifest
@@ -574,128 +577,6 @@ fn validate_offsets(offsets: &[u32], count: usize, values: usize) -> Result<()> 
     Ok(())
 }
 
-/// Opens only the display file and its manifest; text is fetched by ordinal on demand.
-pub struct DisplayStore {
-    /// Reads labels without a lock when the section is uncompressed.
-    positional: Option<container::PositionalReader>,
-    /// Otherwise shared under a lock, decoding a block per read.
-    input: std::sync::Mutex<BufReader<SectionReader>>,
-    offsets: Vec<u32>,
-    start: u64,
-}
-
-impl DisplayStore {
-    fn verify_text(&mut self) -> Result<()> {
-        let input = self.input.get_mut().expect("display reader poisoned");
-        input.seek(SeekFrom::Start(self.start))?;
-        let mut text = String::new();
-        input.read_to_string(&mut text)?;
-        ensure!(
-            self.offsets
-                .iter()
-                .all(|&v| text.is_char_boundary(v as usize)),
-            "Invalid display UTF-8 offset"
-        );
-        Ok(())
-    }
-    #[cfg(feature = "import")]
-    pub(crate) fn into_labels(self) -> Result<Vec<Option<String>>> {
-        let mut input = self.input.into_inner().expect("display reader poisoned");
-        input.seek(SeekFrom::Start(self.start))?;
-        let mut labels = Vec::with_capacity(self.offsets.len() - 1);
-        for offsets in self.offsets.windows(2) {
-            let mut bytes = vec![0; (offsets[1] - offsets[0]) as usize];
-            input.read_exact(&mut bytes)?;
-            labels.push(if bytes.is_empty() {
-                None
-            } else {
-                Some(String::from_utf8(bytes)?)
-            });
-        }
-        Ok(labels)
-    }
-
-    pub fn write(path: &Path, labels: &[Option<String>]) -> Result<()> {
-        let mut offsets = Vec::with_capacity(labels.len() + 1);
-        offsets.push(0u32);
-        for label in labels {
-            let size = label.as_ref().map_or(0, |s| s.len());
-            offsets.push(
-                offsets
-                    .last()
-                    .unwrap()
-                    .checked_add(u32::try_from(size)?)
-                    .context("Display section exceeds u32 capacity")?,
-            );
-        }
-        let mut out = BufWriter::new(File::create_new(path)?);
-        out.write_all(DISPLAY_MAGIC)?;
-        put_u32s(&mut out, &offsets)?;
-        for label in labels.iter().flatten() {
-            out.write_all(label.as_bytes())?;
-        }
-        out.flush()?;
-        out.get_ref().sync_all()?;
-        Ok(())
-    }
-
-    pub fn open(directory: &Path) -> Result<Self> {
-        let (manifest, source) = IndexSource::open(directory)?;
-        let section = source.section("display.bin")?;
-        let mut input = Input::open(&section, DISPLAY_MAGIC)?;
-        let offsets = input.u32s()?;
-        validate_offsets(&offsets, manifest.concept_count, input.remaining as usize)?;
-        let start = input.reader.stream_position()?;
-        Ok(Self {
-            positional: section.positional()?,
-            input: std::sync::Mutex::new(input.reader),
-            offsets,
-            start,
-        })
-    }
-
-    /// Starts reading every label in the background, so a server's first
-    /// searches do not wait on the disk for each one. Does nothing for a
-    /// compressed section.
-    pub fn prefetch(&self) -> Result<()> {
-        match &self.positional {
-            Some(reader) => reader.prefetch(),
-            None => Ok(()),
-        }
-    }
-
-    /// Byte length of a concept's label, without reading it.
-    ///
-    /// The offsets are already in memory, so ranking thousands of candidates
-    /// by label length costs nothing. Only the survivors are then read.
-    pub fn label_bytes(&self, ordinal: u32) -> Option<u32> {
-        let i = ordinal as usize;
-        Some(self.offsets.get(i + 1)? - self.offsets.get(i)?)
-    }
-
-    pub fn get(&self, ordinal: u32) -> Result<Option<String>> {
-        let i = ordinal as usize;
-        ensure!(i + 1 < self.offsets.len(), "Display ordinal out of range");
-        let length = (self.offsets[i + 1] - self.offsets[i]) as usize;
-        if length == 0 {
-            return Ok(None);
-        }
-        let position = self.start + self.offsets[i] as u64;
-        let mut bytes = vec![0; length];
-        if let Some(reader) = &self.positional {
-            reader.read_exact_at(position, &mut bytes)?;
-        } else {
-            let mut input = self
-                .input
-                .lock()
-                .map_err(|_| anyhow::anyhow!("Display reader poisoned"))?;
-            input.seek(SeekFrom::Start(position))?;
-            input.read_exact(&mut bytes)?;
-        }
-        Ok(Some(String::from_utf8(bytes)?))
-    }
-}
-
 pub fn sha256(path: &Path) -> Result<String> {
     let mut file = BufReader::new(File::open(path)?);
     let mut hash = Sha256::new();
@@ -738,6 +619,10 @@ impl Input {
     /// explicitly instead, so integrity is still checked, just not on the path
     /// that only wants to answer a question.
     fn open(section: &Section, magic: &[u8; 8]) -> Result<Self> {
+        Ok(Self::open_versions(section, &[magic])?.0)
+    }
+    /// Opens a section whose header may be any of `magics`, returning which.
+    fn open_versions(section: &Section, magics: &[&[u8; 8]]) -> Result<(Self, usize)> {
         let size = section.length;
         ensure!(
             (8..=2 * 1024 * 1024 * 1024).contains(&size),
@@ -750,8 +635,11 @@ impl Input {
         };
         let mut actual = [0; 8];
         result.read(&mut actual)?;
-        ensure!(&actual == magic, "Unsupported store header");
-        Ok(result)
+        let version = magics
+            .iter()
+            .position(|magic| **magic == actual)
+            .context("Unsupported store header")?;
+        Ok((result, version))
     }
     fn read(&mut self, bytes: &mut [u8]) -> Result<()> {
         self.remaining = self
@@ -809,6 +697,10 @@ impl Input {
     fn u32s(&mut self) -> Result<Vec<u32>> {
         let n = self.count(4)?;
         self.records(n, 4, |b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+    }
+    fn u16s(&mut self) -> Result<Vec<u16>> {
+        let n = self.count(2)?;
+        self.records(n, 2, |b| u16::from_le_bytes([b[0], b[1]]))
     }
     fn bytes(&mut self) -> Result<Vec<u8>> {
         let n = self.count(1)?;

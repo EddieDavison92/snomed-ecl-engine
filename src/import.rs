@@ -42,6 +42,9 @@ pub fn import_snapshot(
 
 /// Reports stage starts to the caller without writing to stdout or stderr.
 /// Progress is informational; successful completion is the returned manifest.
+/// How many stages `import_snapshot_with_progress` reports.
+pub const IMPORT_STAGES: usize = 11;
+
 pub fn import_snapshot_with_progress(
     archive_path: &Path,
     destination: &Path,

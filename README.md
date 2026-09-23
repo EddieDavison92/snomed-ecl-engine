@@ -21,6 +21,26 @@ cost of that machinery is that ECL can only live where the machinery lives.
 
 Here, the terminology is one file and the query engine is a function call.
 
+### How the index got small
+
+The UK Monolith release packs into one 152 MiB file, down from 389 MiB:
+
+- Concepts are four-byte ordinals from the first read on, never 18-digit codes.
+- Sorted lists, such as the concepts sharing a word, store the gaps between
+  values, mostly one byte each.
+- Reference set rows are sorted by the component they reference, so
+  neighbouring rows compress into each other. The member UUID, which ECL never
+  uses, is not stored.
+- Each display label is its own zstd frame against a dictionary trained on the
+  labels, so reading one label is still one read.
+- Sections are packed as independent zstd blocks, small for descriptions so
+  describing a concept decodes only what it reads.
+
+Queries did not slow down. Sections read whole decode once into the arrays
+queries already used; labels and single-concept lookups still read only what
+they need. [How the index is built, compressed and read](docs/index-format.md)
+has the details and what each step saved.
+
 ### What it is designed for
 
 - **Serverless functions.** You only pay for compute when a query arrives. The
@@ -99,7 +119,7 @@ Against the UK Monolith release, 1.15 million concepts.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/footprint-dark.svg">
-  <img alt="Index on disk: this engine 389 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.1, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
+  <img alt="Index on disk: this engine 152 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.3, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="docs/images/footprint-light.svg">
 </picture>
 
 Speed only counts if the answers match, so the corpus compares complete code
@@ -133,8 +153,8 @@ work limit unscoped, because it scans the descriptions of everything in scope.
 Words are extracted once at build time instead, so a search is a binary search
 and a list intersection.
 
-The word index is 155,963 words over 12.5 million postings, a 50 MiB section
-that opening never touches. Normalisation happens at build time, so querying
+The word index is 155,940 words over 12.5 million postings, a 7.6 MiB packed
+section that opening never touches. Normalisation happens at build time, so querying
 needs no collation library and works in the build without ICU.
 
 ```sh
@@ -216,6 +236,7 @@ ZIP importer for a query-only build.
 - [CLI guide](docs/cli.md) covers commands, output formats and scripting.
 - [ECL support](docs/ecl-support.md) lists what evaluates and the open questions.
 - [Indexes](docs/indexes.md) covers building, packing, the format and configuration.
+- [How the index is built](docs/index-format.md) covers encodings, compression and reads.
 - [Benchmarks](docs/benchmarks.md) has the method, results and comparisons.
 - [Roadmap](docs/roadmap.md) lists the open work.
 - [Developer setup](docs/setup.md) covers building, releases and comparison servers.

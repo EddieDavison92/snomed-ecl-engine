@@ -18,7 +18,7 @@ zip = { version = "8.6", optional = true, default-features = false, features = [
 
 [features]
 default = ["import"]
-import = ["dep:zip"]
+import = ["dep:zip", "zstd/zdict_builder"]
 unicode = ["dep:cc", "dep:pkg-config"]
 
 [build-dependencies]

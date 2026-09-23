@@ -67,13 +67,13 @@ benchmarked under concurrency.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/footprint-dark.svg">
-  <img alt="Index on disk: this engine 389 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.1, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="images/footprint-light.svg">
+  <img alt="Index on disk: this engine 152 MiB, Snowstorm Lite 483 MiB, Snowstorm 6.11 GiB. Reading the release and building indexes: 2.3, 17.6 and 72.7 minutes. Memory allocated: 256 MiB, 2 GiB and 12 GiB." src="images/footprint-light.svg">
 </picture>
 
 | | This engine | Snowstorm Lite 2.7.0 | Snowstorm 11.0.0 |
 |---|---:|---:|---:|
-| Index on disk | 389 MiB packed | 483 MiB | 6.11 GiB Elasticsearch |
-| Read the release and build the indexes | 129 s | 1,057 s | 4,360 s |
+| Index on disk | 152 MiB packed | 483 MiB | 6.11 GiB Elasticsearch |
+| Read the release and build the indexes | 138 s | 1,057 s | 4,360 s |
 | Memory allocated to answer queries | 256 MiB | 2 GiB | 12 GiB (two services) |
 | Architecture | Rust library or CLI | Java service with Lucene | Java service plus Elasticsearch |
 
@@ -84,11 +84,11 @@ identical: ours holds descriptions, displays, typed member tables, a word index
 and a history section; the servers hold their own search structures.
 
 The engine's figures were re-measured on 23 September 2026 with the current
-importer, which now also builds the word index and history section, at the same
-allocation as before: two CPUs and 3 GiB for the import. The index grew from
-290 MiB because of those two sections and because labels are now stored
-uncompressed, for search latency; see [indexes](indexes.md#one-file). The
-servers' figures are from their original runs and were not repeated.
+importer, which also builds the word index and history section, at the same
+allocation as before: two CPUs and 3 GiB for the import, which peaked at 2.3 GB.
+The index shrank from 389 MiB to 152 MiB that day without changing query
+latency; [how the index is built](index-format.md#where-the-size-went) lists each
+step. The servers' figures are from their original runs and were not repeated.
 
 ## Counting and enumerating
 
@@ -327,11 +327,11 @@ twice and, when packed, decompressed twice. Removing that took the packed open
 from 347 ms to 177 ms and the uncompressed open from 162 ms to 94 ms, measured
 the same way.
 
-The packed layout costs about 83 ms more to open, because zstd decodes 21.8 MiB
-into the 86 MiB core. It is 290 MiB on disk against 1.08 GiB. Which way that
+The packed layout costs about 83 ms more to open, because zstd decodes 14.6 MiB
+into the 86 MiB core. It is 152 MiB on disk against 903 MiB. Which way that
 trades depends on whether the file is already local or fetched per cold start.
-When it is fetched, packed wins on both: a deployment that reads its bundle at
-136 MiB/s opens the packed index in 1.1 s against 1.6 s uncompressed.
+When it is fetched, packed wins: reading the whole file at 136 MiB/s takes 1.1 s
+packed against 6.6 s uncompressed.
 
 Measure with the index on a local filesystem. A Windows bind mount reads at
 181 MB/s against 5.6 GB/s for the container's own filesystem, which dominates
@@ -358,6 +358,12 @@ semantic index, including all description metadata, and the peak rose from
 227 MiB to 268 MiB. About 23 MiB of that is new in the engine, mostly the
 attribute inverse that refinements use, and the rest is the history and word
 index sections. The 1,000-expression corpus peaks at 144 MiB.
+
+The table's 10,000-expression row is from that run. A re-run after the index
+shrank peaked at 266 MiB and still needs 320 MiB: the peak is decoded sections,
+not file cache. Its batches took 11.4 s and its median request 0.89 ms, which
+moved with the host rather than the build: interleaved 1,000-expression runs of
+the previous and current builds could not be told apart.
 
 ## Reproducing
 

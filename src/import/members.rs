@@ -1,6 +1,7 @@
 use super::{active, date, id, rows};
 use crate::store::{
     is_concept_id, parse_uuid, MemberColumn, MemberManifest, MemberTable, NumericStore, TextColumn,
+    METADATA,
 };
 use anyhow::{ensure, Context, Result};
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -92,14 +93,12 @@ pub(super) fn build(
                 !enabled || concepts.contains_key(&reference),
                 "Active refset member references a missing concept"
             );
-            let uuid = parse_uuid(r[0])?;
-            ensure!(seen_ids.insert(uuid), "Duplicate Snapshot member UUID");
+            // The UUID is checked for duplicates and then dropped; see store::METADATA.
+            ensure!(seen_ids.insert(parse_uuid(r[0])?), "Duplicate Snapshot member UUID");
             if let std::collections::btree_map::Entry::Vacant(entry) = tables.entry(refset) {
                 let mut columns = vec![
-                    MemberColumn::Uuid(vec![]),
                     MemberColumn::Time(vec![]),
                     MemberColumn::Boolean(vec![]),
-                    MemberColumn::Id(vec![]),
                     MemberColumn::Id(vec![]),
                     MemberColumn::Id(vec![]),
                 ];
@@ -124,16 +123,26 @@ pub(super) fn build(
                 entry.insert((
                     MemberTable {
                         refset,
-                        names: column_names.clone(),
+                        names: METADATA
+                            .iter()
+                            .map(|name| name.to_string())
+                            .chain(column_names[6..].iter().cloned())
+                            .collect(),
                         columns,
                     },
                     integer_columns,
                 ));
             }
             let (table, integer_columns) = tables.get_mut(&refset).unwrap();
-            for (i, column) in table.columns.iter_mut().enumerate() {
+            for (column_index, column) in table.columns.iter_mut().enumerate() {
+                // The RF2 position of this column: id and refsetId are not stored.
+                let i = match column_index {
+                    0..=2 => column_index + 1,
+                    3 => 5,
+                    _ => column_index + 2,
+                };
                 match column {
-                    MemberColumn::Uuid(v) => v.push(if i == 0 { uuid } else { parse_uuid(r[i])? }),
+                    MemberColumn::Uuid(v) => v.push(parse_uuid(r[i])?),
                     MemberColumn::Time(v) => v.push(if i == 1 {
                         effective
                     } else if r[i].is_empty() {
@@ -157,11 +166,11 @@ pub(super) fn build(
                                 }
                                 text.push(r[i])?;
                                 *column = MemberColumn::Number(text);
-                                integer_columns[i] = true;
+                                integer_columns[column_index] = true;
                             }
                         }
                     }
-                    MemberColumn::Number(v) if integer_columns[i] => {
+                    MemberColumn::Number(v) if integer_columns[column_index] => {
                         check_integer(r[i])?;
                         v.push(r[i])?;
                     }

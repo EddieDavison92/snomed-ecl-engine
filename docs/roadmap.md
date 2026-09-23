@@ -18,7 +18,7 @@ Opening checks that stored indexes are in range; it does not re-derive the
 semantic invariants that import proved and the checksum protects. What is left,
 measured with `examples/open_breakdown.rs`:
 
-- *Decompression, about 83 ms of the packed figure.* zstd expands 21.8 MiB into
+- *Decompression, about 83 ms of the packed figure.* zstd expands 14.6 MiB into
   the 86 MiB core before a query can run. Decoding blocks on demand, which the
   container format already supports through its per-block table and hashes,
   would move that cost to the queries that need those bytes.
@@ -51,10 +51,11 @@ as a member filter. Raise them with the ECL specification's maintainers. See
 [ECL support](ecl-support.md#grammar-differential).
 
 **Memory for the full corpus.** The 10,000-expression corpus, which loads every
-semantic index, now peaks at 268 MiB against 227 MiB, so it no longer fits the
-256 MiB it used to. The attribute inverse costs about 16 MB and could shrink by
-keying only the values that occur rather than every concept, and the full
-description metadata remains the largest single load.
+semantic index, now peaks at 266 MiB against 227 MiB, so it no longer fits the
+256 MiB it used to. Shrinking the file did not help: the peak is decoded
+sections, not file cache. The attribute inverse costs about 16 MB and could
+shrink by keying only the values that occur rather than every concept, and the
+full description metadata remains the largest single load.
 
 **Full-engine resource measurement.** Current figures measure the numeric core
 with data loaded on demand. Measure the complete engine with every semantic index
