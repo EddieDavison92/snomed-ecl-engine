@@ -10,7 +10,9 @@ is needed at query time. Run commands from the repository root.
 
 ## Get the executable
 
-Download a release from GitHub, or build one:
+Install it with `npm install --global snomed-ecl-engine`, `brew install
+eddiedavison92/tap/snomed-ecl-engine` or the [README's other
+installers](README.md#install), or build it from the repository:
 
 ```sh
 cargo build --locked --release --bin snomed-ecl-engine

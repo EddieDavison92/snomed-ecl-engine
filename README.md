@@ -46,9 +46,10 @@ The evidence:
 
 - **Grammar.** A differential test generates sentences covering every
   alternative, optional part and repetition count of both official ECL 2.3
-  grammars, about 35,000 samples, and leaves no unexplained disagreement. It
-  exercises 179 of their 180 rules; the last is never referenced by another
-  rule, so no expression can contain it. All 121 official syntax examples parse.
+  grammars, about 35,000 samples, and leaves no unexplained disagreement. The
+  two grammars define the same 180 rules, and the test exercises 179 of them.
+  The remaining rule, `stringValue`, is never referenced by any other rule, so
+  no expression can contain it. All 121 official syntax examples parse.
 - **Answers.** Two corpora of 1,000 and 10,000 expressions across 25 categories
   return the code sets recorded for them, and scripts check result sets against
   the RF2 files directly. Of the 880 corpus expressions Snowstorm could answer,
@@ -65,30 +66,39 @@ the detail.
 
 ## Status
 
-Version 0.1.0. Releases publish Linux x86-64 executables; the crate is not on
-crates.io. The index format may change between releases without a migration:
-rebuild the index from your RF2 archive when you upgrade.
+Version 0.1.1, on [crates.io](https://crates.io/crates/snomed-ecl-engine) and
+[npm](https://www.npmjs.com/package/snomed-ecl-engine). The index format may
+change between releases without a migration: rebuild the index from your RF2
+archive when you upgrade.
 
 ## Install
 
-Download an executable from [Releases](https://github.com/EddieDavison92/snomed-ecl-engine/releases).
-Each release has three builds:
+| With | Command |
+|---|---|
+| npm | `npm install --global snomed-ecl-engine`, or `npx snomed-ecl-engine` |
+| Homebrew | `brew install eddiedavison92/tap/snomed-ecl-engine` |
+| Shell, Linux or macOS | `curl -fsSL https://raw.githubusercontent.com/EddieDavison92/snomed-ecl-engine/main/install.sh \| sh` |
+| PowerShell, Windows | `irm https://raw.githubusercontent.com/EddieDavison92/snomed-ecl-engine/main/install.ps1 \| iex` |
+| Cargo, prebuilt | `cargo binstall snomed-ecl-engine` |
+| Cargo, from source | `cargo install --locked snomed-ecl-engine` |
+| Docker | `docker run --rm -v "$PWD":/data ghcr.io/eddiedavison92/snomed-ecl-engine --help` |
+
+Executables are built for Linux (x86-64 and arm64, glibc 2.36 or later), macOS
+(arm64 and x86-64) and Windows (x86-64). Each is on the
+[releases](https://github.com/EddieDavison92/snomed-ecl-engine/releases) page
+in up to three builds:
 
 | Build | Size | For |
 |---|---:|---|
 | `query` | 2.5 MiB | Querying an existing index, packing and verifying |
 | `default` | 3.3 MiB | The above, plus importing RF2 |
-| `unicode` | 34.5 MiB | The above, plus term matching in description filters |
+| `unicode` | 34.5 MiB | The above, plus term matching in description filters; Linux only |
 
-Or build from source with Rust 1.93 or later:
-
-```sh
-cargo install --locked --git https://github.com/EddieDavison92/snomed-ecl-engine
-```
-
-Add `--features unicode` for term matching, which needs ICU 72 or later
-(`libicu-dev` and `pkg-config` on Debian or Ubuntu). [Developer
-setup](docs/setup.md) covers other platforms and Docker.
+npm, Homebrew, `cargo binstall` and the scripts install the `default` build;
+the Docker image has the `unicode` build. The scripts take
+`SNOMED_ECL_BUILD=query` or `unicode` to choose another. Building from source
+with `--features unicode` needs ICU 72 or later (`libicu-dev` and `pkg-config`
+on Debian or Ubuntu); [developer setup](docs/setup.md) covers the rest.
 
 ## Quick start
 

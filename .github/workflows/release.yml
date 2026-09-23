@@ -1,52 +1,272 @@
 name: Release
 
+# A v* tag builds every platform and publishes to GitHub Releases, crates.io,
+# npm, the Homebrew tap and ghcr.io. A pull request that touches packaging runs
+# the same builds and packaging without publishing anything.
 on:
   push:
     tags: ["v*"]
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - "packaging/**"
+      - "install.sh"
+      - "install.ps1"
+      - "Cargo.toml"
 
 permissions:
-  contents: write
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  PUBLISH: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
 jobs:
-  release:
-    name: Build and publish
+  version:
+    name: Read the version
     runs-on: ubuntu-latest
-    # Built on Debian bookworm, so binaries run on glibc 2.36 or later.
-    container: rust:1.93.1-bookworm
-    env:
-      CARGO_TERM_COLOR: always
+    outputs:
+      version: ${{ steps.read.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install ICU and the GitHub CLI
-        run: |
-          apt-get update -qq
-          apt-get install -y -qq libicu-dev pkg-config gh >/dev/null
-      - name: Check the tag matches Cargo.toml
+      - id: read
         run: |
           version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
-          test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME does not match version $version"; exit 1; }
-      - name: Test
-        run: cargo test --locked --all-features
-      - name: Build three executables
+          if [ "$PUBLISH" = true ] && [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match version $version"; exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Built on Debian bookworm, so Linux executables need glibc 2.36 or later.
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            container: rust:1.93.1-bookworm
+            variants: query default unicode
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+            container: rust:1.93.1-bookworm
+            variants: query default unicode
+          - target: aarch64-apple-darwin
+            runner: macos-14
+            variants: query default
+          - target: x86_64-apple-darwin
+            runner: macos-14
+            variants: query default
+          - target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            variants: query default
+    runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ICU
+        if: contains(matrix.variants, 'unicode')
         run: |
-          cargo build --locked --release --no-default-features --target-dir target/query
-          cargo build --locked --release --target-dir target/default
-          cargo build --locked --release --features unicode --target-dir target/unicode
-      - name: Package
+          apt-get update -qq
+          apt-get install -y -qq libicu-dev pkg-config >/dev/null
+      - name: Add the target
+        shell: bash
+        run: rustup target add "$TARGET"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Build and package
+        shell: bash
         run: |
           set -eu
-          mkdir dist
-          for variant in query default unicode; do
-            name="snomed-ecl-engine-$GITHUB_REF_NAME-x86_64-linux-gnu-$variant"
+          mkdir -p dist
+          suffix=""; [ "$TARGET" = x86_64-pc-windows-msvc ] && suffix=.exe
+          for variant in ${{ matrix.variants }}; do
+            case $variant in
+              query) flags=--no-default-features ;;
+              default) flags= ;;
+              unicode) flags="--features unicode" ;;
+            esac
+            cargo build --locked --release --target "$TARGET" $flags --target-dir "target/$variant"
+            name="snomed-ecl-engine-v$VERSION-$TARGET-$variant"
             mkdir "$name"
-            cp "target/$variant/release/snomed-ecl-engine" README.md LICENSE "$name/"
-            tar -czf "dist/$name.tar.gz" "$name"
+            cp "target/$variant/$TARGET/release/snomed-ecl-engine$suffix" README.md LICENSE "$name/"
+            if [ -n "$suffix" ]; then
+              7z a -tzip -bso0 "dist/$name.zip" "$name"
+            else
+              tar -czf "dist/$name.tar.gz" "$name"
+            fi
+            rm -rf "$name"
           done
-          cd dist && sha256sum *.tar.gz > SHA256SUMS
-      - name: Publish the release
+          ls -l dist
+      - name: Run the executable
+        if: matrix.target != 'x86_64-apple-darwin'
+        shell: bash
+        run: |
+          suffix=""; [ "$TARGET" = x86_64-pc-windows-msvc ] && suffix=.exe
+          "target/default/$TARGET/release/snomed-ecl-engine$suffix" --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+
+  github:
+    name: GitHub release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: build-*
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS && cat SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: dist/*
+      - name: Publish
+        if: env.PUBLISH == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+
+  crates:
+    name: crates.io
+    needs: [version, github]
+    runs-on: ubuntu-latest
+    container: rust:1.93.1-bookworm
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package
+        run: cargo publish --locked --dry-run
+      - name: Publish
+        if: env.PUBLISH == 'true' && env.CARGO_REGISTRY_TOKEN != ''
+        run: cargo publish --locked
+
+  npm:
+    name: npm
+    needs: [version, github]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: dist
+      - name: Build the packages
+        run: node packaging/npm/packages.mjs "$VERSION" dist npm-dist
+      - name: Check the launcher
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+          mkdir -p npm-check/node_modules
+          cp -r npm-dist/snomed-ecl-engine-linux-x64 npm-check/node_modules/
+          cp -r npm-dist/snomed-ecl-engine npm-check/node_modules/
+          node npm-check/node_modules/snomed-ecl-engine/bin/snomed-ecl-engine.js --version
+      - name: Pack
+        run: for dir in npm-dist/*/; do (cd "$dir" && npm pack --dry-run); done
+      - name: Publish
+        if: env.PUBLISH == 'true' && env.NODE_AUTH_TOKEN != ''
+        # Platform packages first, so the launcher never points at a missing one.
+        run: |
+          for dir in npm-dist/snomed-ecl-engine-*/; do
+            (cd "$dir" && npm publish --access public --provenance)
+          done
+          cd npm-dist/snomed-ecl-engine && npm publish --access public --provenance
+
+  homebrew:
+    name: Homebrew tap
+    needs: [version, github]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: dist
+      - name: Write the formula
+        run: |
+          sh packaging/homebrew/formula.sh "$VERSION" dist/SHA256SUMS > snomed-ecl-engine.rb
+          ruby -c snomed-ecl-engine.rb
+      - name: Publish
+        if: env.PUBLISH == 'true' && env.TAP_TOKEN != ''
+        run: |
+          git clone --depth 1 "https://x-access-token:$TAP_TOKEN@github.com/EddieDavison92/homebrew-tap.git" tap
+          mkdir -p tap/Formula
+          cp snomed-ecl-engine.rb tap/Formula/
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/snomed-ecl-engine.rb
+          git commit -m "snomed-ecl-engine $VERSION"
+          git push
+
+  container:
+    name: Container image
+    needs: [version, github]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: dist
+      - name: Stage the executables
+        run: |
+          for pair in amd64:x86_64 arm64:aarch64; do
+            arch=${pair%%:*}; target=${pair#*:}-unknown-linux-gnu
+            name="snomed-ecl-engine-v$VERSION-$target-unicode"
+            mkdir -p "dist/docker/$arch"
+            tar -xzf "dist/$name.tar.gz" -C dist
+            cp "dist/$name/snomed-ecl-engine" "dist/docker/$arch/"
+          done
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: env.PUBLISH == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packaging/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ env.PUBLISH == 'true' }}
+          tags: |
+            ghcr.io/eddiedavison92/snomed-ecl-engine:${{ env.VERSION }}
+            ghcr.io/eddiedavison92/snomed-ecl-engine:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Evaluate SNOMED CT ECL against a local index
+            org.opencontainers.image.licenses=MIT
