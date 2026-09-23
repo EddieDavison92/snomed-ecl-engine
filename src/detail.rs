@@ -93,13 +93,13 @@ pub struct Detail {
 /// Looks up one concept. `None` means the SCTID is not in this edition.
 pub fn describe(
     store: &NumericStore,
-    displays: &mut DisplayStore,
+    displays: &DisplayStore,
     sctid: u64,
 ) -> Result<Option<Detail>> {
     let Some(ordinal) = store.ordinal(sctid) else {
         return Ok(None);
     };
-    let mut label = |ordinal: u32| -> Result<Concept> {
+    let label = |ordinal: u32| -> Result<Concept> {
         Ok(Concept {
             code: store.ids[ordinal as usize].to_string(),
             display: displays.get(ordinal)?,

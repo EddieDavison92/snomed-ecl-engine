@@ -628,9 +628,18 @@ fn run() -> Result<()> {
             out.flush()?;
         }
         "batch" => {
+            let workers = match args.iter().position(|a| a == "--workers") {
+                Some(i) => {
+                    ensure!(i + 1 < args.len(), "--workers needs a count");
+                    let count: usize = args[i + 1].parse().context("--workers needs a count")?;
+                    args.drain(i..i + 2);
+                    count.max(1)
+                }
+                None => 1,
+            };
             ensure!(
                 args.len() <= 2,
-                "Usage: batch [STORE] (JSON lines on stdin)"
+                "Usage: batch [STORE] [--workers N] (JSON lines on stdin)"
             );
             let (directory, _) = workspace::resolve(args.get(1).map(String::as_str))?;
             let start = Instant::now();
@@ -644,30 +653,67 @@ fn run() -> Result<()> {
                 "Store opened in {:.3} seconds",
                 start.elapsed().as_secs_f64()
             );
-            let mut displays = None;
+            let labels = Labels::new(&directory);
+            let respond =
+                |line: &[u8]| batch_line(&store, &manifest, &config_sha256, &labels, line);
             let mut input = io::stdin().lock();
-            let mut out = io::BufWriter::new(io::stdout().lock());
-            let mut line = Vec::new();
-            loop {
+            let mut read = |line: &mut Vec<u8>| -> Result<bool> {
                 line.clear();
-                if (&mut input).take(524289).read_until(b'\n', &mut line)? == 0 {
-                    break;
+                if (&mut input).take(524289).read_until(b'\n', line)? == 0 {
+                    return Ok(false);
                 }
                 ensure!(line.len() <= 524288, "Batch request exceeds 512 KiB");
-                match serde_json::from_slice::<BatchRequest>(&line) {
-                    Ok(request) => batch_response(
-                        &store,
-                        &manifest,
-                        &config_sha256,
-                        &request,
-                        &mut displays,
-                        &directory,
-                        &mut out,
-                    )?,
-                    Err(_) => writeln!(out, "{{\"error\":\"InvalidRequest\"}}")?,
+                Ok(true)
+            };
+            if workers == 1 {
+                // In order, one at a time.
+                let mut out = io::BufWriter::new(io::stdout().lock());
+                let mut line = Vec::new();
+                while read(&mut line)? {
+                    out.write_all(&respond(&line))?;
+                    out.flush()?;
                 }
-                out.flush()?;
+                return Ok(());
             }
+            // Workers share the one store and answer as they finish, so a slow
+            // request does not hold up quick ones behind it. Callers match
+            // answers to questions by `id`.
+            let (requests, queue) = std::sync::mpsc::sync_channel::<Vec<u8>>(workers * 4);
+            let queue = std::sync::Mutex::new(queue);
+            let (answers, finished) = std::sync::mpsc::channel::<Vec<u8>>();
+            std::thread::scope(|scope| -> Result<()> {
+                for _ in 0..workers {
+                    let (queue, answers, respond) = (&queue, answers.clone(), &respond);
+                    scope.spawn(move || loop {
+                        let next = queue.lock().map(|queue| queue.recv());
+                        let Ok(Ok(line)) = next else { break };
+                        if answers.send(respond(&line)).is_err() {
+                            break;
+                        }
+                    });
+                }
+                drop(answers);
+                let writer = scope.spawn(move || -> io::Result<()> {
+                    let mut out = io::BufWriter::new(io::stdout().lock());
+                    while let Ok(answer) = finished.recv() {
+                        out.write_all(&answer)?;
+                        while let Ok(answer) = finished.try_recv() {
+                            out.write_all(&answer)?;
+                        }
+                        out.flush()?;
+                    }
+                    Ok(())
+                });
+                let mut line = Vec::new();
+                while read(&mut line)? {
+                    if requests.send(line.clone()).is_err() {
+                        break;
+                    }
+                }
+                drop(requests);
+                writer.join().expect("batch writer panicked")?;
+                Ok(())
+            })?;
         }
         "hierarchy" => {
             let with_display = args.iter().any(|s| s == "--display");
@@ -725,6 +771,10 @@ fn run() -> Result<()> {
 #[derive(serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 struct BatchRequest {
+    /// Any JSON value, returned on the response so a caller sending several
+    /// requests at once can match answers that arrive out of order.
+    #[serde(default)]
+    id: Option<serde_json::Value>,
     /// An expression to evaluate. Omitted when `concept` asks for a lookup.
     #[serde(default)]
     ecl: Option<String>,
@@ -754,6 +804,28 @@ struct BatchRequest {
     /// How many results to return from `offset`. Absent means all of them.
     #[serde(default)]
     limit: Option<usize>,
+}
+
+/// The display index, opened by the first request that needs a label and
+/// then shared by every request.
+struct Labels<'a> {
+    path: &'a Path,
+    store: std::sync::OnceLock<DisplayStore>,
+}
+impl<'a> Labels<'a> {
+    fn new(path: &'a Path) -> Self {
+        Self {
+            path,
+            store: std::sync::OnceLock::new(),
+        }
+    }
+    fn get(&self) -> Result<&DisplayStore> {
+        if let Some(store) = self.store.get() {
+            return Ok(store);
+        }
+        let opened = DisplayStore::open(self.path)?;
+        Ok(self.store.get_or_init(|| opened))
+    }
 }
 
 struct Codes<'a> {
@@ -838,8 +910,7 @@ const SEARCH_CANDIDATES: usize = 400;
 /// well they actually match.
 fn search_response(
     store: &NumericStore,
-    displays: &mut Option<DisplayStore>,
-    display_path: &Path,
+    labels: &Labels,
     text: &str,
     request: &BatchRequest,
     out: &mut impl Write,
@@ -859,10 +930,7 @@ fn search_response(
     }
     let total = candidates.len();
 
-    if displays.is_none() {
-        *displays = Some(DisplayStore::open(display_path)?);
-    }
-    let labels = displays.as_mut().expect("just opened");
+    let labels = labels.get()?;
     // Shortest labels first: the canonical name for a concept is almost always
     // shorter than the compound terms that also contain the same words.
     candidates.sort_by_key(|&ordinal| (labels.label_bytes(ordinal).unwrap_or(u32::MAX), ordinal));
@@ -955,8 +1023,7 @@ fn score(label: &str, query: &str, query_words: &[String]) -> i32 {
 /// hint, and a caller mapping a code list forward needs to tell them apart.
 fn history_response(
     store: &NumericStore,
-    displays: &mut Option<DisplayStore>,
-    display_path: &Path,
+    labels: &Labels,
     sctid: &str,
     out: &mut impl Write,
 ) -> Result<()> {
@@ -972,11 +1039,8 @@ fn history_response(
         )?;
         return Ok(());
     };
-    if displays.is_none() {
-        *displays = Some(DisplayStore::open(display_path)?);
-    }
-    let labels = displays.as_mut().expect("just opened");
-    let mut describe = |rows: Vec<snomed_ecl_engine::store::Association>| -> Result<Vec<serde_json::Value>> {
+    let labels = labels.get()?;
+    let describe = |rows: Vec<snomed_ecl_engine::store::Association>| -> Result<Vec<serde_json::Value>> {
         rows.into_iter()
             .map(|row| {
                 let association = store.ordinal(row.refset);
@@ -1012,8 +1076,7 @@ fn history_response(
 /// Describes one concept, for a browser rather than an expansion.
 fn concept_response(
     store: &NumericStore,
-    displays: &mut Option<DisplayStore>,
-    display_path: &Path,
+    labels: &Labels,
     sctid: &str,
     out: &mut impl Write,
 ) -> Result<()> {
@@ -1025,10 +1088,7 @@ fn concept_response(
         )?;
         return Ok(());
     };
-    if displays.is_none() {
-        *displays = Some(DisplayStore::open(display_path)?);
-    }
-    let index = displays.as_mut().expect("just opened");
+    let index = labels.get()?;
     let start = Instant::now();
     match snomed_ecl_engine::detail::describe(store, index, sctid)? {
         Some(detail) => {
@@ -1056,23 +1116,66 @@ fn window<'a>(ordinals: &'a [u32], request: &BatchRequest) -> &'a [u32] {
     &ordinals[start..end]
 }
 
+/// Answers one request line with one response line, carrying its `id`.
+fn batch_line(
+    store: &NumericStore,
+    manifest: &Manifest,
+    config_sha256: &str,
+    labels: &Labels,
+    line: &[u8],
+) -> Vec<u8> {
+    let mut out = Vec::new();
+    let (id, result) = match serde_json::from_slice::<BatchRequest>(line) {
+        Ok(request) => (
+            request.id.clone(),
+            batch_response(store, manifest, config_sha256, &request, labels, &mut out),
+        ),
+        Err(_) => {
+            // Still return the id of a request that is JSON but not a valid request.
+            let id = serde_json::from_slice::<serde_json::Value>(line)
+                .ok()
+                .and_then(|value| value.get("id").cloned());
+            (id, writeln!(out, "{{\"error\":\"InvalidRequest\"}}").map_err(Into::into))
+        }
+    };
+    if let Err(error) = result {
+        out.clear();
+        let _ = writeln!(
+            out,
+            "{}",
+            serde_json::json!({"error":"Internal","message":error.to_string()})
+        );
+    }
+    match id {
+        // Every response is one object; the id goes in first.
+        Some(id) if out.first() == Some(&b'{') => {
+            let mut tagged = format!("{{\"id\":{id}").into_bytes();
+            if out.get(1) != Some(&b'}') {
+                tagged.push(b',');
+            }
+            tagged.extend_from_slice(&out[1..]);
+            tagged
+        }
+        _ => out,
+    }
+}
+
 fn batch_response(
     store: &NumericStore,
     manifest: &Manifest,
     config_sha256: &str,
     request: &BatchRequest,
-    displays: &mut Option<DisplayStore>,
-    display_path: &Path,
+    labels: &Labels,
     out: &mut impl Write,
 ) -> Result<()> {
     if let Some(sctid) = &request.concept {
-        return concept_response(store, displays, display_path, sctid, out);
+        return concept_response(store, labels, sctid, out);
     }
     if let Some(text) = &request.search {
-        return search_response(store, displays, display_path, text, request, out);
+        return search_response(store, labels, text, request, out);
     }
     if let Some(sctid) = &request.history {
-        return history_response(store, displays, display_path, sctid, out);
+        return history_response(store, labels, sctid, out);
     }
     let start = Instant::now();
     let Some(ecl_text) = &request.ecl else {
@@ -1110,10 +1213,7 @@ fn batch_response(
     if request.display && !request.count_only {
         if let eval::QueryResult::Concepts(ordinals) = &result {
             let ordinals = window(ordinals, request);
-            if displays.is_none() {
-                *displays = Some(DisplayStore::open(display_path)?);
-            }
-            let index = displays.as_mut().expect("just opened");
+            let index = labels.get()?;
             let mut codes = Vec::with_capacity(ordinals.len());
             let mut texts = Vec::with_capacity(ordinals.len());
             let mut actives = Vec::with_capacity(ordinals.len());
