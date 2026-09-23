@@ -630,7 +630,10 @@ impl Input {
         };
         let mut actual = [0; 8];
         result.read(&mut actual)?;
-        ensure!(&actual == magic, "Unsupported store header");
+        ensure!(
+            &actual == magic,
+            "Unsupported store header; rebuild the index with this version's import"
+        );
         Ok(result)
     }
     fn read(&mut self, bytes: &mut [u8]) -> Result<()> {
