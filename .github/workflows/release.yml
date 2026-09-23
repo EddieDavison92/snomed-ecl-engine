@@ -174,10 +174,11 @@ jobs:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+      # No registry-url: with one, setup-node writes a placeholder token that npm
+      # sends in place of trusted publishing, and the registry answers 404.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
       - name: Update npm
         # Trusted publishing needs npm 11.5.1 or later.
         run: npm install --global npm@11
