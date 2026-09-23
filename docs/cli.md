@@ -131,7 +131,7 @@ Each request names one of four operations.
 
 | Field | Effect |
 |---|---|
-| `count_only` | Return `total` only |
+| `count_only` | Leave out the result array; `total` and the metadata remain |
 | `display` | Return `concepts`, objects with `code`, `display` and `active`, in place of `codes` |
 | `offset`, `limit` | Return a window of the result; `total` still counts all of it |
 
