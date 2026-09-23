@@ -11,7 +11,10 @@
 use super::*;
 use std::sync::OnceLock;
 
-const MAGIC: &[u8; 8] = b"SNECLSR1";
+/// Postings as plain u32s.
+const MAGIC_V1: &[u8; 8] = b"SNECLSR1";
+/// Postings as varint deltas, a third of the size; decoded to u32s on load.
+const MAGIC: &[u8; 8] = b"SNECLSR2";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
@@ -234,7 +237,9 @@ impl SearchIndex {
         put_u64(&mut out, self.text.len() as u64)?;
         out.write_all(&self.text)?;
         put_u32s(&mut out, &self.posting_offsets)?;
-        put_u32s(&mut out, &self.postings)?;
+        let postings = super::varint::encode(&self.posting_offsets, &self.postings)?;
+        put_u64(&mut out, postings.len() as u64)?;
+        out.write_all(&postings)?;
         out.flush()?;
         out.get_ref().sync_all()?;
         Ok(SearchManifest {
@@ -246,11 +251,15 @@ impl SearchIndex {
     }
 
     pub(super) fn open(section: &Section, manifest: &SearchManifest) -> Result<Self> {
-        let mut input = Input::open(section, MAGIC)?;
+        let (mut input, version) = Input::open_versions(section, &[MAGIC_V1, MAGIC])?;
         let text_offsets = input.u32s()?;
         let text = input.bytes()?;
         let posting_offsets = input.u32s()?;
-        let postings = input.u32s()?;
+        let postings = if version == 0 {
+            input.u32s()?
+        } else {
+            super::varint::decode(&posting_offsets, &input.bytes()?)?
+        };
         ensure!(input.remaining == 0, "Trailing search bytes");
         let index = Self {
             text,

@@ -12,6 +12,7 @@ mod descriptions;
 mod identifiers;
 mod members;
 mod history;
+mod varint;
 mod membership;
 mod search;
 mod term_storage;
