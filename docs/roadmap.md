@@ -28,18 +28,18 @@ expressions where this engine loses.
   of every selected reference set's member table. An index from concept to the
   association rows that reference it would replace the scan.
 
-**Cold start.** Opening an index takes 116 ms uncompressed and 293 ms packed.
+**Cold start.** Opening an index takes 94 ms uncompressed and 177 ms packed.
 Opening checks that stored indexes are in range; it does not re-derive the
 semantic invariants that import proved and the checksum protects. What is left,
 measured with `examples/open_breakdown.rs`:
 
-- *Decompression, about 180 ms of the packed figure.* zstd expands 21.8 MiB into
+- *Decompression, about 83 ms of the packed figure.* zstd expands 21.8 MiB into
   the 86 MiB core before a query can run. Decoding blocks on demand, which the
   container format already supports through its per-block table and hashes,
   would move that cost to the queries that need those bytes.
 - *Attributes the query never uses.* Attribute rows are roughly 35 MiB of the
   86 MiB core and only refinements need them. A hierarchy or Boolean query
-  reads, checksums and decodes them for nothing. Making them lazy, as
+  reads and decodes them for nothing. Making them lazy, as
   descriptions and member tables already are, would cut the core a query must
   touch to about 41 MiB.
 - *Reading the core at all.* Memory-mapping an uncompressed index would make

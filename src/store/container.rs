@@ -453,6 +453,11 @@ pub struct Verification {
 /// Exhaustively verifies checksums and structure, loading each cold section separately.
 pub fn verify(path: &Path) -> Result<Verification> {
     let (manifest, source) = IndexSource::open(path)?;
+    // Opening no longer hashes what it reads, so every section is checked here,
+    // including the lazy ones an open would never have touched.
+    for section in source.sections.values() {
+        section.verify()?;
+    }
     let store = NumericStore::open(path)?;
     // Opening only checks bounds, so verification does the semantic pass.
     store.validate()?;

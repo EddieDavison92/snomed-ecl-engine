@@ -254,9 +254,9 @@ No comparison server involved.
 | Query-only executable, `--no-default-features` | 2,231,176 B (2.13 MiB), 955,586 B gzipped |
 | Default build, with the RF2 importer | 2,973,128 B (2.84 MiB), 1,290,251 B gzipped |
 | With `--features unicode` for term matching | 35,731,536 B (34.08 MiB), 14,106,938 B gzipped |
-| Open a packed index | 293 ms |
-| Open an uncompressed index | 116 ms |
-| Process start, open and answer one query | 650 ms |
+| Open a packed index | 177 ms |
+| Open an uncompressed index | 94 ms |
+| Process start, open and answer one query | 177 ms |
 
 ## Starting cold
 
@@ -266,20 +266,26 @@ a local filesystem:
 
 | | Uncompressed | Packed |
 |---|---:|---:|
-| Open, which a query pays | **116 ms** | **293 ms** |
-| of which, verifying the core checksum | 46 ms | included |
-| Full semantic validation, which only `verify` pays | 84 ms | 84 ms |
+| Open, which a query pays | **94 ms** | **177 ms** |
+| Full semantic validation, which only `verify` pays | +105 ms | +100 ms |
 
-Opening reads the core, checks its checksum, decodes it, and checks that every
-stored offset and reference is inside its array. It does not re-derive the
-semantic invariants: that IDs are sorted, that the two hierarchy directions
-agree, that the graph is acyclic. Import proves those before publishing an
-index, and the checksum shows the bytes have not changed since. `verify` runs
-them on demand, and the split is covered by a test.
+Opening reads the core, decodes it, and checks that every stored offset and
+reference is inside its array. It does not hash the section, and it does not
+re-derive the semantic invariants: that IDs are sorted, that the two hierarchy
+directions agree, that the graph is acyclic. Import proves those before
+publishing an index. `verify` hashes every section and re-runs the semantic
+pass on demand, and the split is covered by a test.
 
-The packed layout costs about 180 ms more to open, because zstd decodes 21.8 MiB
+Opening used to checksum each section before reading it, so the core was read
+twice and, when packed, decompressed twice. Removing that took the packed open
+from 347 ms to 177 ms and the uncompressed open from 162 ms to 94 ms, measured
+the same way.
+
+The packed layout costs about 83 ms more to open, because zstd decodes 21.8 MiB
 into the 86 MiB core. It is 290 MiB on disk against 1.08 GiB. Which way that
 trades depends on whether the file is already local or fetched per cold start.
+When it is fetched, packed wins on both: a deployment that reads its bundle at
+136 MiB/s opens the packed index in 1.1 s against 1.6 s uncompressed.
 
 Measure with the index on a local filesystem. A Windows bind mount reads at
 181 MB/s against 5.6 GB/s for the container's own filesystem, which dominates
