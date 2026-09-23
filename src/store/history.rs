@@ -227,7 +227,11 @@ impl HistoryIndex {
         concepts: &[u32],
         mut visit: impl FnMut(u32, &[u32], &[u8]),
     ) {
-        let keyed = if backward { &self.backward } else { &self.forward };
+        let keyed = if backward {
+            &self.backward
+        } else {
+            &self.forward
+        };
         let rows = |i: usize| {
             let range = keyed.offsets[i] as usize..keyed.offsets[i + 1] as usize;
             (&keyed.others[range.clone()], &keyed.kinds[range])
@@ -257,7 +261,10 @@ impl HistoryIndex {
     }
 
     pub(crate) fn kind_of(&self, refset: u64) -> Option<u8> {
-        self.refsets.iter().position(|&r| r == refset).map(|i| i as u8)
+        self.refsets
+            .iter()
+            .position(|&r| r == refset)
+            .map(|i| i as u8)
     }
 
     fn validate(&self, concepts: usize) -> Result<()> {
@@ -290,7 +297,11 @@ impl HistoryIndex {
         })
     }
 
-    pub(super) fn open(section: &Section, manifest: &HistoryManifest, concepts: usize) -> Result<Self> {
+    pub(super) fn open(
+        section: &Section,
+        manifest: &HistoryManifest,
+        concepts: usize,
+    ) -> Result<Self> {
         let mut input = Input::open(section, MAGIC)?;
         let count = input.count(8)?;
         let mut refsets = Vec::with_capacity(count);
@@ -348,7 +359,11 @@ pub struct HistoryStore {
 }
 
 impl HistoryStore {
-    pub(super) fn lazy(source: &IndexSource, metadata: HistoryManifest, concepts: usize) -> Result<Self> {
+    pub(super) fn lazy(
+        source: &IndexSource,
+        metadata: HistoryManifest,
+        concepts: usize,
+    ) -> Result<Self> {
         Ok(Self {
             source: Some((source.section("history.bin")?, metadata, concepts)),
             loaded: OnceLock::new(),

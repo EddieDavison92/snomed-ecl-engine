@@ -10,27 +10,26 @@ mod columns;
 mod container;
 mod descriptions;
 mod display;
+mod history;
 mod identifiers;
 mod members;
-mod history;
-mod varint;
 mod membership;
 mod search;
 mod term_storage;
+mod varint;
 pub(crate) use container::IndexSource;
 pub use container::{pack, pack_with_options, verify, PackOptions, Verification};
 use container::{Section, SectionReader};
 pub use descriptions::DescriptionRow;
-pub use display::DisplayStore;
 pub use descriptions::{Description, DescriptionIndex, DescriptionManifest, DescriptionStore};
+pub use display::DisplayStore;
+pub use history::{
+    add_history, Association, HistoryIndex, HistoryManifest, HistoryStore, ASSOCIATIONS,
+};
 pub use identifiers::{Identifier, IdentifierIndex, IdentifierManifest, IdentifierStore};
 pub use members::{
     format_uuid, is_concept_id, parse_uuid, MemberColumn, MemberManifest, MemberStore, MemberTable,
-    ACTIVE, FIELDS, METADATA, REFERENCES,
-    MemberValue, TextColumn,
-};
-pub use history::{
-    add_history, Association, HistoryIndex, HistoryManifest, HistoryStore, ASSOCIATIONS,
+    MemberValue, TextColumn, ACTIVE, FIELDS, METADATA, REFERENCES,
 };
 pub use membership::{MembershipIndex, MembershipManifest};
 pub use search::{search_pairs, words, SearchIndex, SearchManifest, SearchStore};

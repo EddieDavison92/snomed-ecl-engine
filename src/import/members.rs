@@ -94,7 +94,10 @@ pub(super) fn build(
                 "Active refset member references a missing concept"
             );
             // The UUID is checked for duplicates and then dropped; see store::METADATA.
-            ensure!(seen_ids.insert(parse_uuid(r[0])?), "Duplicate Snapshot member UUID");
+            ensure!(
+                seen_ids.insert(parse_uuid(r[0])?),
+                "Duplicate Snapshot member UUID"
+            );
             if let std::collections::btree_map::Entry::Vacant(entry) = tables.entry(refset) {
                 let mut columns = vec![
                     MemberColumn::Time(vec![]),

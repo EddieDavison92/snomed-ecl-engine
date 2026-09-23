@@ -222,8 +222,9 @@ impl Context<'_> {
             };
             // The smallest `=` concept set on an identifier column names the
             // only rows that can match; the rest of the table is not read.
-            let mut drive: Option<(usize, &[u64])> =
-                query.reverse.then_some((crate::store::REFERENCES, &referenced[..]));
+            let mut drive: Option<(usize, &[u64])> = query
+                .reverse
+                .then_some((crate::store::REFERENCES, &referenced[..]));
             for ((filter, column), predicate) in
                 query.filters.iter().zip(&filter_columns).zip(&prepared)
             {
@@ -254,7 +255,8 @@ impl Context<'_> {
                     let mut found = Vec::new();
                     for &id in ids {
                         let start = order.partition_point(|&r| keys[r as usize] < id);
-                        let end = start + order[start..].partition_point(|&r| keys[r as usize] == id);
+                        let end =
+                            start + order[start..].partition_point(|&r| keys[r as usize] == id);
                         self.claim(end - start)?;
                         found.extend_from_slice(&order[start..end]);
                     }
@@ -405,7 +407,10 @@ impl Context<'_> {
     fn identifiers(&mut self, ordinals: &[u32]) -> Result<Vec<u64>> {
         self.tick(ordinals.len())?;
         self.claim(ordinals.len() * 2)?;
-        Ok(ordinals.iter().map(|&o| self.store.ids[o as usize]).collect())
+        Ok(ordinals
+            .iter()
+            .map(|&o| self.store.ids[o as usize])
+            .collect())
     }
 
     fn member_matches(

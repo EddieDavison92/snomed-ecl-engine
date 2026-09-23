@@ -117,15 +117,14 @@ pub fn describe(
 
     // Attributes arrive sorted by group, so runs of equal group are contiguous.
     let mut groups: Vec<Group> = Vec::new();
-    let push = |groups: &mut Vec<Group>, group: u32, attribute: Relationship| {
-        match groups.last_mut() {
+    let push =
+        |groups: &mut Vec<Group>, group: u32, attribute: Relationship| match groups.last_mut() {
             Some(last) if last.group == group => last.attributes.push(attribute),
             _ => groups.push(Group {
                 group,
                 attributes: vec![attribute],
             }),
-        }
-    };
+        };
     for attribute in store.attributes.get(ordinal) {
         let relationship = Relationship {
             kind: label(attribute.kind)?,
@@ -183,7 +182,9 @@ pub fn describe(
         descriptions.sort_by(|a, b| {
             b.active
                 .cmp(&a.active)
-                .then_with(|| (a.kind.code != FSN.to_string()).cmp(&(b.kind.code != FSN.to_string())))
+                .then_with(|| {
+                    (a.kind.code != FSN.to_string()).cmp(&(b.kind.code != FSN.to_string()))
+                })
                 .then_with(|| a.term.cmp(&b.term))
         });
     }

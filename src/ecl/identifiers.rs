@@ -46,7 +46,9 @@ impl Parser<'_> {
             if code.len() > operator.len() && code.ends_with(operator) {
                 let cut = end - operator.len();
                 // The operator needs whitespace or a comment after it.
-                if self.text[end..].starts_with([' ', '\t', '\r', '\n']) || self.text[end..].starts_with("/*") {
+                if self.text[end..].starts_with([' ', '\t', '\r', '\n'])
+                    || self.text[end..].starts_with("/*")
+                {
                     self.pos = cut;
                 }
                 return;

@@ -476,7 +476,9 @@ pub fn pack_with_options(source: &Path, destination: &Path, options: PackOptions
             let block_bytes = SMALL_BLOCKS
                 .iter()
                 .find(|(small, _)| *small == name)
-                .map_or(options.block_bytes, |&(_, bytes)| bytes.min(options.block_bytes));
+                .map_or(options.block_bytes, |&(_, bytes)| {
+                    bytes.min(options.block_bytes)
+                });
             super::blocks::encode(&mut section.reader()?, &mut spool, length, block_bytes)?
         } else {
             let copied = io::copy(&mut section.reader()?, &mut spool)?;

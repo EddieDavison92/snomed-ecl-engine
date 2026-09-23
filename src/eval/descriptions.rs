@@ -265,7 +265,11 @@ impl Context<'_> {
         Ok(false)
     }
 
-    fn description_matches(&mut self, row: &impl Row, predicate: &mut Prepared<'_>) -> Result<bool> {
+    fn description_matches(
+        &mut self,
+        row: &impl Row,
+        predicate: &mut Prepared<'_>,
+    ) -> Result<bool> {
         self.tick(1)?;
         let (op, member) = match predicate {
             #[cfg(feature = "unicode")]

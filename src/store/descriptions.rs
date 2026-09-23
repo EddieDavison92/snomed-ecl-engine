@@ -405,10 +405,16 @@ impl Seeker {
     }
     fn rows(&self, concept: u32) -> Result<Vec<DescriptionRow>> {
         let layout = &self.layout;
-        ensure!((concept as usize) < layout.count, "Description concept out of range");
+        ensure!(
+            (concept as usize) < layout.count,
+            "Description concept out of range"
+        );
         let bounds = self.u32s(layout.concepts, concept as u64, 2)?;
         let (first, last) = (bounds[0] as u64, bounds[1] as u64);
-        ensure!(first <= last && last <= layout.rows, "Invalid description offsets");
+        ensure!(
+            first <= last && last <= layout.rows,
+            "Invalid description offsets"
+        );
         let k = last - first;
         if k == 0 {
             return Ok(Vec::new());
@@ -431,7 +437,11 @@ impl Seeker {
         );
         let mut text = vec![0; usize::try_from(term_end - term_start)?];
         self.read(layout.terms + term_start, &mut text)?;
-        let members = self.u32s(layout.dialect_values, dialect_start, dialect_end - dialect_start)?;
+        let members = self.u32s(
+            layout.dialect_values,
+            dialect_start,
+            dialect_end - dialect_start,
+        )?;
         let count = layout.count as u32;
         let mut rows = Vec::with_capacity(k as usize);
         for i in 0..k as usize {
@@ -445,7 +455,8 @@ impl Seeker {
                     && (100_000..1_000_000_000_000_000_000).contains(&id),
                 "Invalid description row"
             );
-            let term = &text[(terms[i] as u64 - term_start) as usize..(terms[i + 1] as u64 - term_start) as usize];
+            let term = &text[(terms[i] as u64 - term_start) as usize
+                ..(terms[i + 1] as u64 - term_start) as usize];
             let pairs = &members[(dialects[i] as u64 - dialect_start) as usize
                 ..(dialects[i + 1] as u64 - dialect_start) as usize];
             ensure!(
