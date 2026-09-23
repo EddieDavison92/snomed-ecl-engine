@@ -76,5 +76,5 @@
 <circle cx="545.8" cy="156.5" r="4" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
 <text x="557.8" y="160.5" font-size="11" font-weight="600" fill="#ffffff">Snowstorm, cached</text>
 <text x="24" y="418" font-size="11" fill="#c3c2b7">Snowstorm caches an expansion once asked, so its second answer is far quicker than its first. This engine has no</text>
-<text x="24" y="431" font-size="11" fill="#c3c2b7">result cache; every ask costs the same. Opening the index is a separate one-off of about 155 ms per process.</text>
+<text x="24" y="431" font-size="11" fill="#c3c2b7">result cache; every ask costs the same. Opening the index is a separate one-off of about 156 ms per process.</text>
 </svg>

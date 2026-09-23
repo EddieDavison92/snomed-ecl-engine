@@ -7,33 +7,33 @@ the specification does not define.
 
 ## Now
 
-**The first description filter in a process loads the whole index.** A focus of
+**A broad description filter loads the whole index.** A focus of
 up to 1,000 concepts reads only its concepts' descriptions, about 0.2 ms each. A
 larger focus loads every description's metadata once per process, about 0.74 s
 on one core, after which filters take about 2 ms. A serverless function pays
 that on every invocation that needs it. Reading rows for larger foci in
 parallel, or a metadata-only section, would narrow it.
 
-**Cold start.** Opening an index takes 70 ms uncompressed and 155 ms packed on
+**Cold start.** Opening an index takes 78 ms uncompressed and 156 ms packed on
 one CPU. Opening checks that stored indexes are in range; it does not re-derive
 the semantic invariants that import proved. What is left, measured with
 `examples/open_breakdown.rs`:
 
-- *Decompression, about 85 ms of the packed figure.* zstd expands 14.6 MiB into
+- *Decompression, about 78 ms of the packed figure.* zstd expands 14.6 MiB into
   the 86 MiB core before a query can run. Decoding blocks on demand, which the
   container format already supports through its per-block table and hashes,
   would move that cost to the queries that need those bytes.
 - *Attributes the query never uses.* Attribute rows are about 35 MiB of the
   86 MiB core, and only refinements need them. Making them lazy, as descriptions
   and member tables already are, would cut the core a hierarchy or Boolean query
-  must read to about 41 MiB.
+  must read to about 51 MiB.
 - *Reading the core at all.* Memory-mapping an uncompressed index would make
   opening close to free and let pages load on demand. It needs `unsafe` and
   careful alignment, and rules out compression, so it would be a separate layout
   rather than a replacement.
 
-Lazy attributes are worth doing next: they halve what a serverless invocation
-must read, which is the difference between fitting a 128 MiB budget and not.
+Lazy attributes are worth doing next: they cut about 40% of what a serverless
+invocation must read before its first hierarchy or Boolean query.
 
 **Workers do not scale.** On the 10,000-expression corpus, two library workers
 are 26% faster than one, and four are slower than two. Find the contention

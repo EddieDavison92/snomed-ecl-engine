@@ -9,7 +9,7 @@ point it at a SNOMED CT release, it builds an index once, and you query that
 index inside your own process.
 
 ```sh
-snomed-ecl-engine use uk.ecl
+snomed-ecl-engine use data/uk.ecl
 snomed-ecl-engine expand '<< 195967001 |Asthma|' --display
 ```
 
@@ -89,7 +89,7 @@ run wherever your code runs:
 
 - **Serverless functions.** The query-only executable is 2.5 MiB, 1.1 MiB
   gzipped, and the index is one file. Starting the process, opening the index
-  and answering a query takes 165 ms on one CPU.
+  and answering a query takes 163 ms on one CPU.
 - **A small server.** One CPU and 256 MiB serve the whole UK release for
   typical workloads; one that loads every index at once needs 320 MiB.
 - **Offline.** The index sits beside your application and needs no network at
@@ -141,7 +141,7 @@ engine's answer, and could not answer 120. Snowstorm Lite agreed on 587, returne
 | | |
 |---|---:|
 | Packed index for the UK release | 152 MiB |
-| Open a packed index, one CPU | 155 ms |
+| Open a packed index, one CPU | 156 ms |
 | 1,000-expression corpus, median count / enumeration | 0.86 ms / 0.94 ms |
 | 10,000-expression corpus through the CLI, one CPU | 11.5 s per batch |
 | Same corpus through the library, one CPU | 2.0 s per batch |
@@ -182,8 +182,8 @@ extracted when the index is built, so a search is a binary search and a list
 intersection, and it needs no collation library at query time.
 
 ```sh
-echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch uk.ecl
-echo '{"concept":"709044004"}'               | snomed-ecl-engine batch uk.ecl
+echo '{"search":"chronic kidney","limit":5}' | snomed-ecl-engine batch data/uk.ecl
+echo '{"concept":"709044004"}'               | snomed-ecl-engine batch data/uk.ecl
 ```
 
 ## What it supports
@@ -208,7 +208,7 @@ inferred view and does not classify.
 use snomed_ecl_engine::{ecl, eval, store::NumericStore};
 use std::path::Path;
 
-let store = NumericStore::open(Path::new("uk.ecl"))?;
+let store = NumericStore::open(Path::new("data/uk.ecl"))?;
 let expression = ecl::parse("<< 64572001 |Disease|")?;
 let ordinals = eval::evaluate(&store, &expression)?;
 let codes: Vec<u64> = ordinals.iter().map(|&o| store.ids[o as usize]).collect();

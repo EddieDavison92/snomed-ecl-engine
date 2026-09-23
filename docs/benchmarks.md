@@ -210,8 +210,10 @@ Snowstorm enumerated faster on none of the 879 matching expressions, and Lite on
 the history section and 38 ms to build the attribute index that refinements use,
 against about 4 ms for Lite. Later queries of both kinds take about 1 ms.
 
-The first description filter in a process is the slowest such load. It loads the
-description index, about 0.74 s on one core, and later filters take about 2 ms.
+The first description filter over a focus of more than 1,000 concepts is the
+slowest such load. It loads the whole description index, about 0.74 s on one
+core, and later filters take about 2 ms. A smaller focus reads only its own
+concepts' descriptions.
 That matters most in a serverless function, where every invocation is a new
 process. It is in the [roadmap](roadmap.md).
 
@@ -248,10 +250,10 @@ This applies to the version tested.
 | Same corpus through the library, one CPU and 512 MiB | 1.98 s per batch, 276 MiB peak |
 | Same, two CPUs and two workers | 1.47 s per batch, 286 MiB peak |
 | Same, four CPUs and four workers | 2.27 s per batch, 299 MiB peak |
-| Query-only executable, `--no-default-features` | 2,644,864 B (2.52 MiB), 1,138,669 B gzipped |
-| Default executable, with the RF2 importer | 3,445,560 B (3.29 MiB), 1,506,013 B gzipped |
-| With `--features unicode` for term matching | 36,202,864 B (34.5 MiB), 14,318,334 B gzipped |
-| Process start, open a packed index and answer one query | 165 ms |
+| Query-only executable, `--no-default-features` | 2,644,864 B (2.52 MiB), 1,138,545 B gzipped |
+| Default executable, with the RF2 importer | 3,445,560 B (3.29 MiB), 1,505,048 B gzipped |
+| With `--features unicode` for term matching | 36,202,864 B (34.5 MiB), 14,299,445 B gzipped |
+| Process start, open a packed index and answer one query | 163 ms |
 
 Every run returned the recorded code set for every expression, including term
 matching, which uses the ICU build.
@@ -276,12 +278,13 @@ and [`release-measurements.json`](../validation/release-measurements.json).
 
 Opening an index is the cost a serverless invocation pays before it can answer
 anything. `examples/open_breakdown.rs` measures it on one CPU with the index on
-the container's own filesystem and in the file cache:
+the container's own filesystem and in the file cache, taking the median of
+three rounds:
 
 | | Uncompressed | Packed |
 |---|---:|---:|
-| Open, which a query pays | **70 ms** | **155 ms** |
-| Full semantic validation, which only `verify` pays | +73 ms | +77 ms |
+| Open, which a query pays | **78 ms** | **156 ms** |
+| Full semantic validation, which only `verify` pays | +74 ms | +88 ms |
 
 Opening reads the core, decodes it, and checks that every stored offset and
 reference is inside its array. It does not hash the section or re-derive the
@@ -289,7 +292,7 @@ semantic invariants: that IDs are sorted, that the two hierarchy directions
 agree, that the graph is acyclic. Import proves those before publishing an
 index. `verify` hashes every section and re-runs the semantic checks on demand.
 
-The packed layout costs about 85 ms more to open, because zstd decodes 14.6 MiB
+The packed layout costs about 78 ms more to open, because zstd decodes 14.6 MiB
 into the 86 MiB core. It is 152 MiB on disk against 903 MiB uncompressed. Which
 way that trades depends on whether the file is already local or fetched at each
 cold start. When it is fetched, packed wins: at 136 MiB/s, reading the whole file

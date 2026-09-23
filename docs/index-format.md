@@ -106,7 +106,7 @@ Block size follows how a section is read:
 ## Reading
 
 Opening a file reads the header and table, then decodes the core and
-membership: 155 ms on one CPU. Every other section opens on first use and stays
+membership: 156 ms on one CPU. Every other section opens on first use and stays
 cached for the store's lifetime:
 
 | Read | How |

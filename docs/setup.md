@@ -45,8 +45,21 @@ docker run --rm \
 ```
 
 The benchmark scripts expect the default build in `target/linux-core` and the
-term-matching build in `target/linux-unicode`. On Windows, run Docker from
-PowerShell with `${PWD}`: Git Bash rewrites `/work` and the mount fails.
+term-matching build in `target/linux-unicode`. For the second, install ICU in
+the container and set the target directory to match:
+
+```sh
+docker run --rm \
+  -v "$PWD":/work \
+  -v snomed-rust-cargo:/usr/local/cargo/registry \
+  -e CARGO_TARGET_DIR=/work/target/linux-unicode \
+  -w /work rust:1.93.1-bookworm \
+  sh -c 'apt-get update -qq && apt-get install -y -qq libicu-dev pkg-config &&
+         cargo build --locked --release --features unicode --bin snomed-ecl-engine'
+```
+
+On Windows, run Docker from PowerShell with `${PWD}`: Git Bash rewrites `/work`
+and the mount fails.
 
 ## Get an RF2 release
 
