@@ -277,13 +277,9 @@ impl SearchIndex {
             index.word_count() == manifest.words && index.posting_count() == manifest.postings,
             "Search index differs from manifest"
         );
-        // Lists are sorted, so each one's last posting is its largest.
+        // Legacy lists are not checked for order here, so every posting is.
         ensure!(
-            index
-                .posting_offsets
-                .windows(2)
-                .filter(|w| w[0] < w[1])
-                .all(|w| (index.postings[w[1] as usize - 1] as usize) < concepts),
+            index.postings.iter().all(|&p| (p as usize) < concepts),
             "Search posting outside the concept table"
         );
         Ok(index)
