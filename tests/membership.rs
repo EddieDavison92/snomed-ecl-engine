@@ -23,6 +23,7 @@ fn fixture() -> NumericStore {
     NumericStore {
         descriptions: Default::default(),
         search: Default::default(),
+        history: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),
@@ -206,6 +207,7 @@ fn generated_memberships_match_independent_pair_scan() {
     let store = NumericStore {
         descriptions: Default::default(),
         search: Default::default(),
+        history: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),

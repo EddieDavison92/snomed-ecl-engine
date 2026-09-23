@@ -22,6 +22,7 @@ fn fixture() -> NumericStore {
     NumericStore {
         descriptions: Default::default(),
         search: Default::default(),
+        history: Default::default(),
         member_tables: Default::default(),
         identifiers: Default::default(),
         config: Default::default(),

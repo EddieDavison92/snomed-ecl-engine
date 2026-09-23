@@ -303,6 +303,9 @@ fn specs(manifest: &Manifest) -> Result<Vec<(String, u64, String)>> {
     if let Some(m) = &manifest.search {
         specs.push(("search.bin".into(), m.bytes, m.sha256.clone()));
     }
+    if let Some(m) = &manifest.history {
+        specs.push(("history.bin".into(), m.bytes, m.sha256.clone()));
+    }
     if manifest.display_bytes > 0 {
         specs.push((
             "display.bin".into(),
@@ -467,6 +470,7 @@ pub struct Verification {
     pub member_rows: usize,
     pub identifiers: usize,
     pub search_words: usize,
+    pub history_rows: usize,
 }
 
 /// Exhaustively verifies checksums and structure, loading each cold section separately.
@@ -488,6 +492,7 @@ pub fn verify(path: &Path) -> Result<Verification> {
         member_rows: 0,
         identifiers: 0,
         search_words: 0,
+        history_rows: 0,
     };
     if let Some(meta) = &manifest.descriptions {
         result.descriptions =
@@ -510,6 +515,10 @@ pub fn verify(path: &Path) -> Result<Verification> {
     if let Some(index) = store.search.get()? {
         index.validate_order()?;
         result.search_words = index.word_count();
+    }
+    // Opening the section already checks keys, offsets and bounds.
+    if let Some(index) = store.history.get()? {
+        result.history_rows = index.rows();
     }
     Ok(result)
 }

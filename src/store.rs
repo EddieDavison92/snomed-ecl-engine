@@ -11,6 +11,7 @@ mod container;
 mod descriptions;
 mod identifiers;
 mod members;
+mod history;
 mod membership;
 mod search;
 mod term_storage;
@@ -22,6 +23,9 @@ pub use identifiers::{Identifier, IdentifierIndex, IdentifierManifest, Identifie
 pub use members::{
     format_uuid, is_concept_id, parse_uuid, MemberColumn, MemberManifest, MemberStore, MemberTable,
     MemberValue, TextColumn,
+};
+pub use history::{
+    add_history, Association, HistoryIndex, HistoryManifest, HistoryStore, ASSOCIATIONS,
 };
 pub use membership::{MembershipIndex, MembershipManifest};
 pub use search::{search_pairs, words, SearchIndex, SearchManifest, SearchStore};
@@ -60,6 +64,10 @@ pub struct Manifest {
     /// Word index over description terms. Absent in indexes built before it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub search: Option<SearchManifest>,
+    /// Historical associations keyed from both ends. Absent in older indexes,
+    /// which fall back to scanning the association member tables.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub history: Option<HistoryManifest>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplements: Vec<RefsetSupplement>,
 }
@@ -217,6 +225,7 @@ pub struct NumericStore {
     pub membership: Option<MembershipIndex>,
     pub descriptions: DescriptionStore,
     pub search: SearchStore,
+    pub history: HistoryStore,
     pub member_tables: MemberStore,
     pub identifiers: IdentifierStore,
     pub config: crate::config::QueryConfig,
@@ -475,6 +484,12 @@ impl NumericStore {
                 .search
                 .as_ref()
                 .map(|m| SearchStore::lazy(&source, m.clone()))
+                .transpose()?
+                .unwrap_or_default(),
+            history: manifest
+                .history
+                .as_ref()
+                .map(|m| HistoryStore::lazy(&source, m.clone(), count))
                 .transpose()?
                 .unwrap_or_default(),
             member_tables: manifest

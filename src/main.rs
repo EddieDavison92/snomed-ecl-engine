@@ -444,6 +444,35 @@ fn run() -> Result<()> {
                 println!("{summary}");
             }
         }
+        "build-history" => {
+            ensure!(args.len() == 2, "Usage: build-history STORE_DIRECTORY");
+            let path = Path::new(&args[1]);
+            ensure!(
+                path.is_dir(),
+                "build-history needs an unpacked store directory; pack it again afterwards"
+            );
+            let start = Instant::now();
+            let written = snomed_ecl_engine::store::add_history(path)?
+                .context("This index has no member tables to read associations from")?;
+            if human {
+                println!(
+                    "Indexed {} association rows from {} reference sets in {:.1}s",
+                    presentation::number(written.rows),
+                    written.refsets.len(),
+                    start.elapsed().as_secs_f64()
+                );
+            } else {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "rows": written.rows,
+                        "skipped": written.skipped,
+                        "refsets": written.refsets,
+                        "elapsed_seconds": start.elapsed().as_secs_f64(),
+                    })
+                );
+            }
+        }
         "verify" => {
             ensure!(args.len() <= 2, "Usage: verify [STORE]");
             let (store, _) = workspace::resolve(args.get(1).map(String::as_str))?;
@@ -705,6 +734,9 @@ struct BatchRequest {
     /// Text to look up in the word index instead of evaluating an expression.
     #[serde(default)]
     search: Option<String>,
+    /// An SCTID whose historical associations to return, in both directions.
+    #[serde(default)]
+    history: Option<String>,
     /// Include inactive concepts in search results. Off by default.
     #[serde(default)]
     include_inactive: bool,
@@ -916,6 +948,67 @@ fn score(label: &str, query: &str, query_words: &[String]) -> i32 {
     score
 }
 
+/// What a concept was retired in favour of, and what was retired in its favour.
+///
+/// Each row names the association, because they are not interchangeable:
+/// SAME AS and REPLACED BY state an equivalence, POSSIBLY EQUIVALENT TO is a
+/// hint, and a caller mapping a code list forward needs to tell them apart.
+fn history_response(
+    store: &NumericStore,
+    displays: &mut Option<DisplayStore>,
+    display_path: &Path,
+    sctid: &str,
+    out: &mut impl Write,
+) -> Result<()> {
+    let Some(ordinal) = sctid.parse::<u64>().ok().and_then(|id| store.ordinal(id)) else {
+        writeln!(out, "{}", serde_json::json!({"error":"NotFound","concept":sctid}))?;
+        return Ok(());
+    };
+    let Some(index) = store.history.get()? else {
+        writeln!(
+            out,
+            "{}",
+            serde_json::json!({"error":"Unsupported","message":"This index has no history section; run build-history"})
+        )?;
+        return Ok(());
+    };
+    if displays.is_none() {
+        *displays = Some(DisplayStore::open(display_path)?);
+    }
+    let labels = displays.as_mut().expect("just opened");
+    let mut describe = |rows: Vec<snomed_ecl_engine::store::Association>| -> Result<Vec<serde_json::Value>> {
+        rows.into_iter()
+            .map(|row| {
+                let association = store.ordinal(row.refset);
+                Ok(serde_json::json!({
+                    "association": {
+                        "code": row.refset.to_string(),
+                        "display": association.map(|o| labels.get(o)).transpose()?.flatten(),
+                    },
+                    "concept": {
+                        "code": store.ids[row.concept as usize].to_string(),
+                        "display": labels.get(row.concept)?,
+                        "active": store.is_active(row.concept),
+                    },
+                }))
+            })
+            .collect()
+    };
+    let successors = describe(index.successors(ordinal))?;
+    let predecessors = describe(index.predecessors(ordinal))?;
+    serde_json::to_writer(
+        &mut *out,
+        &serde_json::json!({
+            "concept": sctid,
+            "active": store.is_active(ordinal),
+            "successors": successors,
+            "predecessors": predecessors,
+        }),
+    )?;
+    writeln!(out)?;
+    Ok(())
+}
+
 /// Describes one concept, for a browser rather than an expansion.
 fn concept_response(
     store: &NumericStore,
@@ -977,6 +1070,9 @@ fn batch_response(
     }
     if let Some(text) = &request.search {
         return search_response(store, displays, display_path, text, request, out);
+    }
+    if let Some(sctid) = &request.history {
+        return history_response(store, displays, display_path, sctid, out);
     }
     let start = Instant::now();
     let Some(ecl_text) = &request.ecl else {
