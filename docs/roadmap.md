@@ -43,9 +43,12 @@ say why. See [benchmarks](benchmarks.md).
 
 ## Next
 
-**Evidence depth.** 161 of 180 grammar productions carry non-exhaustive
-evidence. Close the alternatives and lexical edges, starting with `stringValue`,
-which has none recorded. See [ECL support](ecl-support.md#against-the-grammar).
+**Grammar defects upstream.** The grammar differential leaves nothing
+unexplained, but three disagreements come from the ABNF itself: a comment
+cannot close after a second star, quoted search terms admit comments, and no
+space is required after a filter's type letter, so `{{moduleId = x}}` also reads
+as a member filter. Raise them with the ECL specification's maintainers. See
+[ECL support](ecl-support.md#grammar-differential).
 
 **Full-engine resource measurement.** Current figures measure the numeric core
 with data loaded on demand. Measure the complete engine with every semantic index

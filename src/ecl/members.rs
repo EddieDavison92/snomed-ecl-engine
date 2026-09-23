@@ -38,11 +38,11 @@ impl Parser<'_> {
         } else {
             loop {
                 let field = self.word().to_ascii_lowercase();
-                if field.is_empty()
-                    || !field.bytes().all(|b| b.is_ascii_alphabetic())
-                    || fields.contains(&field)
-                {
+                if field.is_empty() || !field.bytes().all(|b| b.is_ascii_alphabetic()) {
                     return Err(self.unexpected());
+                }
+                if fields.contains(&field) {
+                    self.refuse(self.pos, "A field is projected twice");
                 }
                 self.pos += field.len();
                 fields.push(field);
@@ -63,7 +63,7 @@ impl Parser<'_> {
         let saved = self.pos;
         let result = if self.take("{{") {
             self.ws()?;
-            self.rest().starts_with(['m', 'M']) && !self.word().eq_ignore_ascii_case("moduleId")
+            self.rest().starts_with(['m', 'M']) && self.filter_name() != "moduleid"
         } else {
             false
         };
@@ -82,7 +82,7 @@ impl Parser<'_> {
         self.ws()?;
         let mut result = Vec::new();
         loop {
-            let field = self.word().to_ascii_lowercase();
+            let field = self.filter_name();
             if field.is_empty() || !field.bytes().all(|b| b.is_ascii_alphabetic()) {
                 return Err(self.unexpected());
             }
@@ -110,9 +110,34 @@ impl Parser<'_> {
                 || quoted && !matches!(comparison, Comparison::Eq | Comparison::Ne)
                 || self.rest().starts_with("\"\"")
             {
+                let mark = self.mark();
                 let list = self.take("(");
                 self.ws()?;
-                let mut dates = vec![self.filter_date()?];
+                let first = self.filter_date();
+                if first.is_err()
+                    && dated
+                    && matches!(comparison, Comparison::Eq | Comparison::Ne)
+                {
+                    // Not a date, so the grammar reads it as a string compared with a
+                    // field that happens to be named effectiveTime; evaluation types it.
+                    self.reset(mark);
+                    let terms = self.search_terms()?;
+                    result.push(MemberFilter {
+                        field,
+                        comparison,
+                        value: MemberPredicate::Text(terms),
+                    });
+                    self.ws()?;
+                    if self.take("}}") {
+                        return Ok(result);
+                    }
+                    if !self.take(",") {
+                        return Err(self.unexpected());
+                    }
+                    self.ws()?;
+                    continue;
+                }
+                let mut dates = vec![first?];
                 loop {
                     let spaced = self.ws()?;
                     if !list || self.take(")") {
@@ -159,12 +184,15 @@ impl Parser<'_> {
                     self.pos = start;
                     MemberPredicate::Text(self.search_terms()?)
                 }
-            } else if !self.starts_alternate() && self.keyword("true") {
+            } else if !self.starts_alternate() && self.value_keyword("true") {
                 MemberPredicate::Boolean(Some(true))
-            } else if !self.starts_alternate() && self.keyword("false") {
+            } else if !self.starts_alternate() && self.value_keyword("false") {
                 MemberPredicate::Boolean(Some(false))
-            } else {
+            } else if field == "moduleid" {
+                // Only moduleFilter admits a bare set of concepts, `(a b)`.
                 MemberPredicate::Concepts(Box::new(self.filter_concepts(depth + 1)?))
+            } else {
+                MemberPredicate::Concepts(Box::new(self.subexpression(depth + 1)?))
             };
             if !matches!(
                 value,

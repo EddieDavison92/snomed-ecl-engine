@@ -78,7 +78,7 @@ pub enum ParseErrorKind {
     Limit,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ParseError {
     pub kind: ParseErrorKind,
     pub offset: usize,
@@ -105,6 +105,7 @@ pub fn parse(text: &str) -> Result<Expr> {
         text,
         pos: 0,
         nodes: 0,
+        refused: None,
     };
     if text.len() > MAX_QUERY_BYTES {
         return Err(parser.error(ParseErrorKind::Limit, "Query exceeds 65536 bytes"));
@@ -113,6 +114,11 @@ pub fn parse(text: &str) -> Result<Expr> {
     parser.ws()?;
     if parser.pos != text.len() {
         return Err(parser.unexpected());
+    }
+    // A grammatical expression the engine refuses for its meaning. Reported
+    // only once the whole text parses, so malformed text is a syntax error.
+    if let Some(refusal) = parser.refused {
+        return Err(refusal);
     }
     Ok(expression)
 }
@@ -128,8 +134,39 @@ struct Parser<'a> {
     text: &'a str,
     pos: usize,
     nodes: usize,
+    /// The first semantic refusal, held until the text is known to parse.
+    refused: Option<ParseError>,
 }
+
+/// Where the parser was, to return to after an alternative fails.
+#[derive(Clone)]
+struct Mark {
+    pos: usize,
+    nodes: usize,
+    refused: Option<ParseError>,
+}
+
 impl Parser<'_> {
+    fn mark(&self) -> Mark {
+        Mark {
+            pos: self.pos,
+            nodes: self.nodes,
+            refused: self.refused.clone(),
+        }
+    }
+    fn reset(&mut self, mark: Mark) {
+        self.pos = mark.pos;
+        self.nodes = mark.nodes;
+        self.refused = mark.refused;
+    }
+    /// Records a grammatical form refused for its meaning, and parses on.
+    fn refuse(&mut self, at: usize, message: &'static str) {
+        self.refused.get_or_insert(ParseError {
+            kind: ParseErrorKind::Semantic,
+            offset: at,
+            message,
+        });
+    }
     fn error(&self, kind: ParseErrorKind, message: &'static str) -> ParseError {
         ParseError {
             kind,
@@ -249,7 +286,7 @@ impl Parser<'_> {
         }
         let left = self.subexpression(depth)?;
         if self.take(":") {
-            let refinement = self.refinement(depth + 1, true)?;
+            let refinement = self.refinement(depth + 1)?;
             return self.node(Expr::Refined(Box::new(left), Box::new(refinement)));
         }
         if self.take(".") {
@@ -352,14 +389,27 @@ impl Parser<'_> {
         }
         // ABNF quoted strings are case-insensitive (RFC 5234 2.3) and the parsing guidance
         // says keywords are case-insensitive, so "^R" admits ^r; only ECL.g4 restricts it to CAP_R.
-        let refset_operator = if self.take("^R") || self.take("^r") {
+        // `^R#x` and `^R-#x` are memberOf over the alternate identifiers `R#x` and
+        // `R-#x`: a scheme alias starts with a letter, so `^R` then `#x` or `-#x`
+        // has no reading.
+        let alternate_scheme_r = {
+            let bytes = self.rest().as_bytes();
+            bytes.len() > 2
+                && bytes[..2].eq_ignore_ascii_case(b"^r")
+                && !bytes[2].is_ascii_alphabetic()
+                && bytes[2..]
+                    .iter()
+                    .find(|b| !(b.is_ascii_alphanumeric() || **b == b'-'))
+                    == Some(&b'#')
+        };
+        let refset_operator = if !alternate_scheme_r && (self.take("^R") || self.take("^r")) {
             Some(true)
         } else if self.take("^") {
             Some(false)
-        } else if !self.starts_alternate() && self.keyword("memberOf") {
+        } else if !self.starts_alternate() && self.operator_keyword("memberOf") {
             self.ws()?;
             Some(false)
-        } else if !self.starts_alternate() && self.keyword("refsetContainingAny") {
+        } else if !self.starts_alternate() && self.operator_keyword("refsetContainingAny") {
             self.ws()?;
             Some(true)
         } else {
@@ -382,8 +432,7 @@ impl Parser<'_> {
             self.alternate_identifier()?
         } else if self.take("*") {
             self.node(Expr::All)?
-        } else if self.word().eq_ignore_ascii_case("any") {
-            self.pos += 3;
+        } else if self.value_keyword("any") {
             self.node(Expr::All)?
         } else if self.rest().starts_with(|c: char| c.is_ascii_digit()) {
             let start = self.pos;
@@ -413,10 +462,10 @@ impl Parser<'_> {
         while self.starts_member_filter()? {
             if refset_operator.is_none() {
                 // Logical model 4: member filters apply to results of the memberOf function.
-                return Err(self.error(
-                    ParseErrorKind::Semantic,
+                self.refuse(
+                    self.pos,
                     "Member filters require a refset operator (^ or ^R); ECL defines them only over memberOf rows",
-                ));
+                );
             }
             member_filters.extend(self.member_filters(depth + 1)?);
             self.ws()?;
@@ -460,12 +509,28 @@ impl Parser<'_> {
                 let filters = self.concept_filters(depth + 1)?;
                 expression = self.node(Expr::ConceptFiltered(Box::new(expression), filters))?;
             } else {
+                // A filter that names no type is a description filter (6.8), so
+                // `{{moduleId = x}}` is never the member filter `m oduleId`.
                 let filters = self.description_filters(depth + 1)?;
                 expression = self.node(Expr::DescriptionFiltered(Box::new(expression), filters))?;
             }
             self.ws()?;
         }
         Ok(expression)
+    }
+    /// A long-syntax operator that the grammar lets run into `ANY`, as in
+    /// `memberOfANY`.
+    fn operator_keyword(&mut self, word: &str) -> bool {
+        let found = self.word();
+        let joined = found.len() == word.len() + 3
+            && found[..word.len()].eq_ignore_ascii_case(word)
+            && found[word.len()..].eq_ignore_ascii_case("any");
+        if found.eq_ignore_ascii_case(word) || joined {
+            self.pos += word.len();
+            true
+        } else {
+            false
+        }
     }
     fn unexpected(&self) -> ParseError {
         self.error(

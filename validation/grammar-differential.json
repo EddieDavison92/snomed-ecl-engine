@@ -1,0 +1,1935 @@
+{
+ "seed": 11,
+ "grammars": {
+  "abnf-brief.txt": {
+   "samples": 17607,
+   "grammar_valid": 5427,
+   "engine_verdicts": {
+    "ok": 2501,
+    "Semantic": 2938,
+    "Syntax": 8757,
+    "Encoding": 3411
+   },
+   "generator_errors": 0,
+   "disagreements": {
+    "grammar rejects only under the literal grammar, engine ok": {
+     "count": 8,
+     "minimal": [
+      "/***/*",
+      "(*)/***/",
+      "684003/***/{{active=1}}{{active=1}}{{+history}}"
+     ]
+    },
+    "grammar rejects only under the literal grammar, engine Semantic: Member filters require a refset operator (^ or ^R); ECL defines them only over memberOf rows": {
+     "count": 6,
+     "minimal": [
+      "\t( X#. . <*{{+history }} \r) {{m \niD != <^( * ){{+history}}}} {{EfFecTIVEtime!=( \"\"), ModULEID= < *{{active = 1}} }} oR  \t*{{\nDialectid=* (5967001 ) ,EfFEctiVEtiMe>= ( \"\")}}{{cdefinitionstatus= defined}} oR/*\ud826\udd5e**/\n\n> 484003{{ +HiSTOrY ( *  ) }}Or  * {{ M acTive!= 0}}{{ m EFf=*}} {{/**/\td LAnguaGE\t\n=( YU ) , ModULEid =( 732111)}}",
+      "^[/**/ I ]* {{ MQr !=#9.6,md!=(9005004),/***/ID =( 1959673 )}}{{Ma= ( 1959604) }},<! ( * .*.*  ){{mid = (4046847) \t\t,AcTiVe != 1}} , >>! ^ ( <! ^( *) {{ m Z=* }}{{cactive=1}}{{ + history}}\r.*  ) {{dLAnGUaGe!=DQ }}\r\n{{C \rmodUlEId!=*}}\n\n{{ +hiStoRy }}AnD !!< ^R \"lN-#!\" {{ mEvETi>( \"\" \"\")}}{{\t\tD LANGuAGE= HN,dialect = I (accept) }}{{ Cdefinitionstatusid= (1984003),mOdUlEID !=(90000050   ) }}",
+      "698007 |~\udb6a\ude2b \u0448  \ud86a\udfb4|{{ mQ<=#0 , ModUleId= >>!\r\t116680003\r| ~\uee9e| {{D MODULEiD =(116684 |\n\rM ~  \ud8b6\udd1d\u015d |)}}{{+HIStoRY}} ,efFecTIVetIME !=(\"94380228\" \"\" \"38680812\"), ACTive!= true}}{{ mMOduLEiD!=(195967001 |}| 404684003), efFeCTIvETIMe< \"\"}} {{/**/M P> #7 }}{{\t\ncDeFiNItIOnSTatUS\n=DEfIned, mODuleId != (/**/363698007 848456 116680003|S\ud83e\udd3c \ud82b\udd98\ud858\udee2|), dEFInItionStATUsiD=(\r16680003 | G | )}}{{ cAcTive= 0}} {{ +HIsTOrY/**/(\r354330|&\ud5a5|\t /**\u03e4|*/{{ EffEcTIvETIMe>=( \"88150414\") }} {{d aCTIvE !=false,LANGuaGe != TX }} {{ CMOdUlEid!=(40468400| }  ~C |),DEfinItIonsTAtUs !=DeFInED}}  ) }}. ( >!(< * ){{ eFFecTivETIME<= \"\", DIALect!=k6( 332317)}}{{+ HisTORy\n\t}} mINus \n73211009 |4| {{ CdeFinItiOnstaTUsID =/**\"*/\n( 195967001 |1Qn e  P V| 3967001| e2 u U |),MoDuLEID =\t( 4063698007 /*/**/\t\t) }}){{m EfFECtxX!=( \"88591223\" \"\" ), ModulEId!=(16680003 | 4\ud82d\udccf q | ) ,aCtIVe=false }}/**//*\u91c4*/{{cmODuLEId=* {{ dID= 404684003, Term= (wiLd :\"\\\"\")}} {{d ID = 271463,MoDULeid=(31000000508004|_| ), tyPe= fSN, teRM = WiLd: \"\\\"\"}}{{ +HISTOry ( \n\r/*\u0ecb*\t*/<<!^*{{ m active= 1}} {{\n\nactive = 1 ,term= \" !\" }} : (*=*)  and  * =* ,{ * =*}\t )}}}}{{+ histoRY}}"
+     ]
+    },
+    "grammar accepts only under the literal grammar, engine Syntax: Unknown description filter": {
+     "count": 3,
+     "minimal": [
+      "( >>!195967001 {{ C effECTIVEtIme < (\"\" ) , dEFINItioNSTaTuSiD!=<!( * {{ active =1 }}{{active= 1}}{{ +history}} , * ,* ){{ m actIVe!= 1, ACtIvE!=1,eFFeCtIVETIME>= \"\",actiVe= 0\t }} \r{{  \nMI\t!= <*{{+history }}\r\n\r,ACTiVE !=*}}{{+\r/**/HiSTORy }},effECtIvetime\r\n >\"13320601\", eFfECTIvetIMe >\"\"}}: ( ( [0..*]R>! \"X#!\"|v | {{ Cactive=1 , moduleid= * }}{{ dtype=syn,moduleid= *  ,dialect =B}} {{ d\n moduleid= *,dialect =Q }}=true \r\t)   OR\t\n [38..*] R>* {{ M F =* ,M=* }} {{cactive =1 ,active =1 ,active= 1 }}!=\t/**$$*/falSeAnD (( {/**/\n* =*\n}  )Or [5..*] {\t* = * } Or { * = *,*=*})/**\u0732 */) Or  ([81..*] R >>!(*,* /**/\t){{cmoduleid = *, active=1,active =1  }}{{+ hIsTorY }}/*$%*//*$*/!= TRuEAND R* \n<#4.7,  ((*=*)) \t\r)or {\n(R (  * ) {{ active= 1, active=1 }} {{+hIsToRy}}=\"\\\"\" /*%&*/or ( ( *=* )or * =*))  } oR  (363698007\r\t!= \"\\\"\"/** */)  ) {{ m aCTIvE=true,EFFEctiVETiMe >= (\"61770219\" \"\" \"45321231\"\r \"97290521\" ) ,hn = (MAtCh: \"Q\ub72e\u04d5 \"),ActivE\t\r= 0}} {{\t\tmOdUleiD != >! (  !!>( *{{ C effECTIvEtIme= \"\" , definitionstatusid =*}} {{c ACTIVe =0 ,definitionstatusid = *}}\r\r\n{{ +hiSTOrY-mOD}} ){{+histoRy-mOd }} ) {{ m MODUleID = ( <! P#. ) {{ C actIVE =/**/*\r,eFFEctIvEtIME=\"22550101\",definitionstatus= ( defined )/**,*/}},actiVe = false }} {{MeFfectIVeTImE/**/<= (\n\"55550219\"), modULeId = (404684003 363698007| \udbfe\udc96 \u0861\u0794  \u0ea0  \ud8a9\udfee\u0b95| ) ,MoDUlEid = \"GY# ! \" | ,N  Y| {{ + HisTorY (  *minus *) }} }}{{D\ntYPEID!= !!<(  < ( * ) {{active =1 }} {{ +history}}.* . *\t\r){{ Dtype = syn,moduleid=* }}{{C Active =*, effectivetime= ( \"\") }}{{ +\rhiSTOry}},diAlEctID!= ( ^(*){{ m B =*}} {{ m T= *}} ) {{C effectivetime= \"\"}}{{ C effectivetime= \"\" }}(PreFER ACcePT ),\nTyPeiD != (73211009 | \ud863\udc8c|\r\n\r420630 ), MOdUlEId != ( 900000009|\udb33\udc27> \u0635\ud8b4\udf51C|)\t}}, MODUelId/*b*/!=<!* {{M EFfEctIVETImE<=( \"\") }} {{ mModUlEid = ( 116680003 | }\uec03 } | 900000000000508004) ,acTiVe\t!=true, AcTive=true }}{{CmodULeiD!= (\t732110067001|}\n\r\n| )}} {{ + HistORy}} , AcTivE!= *}}{{d TypE !=(/**/def fSN) ,\tTYpE =\t\nFsN, iD=/**/  363698007,languaGE = (Dc vn wH\r)}} . *{{ C DefinitioNstATus\t !=(primitivE pRiMitive )}}{{ C deFIniTiOnstatusiD=( 36369800704684003 |\u5062<( w\u044f  5| 404684003 )\n, AcTIve!= 0}}",
+      ">!Y--#5 {{cdefinITIoNstAtusId =\t (  ^R 73211009 {{ M EFfEctiEfFEctiVEtiMe >\r\"77280101\"}} {{ M F!= (\"! \" \"!\" \"!\" ) , ACTIVe!=1 }}\n{{+ HiSTORy}} . <! \"Y#!\"{{D moduleid = ( 363698007 195967001 ) ,id = 404684003}} {{\r\t language =QT }} ){{ + hIStory}},DefINiTIOnSTAtUS =( pRimitiVe dEfINed ) , DEFINItiONstaTusId= <*{{ D effeCTIVetIME >\"98201004\" }} }}{{ + HistORY}} . ( >! 404684003 {{mAVF\t\n!= FalSE, dR=(MAtcH :\" \\\"! \" WiLd:\"!!\")}} {{\n/**/\ndialEcTiD!= << (  <*{{active= 1}}{{ active =1 }} {{+history}}.* . * ){{ Dmoduleid=*}} (ACcePt aCcEPt\racCePT pReFer),diAlECT!= R }} {{D tyPe =fsN}} {{ c DeFINiTIONSTatuS!= (dEfiNed pRIMitiVe priMiTIVE ) }}{{+hiStory }} :R^RiPT-#_| 8p  L|/**/{{tERM= wild : \"!\"}}{{cdefinitionstatus= (defined)}}{{ +hISTory }} = \"\u06dc\"  And ( R^ * {{+history }} !=<*{{  active = 1}}{{ +history }} oR  ( * = *) ) /*\t*//**//**/AND [7..0]R/**$*/>! ^( * :* =* ){{mmoduleid=*,U=* }} {{ mE= *, F= * ,D=* }} {{ + HIsTORY-min }} = ( \"!\\\"\" \"!!\")  aNd  RQ#.{{   effectivetime =\"\" }}{{ cmoduleid=* }}\n\r{{ dialect=L,active = 1 }}/**/\n{{+hiSToRY}}\n= (  \n\"\\\"\\\"\\\"\" )\n\r ){{M acTiVeeCtivEtImE<\n( \"68411027\" \"49340731\" \"\") }} {{ d iD= ( 363698007) , MoDuLEId= >>* {{maCtiVe= 1 ,AcTiVulEid = G#.{{Cdefinitionstatusid=*,active=1}}{{+HISTOry}}\n\n}}{{cEffecTIVEtiME>(\"67811005\" \"50030328\" \"\" ) }}}}/**/{{+ hIstorY_min}}. \n (<^R(/**/ ( ^*{{ c active= 1}} {{c active=1 }}{{+history}} )\t{{ m effectivetime= (\"\" ) /**/\r}} {{m active =1 , effectivetime= \"\" , moduleid = *}} {{M effectivetime =( \"\"), G= *}}{{Cdefinitionstatus =defined ,active =1\n/**/\n}} OR 73211009|A | {{/**/moduleid =* , idG=116680003 , id = 73211009}} {{+ hISTORY }}  ){{m ecb!=^[O ]E#.{{ /**/\rMactive=1\t,\ndialectid = * ,effectivetime= \"\" }},ModuMU = ( \r*{{ active=1}} {{+history }} : *=* , *=* ),actIVe!=true ,actIVE = * }}\n{{+histORy }}miNUS  ^ [ xzF](\t>>! ^[ * ]73211009 | \u0100 Ap  N=F|{{ c ACTIVe!= false, definitionstatusid =(971675 9000000000005081)}} {{+histORy-mAx }}  ) {{typEId !=\r/**/<<! 73211009}} {{ d ModUleID!= ( 73211009| \ud803\udefb | 73211009 )}}{{+ hIsTORy}}  )\t\r {{ TypE=( FSn\tSyN dEf) ,TYPe =DEF ,\nTERM = WIld : \"\\*\"\t,LAnguaGe= FO }} {{ CactivE=false, EFFEctivETiME= \"\"/*\u793c\t*/ ,EFfecTIvetIme >(\"77070813\" \"78840531\" \"17571005\" ) }}\n\r",
+      " M-0#-_{{ M\tmodulEiD!=(73211009 900000000000004 116680003 ) , z != /**/fALse}} {{ EFFectiveTiME\t= \"\",languAGe!=( \r wm)}}{{ +hiSTory \t(P#.-7. ^R\r404684003| \u0c3f\udbc4\udec4\u01aa  \u0523\u98fc\udb41\udf0f | {{maCtiVe !=* ,ACTiVE=*}}{{ +HIstOrY}}. <! ( ^R* {{ M HGD!=#-5.9 ,aCtIVe!=1}}{{ M effEetime<=( \"\") }}{{+hisTORy-maX \t}}/**\t*\u01c6*\t*/){{ LanguAGE=eO }}{{ C\rmOdUlEiD =404684003 |n|{{ c active= 1, definitionstatusid= * }}}}{{+ HISToRy }}.>>! ^R W0#_ |\u053b|{{ mAr = (*.* ){{ D active=1 ,id= 73211009 }}{{+HIStoRy}}, mOduLEiD/**/\t= ( *: *=*   /**/) {{mmoduleimoduleid= * , active=1,active=1}}\r /**\ud881\udf4b*/, Py = #0}} {{D tYPeID = (900000000000508004 404684003 |+| 404684003|b| ) , dIaLect!=X1}}{{ +HiSTOry }}/**\uf891\ud2f5*\n*/ ) }}. <<!* .!!< ^ (>>! 363698007| \ud86b\udc3c\ue01e |{{\n\tmOduLEiD=^(  <* {{ active =1}} {{ active =1}} {{+history}}:*= *, * = *  )\t{{\rMmoduleid= ( 900000000000508004 116680003 )/**/ ,moduleid=* }}{{+HIStorY-max }}, tEr != MatCH :\"\\\"\\\" !\\\" \\\"\\\" \\\"\\\"! \"\r\r}}OR /**/\r( /**/\n>!\r^\"W-#!\" {{ m eFFEcTiVetImE != \"\" }}{{cactIve!= 0, effectivetime=\"\" }} {{+ HIstoRy_MOD}} : {/*)*/ \n[7..*] *= trueor  * =* or *=* }) {{ caCTIVE!= *,mODULEId !=(9000000000001|30|) }}{{ACtiVE = *,EfFEcTIvETImE\n= ( \"\" \"45380430\" )}}{{EffeCTIvETiMe>= (\"49150810\") , iD!= ( 73211009\r\t\r), Term=wiLD : \"\\\"\\\"\" ,EFFECTIVETime\n\r!= \"41840714\"}} Or  !!> (/**/\t\n<<! 195967001|  if x |{{ CmoduLEID =( 363698007 404684003 ) , effectivetime=( \"\" ) }} {{c efFecTiVEtiMe>= ( \"\" ),definitionstatus = defined}} {{+HIstORy_max/*)*/ }}: [4..*]* =( \"!\" )\r ,* =* AND (*= *,*= * ) , ( *=*) ){{c dEfInItionSTATuSID =(* )  {{M O=* ,V = *, V= *,J=* }} {{dactive =1}}{{+ hIsTOrY}}}} {{ dLANGuaGe != ( qf kY) }} {{ \r eFfEctIvetime <( \"84380823\")\n, ACtIve\t!=false}} {{+HistORY }}\r )/*f*/{{ACTiVE =true,lANGUAGe!= (zQ fU), ACTive=false}} {{ +HiStory}}. ( ^/**/( 798373{{/**\r*//**t\n*/\t+hIsTORy \r/*U*\u09a4*\u0511*/}} . P#...|%k ! \\ | {{CeFFECTiVetIme >= (\"\") ,moduleid=(900000000000508004 116680003)}} .< \"H-#!\" | lb 8|{{ +HIsTORY}}\n ){{\n+hisTorY\r( !!< (<^( * ){{ m E =*}}{{m E = *}}{{c active =1 }} : { *=*  }   ) ) }} :[148..*]{*{{ cEFfecTiVeTIMe <   ( \"\" )}}{{ Moduleid=( 404684003 73211009)\n ,id=404684003 }}>= #0 }  ) {{C mODulEID!=(  ^(\r\r/*)*.*/<<!^R(* ){{m Q= *, Y= *, I=*}} {{dactive=1, active =1, active=1}}{{Cactive=1 }} ){{ M eFfecT=\"\"}} {{ +HistOrY(  *)}})}}{{ CacTivE\r=1,aCtIve = 1,EfFectIVETImE= \"46780408\"}}"
+     ]
+    },
+    "grammar accepts only under the literal grammar, engine Syntax: Unexpected token or missing operand": {
+     "count": 1,
+     "minimal": [
+      " * {{d tYpeId=( 900003  | }~ \u022f | 284057/**/) ,effectiveTImE <\"\" ,eFFECTIVetImE!=(\"\") , AcTive !=*}}{{ iD!=484003,lAnGUAge !=ZK\t/**\u046a\udbd1\udf43*/, effecTIveTIMe = \"69900404\"}} and 4684003{{effectIvEtIme > (\"40011116\" \"54391226\" \"16950412\"),id =368007 ,tErM=(\"\n/**\"\r\udbce\ude1a\uda26\udc8f*/\uf6ea\\\\\" MaTcH : \" \u7f70\u00cf \" wIlD: \"\u9d24\" )}}"
+     ]
+    },
+    "grammar rejects only under the literal grammar, engine Semantic: Reverse flag with a concrete value has no defined ECL semantics": {
+     "count": 1,
+     "minimal": [
+      "/*\udbad\udd6b*/^[b]((*).*{{active=1}}{{active=1}}){{+HistOry}}:/***/([2..*]*{{active=1}}{{active=1}}=false)/**/or R*=(\"!\")OR *=#7oR *=#8"
+     ]
+    },
+    "grammar rejects only under the literal grammar, engine Semantic: Reverse flag inside an attribute group has no defined ECL semantics": {
+     "count": 1,
+     "minimal": [
+      "(( << ^( SW1#X51 {{ CmoDulEid!=(15967001)\t/*)*/\r, actIVE !=1}}.>!( *,*) {{ moduleid =* , moduleid=*}} {{+hisTory (  * ) }} ){{m ACTive !=true,ModULEID=(4008004|l  a | 4000000000508004 ) }} {{cmoDulEID!= (3636900000508004 ) }} : {R ^[* ] *{{\nM moduleid =* }}/**//**/\n{{M\nactivuleid = *}}=\"\\*!!\"  ANd\t( R* =*)} )\r{{ cMoDuleId !=\r\n( 63698007/*\n*/116680003 | \u0794\udaa1\udf34  ~\udbfb\udd02   \udb46\udfed |) }}\n) {{ \rDIAleCtID!=^(>>!*{{ mW =*{{ cactive= 1}}{{active= 1 }} {{+history }}, ModUleID/**/=<*{{ active =1 }}{{  active =1 }}{{+ history }}, MOduLeId !=( 363698116680003) }} . >>!G#. {{\n+hIstOrY (* . *)}}){{ +hiStory }} , DiaLeCT=Z\n( PrEfER prEFER)\n ,\n\tiD /**<*/=(/**/\r1684003)}}{{\r+HIsTOrY}} .!!< (\n\n^R(  ( ^R (  *. *.*. * ) {{M activeivetime=\"\"}}:*=* , ( *=*  )and * =*  and  ( *=*  ) \r) {{MEffEcTIVetIMe <= (\"\") ,eFfEctiVeTImE<= \"72481226\" }}{{ C mODUlEID !=( 19596680003), ACTive\r\r/*&(*/= true/***/\n}} ){{+hIstoRY }}:( [3..543](  <*{{+history }})\n{{ c\n\nmoduleid =*, moduleid = * }} =TRUE)){{ +HisToRY}}"
+     ]
+    }
+   },
+   "productions": {
+    "expressionConstraint": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 15087
+    },
+    "refinedExpressionConstraint": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 3169
+    },
+    "compoundExpressionConstraint": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 3157
+    },
+    "conjunctionExpressionConstraint": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1407
+    },
+    "disjunctionExpressionConstraint": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 895
+    },
+    "exclusionExpressionConstraint": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 855
+    },
+    "dottedExpressionConstraint": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 3178
+    },
+    "dottedExpressionAttribute": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4860
+    },
+    "subExpressionConstraint": {
+     "choices": 20,
+     "covered": 20,
+     "generated": 58278
+    },
+    "eclFocusConcept": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 48192
+    },
+    "dot": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4860
+    },
+    "refsetOperator": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 5079
+    },
+    "memberOf": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 3023
+    },
+    "refsetContainingAny": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2056
+    },
+    "refsetFieldNameSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 383
+    },
+    "refsetFieldName": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 9903
+    },
+    "eclConceptReference": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 16598
+    },
+    "eclConceptReferenceSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 4937
+    },
+    "conceptId": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 16598
+    },
+    "term": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 6684
+    },
+    "altIdentifier": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 2747
+    },
+    "altIdentifierSchemeAlias": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 2747
+    },
+    "altIdentifierCodeWithinQuotes": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1045
+    },
+    "altIdentifierCodeWithoutQuotes": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 1702
+    },
+    "wildCard": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 45495
+    },
+    "constraintOperator": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 11646
+    },
+    "descendantOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 3308
+    },
+    "descendantOrSelfOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 946
+    },
+    "childOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 895
+    },
+    "childOrSelfOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 939
+    },
+    "ancestorOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 924
+    },
+    "ancestorOrSelfOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 924
+    },
+    "parentOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 956
+    },
+    "parentOrSelfOf": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 923
+    },
+    "top": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 933
+    },
+    "bottom": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 898
+    },
+    "conjunction": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 5961
+    },
+    "disjunction": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 4986
+    },
+    "exclusion": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 855
+    },
+    "eclRefinement": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 5105
+    },
+    "conjunctionRefinementSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1125
+    },
+    "disjunctionRefinementSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 976
+    },
+    "subRefinement": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 8251
+    },
+    "eclAttributeSet": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 10428
+    },
+    "conjunctionAttributeSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1704
+    },
+    "disjunctionAttributeSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1386
+    },
+    "subAttributeSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 14874
+    },
+    "eclAttributeGroup": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1975
+    },
+    "eclAttribute": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 10761
+    },
+    "cardinality": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2341
+    },
+    "minValue": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2341
+    },
+    "to": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2341
+    },
+    "maxValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 2341
+    },
+    "many": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1575
+    },
+    "reverseFlag": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1616
+    },
+    "eclAttributeName": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 15621
+    },
+    "expressionComparisonOperator": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 14999
+    },
+    "numericComparisonOperator": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 1480
+    },
+    "timeComparisonOperator": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 10436
+    },
+    "stringComparisonOperator": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 3321
+    },
+    "booleanComparisonOperator": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 44873
+    },
+    "idComparisonOperator": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1934
+    },
+    "descriptionFilterConstraint": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 14512
+    },
+    "descriptionFilter": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 24469
+    },
+    "descriptionIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1934
+    },
+    "descriptionIdKeyword": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 1934
+    },
+    "descriptionId": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2624
+    },
+    "descriptionIdSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 792
+    },
+    "termFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1946
+    },
+    "termKeyword": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1946
+    },
+    "typedSearchTerm": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 3407
+    },
+    "typedSearchTermSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 1040
+    },
+    "concreteStringSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 354
+    },
+    "concreteString": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1094
+    },
+    "concreteStringCharacters": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 1094
+    },
+    "wild": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1101
+    },
+    "matchKeyword": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 518
+    },
+    "matchSearchTerm": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 3325
+    },
+    "matchSearchTermSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 2306
+    },
+    "wildSearchTerm": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 1101
+    },
+    "wildSearchTermSet": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1101
+    },
+    "languageFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1940
+    },
+    "language": {
+     "choices": 16,
+     "covered": 16,
+     "generated": 1940
+    },
+    "languageCode": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2673
+    },
+    "languageCodeSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 812
+    },
+    "typeFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1946
+    },
+    "typeIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 759
+    },
+    "typeId": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 759
+    },
+    "typeTokenFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1187
+    },
+    "type": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1187
+    },
+    "typeToken": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 1473
+    },
+    "typeTokenSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 332
+    },
+    "synonym": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 1002
+    },
+    "fullySpecifiedName": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 197
+    },
+    "definition": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 274
+    },
+    "dialectFilter": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 1951
+    },
+    "dialectIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 779
+    },
+    "dialectId": {
+     "choices": 18,
+     "covered": 18,
+     "generated": 779
+    },
+    "dialectAliasFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1172
+    },
+    "dialect": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 1172
+    },
+    "dialectAlias": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 1425
+    },
+    "dialectAliasSet": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 306
+    },
+    "dialectIdSet": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 316
+    },
+    "acceptabilitySet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1206
+    },
+    "acceptabilityConceptReferenceSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 471
+    },
+    "acceptabilityTokenSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 735
+    },
+    "acceptabilityToken": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1199
+    },
+    "acceptable": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 839
+    },
+    "preferred": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 360
+    },
+    "conceptFilterConstraint": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 11076
+    },
+    "conceptFilter": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 20987
+    },
+    "definitionStatusFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 3991
+    },
+    "definitionStatusIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 2384
+    },
+    "definitionStatusIdKeyword": {
+     "choices": 36,
+     "covered": 36,
+     "generated": 2384
+    },
+    "definitionStatusTokenFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1607
+    },
+    "definitionStatusKeyword": {
+     "choices": 32,
+     "covered": 32,
+     "generated": 1607
+    },
+    "definitionStatusToken": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 2133
+    },
+    "definitionStatusTokenSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 641
+    },
+    "primitiveToken": {
+     "choices": 18,
+     "covered": 18,
+     "generated": 666
+    },
+    "definedToken": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 1467
+    },
+    "moduleFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 9692
+    },
+    "moduleIdKeyword": {
+     "choices": 16,
+     "covered": 16,
+     "generated": 9692
+    },
+    "effectiveTimeFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 9806
+    },
+    "effectiveTimeKeyword": {
+     "choices": 26,
+     "covered": 26,
+     "generated": 9806
+    },
+    "timeValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 14094
+    },
+    "timeValueSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 4194
+    },
+    "year": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4513
+    },
+    "month": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 4513
+    },
+    "day": {
+     "choices": 31,
+     "covered": 31,
+     "generated": 4513
+    },
+    "activeFilter": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 23929
+    },
+    "activeKeyword": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 23929
+    },
+    "activeValue": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 23929
+    },
+    "activeTrueValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 19217
+    },
+    "activeFalseValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 2389
+    },
+    "memberFilterConstraint": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 11032
+    },
+    "memberFilter": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 20826
+    },
+    "memberFieldFilter": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 9147
+    },
+    "historySupplement": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 11576
+    },
+    "historyKeyword": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 11576
+    },
+    "historyProfileSuffix": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 2595
+    },
+    "historyMinimumSuffix": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1485
+    },
+    "historyModerateSuffix": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 559
+    },
+    "historyMaximumSuffix": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 551
+    },
+    "historySubset": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2001
+    },
+    "numericValue": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 1480
+    },
+    "stringValue": {
+     "choices": 4,
+     "covered": 0,
+     "generated": 0
+    },
+    "integerValue": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 2272
+    },
+    "decimalValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 572
+    },
+    "booleanValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1424
+    },
+    "true": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 849
+    },
+    "false": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 575
+    },
+    "nonNegativeIntegerValue": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 3107
+    },
+    "sctId": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 19222
+    },
+    "ws": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 617326
+    },
+    "mws": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 24551
+    },
+    "comment": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 12437
+    },
+    "nonStarChar": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 6048
+    },
+    "starWithNonFSlash": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4815
+    },
+    "nonFSlash": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 4815
+    },
+    "SP": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 31619
+    },
+    "HTAB": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 13727
+    },
+    "CR": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 13574
+    },
+    "LF": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 13358
+    },
+    "QM": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 40489
+    },
+    "BS": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2798
+    },
+    "star": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 241
+    },
+    "digit": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 25961
+    },
+    "zero": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1731
+    },
+    "digitNonZero": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 10078
+    },
+    "nonwsNonPipe": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 19512
+    },
+    "anyNonEscapedChar": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 3704
+    },
+    "escapedChar": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1149
+    },
+    "escapedWildChar": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 975
+    },
+    "nonwsNonEscapedChar": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 3174
+    },
+    "alpha": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 22703
+    },
+    "dash": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1305
+    },
+    "UTF8-2": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 3688
+    },
+    "UTF8-3": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 3621
+    },
+    "UTF8-4": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 3767
+    },
+    "UTF8-tail": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 17236
+    }
+   },
+   "uncovered": [
+    "stringValue: 0.0.0.alternative 1",
+    "stringValue: 0.0.0.alternative 2",
+    "stringValue: 0.0.one",
+    "stringValue: 0.0.several"
+   ],
+   "unexplained": 0
+  },
+  "abnf-long.txt": {
+   "samples": 17620,
+   "grammar_valid": 5427,
+   "engine_verdicts": {
+    "ok": 2527,
+    "Semantic": 2915,
+    "Syntax": 8799,
+    "Encoding": 3379
+   },
+   "generator_errors": 0,
+   "disagreements": {
+    "grammar rejects only under the literal grammar, engine Semantic: Member filters require a refset operator (^ or ^R); ECL defines them only over memberOf rows": {
+     "count": 11,
+     "minimal": [
+      "/***/(*){{mf=*}}{{+hisTory-min}}",
+      "211009{{Me<>*,d<>*{{active=1}}{{active=1}}/***/}}{{+/**/historY}}Or/*\u02e1*/(/**/*{{active=1}}or *)",
+      "ChilDORsElfOf /*\t*/\rL9#U {{ aCtive/***/!= 1,LaNguAgE<>(MA  ) }}{{dmOdULEiDNOT =( * ){{active= 1 }} {{active = 1}} {{+history}} , TErM noT=\"!\" }}\n/*/**/Or (  *{{ m J=* }} {{active= 1}} {{ active= 1 }}:\t{* =*}or *= *)OR ChildoF 6680003{{+\tHIsTOry}}"
+     ]
+    },
+    "grammar rejects only under the literal grammar, engine ok": {
+     "count": 8,
+     "minimal": [
+      "/***/(*)",
+      "*{{cdefinitionstatusid=*,active=1}}{{/***/+HisTORy-min}}",
+      "(*){{active=1}}{{active=1}}and *{{active=1}}{{active=1}}{{+history}}/***/"
+     ]
+    },
+    "grammar accepts only under the literal grammar, engine Syntax: Unexpected token or missing operand": {
+     "count": 5,
+     "minimal": [
+      " (  M0#d-\t\t{{ +hIStORy}} .AnCestorOf/**/ \t\t^R(404684003 {{  modUleId<>(73211009 404684003 ) , dialect = C , eFfECTIvEtime !=( \"\" \"\" \"\" \"\" )}}miNus ^R ((*:*=*) {{ dactive=1,active=1}}\t./**/< *{{active=1}}{{ active =1}} ) /**)*/{{ mEfFECTIVoDuLeID != < * ,\t\tactiVe=0}}{{  iD <> 73211009}} ){{ M effeCtIvETiMe=( \"11510725\" \"\" ) ,aCTIVe !=true}}{{ m\nB != <<MembEroF[MGY,T, E] 195967001|\ud892\udc2f} j  -\\ | {{MEffEcTivcTIVETime <=\"23710101\", E!= true}} {{MEFFNOT =* {{  active = 1}} {{active= 1 }}{{ + history }}}} {{ dtyPEid<> * ,eFFEctiVeTIME >( \"\" \"\") , dialect = (T ),active= 0 }} ,NoV\t/*\r*/!=\n\"/**\"'*/\u04e7\\\" \\\" \\\\ \" }}{{ id= ( 404684003 90000000000684003) ,LanGUAGE not =hI\n\t}}.!!<\r (m8560#M_ | \u05f8\ud7d4\u33d3  \ud837\udc60} }|{{+ hIstORY (*.*. * ) }} .ChiLdORsElFoF  aNy {{M/*\"$*/EFfeCTiVetIMe != /**/\t(\"\")}} {{ +hiSTory_miN}} .^(\t\r <*or *   ){{c definitionstatusid=( 40468400508004)}}{{caCtiVE<> 1}}\t\r{{C definitionstatus =defined, definitionstatusid = * , aCtIVEnot = *}} {{ + HisTORy( *{{active =1 }} {{ active= 1}} {{ +history}}  ) }}\t/**\n\ud9ba\udc3a*/\r ){{ cDefINiTIONSTATUSID = 404684003 {{ dialect= K ,active=1,id=90000000000051 }} {{CmOduLEID<>  * ,moduleid =*,effectivetime =\"\" }}/**'*/{{+hiStoRY_MAx }}, moduleID<> ReFSEtCOnTaiNINgAny* {{moduLEid =(73211009 891791)}} {{ C definitionstatus=defined,definitionstatusid =* , MODULEid <> (363698007 73211009)\n}} {{ceffectIVeTIME =\r\r/**/(\"\" ) ,MODULEIdnot= *}}}} {{ TerMnoT = ( mAtcH :\"\\\"! \" ) ,effECtIveTImE <=( \"\") }}{{ dIAlEct=( jn), typE = fSn}}{{\r\t/**/+HIsTORY}}/*\n*/){{ AcTiVE!=\rAny, iD = 73211009 ,efFeCtIVetiME=\"\"}}",
+      " >>\"R--#\u0258\t\" {{ +hISTOrY }}.   (/**,*/\t\t >>! REfseTcoNTaiNInGaNy(  ( \n< (  * .*.*\n\r){{m ac=*,L=*\t}}\t/*#*/{{ +hISTORY }}.\n\r^( * ) {{active = 1}}{{active= 1 }} {{+history-min }}  )\t{{MModULEID<>^R363698007{{ m H= *,Z= *,G =* ,W =*}}{{ m active = 1}}{{  + HiStoRY}}}}{{diaLEcTID!=<(  *) {{mA=*}}{{ active= 1}} , EffeCTiVETimE <= ( \"35930101\" \"52710101\")}}{{ C effECTIVETIME =( \"\"\n \"\"/**/\n) }}{{ Id<> 900000000000508004 }} {{/**/\n+hisToRy (/*'&*/>>^ (*  ){{ m U=*}} {{m Q=*}} {{ m X=* }}{{+history}}\r\t:(*= *)) }} /**/\n)/** */\t{{d mOdULEId!=(732508004 \t|\u1e50\u6f0e  \u0a67|), dialEcTID<>(* . *. * ){{M\n effectivetime = \"\"}} {{\r MD= *}}{{Mactive =1}}}} {{ CActIVe!=1}}. !!<( (*:*=*   ) {{+hIsTOrY}}MinUS <! (*: *=*  ) {{cmoduleid =* , active =1 ,active= 1 }}{{\r\n+HIStoRY }} )\n \n{{M ModuleiD<>!!> ( *.*.*.* ) {{cdefinitionstatusid =*,definitionstatusid=*}} {{+ hIStoRy\r\r}}}}. <<! (Y#.|8 | {{+ HisTOrY }}/*#*%*/,descendantorselfof  ^*{{M H =* }} {{mactive= 1,P= *, C =*, active= 1 }}\t {{+hIstoRY}} ){{+HisTORY(  bottom *{{ d language= KF , active=1}} . < (  * ) {{+ history}}. < (* ){{ c active=1 }}{{active = 1}}{{ + history }}  )}} . anCESTorOF/**/ ^R\n 900000000000508004 |a\u08d2  \u0b34\u0794 |{{M x/**+\u0a28*/= True }} {{modulEId = 195967001 , eFFEcTiveTiME <= ( \"21330531\"\r\"68641223\" \"\" ),WT <=\"58490808\"}}{{c ACTIvE = false, DeFiNItIOnsTatus!= DEFiNeD , EFFEcTivetIme<> \"\" \t\r}} {{ dTeRM =\" \r!!\t\\\" ! ! \" ,dIALECt NoT=XN ( 363698007|I| 4046840004\n\n\n) }}{{ +HISTOrY\n/*\t*\udbca\ude73*/}}){{ M acTIve=false}} {{C mOdulEiD<> DEsceNDantOrsELFof  (  CHilDORSELFOf (\n\n < * {{active=1}}){{type = syn}}{{dlanguage =WA\r\t}} {{ + HistOrY }} Or \n\"T#!\"| 4| {{  term =\"!\" , moduleid= *}}{{ effectivetime =\"\", type =syn , type= syn/**/\n\t}} {{ + hiStory(  *  ) }}){{m EffeCTIveTiMe>= (\"\"/*\"*/\"\") ,efFEctiVetIMe=( \"\" \"\" ), EFfectiveTiME!=(\"16710419\"),EfFecTIveTIME<>\n\n\"88400128\" }} {{ CDEfinitionSTatUSID != ( 73211009 100000000508004|l| ) }}{{ + histoRy}}, DEFIniTiOnstAtuS= (PrIMItIvE PrIMItIVe )}}",
+      "/**t*/\nMEMbErOFaNy {{MModUleId \r!=\r(932353|\uda86\udc93\u08a9 \u029a~ | 116680003 ),DT  <> \r\"\", eFFecTIVetIMe<=\"71210223\"}} {{ mGxD<> ( ToP (  S#./**$$*//**$!*/{{ moduleid =( 195967001 464614 ) ,active =1 ,term=\" ! \"}}{{c definitionstatusid=*,\t\reffectivetime=\"\", moduleid =*}}) {{\n\r\rm aCtiVe= 1 ,modULeIdnot\t\t\r=* {{cactive=1}} {{ +history-min}}}}{{ CactIve <>true  , DEfInITiONSTaTUSID =( 404684003 116680003 900003) }} {{ tERM= ( WIld:\"!\" ) }} {{ +histOrY/*\ue133*\n*/}}:(((*= *)\n\n\t )  and ( *=* ) )  ,{(*=* )  , *= * , *= * },(*=* or * = *),*=*, * = * , *= *  ) {{ dLaNGuAgE=OU,lanGUAGE noT= ( rd AG tO),MODUlEID = TO#.|yf  5\r| {{c ModuLEid noT = ( 73211073211009 ) , eFfeCtivEtIME <> (\"\") }}{{\n+ hIsTory}} }}{{+ HistorY }},ModuleID<>>! 900000000000508004 |\u0419~   ~  \udb26\udeb1\ud1c1 |\t/**5*/{{m MOdUleiD != (116680003|\u04c3 | 73211009 \r 363698007\n| (\u058b\udbdf\udcd8 \u00f2\ud814\uddaa   \ud863\udce5\ud849\udece | )}} {{CmODuLeID =PArenToF 404684}} {{+ hISTOry}}}}{{cDeFINItIOnStATuSID nOT= parEnTof  ( >>!\t AnY{{ dTyPEid!=*{{active =1 }},moduleidNot = ( 9967001 ) }}) {{+ hisTOry}} , deFinItIoNstATUSID= ^[\r\t\ta] ( \n/*\ucc33\uebe9*/\t363698007|}\u01d6   K[| )}}{{+ HISToRY ( 363698007\n| \u0304} |/*\ud33d*-*/{{ /*\t*/\rTErMNot = (\" \u009f\" MatCh: \"/*&&* \"/*&&*/\\\\ !\\\" \" \"/*!'*/\\\"\\\" \\\"\" ), EFFeCTivETiMe >\"\" ,moDuleiD !=/**B*\r*//**\r*/ (404684003 |\ud811\udc5d |)}}{{d tERMnOt\t= MATch:\"! \" , TypE =(SYn\nFSN SYnOnYM ) }}{{+ HIstorY_Min }}.( ( * ,*  )\t\n\r{{ meffectivtivetime=\"\" }}/*\"*//*%*/{{+\r/**/hISToRy-max}} and ^( * , *){{ meffduleid =*}}{{+ hiSTorY}} ) {{ \tm EFfeCtiVETimE\t>= \"\" ,MoDuLeiD\tnoT=(195967001 |n{ ) 6=^ 8^| 404684003|x|\r404684003 | .. | 195967001 | H|) }} {{MmoDULEid<> (404684003 195967001 ),EFfECTIVetIME !=\"84180602\" ,mODuLEIDNOT= H#. {{ m active= 1 ,T= * , E= * }}\r\r{{ c  moduleid= * , active=1 }}, EFFeCtivETIME< (\"\"\r\"\") }} {{  iD NOt =( 404684003 363698007 )/**\udbdc\udc94*/}} {{cdeFINitioNstaTUSID!= ( 73211009 | =* s| 404684003 | _ | 404684003|I | 73211009 |8 |\r\n/**/)}}{{ +hiStoRY_MoD }}\t\n\n. ChILdORSElfof ( PARentoRSeLfof aNY {{\nMEFfectiVetimE= ( \"\" \"\")}} {{DID = ( 363698007 363698007 900000000000508004)\n\t}}/**/  {{ + hiStory}}) {{+ HIsToRy_MiN }} ) }} .<<!\r(( (ancestorof ^R( *) {{ m effectiR=*}}{{deffectivetime=\"\"}} {{c active=1,active = 1}}{{c active= 1 ,active= 1,active= 1}}{{  +hIsTory }}/**/\n/*!*/, <! *  {{m M=*, O= *, O =* }} {{m C=* }}{{ dactive=1,active = 1, active= 1 ,active=1}} {{cactive=1}}) {{ +hIstOrY}}\r )) {{c mOdULeID<> (363698007 | } \ud847\udd2c  \u026a~}| 363698007 ) ,ACTiVe!=1 , ACTIVe!= false}}{{  id = ( 363698007 )}}.dESCeNdaNTOf 986033 |~\u9ddb \u0701 M \u026b\ud90f\udf6f\udbcc\uddd4 |{{+ HiSTORy_mIN }}"
+     ]
+    },
+    "grammar rejects only under the literal grammar, engine Semantic: Reverse flag inside an attribute group has no defined ECL semantics": {
+     "count": 2,
+     "minimal": [
+      ">ReFSEtCONTAIninGANY ANY {{ MMd<>(680003 ) }}{{ m o!= wILd : \"!\"}}{{ +\rHIstOry}}: ( [36 TO many] { [9..*]R *= *or * =* }anD [4..*]{ *= *,* =*})anD (/*$**/*=*)ANd  [7 tO 5]{ (*=* )  ,*=*, * = * },* = #2, *=* , *=*",
+      "<< w--B#. {{ tyPeiD!= (9080003), EFfectIvetime \n\t<>\"\"}} :( ( ( { rEverSEoF ^*{{\nCdefinitionstatus = defined, active= 1 , active= 1 }}{{C definitionstatus=defined,active=1 }}=\r/*1 }}=\r/**/\"\\\"\r\\\\\"}\r/*\n*%*/  OR >! G#.{{ c effectivetime= \"\", active= 1 }}{{C   effectivetime =\"\" ,active=1 }}< #0 )  anD (\n(R * {{  active= 1}}{{+ history }}<>\"!\"  OR  *=* ) aNd  <*{{+history}}<> (\"!\" ) ) OR  [0..*] R9008004= #1.44OR (  *) {{+HiSToRy}}nOt = TruE ,( ({R < * {{  active=1}}{{  active=1}}<#-4.4 and *= *}\tor [8..*]{( *=* ) } Or/***!*/{*= *  or *=* })  anD { [3..*]*=trueor  * =*} ) ) )"
+     ]
+    },
+    "grammar accepts only under the literal grammar, engine Syntax: Unknown description filter": {
+     "count": 2,
+     "minimal": [
+      "484003{{Moduleid=*}}{{me=\"\"}}{{type=syn,active=1}}",
+      "(*){{moduleid=*,K=*}}{{dialect=U,active=1}}{{moduleid=*,active=1,active=1}}{{moduleid=*,active=1}}"
+     ]
+    },
+    "grammar rejects only under the literal grammar, engine Semantic: Reverse flag with a concrete value has no defined ECL semantics": {
+     "count": 1,
+     "minimal": [
+      "(/**/369800|+ |{{ dialect=J ,moduleid =*}}{{ term=\"! \" }}:{(*=* )}/*\n(*/\t){{EFfectivEtIme<=(/**(/**/\"55960226\"\t\"14040101\" ), id<>6680003, tErm =\" !\" ,TyPE nOT=(syn)}} {{ c modULEid<> (9000000),DeFiNitiOnStaTuS= defined}}:(\nreverseof *< #0 or *=* )"
+     ]
+    }
+   },
+   "productions": {
+    "expressionConstraint": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 14828
+    },
+    "refinedExpressionConstraint": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 3068
+    },
+    "compoundExpressionConstraint": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 3137
+    },
+    "conjunctionExpressionConstraint": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1375
+    },
+    "disjunctionExpressionConstraint": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 888
+    },
+    "exclusionExpressionConstraint": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 874
+    },
+    "dottedExpressionConstraint": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 3077
+    },
+    "dottedExpressionAttribute": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4746
+    },
+    "subExpressionConstraint": {
+     "choices": 20,
+     "covered": 20,
+     "generated": 55959
+    },
+    "eclFocusConcept": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 46098
+    },
+    "dot": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4746
+    },
+    "refsetOperator": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 4898
+    },
+    "memberOf": {
+     "choices": 22,
+     "covered": 22,
+     "generated": 2847
+    },
+    "refsetContainingAny": {
+     "choices": 40,
+     "covered": 40,
+     "generated": 2051
+    },
+    "refsetFieldNameSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 328
+    },
+    "refsetFieldName": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 9553
+    },
+    "eclConceptReference": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 15880
+    },
+    "eclConceptReferenceSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 4698
+    },
+    "conceptId": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 15880
+    },
+    "term": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 6662
+    },
+    "altIdentifier": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 2649
+    },
+    "altIdentifierSchemeAlias": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 2649
+    },
+    "altIdentifierCodeWithinQuotes": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 979
+    },
+    "altIdentifierCodeWithoutQuotes": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 1670
+    },
+    "wildCard": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 43628
+    },
+    "constraintOperator": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 11327
+    },
+    "descendantOf": {
+     "choices": 26,
+     "covered": 26,
+     "generated": 3281
+    },
+    "descendantOrSelfOf": {
+     "choices": 38,
+     "covered": 38,
+     "generated": 835
+    },
+    "childOf": {
+     "choices": 16,
+     "covered": 16,
+     "generated": 895
+    },
+    "childOrSelfOf": {
+     "choices": 28,
+     "covered": 28,
+     "generated": 846
+    },
+    "ancestorOf": {
+     "choices": 22,
+     "covered": 22,
+     "generated": 932
+    },
+    "ancestorOrSelfOf": {
+     "choices": 34,
+     "covered": 34,
+     "generated": 867
+    },
+    "parentOf": {
+     "choices": 18,
+     "covered": 18,
+     "generated": 944
+    },
+    "parentOrSelfOf": {
+     "choices": 30,
+     "covered": 30,
+     "generated": 895
+    },
+    "top": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 897
+    },
+    "bottom": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 935
+    },
+    "conjunction": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 5492
+    },
+    "disjunction": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 4537
+    },
+    "exclusion": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 874
+    },
+    "eclRefinement": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 4778
+    },
+    "conjunctionRefinementSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 994
+    },
+    "disjunctionRefinementSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 871
+    },
+    "subRefinement": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 7570
+    },
+    "eclAttributeSet": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 9521
+    },
+    "conjunctionAttributeSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1582
+    },
+    "disjunctionAttributeSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1221
+    },
+    "subAttributeSet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 13549
+    },
+    "eclAttributeGroup": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1770
+    },
+    "eclAttribute": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 9888
+    },
+    "cardinality": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2131
+    },
+    "minValue": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2131
+    },
+    "to": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 2131
+    },
+    "maxValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 2131
+    },
+    "many": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 1429
+    },
+    "reverseFlag": {
+     "choices": 20,
+     "covered": 20,
+     "generated": 1407
+    },
+    "eclAttributeName": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 14634
+    },
+    "expressionComparisonOperator": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 14222
+    },
+    "numericComparisonOperator": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 1307
+    },
+    "timeComparisonOperator": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 10094
+    },
+    "stringComparisonOperator": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 3228
+    },
+    "booleanComparisonOperator": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 43541
+    },
+    "idComparisonOperator": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 1997
+    },
+    "descriptionFilterConstraint": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 14209
+    },
+    "descriptionFilter": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 24079
+    },
+    "descriptionIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1997
+    },
+    "descriptionIdKeyword": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 1997
+    },
+    "descriptionId": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2746
+    },
+    "descriptionIdSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 812
+    },
+    "termFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1923
+    },
+    "termKeyword": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1923
+    },
+    "typedSearchTerm": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 3399
+    },
+    "typedSearchTermSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 1042
+    },
+    "concreteStringSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 303
+    },
+    "concreteString": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 948
+    },
+    "concreteStringCharacters": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 948
+    },
+    "wild": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1121
+    },
+    "matchKeyword": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 493
+    },
+    "matchSearchTerm": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 3204
+    },
+    "matchSearchTermSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 2278
+    },
+    "wildSearchTerm": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 1121
+    },
+    "wildSearchTermSet": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1121
+    },
+    "languageFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1931
+    },
+    "language": {
+     "choices": 16,
+     "covered": 16,
+     "generated": 1931
+    },
+    "languageCode": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2679
+    },
+    "languageCodeSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 798
+    },
+    "typeFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1923
+    },
+    "typeIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 765
+    },
+    "typeId": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 765
+    },
+    "typeTokenFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1158
+    },
+    "type": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1158
+    },
+    "typeToken": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 1395
+    },
+    "typeTokenSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 320
+    },
+    "synonym": {
+     "choices": 16,
+     "covered": 16,
+     "generated": 963
+    },
+    "fullySpecifiedName": {
+     "choices": 44,
+     "covered": 44,
+     "generated": 219
+    },
+    "definition": {
+     "choices": 22,
+     "covered": 22,
+     "generated": 213
+    },
+    "dialectFilter": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 1940
+    },
+    "dialectIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 770
+    },
+    "dialectId": {
+     "choices": 18,
+     "covered": 18,
+     "generated": 770
+    },
+    "dialectAliasFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1170
+    },
+    "dialect": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 1170
+    },
+    "dialectAlias": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 1465
+    },
+    "dialectAliasSet": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 325
+    },
+    "dialectIdSet": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 310
+    },
+    "acceptabilitySet": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1257
+    },
+    "acceptabilityConceptReferenceSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 488
+    },
+    "acceptabilityTokenSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 769
+    },
+    "acceptabilityToken": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1176
+    },
+    "acceptable": {
+     "choices": 22,
+     "covered": 22,
+     "generated": 837
+    },
+    "preferred": {
+     "choices": 20,
+     "covered": 20,
+     "generated": 339
+    },
+    "conceptFilterConstraint": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 10689
+    },
+    "conceptFilter": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 20294
+    },
+    "definitionStatusFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 3696
+    },
+    "definitionStatusIdFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 2218
+    },
+    "definitionStatusIdKeyword": {
+     "choices": 36,
+     "covered": 36,
+     "generated": 2218
+    },
+    "definitionStatusTokenFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1478
+    },
+    "definitionStatusKeyword": {
+     "choices": 32,
+     "covered": 32,
+     "generated": 1478
+    },
+    "definitionStatusToken": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1962
+    },
+    "definitionStatusTokenSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 592
+    },
+    "primitiveToken": {
+     "choices": 18,
+     "covered": 18,
+     "generated": 646
+    },
+    "definedToken": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 1316
+    },
+    "moduleFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 9447
+    },
+    "moduleIdKeyword": {
+     "choices": 16,
+     "covered": 16,
+     "generated": 9447
+    },
+    "effectiveTimeFilter": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 9489
+    },
+    "effectiveTimeKeyword": {
+     "choices": 26,
+     "covered": 26,
+     "generated": 9489
+    },
+    "timeValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 13690
+    },
+    "timeValueSet": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 4038
+    },
+    "year": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4371
+    },
+    "month": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 4371
+    },
+    "day": {
+     "choices": 31,
+     "covered": 31,
+     "generated": 4371
+    },
+    "activeFilter": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 23254
+    },
+    "activeKeyword": {
+     "choices": 12,
+     "covered": 12,
+     "generated": 23254
+    },
+    "activeValue": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 23254
+    },
+    "activeTrueValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 18535
+    },
+    "activeFalseValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 2335
+    },
+    "memberFilterConstraint": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 10662
+    },
+    "memberFilter": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 20128
+    },
+    "memberFieldFilter": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 8901
+    },
+    "historySupplement": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 11291
+    },
+    "historyKeyword": {
+     "choices": 14,
+     "covered": 14,
+     "generated": 11291
+    },
+    "historyProfileSuffix": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 2453
+    },
+    "historyMinimumSuffix": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 1437
+    },
+    "historyModerateSuffix": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 519
+    },
+    "historyMaximumSuffix": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 497
+    },
+    "historySubset": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1967
+    },
+    "numericValue": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 1307
+    },
+    "stringValue": {
+     "choices": 4,
+     "covered": 0,
+     "generated": 0
+    },
+    "integerValue": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 2145
+    },
+    "decimalValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 499
+    },
+    "booleanValue": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1350
+    },
+    "true": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 822
+    },
+    "false": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 528
+    },
+    "nonNegativeIntegerValue": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 2833
+    },
+    "sctId": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 18626
+    },
+    "ws": {
+     "choices": 8,
+     "covered": 8,
+     "generated": 604127
+    },
+    "mws": {
+     "choices": 7,
+     "covered": 7,
+     "generated": 28048
+    },
+    "comment": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 12441
+    },
+    "nonStarChar": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 6127
+    },
+    "starWithNonFSlash": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 4895
+    },
+    "nonFSlash": {
+     "choices": 9,
+     "covered": 9,
+     "generated": 4895
+    },
+    "SP": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 31458
+    },
+    "HTAB": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 13357
+    },
+    "CR": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 13183
+    },
+    "LF": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 13509
+    },
+    "QM": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 39172
+    },
+    "BS": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 2559
+    },
+    "star": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 141
+    },
+    "digit": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 24960
+    },
+    "zero": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1567
+    },
+    "digitNonZero": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 9645
+    },
+    "nonwsNonPipe": {
+     "choices": 5,
+     "covered": 5,
+     "generated": 19296
+    },
+    "anyNonEscapedChar": {
+     "choices": 10,
+     "covered": 10,
+     "generated": 3563
+    },
+    "escapedChar": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 1365
+    },
+    "escapedWildChar": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 555
+    },
+    "nonwsNonEscapedChar": {
+     "choices": 6,
+     "covered": 6,
+     "generated": 3128
+    },
+    "alpha": {
+     "choices": 2,
+     "covered": 2,
+     "generated": 22223
+    },
+    "dash": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 1343
+    },
+    "UTF8-2": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 3791
+    },
+    "UTF8-3": {
+     "choices": 4,
+     "covered": 4,
+     "generated": 3728
+    },
+    "UTF8-4": {
+     "choices": 3,
+     "covered": 3,
+     "generated": 3664
+    },
+    "UTF8-tail": {
+     "choices": 0,
+     "covered": 0,
+     "generated": 17290
+    }
+   },
+   "uncovered": [
+    "stringValue: 0.0.0.alternative 1",
+    "stringValue: 0.0.0.alternative 2",
+    "stringValue: 0.0.one",
+    "stringValue: 0.0.several"
+   ],
+   "unexplained": 0
+  }
+ }
+}

@@ -33,7 +33,7 @@ impl Parser<'_> {
         self.ws()?;
         let mut filters = Vec::new();
         loop {
-            let name = self.word().to_ascii_lowercase();
+            let name = self.filter_name();
             self.pos += name.len();
             let comparison = self.comparison()?;
             if name != "effectivetime" && !matches!(comparison, Comparison::Eq | Comparison::Ne) {
@@ -129,11 +129,12 @@ impl Parser<'_> {
                     separated = self.ws()?;
                 }
                 if self.take(")") {
-                    return if values.len() == 1 {
-                        Ok(values.remove(0))
-                    } else {
-                        self.node(Expr::Or(values))
-                    };
+                    if values.len() == 1 {
+                        // `(x)` is also a bracketed subexpression, which filters may
+                        // follow: `moduleId = (x) {{ C active = 1 }}`.
+                        break;
+                    }
+                    return self.node(Expr::Or(values));
                 }
                 if !separated {
                     break;
@@ -163,6 +164,7 @@ impl Parser<'_> {
             ));
         }
         let value: u32 = text.parse().map_err(|_| self.unexpected())?;
+        let at = start;
         let year = value / 10000;
         let month = value / 100 % 100;
         let day = value % 100;
@@ -177,8 +179,13 @@ impl Parser<'_> {
             2 => 28,
             _ => 0,
         };
-        if day == 0 || day > days {
+        // The grammar bounds the month to 01-12 and the day to 01-31; a day the
+        // month lacks, such as 0931, is grammatical but names no date.
+        if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
             return Err(self.error(ParseErrorKind::Syntax, "Invalid effective time date"));
+        }
+        if day > days {
+            self.refuse(at, "Effective time is not a calendar date");
         }
         Ok(Some(value))
     }
