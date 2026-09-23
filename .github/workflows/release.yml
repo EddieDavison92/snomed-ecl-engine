@@ -202,7 +202,8 @@ jobs:
         run: |
           for dir in npm-dist/snomed-ecl-engine-*/ npm-dist/snomed-ecl-engine/; do
             name=$(node -p "require('./$dir/package.json').name")
-            if npm view "$name@$VERSION" version >/dev/null 2>&1; then
+            # Compare the answer, so a failed lookup is not mistaken for a published version.
+            if [ "$(npm view "$name@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
               echo "$name@$VERSION is already published"
             else
               (cd "$dir" && npm publish --access public)

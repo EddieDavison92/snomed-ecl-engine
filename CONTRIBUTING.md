@@ -51,7 +51,11 @@ Bump `version` in `Cargo.toml`, merge, then push a matching tag such as
 `v0.1.1`. The release workflow builds every platform and publishes to GitHub
 Releases, crates.io, npm, the Homebrew tap and ghcr.io. crates.io and npm
 trust the workflow through OIDC trusted publishing, so they need no stored
-token. The tap needs `HOMEBREW_TAP_TOKEN`, with write access to
+token. Each package's registry settings name this repository and
+`release.yml` as its trusted publisher: on crates.io for `snomed-ecl-engine`,
+and on npm for `snomed-ecl-engine` and its five platform packages. A new npm
+package must be published once by hand before a trusted publisher can be
+added. The tap needs `HOMEBREW_TAP_TOKEN`, with write access to
 `EddieDavison92/homebrew-tap`, and is skipped without it. A pull request that
 changes packaging runs the same builds without publishing.
 
