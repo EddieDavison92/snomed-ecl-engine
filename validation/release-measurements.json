@@ -1,0 +1,55 @@
+{
+  "recorded_at": "2026-09-23",
+  "edition": "http://snomed.info/sct/83821000000107/version/20260826",
+  "archive_sha256": "1330d2f2f48022d2594306f8dbbd891f1709e639e91cb97b281a9e796cfedd2b",
+  "image": "rust@sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31",
+  "scope": "Engine-only figures quoted in README.md and docs/benchmarks.md that no corpus report records. Linux x86-64 in Docker; each figure lists its allocation.",
+  "import": {
+    "cpus": 2,
+    "memory_limit_mib": 3072,
+    "elapsed_seconds": 138.3,
+    "child_peak_rss_kib": 2340884,
+    "container_peak_bytes": 2408009728
+  },
+  "index": {
+    "directory_bytes": 946476363,
+    "packed_bytes": 159420416,
+    "packed_sha256": "ce0cceb3762f757c79f31af109ff54a18968a432beaa8b990cb6a4a379f665a6",
+    "pack_seconds": {
+      "cpus_2_bind_mount": 98,
+      "threads_24_local": 16
+    }
+  },
+  "executables": {
+    "query_only": {
+      "features": "--no-default-features",
+      "bytes": 2644864,
+      "gzip_bytes": 1138669
+    },
+    "default": {
+      "features": "default (RF2 importer)",
+      "bytes": 3445560,
+      "gzip_bytes": 1506013
+    },
+    "unicode": {
+      "features": "--features unicode (static ICU 72)",
+      "bytes": 36202864,
+      "gzip_bytes": 14318334
+    }
+  },
+  "open_ms": {
+    "method": "examples/open_breakdown.rs, 1 CPU, index copied to the container filesystem, median of three rounds with the file cached",
+    "directory": 69.6,
+    "packed": 155.1,
+    "semantic_validation_directory": 72.8,
+    "semantic_validation_packed": 76.6
+  },
+  "process_start_open_one_query_ms": {
+    "method": "query-only executable, batch with one count request, 1 CPU, median of three",
+    "packed": 165
+  },
+  "first_description_filter_ms": {
+    "method": "first description filter in a fresh batch process, packed index, one core, WSL2 host",
+    "median": 740
+  }
+}
