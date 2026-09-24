@@ -423,8 +423,9 @@ pub fn concept(value: &serde_json::Value) {
 pub fn history(value: &serde_json::Value) {
     println!("{}\n", heading("SNOMED ECL / history"));
     println!(
-        "  {}  {}",
+        "  {}  {}  ({})",
         value["concept"].as_str().unwrap_or(""),
+        text(value, "display"),
         if value["active"].as_bool() == Some(true) {
             "active"
         } else {

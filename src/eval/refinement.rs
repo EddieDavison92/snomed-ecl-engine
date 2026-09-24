@@ -284,7 +284,7 @@ impl Context<'_> {
     /// matching row. For a reverse attribute those are the keys of its counts;
     /// for a forward one, the sources pointing at a value in its range, plus
     /// the children of those values when the name includes is-a. So
-    /// `* : 363698007 = << 39057004` tests the concepts with a lung site
+    /// `* : 363698007 = << 39607008` tests the concepts with a lung site
     /// rather than the edition. The per-concept test still decides every
     /// answer.
     pub(super) fn candidates(

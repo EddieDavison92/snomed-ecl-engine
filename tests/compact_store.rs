@@ -2308,8 +2308,39 @@ fn cli_searches_describes_and_writes_csv() {
     )))
     .unwrap();
     assert_eq!(history["concept"], ROOT.to_string());
+    assert_eq!(history["display"], "Synthetic root (test)");
     assert_eq!(history["successors"], serde_json::json!([]));
     assert_eq!(history["predecessors"], serde_json::json!([]));
+
+    // In the REPL, totals-only mode prints the total once, and turning it off
+    // restores the listing with terms.
+    let mut repl = std::process::Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .args(["query", store_text])
+        .env("XDG_CONFIG_HOME", &config)
+        .env("APPDATA", &config)
+        .env_remove("SNOMED_ECL_STORE")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    let expression = format!("<< {ROOT}");
+    let script = format!(":display\n:count\n{expression}\n:count\n{expression}\n:quit\n");
+    use std::io::Write as _;
+    repl.stdin
+        .take()
+        .unwrap()
+        .write_all(script.as_bytes())
+        .unwrap();
+    let session = stdout(repl.wait_with_output().unwrap());
+    let answers: Vec<_> = session.split("ecl> ").collect();
+    assert!(answers[1].contains("Terms on"));
+    assert_eq!(answers[3].trim().lines().count(), 1, "{}", answers[3]);
+    assert!(answers[3].contains(&format!("{} concepts", count.trim())));
+    assert!(
+        answers[5].contains("Synthetic root (test)"),
+        "{}",
+        answers[5]
+    );
 
     // An unknown concept is an error, not an empty answer.
     let missing = cli(&config, &["lookup", store_text, "9999999"]);

@@ -200,7 +200,7 @@ parsing, output and process start.
 `concepts` with codes, labels and active flags, `total` matches and `search_ms`.
 `limit` defaults to 50. `include_inactive: true` keeps retired concepts, and
 `within` takes an expression and keeps only matches in its answer:
-`{"search":"left","within":"<< 404684003 : 363698007 = << 39057004"}` looks for
+`{"search":"left","within":"<< 404684003 : 363698007 = << 39607008"}` looks for
 "left" among findings sited in the lung.
 
 **`concept`** returns one concept's descriptions, parents, children,
@@ -208,9 +208,9 @@ relationship groups and reference set membership, with `lookup_ms`. Concrete
 values keep their published type. An unknown SCTID returns
 `{"error":"NotFound"}`.
 
-**`history`** returns a concept's historical associations in both directions:
-`successors`, what replaced it, and `predecessors`, what it replaced, each naming
-the association.
+**`history`** returns a concept's `display`, its `active` flag and its historical
+associations in both directions: `successors`, what replaced it, and
+`predecessors`, what it replaced, each naming the association.
 
 Any request may carry an `id`, any JSON value, which comes back on its response.
 `batch STORE --workers N` answers with N threads sharing one index, writing each

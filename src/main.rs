@@ -496,15 +496,16 @@ fn run() -> Result<()> {
                         );
                         continue;
                     }
+                    // Totals only hides the listing without changing the terms
+                    // setting, so turning it off restores the listing as it was.
                     ":display" => {
-                        style.display = !style.display;
-                        style.count &= !style.display;
+                        style.display = !style.display || style.count;
+                        style.count = false;
                         println!("  Terms {}.", if style.display { "on" } else { "off" });
                         continue;
                     }
                     ":count" => {
                         style.count = !style.count;
-                        style.display &= !style.count;
                         println!("  Totals only {}.", if style.count { "on" } else { "off" });
                         continue;
                     }
@@ -552,6 +553,11 @@ fn run() -> Result<()> {
                 match outcome {
                     Ok(result) => {
                         println!("  {} in {elapsed:.3} ms", presentation::total(&result));
+                        // The line above is the whole answer in totals-only mode.
+                        if style.count {
+                            println!();
+                            continue;
+                        }
                         let mut out = io::BufWriter::new(io::stdout().lock());
                         let shown = emit(
                             &store,
@@ -1459,6 +1465,7 @@ fn history_response(
         &mut *out,
         &serde_json::json!({
             "concept": sctid,
+            "display": labels.get(ordinal)?,
             "active": store.is_active(ordinal),
             "successors": successors,
             "predecessors": predecessors,
