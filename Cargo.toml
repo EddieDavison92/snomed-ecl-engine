@@ -28,10 +28,13 @@ serde_json = "1"
 sha2 = "0.10"
 zstd = { version = "0.13.3", default-features = false }
 zip = { version = "8.6", optional = true, default-features = false, features = ["deflate"] }
+ureq = { version = "3.4", optional = true, default-features = false, features = ["rustls"] }
 
 [features]
-default = ["import"]
+default = ["import", "download"]
 import = ["dep:zip", "zstd/zdict_builder"]
+# Fetch releases from NHS England TRUD; needs the importer to build them.
+download = ["import", "dep:ureq"]
 unicode = ["dep:cc", "dep:pkg-config"]
 
 [build-dependencies]

@@ -6,6 +6,8 @@ use snomed_ecl_engine::{ecl, eval};
 use std::io::{self, BufRead, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+#[cfg(feature = "download")]
+mod download;
 mod library;
 mod presentation;
 mod workspace;
@@ -707,6 +709,86 @@ fn run() -> Result<()> {
                 "Usage: add ARCHIVE [--sha256 HEX] [--name NAME] [--edition URI]"
             );
             add_release(Path::new(&args[1]), sha256, name, edition, human)?;
+        }
+        #[cfg(not(feature = "download"))]
+        "download" => bail!("Downloading needs the `download` feature; use the default build"),
+        #[cfg(feature = "download")]
+        "download" => {
+            let list = take_flag(&mut args, "--list");
+            let keep = take_flag(&mut args, "--keep-archive");
+            let wanted = take_option(&mut args, "--release")?;
+            let name = take_option(&mut args, "--name")?;
+            ensure!(
+                args.len() <= 2,
+                "Usage: download [ITEM] [--list | --release ID] [--name NAME] [--keep-archive]"
+            );
+            let item = download::item(args.get(1).map_or("uk-monolith", String::as_str))?;
+            if list {
+                let releases = download::releases(item, false)?;
+                if human {
+                    println!("{}\n", presentation::heading("SNOMED ECL / TRUD releases"));
+                    for release in &releases {
+                        println!(
+                            "  {}  {:>8}  {}",
+                            presentation::clean(&release.release_date),
+                            presentation::bytes(release.archive_file_size_bytes),
+                            presentation::clean(&release.id)
+                        );
+                    }
+                    println!("\n  Download one with `download --release ID`, or the newest with `download`.");
+                } else {
+                    // writeln! rather than println!, so a closed pipe ends quietly.
+                    let mut out = io::stdout().lock();
+                    for release in &releases {
+                        writeln!(
+                            out,
+                            "{}",
+                            serde_json::json!({
+                                "id": release.id,
+                                "name": release.name,
+                                "release_date": release.release_date,
+                                "bytes": release.archive_file_size_bytes,
+                                "sha256": release.archive_file_sha256,
+                            })
+                        )?;
+                    }
+                }
+                return Ok(());
+            }
+            let releases = download::releases(item, wanted.is_none())?;
+            let release = match &wanted {
+                Some(id) => releases
+                    .into_iter()
+                    .find(|release| &release.id == id)
+                    .with_context(|| {
+                        format!("TRUD has no release {id}; `download --list` shows them")
+                    })?,
+                None => releases
+                    .into_iter()
+                    .next()
+                    .context("TRUD lists no releases for this item")?,
+            };
+            eprintln!(
+                "  {} ({}), {}",
+                presentation::clean(&release.name),
+                presentation::clean(&release.release_date),
+                presentation::bytes(release.archive_file_size_bytes)
+            );
+            let archive = download::fetch(&release, &library::home()?.join("downloads"))?;
+            // TRUD's published checksum is the distributor's, so no question is needed.
+            let added = add_release(
+                &archive,
+                Some(release.archive_file_sha256.clone()),
+                name,
+                None,
+                human,
+            );
+            // The archive is removed whether or not the build worked, so failed
+            // attempts do not pile up; --keep-archive keeps it for a retry.
+            if !keep {
+                let _ = std::fs::remove_file(&archive);
+            }
+            added?;
         }
         "remove" => {
             let yes = take_flag(&mut args, "--yes");
