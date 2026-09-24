@@ -2282,7 +2282,8 @@ fn cli_searches_describes_and_writes_csv() {
         &["expand", store_text, "<< 1000001", "--count"],
     ));
     assert_eq!(rows.len().to_string(), count.trim());
-    assert!(rows.iter().any(|row| row.starts_with(&format!("{ROOT},"))));
+    // The term contains no comma, so it is written unquoted.
+    assert!(rows.contains(&format!("{ROOT},Synthetic root (test)").as_str()));
 
     // Redirected, the browsing commands answer in the batch protocol's JSON.
     let found: serde_json::Value = serde_json::from_str(&stdout(cli(
