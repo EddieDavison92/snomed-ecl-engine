@@ -83,7 +83,7 @@ and `SNOMED_ECL_STORE` overrides it.
 ```sh
 snomed-ecl-engine expand uk-20260826 '<< 404684003' --count --json
 snomed-ecl-engine expand uk-20260826 '404684003' --display --json
-snomed-ecl-engine expand uk-20260826 '< 404684003 : 363698007 = << 39057004' --json
+snomed-ecl-engine expand uk-20260826 '< 404684003 : 363698007 = << 39607008' --json
 ```
 
 Quote the whole expression. Redirected output, as a script or agent sees it,
@@ -101,7 +101,7 @@ returns `added`, `removed` and `unchanged`.
 
 ```sh
 snomed-ecl-engine search uk-20260826 chronic kidney disease --limit 10
-snomed-ecl-engine search uk-20260826 left --within '<< 404684003 : 363698007 = << 39057004'
+snomed-ecl-engine search uk-20260826 left --within '<< 404684003 : 363698007 = << 39607008'
 snomed-ecl-engine lookup uk-20260826 709044004
 snomed-ecl-engine history uk-20260826 155574008
 ```
