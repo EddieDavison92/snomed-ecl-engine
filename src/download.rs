@@ -71,6 +71,8 @@ fn key() -> Result<String> {
 fn agent(body: std::time::Duration) -> ureq::Agent {
     use std::time::Duration;
     ureq::Agent::config_builder()
+        // The key is in every URL, so no hop, redirects included, may use plain HTTP.
+        .https_only(true)
         .timeout_connect(Some(Duration::from_secs(60)))
         .timeout_recv_response(Some(Duration::from_secs(60)))
         .timeout_recv_body(Some(body))
