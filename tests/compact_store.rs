@@ -2253,3 +2253,67 @@ fn cli_adds_selects_and_removes_library_indexes() {
     assert!(!home.join(format!("{name}.ecl")).exists());
     assert!(!run(&["expand", "<< 1000001", "--count"]).status.success());
 }
+
+#[test]
+fn cli_searches_describes_and_writes_csv() {
+    let temp = TempDir::new().unwrap();
+    let config = temp.path().join("config");
+    let archive = temp.path().join("fixture.zip");
+    let store = temp.path().join("store");
+    fixture(&archive, false, false);
+    import_snapshot(&archive, &store, &options(&archive)).unwrap();
+    let store_text = store.to_str().unwrap();
+    let stdout = |output: std::process::Output| {
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8(output.stdout).unwrap()
+    };
+
+    // CSV lists every concept with its term, quoting where a field needs it.
+    let csv = stdout(cli(&config, &["expand", store_text, "<< 1000001", "--csv"]));
+    let mut lines = csv.lines();
+    assert_eq!(lines.next(), Some("code,display"));
+    let rows: Vec<_> = lines.collect();
+    let count = stdout(cli(
+        &config,
+        &["expand", store_text, "<< 1000001", "--count"],
+    ));
+    assert_eq!(rows.len().to_string(), count.trim());
+    // The term contains no comma, so it is written unquoted.
+    assert!(rows.contains(&format!("{ROOT},Synthetic root (test)").as_str()));
+
+    // Redirected, the browsing commands answer in the batch protocol's JSON.
+    let found: serde_json::Value = serde_json::from_str(&stdout(cli(
+        &config,
+        &["search", store_text, "synthetic", "root"],
+    )))
+    .unwrap();
+    assert_eq!(found["concepts"][0]["code"], ROOT.to_string());
+    let described: serde_json::Value = serde_json::from_str(&stdout(cli(
+        &config,
+        &["lookup", store_text, &ROOT.to_string()],
+    )))
+    .unwrap();
+    assert_eq!(described["code"], ROOT.to_string());
+    assert!(described["children"]
+        .as_array()
+        .is_some_and(|children| !children.is_empty()));
+    // The fixture has no historical associations, so both directions are empty.
+    let history: serde_json::Value = serde_json::from_str(&stdout(cli(
+        &config,
+        &["history", store_text, &ROOT.to_string()],
+    )))
+    .unwrap();
+    assert_eq!(history["concept"], ROOT.to_string());
+    assert_eq!(history["successors"], serde_json::json!([]));
+    assert_eq!(history["predecessors"], serde_json::json!([]));
+
+    // An unknown concept is an error, not an empty answer.
+    let missing = cli(&config, &["lookup", store_text, "9999999"]);
+    assert!(!missing.status.success());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("No concept 9999999"));
+    assert!(missing.stdout.is_empty());
+}

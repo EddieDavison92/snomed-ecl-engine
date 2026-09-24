@@ -51,9 +51,34 @@ ecl> << 195967001 |Asthma|
 ```
 
 `:display` toggles terms, `:count` toggles totals only and `:stats` prints the
-manifest. Errors print and return to the prompt. Results are listed in pages of
-40 beside the full total; `expand --json`, or `expand` redirected to a file,
-returns every code.
+manifest. `:search TEXT` and `:lookup CODE` browse without leaving the session.
+Errors print and return to the prompt. Results are listed in pages of 40 beside
+the full total; `expand --json`, or `expand` redirected to a file, returns every
+code.
+
+## Expand an expression
+
+`expand ECL` evaluates one expression. In a terminal it lists the first 200
+concepts with their terms and the total; `--codes` drops the terms. Redirected
+output returns every code, one per line. `--count` gives the total, `--display`
+adds terms to redirected output, and `--csv` writes a `code,display` table of
+every concept, for a spreadsheet:
+
+```sh
+snomed-ecl-engine expand uk '<< 73211009 |Diabetes mellitus|' --csv > diabetes.csv
+```
+
+## Find and describe concepts
+
+`search TEXT` finds concepts whose terms contain every word, best match first.
+Words match from their start, so `search chron kid` finds chronic kidney disease.
+`--within ECL` searches only an expression's concepts, `--limit N` shows more
+than 50, and `--inactive` includes retired concepts.
+
+`lookup SCTID` describes one concept: its terms, status, parents, children,
+attribute groups and reference set membership. `history SCTID` shows what
+replaced a concept and what it replaced. Redirected, all three answer in the
+same JSON as the [batch requests](#answer-requests-in-batch).
 
 ## Walk the hierarchy
 
@@ -102,9 +127,9 @@ than the library. [Indexes](indexes.md) covers what `import` accepts,
 
 ## Output
 
-A terminal gets readable summaries, and a code and display table with
-`--display`, with parse, evaluation and index-open timings on stderr. Redirected
-output, or `--plain`, gives plain lines for scripts. `--json` gives JSON:
+A terminal gets readable summaries and tables with terms, with parse,
+evaluation and index-open timings on stderr. Redirected output, or `--plain`,
+gives plain lines for scripts. `--json` gives JSON:
 
 | Command | Redirected or `--plain` | `--json` |
 |---|---|---|
@@ -120,6 +145,8 @@ output, or `--plain`, gives plain lines for scripts. `--json` gives JSON:
 | `expand` | One code per line | One code object per line |
 | `expand --display` | Code and display JSONL | Same |
 | `expand --count` | Integer | Object with `total` |
+| `expand --csv` | `code,display` rows with a header | Not combined |
+| `search` · `lookup` · `history` | One JSON answer, as `batch` gives | Same |
 | `hierarchy` | One code per line | One code object per line |
 | `hierarchy --display` | Code and display JSONL | Same |
 | `batch` | One JSON response per request | Same |

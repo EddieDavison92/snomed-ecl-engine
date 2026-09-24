@@ -125,9 +125,11 @@ archive's checksum and asks you to confirm it.
 | `add` · `list` · `use` · `remove` | Build an index from a release; list, select and delete indexes |
 | `inspect` · `import` · `pack` | The steps `add` runs, for building by hand |
 | `add-refsets` · `stats` · `verify` | Add simple refsets such as UK PCD; inspect and check an index |
-| `query` | Evaluate expressions interactively against one open index |
-| `expand` · `batch` | Evaluate one expression; or JSONL on stdin for scripts and agents |
+| `query` | Evaluate expressions interactively, with `:search` and `:lookup` |
+| `expand` | Evaluate one expression; `--csv` writes a code and term table |
+| `search` · `lookup` · `history` | Find concepts by name; describe one; follow what replaced it |
 | `hierarchy` | List a concept's parents, children, ancestors or descendants |
+| `batch` | Answer JSONL requests on stdin, for scripts and agents |
 | `diff` | Compare one expression across two indexes |
 
 The [CLI guide](docs/cli.md) is the full reference.
