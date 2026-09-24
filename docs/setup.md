@@ -123,3 +123,19 @@ whose command still loads the release: it will import a second time.
 import is evidenced, the advertised edition matches the index, and two release
 sentinels agree. An accidental reimport or a mismatched release stops the run
 instead of producing numbers.
+
+## Terminal clips
+
+The README's GIFs are recorded from the tapes in
+[docs/recordings](recordings) with [VHS](https://github.com/charmbracelet/vhs)
+in Docker. Give the script a folder holding a Linux executable and a library
+folder holding a UK index:
+
+```sh
+scripts/record.sh ~/ecl/bin ~/ecl/library
+```
+
+It writes `docs/images/expand.gif`, `search.gif` and `query.gif`. The image is
+pinned to VHS 0.10.0: 0.12.0 captured no frames under Docker Desktop. Run it
+from a Linux filesystem, since Docker Desktop did not write the output through a
+WSL `/mnt/c` mount.
