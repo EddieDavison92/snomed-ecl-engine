@@ -213,11 +213,14 @@ fn root() {
     println!("  add-refsets Add a simple RF2 refset supplement to an index");
     println!("  pack        Pack an index directory into one compressed file\n");
     println!("Query:");
-    println!("  query       Evaluate ECL expressions against one open index");
+    println!("  query       Evaluate ECL expressions interactively");
     println!("  expand      Evaluate one ECL expression");
+    println!("  search      Find concepts by name");
+    println!("  lookup      Describe one concept: terms, parents, attributes, refsets");
+    println!("  history     Show what replaced a concept, and what it replaced");
+    println!("  hierarchy   List a concept's parents, children, ancestors or descendants");
     println!("  diff        Compare one expression across two indexes");
-    println!("  batch       Reuse one index for JSONL queries on stdin");
-    println!("  hierarchy   Traverse an is-a hierarchy directly\n");
+    println!("  batch       Answer JSONL requests on stdin, for scripts and agents\n");
     println!("Run COMMAND --help for arguments and examples.\n");
     match crate::workspace::load().store {
         Some(store) => {
@@ -269,12 +272,179 @@ dependencies declare.
 The checksum proves the file is intact, not where it came from. Compare it
 with the value the release distributor published before importing."),
         Some("stats") => println!("Usage: stats [STORE] [--json|--plain]\n\nRead manifest metadata without loading the numeric index.\nExample: snomed-ecl-engine stats --json"),
-        Some("expand") => println!("Usage: expand [STORE] ECL [--display|--count] [--json|--plain] [--config FILE]\n\nQuote ECL so the shell preserves operators, spaces and SNOMED terms.\n  --count    Return only the total\n  --display  Resolve labels after evaluating the complete result set\n  --json     Emit code objects as JSONL, or a total object with --count\n\nExample: snomed-ecl-engine expand data/uk.ecl \"<< 404684003\" --count\n\nAll matches are returned; there is no implicit result limit.\nMember projections can return typed JSON rows; --count counts those rows and --display requires concepts.\nUse --config FILE for identifier-scheme and dialect aliases (docs/indexes.md).\nFor repeated queries, use batch to open the index once."),
+        Some("expand") => println!("Usage: expand [STORE] ECL [--display|--codes|--count|--csv] [--json|--plain] [--config FILE]\n\nQuote ECL so the shell preserves operators, spaces and SNOMED terms.\n  --count    Return only the total\n  --display  Add each concept's term; the default in a terminal\n  --codes    Codes only, even in a terminal\n  --csv      A code,display table of every concept, for spreadsheets\n  --json     Emit code objects as JSONL, or a total object with --count\n\nExample: snomed-ecl-engine expand uk \"<< 404684003\" --csv > findings.csv\n\nA terminal lists the first 200 with the total; redirected output, --json\nand --csv return every concept. Member projections can return typed JSON\nrows; --count counts those rows, and --display and --csv need concepts.\nUse --config FILE for identifier-scheme and dialect aliases (docs/indexes.md).\nFor repeated queries, use batch to open the index once."),
+        Some("search") => println!("Usage: search [STORE] TEXT [--within ECL] [--limit N] [--inactive]\n\nFind concepts whose terms contain every word, best match first. Words\nmatch from their start, so \"chron kid\" finds chronic kidney disease.\n  --within ECL  Search only the concepts an expression selects\n  --limit N     Show N matches (default 50)\n  --inactive    Include inactive concepts\n\nExample: snomed-ecl-engine search heart failure --within \"<< 404684003\""),
+        Some("lookup" | "concept") => println!("Usage: lookup [STORE] SCTID\n\nDescribe one concept: its terms, status, parents, children, attribute\ngroups and reference set membership. `concept` is another name for it."),
+        Some("history") => println!("Usage: history [STORE] SCTID\n\nShow a concept's historical associations: what replaced it, and what it\nreplaced, with the association for each."),
         Some("batch") => println!("Usage: batch [STORE] [--config FILE]\n\nRead one JSON object per line from stdin:\n  {{\"ecl\":\"<< 404684003\",\"count_only\":true}}\n\nEach response includes edition, query_config_sha256, total, parse_ms and eval_ms.\nOmit count_only or set it false to include codes as decimal strings.\nQuery errors return an error object; later queries still run.\nEnd stdin to exit. Output stays JSONL in terminals too."),
         Some("hierarchy") => println!("Usage: hierarchy [STORE] OPERATOR SCTID [--display]\n\nOperators: <  <<  <!  <<!  >  >>  >!  >>!\nQuote the operator. Output is code lines, or JSONL with --display.\nUse expand for full expressions and terminal display tables."),
         Some(_) => anyhow::bail!("Unknown command. Run --help for available commands"),
     }
     Ok(())
+}
+
+/// A JSON string field, cleaned for the terminal, or a stand-in when absent.
+fn text(value: &serde_json::Value, key: &str) -> String {
+    value[key]
+        .as_str()
+        .map_or_else(|| "(no display)".into(), clean)
+}
+
+/// A concept as `CODE  label`, marking an inactive one.
+fn concept_line(value: &serde_json::Value) -> String {
+    let inactive = value["active"].as_bool() == Some(false);
+    format!(
+        "{:<18}  {}{}",
+        value["code"].as_str().unwrap_or(""),
+        text(value, "display"),
+        if inactive { "  (inactive)" } else { "" }
+    )
+}
+
+/// Lists concepts under a heading, at most `limit` of them.
+fn concept_list(title: &str, concepts: &[serde_json::Value], limit: usize) {
+    println!("\n  {title} ({})", number(concepts.len()));
+    for concept in concepts.iter().take(limit) {
+        println!("    {}", concept_line(concept));
+    }
+    if concepts.len() > limit {
+        println!("    ... {} more", number(concepts.len() - limit));
+    }
+}
+
+pub fn search(value: &serde_json::Value, query: &str) {
+    let concepts = value["concepts"].as_array().cloned().unwrap_or_default();
+    let total = value["total"].as_u64().unwrap_or(0) as usize;
+    println!("{}\n", heading("SNOMED ECL / search"));
+    println!(
+        "  \"{}\": {} matching concepts, best {} shown\n",
+        clean(query),
+        number(total),
+        number(concepts.len())
+    );
+    for concept in &concepts {
+        println!("  {}", concept_line(concept));
+    }
+    if concepts.is_empty() {
+        println!("  Nothing matches every word. Try fewer or shorter words.");
+    } else {
+        println!("\n  `lookup CODE` describes one; --limit N shows more.");
+    }
+}
+
+pub fn concept(value: &serde_json::Value) {
+    println!("{}\n", heading("SNOMED ECL / concept"));
+    println!(
+        "  {}  {}",
+        value["code"].as_str().unwrap_or(""),
+        text(value, "display")
+    );
+    if let Some(fsn) = value["fsn"].as_str() {
+        println!("  {:<18}  {}", "", clean(fsn));
+    }
+    let status = format!(
+        "{}, {}",
+        if value["active"].as_bool() == Some(true) {
+            "active"
+        } else {
+            "inactive"
+        },
+        if value["defined"].as_bool() == Some(true) {
+            "fully defined"
+        } else {
+            "primitive"
+        }
+    );
+    println!("\n  Status    {status}");
+    println!("  Module    {}", text(&value["module"], "display"));
+    let empty = Vec::new();
+    let list = |key: &str| value[key].as_array().unwrap_or(&empty).clone();
+    concept_list("Parents", &list("parents"), 12);
+    concept_list("Children", &list("children"), 12);
+    let groups = list("groups");
+    if !groups.is_empty() {
+        println!("\n  Attributes");
+        for group in &groups {
+            let number = group["group"].as_u64().unwrap_or(0);
+            let label = if number == 0 {
+                "ungrouped".to_owned()
+            } else {
+                format!("group {number}")
+            };
+            println!("    {label}");
+            for attribute in group["attributes"].as_array().unwrap_or(&empty) {
+                let target = if attribute["target"].is_object() {
+                    format!(
+                        "{} ({})",
+                        text(&attribute["target"], "display"),
+                        attribute["target"]["code"].as_str().unwrap_or("")
+                    )
+                } else {
+                    // ECL syntax: #number, "string", or true and false.
+                    let literal = &attribute["value"]["value"];
+                    match (attribute["value"]["type"].as_str(), literal.as_str()) {
+                        (Some("number"), Some(number)) => format!("#{number}"),
+                        (Some("text"), Some(text)) => format!("\"{}\"", clean(text)),
+                        _ => literal.to_string(),
+                    }
+                };
+                println!(
+                    "      {} = {}",
+                    text(&attribute["type"], "display"),
+                    target.trim_end()
+                );
+            }
+        }
+    }
+    let synonyms: Vec<_> = list("descriptions")
+        .into_iter()
+        .filter(|d| d["active"].as_bool() == Some(true))
+        .collect();
+    if !synonyms.is_empty() {
+        println!("\n  Descriptions ({})", number(synonyms.len()));
+        for description in synonyms.iter().take(12) {
+            let preferred = description["preferred_in"]
+                .as_array()
+                .is_some_and(|p| !p.is_empty());
+            println!(
+                "    {} {}",
+                if preferred { "*" } else { " " },
+                clean(description["term"].as_str().unwrap_or(""))
+            );
+        }
+        if synonyms.len() > 12 {
+            println!("      ... {} more", number(synonyms.len() - 12));
+        }
+        println!("    * preferred in at least one language reference set");
+    }
+    concept_list("Reference sets", &list("refsets"), 8);
+}
+
+pub fn history(value: &serde_json::Value) {
+    println!("{}\n", heading("SNOMED ECL / history"));
+    println!(
+        "  {}  {}",
+        value["concept"].as_str().unwrap_or(""),
+        if value["active"].as_bool() == Some(true) {
+            "active"
+        } else {
+            "inactive"
+        }
+    );
+    for (title, key) in [("Replaced by", "successors"), ("Replaces", "predecessors")] {
+        let rows = value[key].as_array().cloned().unwrap_or_default();
+        println!("\n  {title} ({})", number(rows.len()));
+        for row in rows.iter().take(20) {
+            println!(
+                "    {}  [{}]",
+                concept_line(&row["concept"]),
+                text(&row["association"], "display")
+            );
+        }
+        if rows.len() > 20 {
+            println!("    ... {} more", number(rows.len() - 20));
+        }
+    }
 }
 
 /// Describes a result's size with the unit its projection returned.
