@@ -183,10 +183,11 @@ echo '{"search":"chronic kidney","limit":5}'    | snomed-ecl-engine batch uk
 ```
 
 `diff` evaluates one expression against two indexes and reports what a new
-release added and removed:
+release added and removed. After downloading a newer release, compare it, `uk`
+for the latest, with the one before:
 
 ```sh
-snomed-ecl-engine diff uk@2026-08 uk@2026-11 '<< 73211009 |Diabetes mellitus|'
+snomed-ecl-engine diff uk@2026-08 uk '<< 73211009 |Diabetes mellitus|'
 ```
 
 The [CLI guide](docs/cli.md) covers every command, output format and batch
