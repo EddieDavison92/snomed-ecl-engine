@@ -378,10 +378,13 @@ pub fn concept(value: &serde_json::Value) {
                         attribute["target"]["code"].as_str().unwrap_or("")
                     )
                 } else {
-                    attribute["value"]["value"].as_str().map_or_else(
-                        || attribute["value"]["value"].to_string(),
-                        |v| format!("#{v}"),
-                    )
+                    // ECL syntax: #number, "string", or true and false.
+                    let literal = &attribute["value"]["value"];
+                    match (attribute["value"]["type"].as_str(), literal.as_str()) {
+                        (Some("number"), Some(number)) => format!("#{number}"),
+                        (Some("text"), Some(text)) => format!("\"{}\"", clean(text)),
+                        _ => literal.to_string(),
+                    }
                 };
                 println!(
                     "      {} = {}",

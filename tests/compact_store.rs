@@ -2300,10 +2300,15 @@ fn cli_searches_describes_and_writes_csv() {
     assert!(described["children"]
         .as_array()
         .is_some_and(|children| !children.is_empty()));
-    let history = cli(&config, &["history", store_text, &ROOT.to_string()]);
-    assert!(
-        history.status.success() || String::from_utf8_lossy(&history.stderr).contains("history")
-    );
+    // The fixture has no historical associations, so both directions are empty.
+    let history: serde_json::Value = serde_json::from_str(&stdout(cli(
+        &config,
+        &["history", store_text, &ROOT.to_string()],
+    )))
+    .unwrap();
+    assert_eq!(history["concept"], ROOT.to_string());
+    assert_eq!(history["successors"], serde_json::json!([]));
+    assert_eq!(history["predecessors"], serde_json::json!([]));
 
     // An unknown concept is an error, not an empty answer.
     let missing = cli(&config, &["lookup", store_text, "9999999"]);

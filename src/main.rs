@@ -443,6 +443,7 @@ fn run() -> Result<()> {
         }
         "query" => {
             let mut style = Style::take(&mut args, human, json)?;
+            ensure!(!style.csv, "query has no CSV output; use expand --csv");
             ensure!(args.len() <= 2, "Usage: query [STORE] [--display|--count]");
             let (path, source) = workspace::resolve(args.get(1).map(String::as_str))?;
             let open_start = Instant::now();
@@ -573,6 +574,7 @@ fn run() -> Result<()> {
         }
         "diff" => {
             let style = Style::take(&mut args, human, json)?;
+            ensure!(!style.csv, "diff has no CSV output; use --json");
             ensure!(
                 args.len() == 4,
                 "Usage: diff OLD NEW ECL [--display|--count]"
@@ -1231,9 +1233,11 @@ fn search_response(
     // shorter than the compound terms that also contain the same words. Only
     // the shortest are kept, so they are selected rather than sorting all.
     let key = |&ordinal: &u32| (labels.label_bytes(ordinal).unwrap_or(u32::MAX), ordinal);
-    if candidates.len() > SEARCH_CANDIDATES {
-        candidates.select_nth_unstable_by_key(SEARCH_CANDIDATES, key);
-        candidates.truncate(SEARCH_CANDIDATES);
+    // A larger limit reads more candidates, so it is never silently cut short.
+    let keep = SEARCH_CANDIDATES.max(request.limit.unwrap_or(0));
+    if candidates.len() > keep {
+        candidates.select_nth_unstable_by_key(keep, key);
+        candidates.truncate(keep);
     }
     candidates.sort_by_key(key);
 
@@ -1670,7 +1674,10 @@ fn print_diff_side(
 
 /// Output flags shared by `expand`, `query` and `diff`.
 struct Style {
+    /// Show terms: asked for, or the terminal default for concept results.
     display: bool,
+    /// Terms were asked for with --display or --csv, which projections refuse.
+    explicit_display: bool,
     count: bool,
     csv: bool,
     json: bool,
@@ -1702,6 +1709,7 @@ impl Style {
         }
         Ok(Self {
             display: asked || csv || (human && !count && !codes),
+            explicit_display: asked || csv,
             count,
             csv,
             json,
@@ -1710,8 +1718,14 @@ impl Style {
     }
 }
 
-/// One CSV field, quoted when it holds a comma, quote or line break.
+/// One CSV field, quoted when it holds a comma, quote or line break. A term
+/// that a spreadsheet would read as a formula gets a leading apostrophe.
 fn csv_field(text: &str) -> String {
+    let text = if text.starts_with(['=', '+', '-', '@', '\t', '\r']) {
+        format!("'{text}")
+    } else {
+        text.to_owned()
+    };
     if text.contains([',', '"', '\n', '\r']) {
         format!("\"{}\"", text.replace('"', "\"\""))
     } else {
@@ -1735,8 +1749,8 @@ fn emit(
         eval::QueryResult::Concepts(ordinals) => ordinals,
         eval::QueryResult::Values(values) => {
             ensure!(
-                !style.display,
-                "--display requires a concept result; this projection returns scalar values"
+                !style.explicit_display,
+                "--display and --csv need a concept result; this projection returns scalar values"
             );
             if style.count {
                 if style.json {
@@ -1758,8 +1772,8 @@ fn emit(
         }
         eval::QueryResult::Rows(rows) => {
             ensure!(
-                !style.display,
-                "--display requires a concept result; this projection returns rows"
+                !style.explicit_display,
+                "--display and --csv need a concept result; this projection returns rows"
             );
             if style.count {
                 if style.json {
@@ -1846,4 +1860,20 @@ fn emit(
         )?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::csv_field;
+
+    #[test]
+    fn csv_fields_are_quoted_and_never_read_as_formulas() {
+        assert_eq!(csv_field("Asthma"), "Asthma");
+        assert_eq!(csv_field("Millers' asthma"), "Millers' asthma");
+        assert_eq!(csv_field("Fracture, left"), "\"Fracture, left\"");
+        assert_eq!(csv_field("A \"quoted\" term"), "\"A \"\"quoted\"\" term\"");
+        assert_eq!(csv_field("=SUM(A1)"), "'=SUM(A1)");
+        assert_eq!(csv_field("-5 degrees, cold"), "\"'-5 degrees, cold\"");
+        assert_eq!(csv_field("@home"), "'@home");
+    }
 }
