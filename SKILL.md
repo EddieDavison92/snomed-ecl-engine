@@ -106,10 +106,10 @@ snomed-ecl-engine lookup uk-20260826 709044004
 snomed-ecl-engine history uk-20260826 155574008
 ```
 
-`search` finds concepts whose terms contain every word, best match first, and
-excludes inactive concepts unless given `--inactive`. `lookup` returns one
-concept's terms, parents, children, attribute groups and reference set
-membership. `history` returns what replaced a concept and what it replaced.
+`search` finds concepts whose terms contain every word, the last as a prefix,
+best match first. It leaves out inactive concepts unless given `--inactive`.
+`lookup` returns one concept's terms, parents, children, attribute groups and
+reference set membership. `history` returns what replaced a concept and what it replaced.
 Redirected, each prints one JSON answer, the same as the matching batch request.
 Use `search` to find a code rather than guessing one, then confirm it with
 `lookup` before writing it into ECL.

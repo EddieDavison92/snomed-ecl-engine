@@ -79,7 +79,8 @@ snomed-ecl-engine expand uk '<< 73211009 |Diabetes mellitus|' --csv > diabetes.c
 ## Find and describe concepts
 
 `search TEXT` finds concepts whose terms contain every word, best match first.
-Words match from their start, so `search chron kid` finds chronic kidney disease.
+The last word may be the start of one, so `search chronic kid` finds chronic
+kidney disease as you type.
 `--within ECL` searches only an expression's concepts, `--limit N` shows more
 than 50, and `--inactive` includes retired concepts.
 
