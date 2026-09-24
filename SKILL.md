@@ -1,6 +1,6 @@
 ---
 name: snomed-ecl-engine
-description: Build and use the SNOMED CT ECL engine. Use when importing a verified RF2 Snapshot, inspecting an index, or expanding ECL through the CLI or its persistent JSONL batch process.
+description: Build and use the SNOMED CT ECL engine. Use when downloading or importing an RF2 Snapshot, managing indexes, expanding ECL, finding or describing concepts, or answering queries through the CLI or its persistent JSONL batch process.
 ---
 
 # Use the SNOMED ECL engine
@@ -27,33 +27,52 @@ arguments.
 
 ## Get the RF2 release
 
-The user must supply an RF2 Snapshot they are licensed to use, as one
-self-contained ZIP. UK Monolith is the tested edition. Do not download a release
-on the user's behalf without their credentials and consent, and never print or
-save a TRUD API response: its download URLs contain the API key. Keep archives
-under `data/`, which Git ignores. `add` puts indexes in the library folder that
-`list` names.
+The user must supply an RF2 Snapshot they are licensed to use. UK Monolith is
+the tested edition. Either the user sets `TRUD_API_KEY` and `download` fetches
+it, or they give you one self-contained ZIP to `add`.
 
-```sh
-snomed-ecl-engine inspect data/rf2/ARCHIVE.zip
-```
-
-`inspect` prints the archive's SHA-256, release date and edition URI. Check that
-SHA-256 against the value the distributor published: a checksum of the
-downloaded file alone does not show where it came from.
+Download only with the user's own key and consent. Never print `TRUD_API_KEY`
+or save a TRUD API response: its download URLs contain the key. `download`
+redacts the key from its errors.
 
 ## Build the index
 
 ```sh
-snomed-ecl-engine add data/rf2/ARCHIVE.zip --sha256 DISTRIBUTOR_SHA256 --json
-snomed-ecl-engine list --json
+snomed-ecl-engine download --list
+snomed-ecl-engine download --json
 ```
 
-`add` imports the archive, packs it into one file in the library folder, names
-it by edition and release date, such as `uk-20260826`, and selects it. Always
-pass `--sha256`: without a terminal, `add` refuses rather than asking. It
-refuses to overwrite an index of the same name; `remove NAME --yes` deletes one.
-Check the `edition` in its output before relying on the index.
+`download` fetches the newest UK Monolith Snapshot from NHS England's TRUD,
+checks it against the SHA-256 TRUD publishes, then builds it as `add` does and
+deletes the archive. `--release ID` takes another release from `--list`. The
+user's TRUD account must be subscribed to the item. Allow a few minutes for the
+download and about two for the build; progress goes to stderr.
+
+For an archive the user gives you, check it first:
+
+```sh
+snomed-ecl-engine inspect data/rf2/ARCHIVE.zip
+snomed-ecl-engine add data/rf2/ARCHIVE.zip --sha256 DISTRIBUTOR_SHA256 --json
+```
+
+`inspect` prints the archive's SHA-256, release date and edition URI. The
+SHA-256 for `--sha256` must be the value the distributor published: a checksum
+of the downloaded file alone does not show where it came from. Always pass it:
+without a terminal, `add` refuses rather than asking. Keep archives under
+`data/`, which Git ignores.
+
+Both commands pack the index into one file in the library folder, name it by
+edition and release date, such as `uk-20260826`, select it, and print its
+`name`, `store` and `edition`. Check the `edition` before relying on the index.
+Neither overwrites an index of the same name.
+
+```sh
+snomed-ecl-engine list --json
+snomed-ecl-engine remove uk-20260826 --yes
+```
+
+`list` names the library's indexes and their releases. Remove one only when the
+user asks.
 
 ## Expand ECL
 
@@ -67,14 +86,33 @@ snomed-ecl-engine expand uk-20260826 '404684003' --display --json
 snomed-ecl-engine expand uk-20260826 '< 404684003 : 363698007 = << 39057004' --json
 ```
 
-Quote the whole expression. `--count --json` returns `{"total":...}`; `--json`
-emits one `{"code":"..."}` per line; `--display` adds `display`, which may be
-null. Codes are decimal strings: keep them as strings. An empty expansion is an
-empty stream, so use `--count` to tell it from a failure when that is all you
-need. Never invent a label for a missing display.
+Quote the whole expression. Redirected output, as a script or agent sees it,
+gives one code per line; `--json` emits one `{"code":"..."}` per line and
+`--count --json` returns `{"total":...}`. `--display` adds `display`, which may
+be null, and `--csv` writes a `code,display` table of every concept for the
+user to open in a spreadsheet. Codes are decimal strings: keep them as strings.
+An empty expansion is an empty stream, so use `--count` to tell it from a
+failure when that is all you need. Never invent a label for a missing display.
 
 `diff OLD NEW ECL --json` evaluates one expression against two indexes and
 returns `added`, `removed` and `unchanged`.
+
+## Find and describe concepts
+
+```sh
+snomed-ecl-engine search uk-20260826 chronic kidney disease --limit 10
+snomed-ecl-engine search uk-20260826 left --within '<< 404684003 : 363698007 = << 39057004'
+snomed-ecl-engine lookup uk-20260826 709044004
+snomed-ecl-engine history uk-20260826 155574008
+```
+
+`search` finds concepts whose terms contain every word, the last as a prefix,
+best match first. It leaves out inactive concepts unless given `--inactive`.
+`lookup` returns one concept's terms, parents, children, attribute groups and
+reference set membership. `history` returns what replaced a concept and what it replaced.
+Redirected, each prints one JSON answer, the same as the matching batch request.
+Use `search` to find a code rather than guessing one, then confirm it with
+`lookup` before writing it into ECL.
 
 ## Answer many queries from one process
 

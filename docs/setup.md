@@ -67,9 +67,11 @@ Use a release you are licensed to use; see the [README](../README.md#licence).
 The importer takes one self-contained Snapshot ZIP, and the UK Monolith Edition
 is the tested input. Keep archives under `data/`, which Git ignores.
 
-In the UK, register with NHS England's [TRUD](https://isd.digital.nhs.uk/trud/),
-subscribe to the SNOMED CT UK Monolith Edition, RF2: Snapshot, and download it.
-Then check it before importing:
+In the UK, register with NHS England's [TRUD](https://isd.digital.nhs.uk/trud/)
+and subscribe to the SNOMED CT UK Monolith Edition, RF2: Snapshot. With
+`TRUD_API_KEY` set, `snomed-ecl-engine download --keep-archive` fetches and
+verifies the newest release, builds an index, and keeps the ZIP in the library's
+`downloads` folder. To download it yourself, check it before importing:
 
 ```sh
 snomed-ecl-engine inspect data/rf2/ARCHIVE.zip
