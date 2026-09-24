@@ -6,13 +6,21 @@ Install an executable from a release or build one; see the
 commands, names the selected index and suggests the next step.
 
 ```sh
-snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 1330d2f2...
+snomed-ecl-engine download
 snomed-ecl-engine list
 snomed-ecl-engine expand '404684003' --display
 snomed-ecl-engine expand '<< 404684003' --count
 ```
 
 ## Manage indexes
+
+`download` fetches the newest UK Monolith Snapshot from NHS England's
+[TRUD](https://isd.digital.nhs.uk/trud/), checks it against the SHA-256 TRUD
+publishes, and adds it as below. Set `TRUD_API_KEY` to the API key on your TRUD
+account page first; the account must be subscribed to the item. `--list` shows
+the releases TRUD holds and `--release ID` fetches an older one. The archive is
+deleted once the index is built, unless you give `--keep-archive`. The key is
+never printed, and is removed from any error.
 
 `add ARCHIVE` builds an index from an RF2 Snapshot ZIP, packs it into one file
 in the library folder and selects it. It checks the archive against the
@@ -133,8 +141,10 @@ gives plain lines for scripts. `--json` gives JSON:
 
 | Command | Redirected or `--plain` | `--json` |
 |---|---|---|
-| `stores` | One index object per line | Same |
+| `list` | One index object per line | Same |
 | `use` | Index and edition JSON | Same |
+| `add` · `download` | Name, path, edition and size JSON | Same |
+| `download --list` | One release object per line | Same |
 | `inspect` | Archive summary JSON | Same |
 | `diff` | Comparison JSON | Same |
 | `stats` | Manifest JSON | Same |

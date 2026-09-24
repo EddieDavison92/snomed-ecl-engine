@@ -66,7 +66,7 @@ the detail.
 
 ## Status
 
-Version 0.1.2, on [crates.io](https://crates.io/crates/snomed-ecl-engine) and
+Version 0.2.0, on [crates.io](https://crates.io/crates/snomed-ecl-engine) and
 [npm](https://www.npmjs.com/package/snomed-ecl-engine). The index format may
 change between releases without a migration: rebuild the index from your RF2
 archive when you upgrade.
@@ -103,26 +103,34 @@ on Debian or Ubuntu); [developer setup](docs/setup.md) covers the rest.
 ## Quick start
 
 You need a SNOMED CT RF2 Snapshot that you are licensed to use; see
-[licence](#licence). UK Monolith is the tested edition: download it from NHS
-England's [TRUD](https://isd.digital.nhs.uk/trud/) and note the SHA-256 shown on
-its download page.
+[licence](#licence). UK Monolith is the tested edition. In the UK, register with
+NHS England's [TRUD](https://isd.digital.nhs.uk/trud/), subscribe to the UK
+Monolith Snapshot and copy the API key from your account page:
 
 ```sh
-# Build an index from the archive and select it. About two minutes.
-snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 SHA256_FROM_TRUD
+# Download the newest release, check it, build an index and select it.
+export TRUD_API_KEY=...
+snomed-ecl-engine download
 
 snomed-ecl-engine expand '<< 195967001 |Asthma|' --count
+snomed-ecl-engine search chronic kidney
 snomed-ecl-engine query
 ```
 
-`add` checks the archive against the SHA-256 you give before reading anything.
-Use the value the distributor published: a checksum of your own download shows
-it is intact, not where it came from. Without `--sha256`, `add` shows the
-archive's checksum and asks you to confirm it.
+To build from an archive you already have, give `add` the SHA-256 its
+distributor published. It checks the archive before reading anything; without
+`--sha256`, it shows the checksum and asks you to confirm it.
+
+```sh
+snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 SHA256_FROM_TRUD
+```
+
+A checksum of your own download shows it is intact, not where it came from.
 
 | Command | |
 |---|---|
-| `add` · `list` · `use` · `remove` | Build an index from a release; list, select and delete indexes |
+| `download` · `add` | Build an index from a TRUD release or an archive, and select it |
+| `list` · `use` · `remove` | List, select and delete indexes |
 | `inspect` · `import` · `pack` | The steps `add` runs, for building by hand |
 | `add-refsets` · `stats` · `verify` | Add simple refsets such as UK PCD; inspect and check an index |
 | `query` | Evaluate expressions interactively, with `:search` and `:lookup` |
