@@ -737,8 +737,11 @@ fn run() -> Result<()> {
                     }
                     println!("\n  Download one with `download --release ID`, or the newest with `download`.");
                 } else {
+                    // writeln! rather than println!, so a closed pipe ends quietly.
+                    let mut out = io::stdout().lock();
                     for release in &releases {
-                        println!(
+                        writeln!(
+                            out,
                             "{}",
                             serde_json::json!({
                                 "id": release.id,
@@ -747,7 +750,7 @@ fn run() -> Result<()> {
                                 "bytes": release.archive_file_size_bytes,
                                 "sha256": release.archive_file_sha256,
                             })
-                        );
+                        )?;
                     }
                 }
                 return Ok(());

@@ -78,9 +78,23 @@ fn agent(body: std::time::Duration) -> ureq::Agent {
         .into()
 }
 
-/// An error's text with the API key removed.
+/// An error's text with the API key removed. TRUD answers a bad key, or an
+/// item the account is not subscribed to, with a 4xx status, so that says so.
 fn redact(error: impl std::fmt::Display, key: &str) -> String {
-    error.to_string().replace(key, "***")
+    let text = error.to_string().replace(key, "***");
+    if [
+        "http status: 400",
+        "http status: 401",
+        "http status: 403",
+        "http status: 404",
+    ]
+    .iter()
+    .any(|status| text.contains(status))
+    {
+        format!("{text}. Check {ENV_KEY}, and that your TRUD account is subscribed to this item")
+    } else {
+        text
+    }
 }
 
 /// Checks a release's metadata before anything is fetched from it.
