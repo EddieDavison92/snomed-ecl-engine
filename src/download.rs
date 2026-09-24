@@ -65,6 +65,19 @@ fn key() -> Result<String> {
         })
 }
 
+/// An HTTP agent that gives up on a stalled server. Connecting and the first
+/// response byte get a minute each; `body` bounds reading the whole reply,
+/// which for an archive must allow a slow connection to finish.
+fn agent(body: std::time::Duration) -> ureq::Agent {
+    use std::time::Duration;
+    ureq::Agent::config_builder()
+        .timeout_connect(Some(Duration::from_secs(60)))
+        .timeout_recv_response(Some(Duration::from_secs(60)))
+        .timeout_recv_body(Some(body))
+        .build()
+        .into()
+}
+
 /// An error's text with the API key removed.
 fn redact(error: impl std::fmt::Display, key: &str) -> String {
     error.to_string().replace(key, "***")
@@ -104,7 +117,8 @@ pub fn releases(item: u32, latest: bool) -> Result<Vec<Release>> {
         "{API}/{key}/items/{item}/releases{}",
         if latest { "?latest" } else { "" }
     );
-    let body = ureq::get(&url)
+    let body = agent(std::time::Duration::from_secs(120))
+        .get(&url)
         .call()
         .map_err(|error| anyhow!("TRUD release lookup failed: {}", redact(error, &key)))?
         .into_body()
@@ -141,7 +155,9 @@ pub fn fetch(release: &Release, folder: &Path) -> Result<PathBuf> {
 }
 
 fn download(release: &Release, partial: &Path, key: &str) -> Result<()> {
-    let response = ureq::get(&release.archive_file_url)
+    // Four hours covers a 600 MB archive at a slow 350 kbit/s.
+    let response = agent(std::time::Duration::from_secs(4 * 3600))
+        .get(&release.archive_file_url)
         .call()
         .map_err(|error| anyhow!("TRUD download failed: {}", redact(error, key)))?;
     let mut reader = response.into_body().into_reader();
@@ -160,6 +176,11 @@ fn download(release: &Release, partial: &Path, key: &str) -> Result<()> {
         if n == 0 {
             break;
         }
+        // Stop before writing more than TRUD said the archive holds.
+        ensure!(
+            written + n as u64 <= total,
+            "The download is larger than the {total} bytes TRUD published; stopped"
+        );
         file.write_all(&buffer[..n])?;
         hash.update(&buffer[..n]);
         written += n as u64;

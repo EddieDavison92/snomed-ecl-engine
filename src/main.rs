@@ -698,16 +698,19 @@ fn run() -> Result<()> {
             );
             let archive = download::fetch(&release, &library::home()?.join("downloads"))?;
             // TRUD's published checksum is the distributor's, so no question is needed.
-            add_release(
+            let added = add_release(
                 &archive,
                 Some(release.archive_file_sha256.clone()),
                 name,
                 None,
                 human,
-            )?;
+            );
+            // The archive is removed whether or not the build worked, so failed
+            // attempts do not pile up; --keep-archive keeps it for a retry.
             if !keep {
                 let _ = std::fs::remove_file(&archive);
             }
+            added?;
         }
         "remove" => {
             let yes = take_flag(&mut args, "--yes");
