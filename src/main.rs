@@ -46,7 +46,6 @@ fn take_flag(args: &mut Vec<String>, flag: &str) -> bool {
 }
 
 /// Removes `--option VALUE` from the arguments and returns the value.
-#[cfg(feature = "import")]
 fn take_option(args: &mut Vec<String>, option: &str) -> Result<Option<String>> {
     let Some(position) = args.iter().position(|arg| arg == option) else {
         return Ok(None);
@@ -59,6 +58,48 @@ fn take_option(args: &mut Vec<String>, option: &str) -> Result<Option<String>> {
         "{option} may only be given once"
     );
     Ok(Some(value))
+}
+
+/// Opens an index with the query configuration given on the command line.
+fn open_store(
+    path: &Path,
+    config: &Option<snomed_ecl_engine::config::QueryConfig>,
+) -> Result<NumericStore> {
+    let mut store = NumericStore::open(path)?;
+    if let Some(config) = config {
+        store.config = config.clone();
+    }
+    Ok(store)
+}
+
+/// Writes one batch-style answer: as JSON for scripts, or through `render` in
+/// a terminal. An error answer becomes an error either way.
+fn show(answer: Vec<u8>, human: bool, render: impl FnOnce(&serde_json::Value)) -> Result<()> {
+    let value: serde_json::Value = serde_json::from_slice(&answer)?;
+    if let Some(error) = value.get("error") {
+        if error == "NotFound" {
+            bail!(
+                "No concept {} in this index",
+                value["concept"].as_str().unwrap_or("with that code")
+            );
+        }
+        let detail = value
+            .get("message")
+            .or_else(|| value.get("concept"))
+            .map(|detail| {
+                detail
+                    .as_str()
+                    .map_or_else(|| detail.to_string(), str::to_owned)
+            })
+            .unwrap_or_default();
+        bail!("{} {detail}", error.as_str().unwrap_or("Error"));
+    }
+    if human {
+        render(&value);
+    } else {
+        io::stdout().write_all(&answer)?;
+    }
+    Ok(())
 }
 
 /// Asks a yes-or-no question on the terminal. Without one there is nobody to
@@ -411,6 +452,7 @@ fn run() -> Result<()> {
             }
             let manifest = Manifest::read(&path)?;
             let mut display = None;
+            let labels = Labels::new(&path);
             println!("{}\n", presentation::heading("SNOMED ECL / query"));
             println!("  Index    {} ({})", path.display(), source.describe());
             println!("  Edition  {}", presentation::clean(&manifest.edition));
@@ -441,6 +483,8 @@ fn run() -> Result<()> {
                             "  :display  toggle result terms (currently {})\n  \
                              :count    toggle totals only (currently {})\n  \
                              :stats    show the index manifest\n  \
+                             :search TEXT   find concepts by name\n  \
+                             :lookup CODE   describe one concept\n  \
                              :quit     leave\n\n  \
                              Anything else is evaluated as ECL. Results list {} at a time.",
                             if style.display { "on" } else { "off" },
@@ -466,6 +510,35 @@ fn run() -> Result<()> {
                         continue;
                     }
                     _ => {}
+                }
+                // Browsing commands answer about concepts rather than evaluate ECL.
+                let browse = if let Some(words) = text.strip_prefix(":search ") {
+                    let request: BatchRequest =
+                        serde_json::from_value(serde_json::json!({"search": words.trim()}))?;
+                    let mut answer = Vec::new();
+                    search_response(&store, &labels, words.trim(), &request, &mut answer)
+                        .and_then(|()| {
+                            show(answer, true, |v| presentation::search(v, words.trim()))
+                        })
+                        .map(Some)
+                } else if let Some(code) = text.strip_prefix(":lookup ") {
+                    let mut answer = Vec::new();
+                    concept_response(&store, &labels, code.trim(), &mut answer)
+                        .and_then(|()| show(answer, true, presentation::concept))
+                        .map(Some)
+                } else {
+                    Ok(None)
+                };
+                match browse {
+                    Ok(Some(())) => {
+                        println!();
+                        continue;
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        println!("  {}\n", presentation::clean_message(&format!("{error:#}")));
+                        continue;
+                    }
                 }
                 // One bad expression must not end the session, so parse and
                 // evaluation errors are reported and the prompt returns.
@@ -864,6 +937,53 @@ fn run() -> Result<()> {
                 writer.join().expect("batch writer panicked")?;
                 Ok(())
             })?;
+        }
+        "search" => {
+            let within = take_option(&mut args, "--within")?;
+            let limit = take_option(&mut args, "--limit")?
+                .map(|limit| limit.parse::<usize>())
+                .transpose()
+                .context("--limit takes a number")?;
+            let inactive = take_flag(&mut args, "--inactive");
+            ensure!(
+                args.len() >= 2,
+                "Usage: search [STORE] TEXT [--within ECL] [--limit N] [--inactive]"
+            );
+            // Unquoted words are all searched for, unless the first names an index.
+            let (explicit, words) = if args.len() > 2 && library::resolve(&args[1]).is_ok() {
+                (Some(args[1].as_str()), &args[2..])
+            } else {
+                (None, &args[1..])
+            };
+            let text = words.join(" ");
+            let (path, _) = workspace::resolve(explicit)?;
+            let store = open_store(&path, &query_config)?;
+            let request: BatchRequest = serde_json::from_value(serde_json::json!({
+                "search": text,
+                "within": within,
+                "limit": limit,
+                "include_inactive": inactive,
+            }))?;
+            let mut answer = Vec::new();
+            search_response(&store, &Labels::new(&path), &text, &request, &mut answer)?;
+            show(answer, human, |value| presentation::search(value, &text))?;
+        }
+        "lookup" | "concept" | "history" => {
+            let usage = format!("Usage: {command} [STORE] SCTID");
+            ensure!(args.len() == 2 || args.len() == 3, "{usage}");
+            let explicit = (args.len() == 3).then(|| args[1].as_str());
+            let sctid = args[args.len() - 1].clone();
+            let (path, _) = workspace::resolve(explicit)?;
+            let store = open_store(&path, &query_config)?;
+            let labels = Labels::new(&path);
+            let mut answer = Vec::new();
+            if command == "history" {
+                history_response(&store, &labels, &sctid, &mut answer)?;
+                show(answer, human, presentation::history)?;
+            } else {
+                concept_response(&store, &labels, &sctid, &mut answer)?;
+                show(answer, human, presentation::concept)?;
+            }
         }
         "hierarchy" => {
             let with_display = args.iter().any(|s| s == "--display");
@@ -1552,26 +1672,50 @@ fn print_diff_side(
 struct Style {
     display: bool,
     count: bool,
+    csv: bool,
     json: bool,
     human: bool,
 }
 
 impl Style {
     /// Removes the output flags so the remaining arguments are positional.
+    ///
+    /// A terminal shows terms unless `--codes` asks for bare codes; redirected
+    /// output keeps plain code lines unless `--display` or `--csv` asks.
     fn take(args: &mut Vec<String>, human: bool, json: bool) -> Result<Self> {
-        let display = args.iter().any(|s| s == "--display");
+        let asked = args.iter().any(|s| s == "--display");
         let count = args.iter().any(|s| s == "--count");
-        ensure!(!(display && count), "Choose either --display or --count");
-        args.retain(|s| s != "--display" && s != "--count");
+        let codes = args.iter().any(|s| s == "--codes");
+        let csv = args.iter().any(|s| s == "--csv");
+        ensure!(
+            [asked, count, codes, csv]
+                .iter()
+                .filter(|&&flag| flag)
+                .count()
+                <= 1,
+            "Choose one of --display, --count, --codes and --csv"
+        );
+        ensure!(!(csv && json), "Choose either --csv or --json");
+        args.retain(|s| !matches!(s.as_str(), "--display" | "--count" | "--codes" | "--csv"));
         if let Some(unknown) = args.iter().skip(1).find(|s| s.starts_with("--")) {
             bail!("Unknown option {unknown}. Run `{} --help`", args[0]);
         }
         Ok(Self {
-            display,
+            display: asked || csv || (human && !count && !codes),
             count,
+            csv,
             json,
             human,
         })
+    }
+}
+
+/// One CSV field, quoted when it holds a comma, quote or line break.
+fn csv_field(text: &str) -> String {
+    if text.contains([',', '"', '\n', '\r']) {
+        format!("\"{}\"", text.replace('"', "\"\""))
+    } else {
+        text.to_owned()
     }
 }
 
@@ -1646,6 +1790,16 @@ fn emit(
     }
     if style.display && display.is_none() {
         *display = Some(DisplayStore::open(path)?);
+    }
+    // CSV is for files and spreadsheets, so it always lists every concept.
+    if style.csv {
+        let labels = display.as_mut().context("Display index was not opened")?;
+        writeln!(out, "code,display")?;
+        for &ordinal in ordinals {
+            let label = labels.get(ordinal)?.unwrap_or_default();
+            writeln!(out, "{},{}", store.ids[ordinal as usize], csv_field(&label))?;
+        }
+        return Ok(());
     }
     let shown = limit.unwrap_or(ordinals.len()).min(ordinals.len());
     if style.human && style.display {
