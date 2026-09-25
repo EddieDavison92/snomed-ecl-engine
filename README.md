@@ -69,8 +69,9 @@ Release archives and the Docker image carry signed build attestations from
 workflow:
 
 ```sh
-gh attestation verify snomed-ecl-engine-v0.2.1-x86_64-unknown-linux-gnu-default.tar.gz --repo EddieDavison92/snomed-ecl-engine
-gh attestation verify oci://ghcr.io/eddiedavison92/snomed-ecl-engine:0.2.1 --repo EddieDavison92/snomed-ecl-engine
+workflow=EddieDavison92/snomed-ecl-engine/.github/workflows/release.yml
+gh attestation verify snomed-ecl-engine-v0.2.1-x86_64-unknown-linux-gnu-default.tar.gz   --repo EddieDavison92/snomed-ecl-engine --signer-workflow "$workflow"
+gh attestation verify oci://ghcr.io/eddiedavison92/snomed-ecl-engine:0.2.1   --repo EddieDavison92/snomed-ecl-engine --signer-workflow "$workflow"
 ```
 
 npm packages carry the equivalent provenance, which `npm audit signatures`
