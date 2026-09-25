@@ -64,6 +64,19 @@ on Debian or Ubuntu); [developer setup](docs/setup.md) covers the rest.
 
 </details>
 
+Release archives and the Docker image carry signed build attestations from
+0.2.1 on. To check that a download was built by this repository's release
+workflow:
+
+```sh
+workflow=EddieDavison92/snomed-ecl-engine/.github/workflows/release.yml
+gh attestation verify snomed-ecl-engine-v0.2.1-x86_64-unknown-linux-gnu-default.tar.gz   --repo EddieDavison92/snomed-ecl-engine --signer-workflow "$workflow"
+gh attestation verify oci://ghcr.io/eddiedavison92/snomed-ecl-engine:0.2.1   --repo EddieDavison92/snomed-ecl-engine --signer-workflow "$workflow"
+```
+
+npm packages carry the equivalent provenance, which `npm audit signatures`
+checks.
+
 The index format may change between releases without a migration: rebuild the
 index from your RF2 archive when you upgrade.
 
