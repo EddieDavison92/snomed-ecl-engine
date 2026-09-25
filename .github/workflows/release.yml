@@ -122,6 +122,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -130,6 +132,12 @@ jobs:
           merge-multiple: true
       - name: Checksums
         run: cd dist && sha256sum * > SHA256SUMS && cat SHA256SUMS
+      # Signs a record of the workflow and commit that built each archive, so a
+      # download can be traced here with `gh attestation verify`.
+      - uses: actions/attest-build-provenance@v4
+        if: env.PUBLISH == 'true'
+        with:
+          subject-checksums: dist/SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
           name: release
@@ -248,6 +256,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
     env:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
@@ -274,6 +284,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
       - uses: docker/build-push-action@v6
+        id: image
         with:
           context: .
           file: packaging/Dockerfile
@@ -286,3 +297,9 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.description=Evaluate SNOMED CT ECL against a local index
             org.opencontainers.image.licenses=MIT
+      - uses: actions/attest-build-provenance@v4
+        if: env.PUBLISH == 'true'
+        with:
+          subject-name: ghcr.io/eddiedavison92/snomed-ecl-engine
+          subject-digest: ${{ steps.image.outputs.digest }}
+          push-to-registry: true

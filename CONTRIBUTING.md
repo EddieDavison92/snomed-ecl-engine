@@ -57,7 +57,9 @@ and on npm for `snomed-ecl-engine` and its five platform packages. A new npm
 package must be published once by hand before a trusted publisher can be
 added. The tap needs `HOMEBREW_TAP_TOKEN`, with write access to
 `EddieDavison92/homebrew-tap`, and is skipped without it. A pull request that
-changes packaging runs the same builds without publishing.
+changes packaging runs the same builds without publishing. A release also
+attests every archive and the image with GitHub's build provenance, which
+needs no key.
 
 ## Data and licensing
 
