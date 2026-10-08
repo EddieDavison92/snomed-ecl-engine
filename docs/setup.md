@@ -65,13 +65,22 @@ and the mount fails.
 
 Use a release you are licensed to use; see the [README](../README.md#licence).
 The importer takes one self-contained Snapshot ZIP, and the UK Monolith Edition
-is the tested input. Keep archives under `data/`, which Git ignores.
+is the validated input. International imports are covered by synthetic tests;
+real-release validation (import, corpus and Snowstorm comparison) is pending.
+UK Clinical (TRUD item 101) and UK Drug (105) are not yet importable as standalone
+packages. Keep archives under `data/`, which Git ignores.
 
 In the UK, register with NHS England's [TRUD](https://isd.digital.nhs.uk/trud/)
 and subscribe to the SNOMED CT UK Monolith Edition, RF2: Snapshot. With
 `TRUD_API_KEY` set, `snomed-ecl-engine download --keep-archive` fetches and
 verifies the newest release, builds an index, and keeps the ZIP in the library's
-`downloads` folder. To download it yourself, check it before importing:
+`downloads` folder. For International, subscribe to TRUD item 4 and run
+`snomed-ecl-engine download international`. Users in other countries obtain it
+from SNOMED International's [MLDS](https://mlds.ihtsdotools.org/).
+TRUD item 4 is unverified until a live
+`snomed-ecl-engine download international --list` succeeds with a subscribed account.
+`download --edition URI` overrides the known item's expected edition module.
+To download an archive yourself, check it before importing:
 
 ```sh
 snomed-ecl-engine inspect data/rf2/ARCHIVE.zip

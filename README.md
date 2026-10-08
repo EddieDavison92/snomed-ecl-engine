@@ -83,7 +83,10 @@ index from your RF2 archive when you upgrade.
 ## Quick start
 
 You need a SNOMED CT RF2 Snapshot that you are licensed to use; see
-[licence](#licence). UK Monolith is the tested edition. In the UK, register with
+[licence](#licence). UK Monolith is the validated input. International imports
+are covered by synthetic tests; real-release validation (import, corpus and
+Snowstorm comparison) is pending. UK Clinical (TRUD item 101) and UK Drug (105)
+are not yet importable as standalone packages. In the UK, register with
 NHS England's [TRUD](https://isd.digital.nhs.uk/trud/), subscribe to the UK
 Monolith Snapshot and copy the API key from your account page:
 
@@ -97,10 +100,23 @@ snomed-ecl-engine search chronic kidney
 snomed-ecl-engine query
 ```
 
+For International, subscribe to TRUD item 4 and run
+`snomed-ecl-engine download international`. Users in other countries obtain it
+from SNOMED International's [MLDS](https://mlds.ihtsdotools.org/).
+TRUD item 4 is unverified until a live
+`snomed-ecl-engine download international --list` succeeds with a subscribed account.
+International indexes are named `int-YYYYMMDD` and resolve as `int`.
+`download --edition URI` overrides the item's expected edition module.
+
 To build from an archive you already have, give `add` the SHA-256 its
 distributor published. It checks the archive before reading anything; without
 `--sha256`, it shows the checksum and asks you to confirm it. A checksum of your
 own download shows it is intact, not where it came from.
+Without `--edition`, `add` uses a single candidate URI. With several candidates,
+it uses the one known edition module, UK (83821000000107) or International
+(900000000000207008), when that module is a dependency root, or when it is
+International and every root is an International module such as a map.
+Otherwise it lists the candidates and requires `--edition URI`.
 
 ```sh
 snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 SHA256_FROM_TRUD
@@ -240,7 +256,10 @@ variants bound the work a query may do. Build with `default-features = false`
 to leave out the RF2 importer.
 
 To embed the importer, use `ImportOptions::new(edition, expected_sha256)`.
-It selects the UK display refsets and leaves `source` absent. Override these
+It selects US English then GB English for the International edition module,
+and the UK display refsets for other editions, with FSNs as the fallback. The
+public `import::default_display_refsets(edition)` returns the ordered defaults
+for embedders. The constructor leaves `source` absent. Override these
 with `.with_display_refsets(refsets)` and `.with_source(source)`. The new public
 `source: Option<store::Source>` field means existing `ImportOptions` struct
 literals must add `source: None` or switch to the constructor.

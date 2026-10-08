@@ -13,6 +13,60 @@ pub const ENV_HOME: &str = "SNOMED_ECL_HOME";
 /// Editions with a short name. Any other edition is named by its module ID.
 const FAMILIES: &[(&str, &str)] = &[("83821000000107", "uk"), ("900000000000207008", "int")];
 
+pub fn edition_family(module: &str) -> Option<&'static str> {
+    FAMILIES
+        .iter()
+        .find(|(id, _)| *id == module)
+        .map(|(_, name)| *name)
+}
+
+/// Prefers the one known edition among the candidates when it is a dependency
+/// root, or when it is International and every root is an International module
+/// such as a map. A national package that carries International content must
+/// name its edition.
+#[cfg(feature = "import")]
+pub fn choose_local_edition(summary: &snomed_ecl_engine::import::ArchiveSummary) -> Result<&str> {
+    let module = |uri: &str| -> Option<String> {
+        let rest = uri.strip_prefix("http://snomed.info/sct/")?;
+        Some(rest.split_once("/version/")?.0.to_owned())
+    };
+    let known: Vec<_> = summary
+        .edition_uris
+        .iter()
+        .enumerate()
+        .filter_map(|(position, uri)| {
+            let module = module(uri)?;
+            edition_family(&module).map(|_| (position, module))
+        })
+        .collect();
+    if let [(position, known)] = known.as_slice() {
+        let roots = &summary.edition_uris[..summary.root_editions.min(summary.edition_uris.len())];
+        let international_maps = international_module(known)
+            && roots
+                .iter()
+                .all(|root| module(root).is_some_and(|m| international_module(&m)));
+        if *position < summary.root_editions || international_maps {
+            return summary.choose_edition(known.parse().ok());
+        }
+    }
+    if summary.edition_uris.len() == 1 {
+        return Ok(&summary.edition_uris[0]);
+    }
+    bail!(
+        "The archive does not name one edition. Candidates: {}. Choose one with --edition URI",
+        summary.edition_uris.join(", ")
+    )
+}
+
+/// Short-format SCTIDs, partition `00`, belong to the International release
+/// rather than to a national namespace.
+#[cfg(feature = "import")]
+fn international_module(sctid: &str) -> bool {
+    sctid.len() >= 6
+        && sctid.bytes().all(|b| b.is_ascii_digit())
+        && &sctid[sctid.len() - 3..sctid.len() - 1] == "00"
+}
+
 /// Where library indexes live: `SNOMED_ECL_HOME`, else the platform's data
 /// folder. Created when an index is first added.
 pub fn home() -> Result<PathBuf> {
@@ -48,10 +102,7 @@ pub fn edition_parts(edition: &str) -> Option<(String, String)> {
     if date.len() != 8 || !date.bytes().all(|b| b.is_ascii_digit()) {
         return None;
     }
-    let family = FAMILIES
-        .iter()
-        .find(|(id, _)| *id == module)
-        .map_or_else(|| module.to_owned(), |(_, name)| (*name).to_owned());
+    let family = edition_family(module).unwrap_or(module).to_owned();
     Some((family, date.to_owned()))
 }
 
@@ -201,11 +252,58 @@ pub fn resolve(reference: &str) -> Result<PathBuf> {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "import")]
+    #[test]
+    fn local_add_prefers_exactly_one_known_edition_candidate() {
+        use snomed_ecl_engine::import::ArchiveSummary;
+        let map = "http://snomed.info/sct/2000002/version/20260801";
+        let other = "http://snomed.info/sct/2000003/version/20260801";
+        let uk = "http://snomed.info/sct/83821000000107/version/20260801";
+        let international = "http://snomed.info/sct/900000000000207008/version/20260801";
+        let mut summary = ArchiveSummary {
+            sha256: String::new(),
+            bytes: 0,
+            effective_time: "20260801".into(),
+            edition_uris: vec![],
+            root_editions: 1,
+            required_files: vec![],
+            duplicate_files: vec![],
+            importable: true,
+        };
+        // International maps are roots that depend on the edition module.
+        summary.edition_uris = vec![map.into(), international.into()];
+        assert_eq!(choose_local_edition(&summary).unwrap(), international);
+        // A known root is chosen whatever else the package holds.
+        summary.edition_uris = vec![uk.into(), map.into()];
+        assert_eq!(choose_local_edition(&summary).unwrap(), uk);
+        // A national root over International content, or UK as a non-root,
+        // needs an explicit edition.
+        let national = "http://snomed.info/sct/731000124108/version/20260801";
+        for candidates in [
+            vec![map, other],
+            vec![map, uk, international],
+            vec![],
+            vec![national, international],
+            vec![map, uk],
+        ] {
+            summary.edition_uris = candidates.iter().map(|uri| (*uri).into()).collect();
+            let error = choose_local_edition(&summary).unwrap_err().to_string();
+            assert!(error.contains("--edition URI"), "{error}");
+            for uri in candidates {
+                assert!(error.contains(uri), "{error}");
+            }
+        }
+        summary.edition_uris = vec![other.into()];
+        assert_eq!(choose_local_edition(&summary).unwrap(), other);
+    }
+
     #[test]
     fn editions_have_short_names_and_dates() {
         let uk = "http://snomed.info/sct/83821000000107/version/20260826";
         assert_eq!(edition_parts(uk), Some(("uk".into(), "20260826".into())));
         assert_eq!(default_name(uk).as_deref(), Some("uk-20260826"));
+        let international = "http://snomed.info/sct/900000000000207008/version/20260801";
+        assert_eq!(default_name(international).as_deref(), Some("int-20260801"));
         let other = "http://snomed.info/sct/11000146104/version/20260331";
         assert_eq!(default_name(other).as_deref(), Some("11000146104-20260331"));
         assert_eq!(edition_parts("http://snomed.info/sct/1/version/2026"), None);
@@ -308,6 +406,24 @@ mod tests {
             &"x".repeat(65),
         ] {
             assert!(check_name(bad).is_err(), "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn international_index_resolves_by_short_name() {
+        let edition = "http://snomed.info/sct/900000000000207008/version/20260801";
+        let name = default_name(edition).unwrap();
+        assert_eq!(name, "int-20260801");
+        let path = PathBuf::from(format!("indexes/{name}.ecl"));
+        let entries = [Entry {
+            name,
+            path: path.clone(),
+            release: edition_parts(edition),
+            source_release_date: None,
+            modified: None,
+        }];
+        for reference in ["int", "int-20260801", "int@2026-08"] {
+            assert_eq!(find_among(reference, &entries).unwrap(), Some(path.clone()));
         }
     }
 }

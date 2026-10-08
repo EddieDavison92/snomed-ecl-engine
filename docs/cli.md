@@ -16,8 +16,20 @@ snomed-ecl-engine expand '<< 404684003' --count
 
 `download` fetches the newest UK Monolith Snapshot from NHS England's
 [TRUD](https://isd.digital.nhs.uk/trud/), checks it against the SHA-256 TRUD
-publishes, and adds it as below. Set `TRUD_API_KEY` to the API key on your TRUD
-account page first; the account must be subscribed to the item. `--list` shows
+publishes, and adds it as below. `download international` selects International
+(TRUD item 4); UK users must subscribe to that item. Other countries obtain
+International from [MLDS](https://mlds.ihtsdotools.org/) and use `add`.
+TRUD item 4 is unverified until a live
+`snomed-ecl-engine download international --list` succeeds with a subscribed account.
+International is covered by synthetic tests; real-release import, corpus and
+Snowstorm comparison validation is pending. UK Clinical (101) and UK Drug (105)
+are not yet importable as standalone packages.
+
+Known items select their expected edition module among the archive's candidate
+URIs. `--edition URI` overrides it; if the expected module is absent, the command
+lists the candidates and asks for an explicit URI. Numeric items are also
+accepted. Set `TRUD_API_KEY` to the API key on your TRUD account page first;
+the account must be subscribed to the item. `--list` shows
 the releases TRUD holds and `--release ID` fetches a specific one. With
 `--release`, only that release's metadata is validated; invalid metadata for
 other releases does not block it. Without `--release`, the newest release
@@ -32,7 +44,12 @@ in the library folder and selects it. It checks the archive against the
 checksum your distributor published: give it with `--sha256`, or confirm the one
 it shows when asked. The index is named by edition and release date, such as
 `uk-20260826`; `--name` chooses another, and `--edition` names the edition when
-the archive does not.
+the archive does not. Without `--edition` or a recorded download source, `add`
+uses a single candidate URI. With several candidates, it uses the one known
+edition module, UK (83821000000107) or International (900000000000207008), when
+that module is a dependency root, or when it is International and every root is
+an International module such as a map. A national package that carries
+International content must name its edition. Otherwise it lists the candidates and requires `--edition URI`.
 
 `list` shows the library's indexes by name and release, then any other index
 directly inside the working directory or `data/`, or inside the folders given.
@@ -42,8 +59,8 @@ question in scripts.
 
 Anywhere an index is expected, give a path, a library name such as
 `uk-20260826`, a release such as `uk@2026-08` or `uk@2026-08-26`, or an edition
-alone, such as `uk`, for its latest release. A partial date picks the latest
-release that matches it. When indexes have the same edition date, the later
+alone, such as `uk` or `int` (International), for its latest release. A partial
+date picks the latest release that matches it. When indexes have the same edition date, the later
 source release date wins, then the later file modification time, then the
 lexicographically smaller name. This lets `uk`, `uk@latest` and `uk@2026-09`
 select a re-issued archive even when its edition date has not changed.
@@ -193,12 +210,20 @@ compared as concepts.
 
 `inspect ARCHIVE` reads an archive's release metadata without importing it: the
 SHA-256, the release date, which required Snapshot files are present, and the
-edition URIs its module dependencies declare. It ends with the `import` command
-for that archive.
+edition URIs its module dependencies declare. For an importable archive, it ends
+with the `import` command.
 
-The edition module is the root of the package's dependency graph. A well-formed
-package has exactly one root; `inspect` says so when it does not, instead of
-guessing.
+Dependency roots are listed first, followed by the modules they depend on. A
+map module can be a root while the edition module is not; `inspect` reports all
+candidates. Its example import command uses local `add`'s selection rule, or
+an `EDITION_URI` placeholder when the choice is ambiguous. Known downloads and
+local `add` choose the edition as described above.
+
+Duplicate Snapshot files are reported with `importable: false` and a
+`duplicate_files` list of file kinds and matching archive paths. Import still
+rejects merged packages. Duplicate package metadata is also listed; the release
+date is empty and no edition URIs are offered when there is no single metadata
+file to read.
 
 The checksum shows a download is intact, not where it came from, so compare it
 with the value the distributor published. `import` verifies it before reading

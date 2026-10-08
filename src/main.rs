@@ -1,6 +1,8 @@
 use anyhow::{bail, ensure, Context, Result};
 #[cfg(feature = "import")]
-use snomed_ecl_engine::import::{import_snapshot_with_progress, ImportOptions, UK_DISPLAY_REFSETS};
+use snomed_ecl_engine::import::{
+    default_display_refsets, import_snapshot_with_progress, ImportOptions,
+};
 use snomed_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
 use snomed_ecl_engine::{ecl, eval};
 use std::io::{self, BufRead, Read, Write};
@@ -143,13 +145,16 @@ fn add_release(
         "{} is not a self-contained RF2 Snapshot; `inspect` shows what is missing",
         archive.display()
     );
+    #[cfg(feature = "download")]
+    let expected_module = source
+        .as_ref()
+        .and_then(|source| download::expected_module(source.item));
+    #[cfg(not(feature = "download"))]
+    let expected_module = None;
     let edition = match edition {
         Some(uri) => uri,
-        None if summary.root_editions == 1 => summary.edition_uris[0].clone(),
-        None => bail!(
-            "The archive does not name one edition; choose one with --edition URI. \
-             `inspect` lists the candidates"
-        ),
+        None if source.is_none() => library::choose_local_edition(&summary)?.to_owned(),
+        None => summary.choose_edition(expected_module)?.to_owned(),
     };
     // A checksum of the download shows it is intact, not where it came from,
     // so it must match the distributor's published value.
@@ -398,14 +403,23 @@ fn run() -> Result<()> {
             for (label, found) in &summary.required_files {
                 match found {
                     Some(name) => println!("  found     {}", presentation::clean(name)),
+                    None if summary
+                        .duplicate_files
+                        .iter()
+                        .any(|(kind, _)| kind == label) => {}
                     None => println!("  MISSING   {label}"),
+                }
+            }
+            for (_, names) in &summary.duplicate_files {
+                for name in names {
+                    println!("  DUPLICATE {}", presentation::clean(name));
                 }
             }
             if !summary.importable {
                 println!();
-                println!("  Required Snapshot files are missing. The importer takes one");
+                println!("  Required files are missing or duplicated. The importer takes one");
                 println!("  self-contained Snapshot package; Full, Delta and split");
-                println!("  extensions are not supported.");
+                println!("  extensions and merged packages are not supported.");
                 return Ok(());
             }
             println!();
@@ -415,7 +429,8 @@ fn run() -> Result<()> {
                 return Ok(());
             }
             match summary.root_editions {
-                1 => println!("  Edition URI"),
+                1 if summary.edition_uris.len() == 1 => println!("  Edition URI"),
+                1 => println!("  Edition URI candidates (1 root module)"),
                 0 => println!("  Edition URI candidates (no single root module)"),
                 n => println!("  Edition URI candidates ({n} root modules)"),
             }
@@ -430,7 +445,7 @@ fn run() -> Result<()> {
             if summary.edition_uris.len() > summary.root_editions.max(1) {
                 println!();
                 println!("  Lines marked - are modules another module in this package depends");
-                println!("  on, so they are components of the edition rather than the edition.");
+                println!("  on. An edition module can also appear among these candidates.");
             }
             println!();
             println!("  Check the SHA-256 above against the value the release distributor");
@@ -441,7 +456,8 @@ fn run() -> Result<()> {
                 "    snomed-ecl-engine import {} INDEX_DIRECTORY \\",
                 presentation::clean(&args[1])
             );
-            println!("      {} \\", presentation::clean(&summary.edition_uris[0]));
+            let edition = library::choose_local_edition(&summary).unwrap_or("EDITION_URI");
+            println!("      {} \\", presentation::clean(edition));
             println!("      {}", summary.sha256);
         }
         "query" => {
@@ -734,9 +750,10 @@ fn run() -> Result<()> {
             let keep = take_flag(&mut args, "--keep-archive");
             let wanted = take_option(&mut args, "--release")?;
             let name = take_option(&mut args, "--name")?;
+            let edition = take_option(&mut args, "--edition")?;
             ensure!(
                 args.len() <= 2,
-                "Usage: download [ITEM] [--list | --release ID] [--name NAME] [--keep-archive]"
+                "Usage: download [ITEM] [--list | --release ID] [--name NAME] [--edition URI] [--keep-archive]"
             );
             let item = download::item(args.get(1).map_or("uk-monolith", String::as_str))?;
             if list {
@@ -790,7 +807,7 @@ fn run() -> Result<()> {
                 &archive,
                 Some(release.archive_file_sha256.clone()),
                 name,
-                None,
+                edition,
                 Some(snomed_ecl_engine::store::Source {
                     distributor: "trud".into(),
                     item,
@@ -854,7 +871,7 @@ fn run() -> Result<()> {
                     .map(str::parse)
                     .collect::<Result<Vec<_>, _>>()?
             } else {
-                UK_DISPLAY_REFSETS.to_vec()
+                default_display_refsets(&args[3]).to_vec()
             };
             let start = Instant::now();
             let mut stage = 0;
