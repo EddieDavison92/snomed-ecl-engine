@@ -58,7 +58,7 @@ pub struct Assessment<'a> {
 }
 
 /// Releases are newest first. Compare against the most recent indexed release,
-/// including a source ID whose archive has since been replaced by TRUD.
+/// including a source ID or name whose archive has since been replaced by TRUD.
 pub fn assess<'a>(item: u32, releases: &'a [Release], indexed: &'a [Indexed]) -> Assessment<'a> {
     let indexed = indexed.iter().filter(|index| {
         index
@@ -68,7 +68,7 @@ pub fn assess<'a>(item: u32, releases: &'a [Release], indexed: &'a [Indexed]) ->
     });
     let latest = releases.first();
     let matched = releases.iter().enumerate().find_map(|(position, release)| {
-        // An exact archive match takes precedence over a replaced source ID.
+        // An exact archive match takes precedence over a replaced source ID or name.
         indexed
             .clone()
             .find(|index| {
@@ -78,10 +78,11 @@ pub fn assess<'a>(item: u32, releases: &'a [Release], indexed: &'a [Indexed]) ->
             })
             .or_else(|| {
                 indexed.clone().find(|index| {
-                    index
-                        .source
-                        .as_ref()
-                        .is_some_and(|source| position == 0 && source.release_id == release.id)
+                    index.source.as_ref().is_some_and(|source| {
+                        position == 0
+                            && (source.release_id == release.id
+                                || source.release_name == release.name)
+                    })
                 })
             })
             .map(|index| (position, release, index))
@@ -175,14 +176,17 @@ pub fn suggested_name(
     })?;
     let date = archive_date(&latest.id).or_else(|| archive_date(&latest.archive_file_name))?;
     let base = format!("{family}-{date}");
-    Some(if names.contains(&base) {
-        format!(
-            "{base}-{}",
-            latest.archive_file_sha256.get(..8)?.to_ascii_lowercase()
-        )
-    } else {
-        base
-    })
+    if !names.contains(&base) {
+        return Some(base);
+    }
+    let hashed = format!(
+        "{base}-{}",
+        latest.archive_file_sha256.get(..8)?.to_ascii_lowercase()
+    );
+    // Counting up keeps the name free even when an earlier suggestion is taken.
+    std::iter::once(hashed.clone())
+        .chain((2..).map(|n| format!("{hashed}-{n}")))
+        .find(|name| !names.contains(name))
 }
 
 fn shell_quote(value: &str) -> String {
@@ -557,6 +561,11 @@ mod tests {
         let assessment = assess(1799, &releases, &indexes);
         assert_eq!(assessment.status, Status::Reissued);
         outputs(&assessment, &[]);
+        // A replacement under a new ID keeps the release name.
+        let mut index = indexed(&releases[0], true);
+        index.archive_sha256 = "d".repeat(64);
+        index.source.as_mut().unwrap().release_id = "synthetic_replaced.zip".into();
+        assert_eq!(assess(1799, &releases, &[index]).status, Status::Reissued);
         // An ID for an older release is insufficient to claim its hash matches.
         let mut index = indexed(&releases[1], true);
         index.archive_sha256 = "d".repeat(64);
@@ -703,6 +712,11 @@ mod tests {
         assert_eq!(
             suggested_name(1799, &releases[0], None, &["uk-20260923".into()]).as_deref(),
             Some("uk-20260923-9f8e7d6c")
+        );
+        let taken = ["uk-20260923".into(), "uk-20260923-9f8e7d6c".into()];
+        assert_eq!(
+            suggested_name(1799, &releases[0], None, &taken).as_deref(),
+            Some("uk-20260923-9f8e7d6c-2")
         );
         assert_eq!(suggested_name(101, &releases[0], None, &[]), None);
         releases[0].id = "synthetic_123_more_20261101000001Z.zip".into();
