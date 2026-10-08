@@ -91,14 +91,21 @@ NHS England's [TRUD](https://isd.digital.nhs.uk/trud/), subscribe to the UK
 Monolith Snapshot and copy the API key from your account page:
 
 ```sh
-# Download the newest release, check it, build an index and select it.
-export TRUD_API_KEY=...
+# Save the key once, in the system's credential store.
+snomed-ecl-engine login
+# Choose an edition and release, then download, check, build and select it.
 snomed-ecl-engine download
 
 snomed-ecl-engine expand '<< 195967001 |Asthma|' --count
 snomed-ecl-engine search chronic kidney
 snomed-ecl-engine query
 ```
+
+`login` keeps the key in Windows Credential Manager, the macOS Keychain or the
+Secret Service, and checks it with TRUD before saving it. `TRUD_API_KEY`
+overrides it, for CI and containers without a credential store. At a terminal,
+`download` alone shows menus of editions and releases and marks those already
+indexed; picking one you have selects it instead.
 
 For International, subscribe to TRUD item 4 and run
 `snomed-ecl-engine download international`. Users in other countries obtain it
@@ -123,14 +130,18 @@ snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 SHA256_FROM_
 ```
 
 `list`, `use` and `remove` manage the indexes you build, by name
-(`uk-20260826`) or release (`uk@2026-08`, or `uk` for the latest).
+(`uk-20260826`) or release (`uk@2026-08`, or `uk` for the latest). `use` alone,
+at a terminal, picks from a menu.
 
 ## Keeping up to date
 
-With `TRUD_API_KEY` set, run `snomed-ecl-engine updates` to compare library
-archives with TRUD's newest releases. It reports whether each item is current,
-behind, reissued or unknown, and prints an exact download command when needed.
-Re-issues are detected by SHA-256 even when the edition date stays the same.
+Run `snomed-ecl-engine updates` to compare library archives with TRUD's newest
+releases. It reports whether each item is current, behind, reissued or unknown,
+and prints an exact download command when needed. Re-issues are detected by
+SHA-256 even when the edition date stays the same. `updates --apply` downloads
+each item that is behind or reissued after asking, then offers to remove an
+index whose archive TRUD replaced; `--yes` skips the download question but never
+removes anything.
 
 Use `--index PATH` to check an index outside the library, and `--json` for one
 JSON line per item. `--exit-code` exits 3 for behind or reissued, 4 for unknown

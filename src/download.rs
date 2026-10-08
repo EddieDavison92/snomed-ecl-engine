@@ -44,7 +44,7 @@ pub fn expected_module(number: u32) -> Option<u64> {
         .map(|item| item.edition_module)
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Release {
     pub id: String,
@@ -78,18 +78,45 @@ pub fn item(name: &str) -> Result<u32> {
     })
 }
 
+/// The TRUD API key: `TRUD_API_KEY`, else the key saved by `login`.
 pub fn key() -> Result<String> {
+    environment_key()
+        .or_else(crate::credentials::saved)
+        .with_context(|| {
+            format!(
+                "No TRUD API key. Run `snomed-ecl-engine login` to save one, or set \
+                 {ENV_KEY}. Register at https://isd.digital.nhs.uk/trud/, subscribe to \
+                 the item, and copy the key from your account page"
+            )
+        })
+}
+
+pub fn environment_key() -> Option<String> {
     std::env::var(ENV_KEY)
         .ok()
         .map(|key| key.trim().to_owned())
         .filter(|key| !key.is_empty())
-        .with_context(|| {
-            format!(
-                "Set {ENV_KEY} to your TRUD API key. Register at \
-                 https://isd.digital.nhs.uk/trud/, subscribe to the item, and copy the key \
-                 from your account page"
-            )
-        })
+}
+
+/// Asks TRUD for the item's newest release with this key, so `login` can say
+/// whether TRUD accepts it before it is saved.
+pub fn check_key(item: u32, key: &str) -> Result<()> {
+    let body = lookup(item, true, key).map_err(|error| {
+        let text = format!("{error:#}");
+        match ["400", "401", "403", "404"]
+            .iter()
+            .find(|status| text.contains(&format!("http status: {status}")))
+        {
+            Some(status) => anyhow!(
+                "TRUD answered HTTP {status}: the key is wrong, or the account is not \
+                 subscribed to this item"
+            ),
+            None => anyhow!("{}", redact(text, key)),
+        }
+    })?;
+    parse_releases(&body, true, key)
+        .map(|_| ())
+        .map_err(|error| anyhow!("{}", redact(format!("{error:#}"), key)))
 }
 
 /// An HTTP agent that gives up on a stalled server. Connecting and the first
