@@ -13,9 +13,36 @@ snomed-ecl-engine import ARCHIVE.zip INDEX_DIR EDITION_URI SHA256
 
 The importer takes **one self-contained Snapshot ZIP** containing concepts,
 inferred relationships, concrete relationships, descriptions, language refsets
-and module dependencies. UK Monolith is the validated input. Full, Delta, split
-extensions, merged packages and incremental updates are not supported, and are
-rejected rather than partially read.
+and module dependencies. UK Monolith is the validated input. International
+imports, packing, verification and queries are covered by synthetic tests;
+real-release validation (import, corpus and Snowstorm comparison) is pending.
+A package may contain Full files alongside Snapshot files; Full files are ignored.
+Full-only, Delta, split extensions, merged packages and incremental updates are
+not supported. UK Clinical (TRUD item 101) and UK Drug (105) are not yet importable
+as standalone packages. Missing dependency module concepts are reported by ID:
+an extension-only package needs the editions it depends on.
+
+UK users with a TRUD account subscribed to item 4 can run
+`snomed-ecl-engine download international`. Users in other countries obtain
+International from SNOMED International's [MLDS](https://mlds.ihtsdotools.org/)
+and use `add` with the distributor's checksum.
+
+Downloads select the known item's expected edition module, even when the archive
+has several candidate roots. `download --edition URI` overrides this choice;
+unknown numeric items need a single root or an explicit URI. International
+indexes are named `int-YYYYMMDD` and resolve as `int`.
+Local `add` without `--edition` uses a single candidate URI, or exactly one known
+UK or International edition module among several candidates, including non-root
+modules. Otherwise it lists the candidates and requires `--edition URI`.
+`inspect` reports duplicate Snapshot files with `importable: false` and lists
+their paths in `duplicate_files`; import rejects merged packages.
+
+Display defaults depend on the edition module: International uses US English
+(900000000000509007), then GB English (900000000000508004); other editions use
+UK Clinical, UK Drug and GB English (999001261000000100, 999000691000001104,
+900000000000508004). FSNs are the fallback after these preferred synonyms.
+`import` accepts an explicit ordered list as its final `DISPLAY_REFSET_IDS`
+argument.
 
 Import verifies the archive checksum before reading content, then validates
 unique concepts, active relationship IDs, concept references, dates, modifiers,

@@ -14,11 +14,35 @@ pub const ENV_KEY: &str = "TRUD_API_KEY";
 const API: &str = "https://isd.digital.nhs.uk/trud/api/v1/keys";
 
 /// TRUD items known by name. Any other item is given by its number.
-pub const ITEMS: &[(&str, u32, &str)] = &[(
-    "uk-monolith",
-    1799,
-    "SNOMED CT UK Monolith Edition, RF2: Snapshot",
-)];
+pub struct Item {
+    pub name: &'static str,
+    pub number: u32,
+    pub description: &'static str,
+    pub edition_module: u64,
+}
+
+pub const ITEMS: &[Item] = &[
+    Item {
+        name: "uk-monolith",
+        number: 1799,
+        description: "SNOMED CT UK Monolith Edition, RF2: Snapshot",
+        edition_module: 83821000000107,
+    },
+    Item {
+        name: "international",
+        number: 4,
+        description: "SNOMED CT International Edition, RF2",
+        edition_module: 900000000000207008,
+    },
+];
+
+/// Known edition module, including when a known item was given by number.
+pub fn expected_module(number: u32) -> Option<u64> {
+    ITEMS
+        .iter()
+        .find(|item| item.number == number)
+        .map(|item| item.edition_module)
+}
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,11 +63,14 @@ struct Releases<T = Release> {
 
 /// The TRUD item number for a name such as `uk-monolith`, or a number.
 pub fn item(name: &str) -> Result<u32> {
-    if let Some((_, number, _)) = ITEMS.iter().find(|(known, _, _)| *known == name) {
-        return Ok(*number);
+    if let Some(item) = ITEMS.iter().find(|item| item.name == name) {
+        return Ok(item.number);
     }
     name.parse().map_err(|_| {
-        let known: Vec<_> = ITEMS.iter().map(|(known, _, _)| *known).collect();
+        let known: Vec<_> = ITEMS
+            .iter()
+            .map(|item| format!("{} ({})", item.name, item.description))
+            .collect();
         anyhow!(
             "Unknown TRUD item {name}. Give an item number, or one of: {}",
             known.join(", ")
@@ -355,7 +382,12 @@ mod tests {
     #[test]
     fn items_resolve_by_name_or_number() {
         assert_eq!(item("uk-monolith").unwrap(), 1799);
+        assert_eq!(item("international").unwrap(), 4);
+        assert_eq!(item("4").unwrap(), 4);
         assert_eq!(item("101").unwrap(), 101);
+        assert_eq!(expected_module(1799), Some(83821000000107));
+        assert_eq!(expected_module(4), Some(900000000000207008));
+        assert_eq!(expected_module(101), None);
         assert!(item("uk-drug-extension").is_err());
     }
 

@@ -148,12 +148,12 @@ pub fn assess<'a>(item: u32, releases: &'a [Release], indexed: &'a [Indexed]) ->
 fn item_name(item: u32) -> Option<&'static str> {
     download::ITEMS
         .iter()
-        .find(|(_, number, _)| *number == item)
-        .map(|(name, _, _)| *name)
+        .find(|known| known.number == item)
+        .map(|known| known.name)
 }
 
 fn item_family(item: u32) -> Option<&'static str> {
-    item_name(item).and_then(|name| name.strip_suffix("-monolith"))
+    library::edition_family(&download::expected_module(item)?.to_string())
 }
 
 /// The first eight digits following an underscore, including timestamp names.
@@ -453,6 +453,21 @@ mod tests {
 
     fn releases() -> Vec<Release> {
         download::parse_releases(RECORDED, true, KEY).unwrap().0
+    }
+
+    #[test]
+    fn international_updates_suggest_the_known_item_and_short_index_name() {
+        assert_eq!(item_name(4), Some("international"));
+        assert_eq!(item_family(4), Some("int"));
+        let releases = releases();
+        let assessment = assess(4, &releases, &[]);
+        assert_eq!(
+            suggested_name(4, &releases[0], None, &[]).as_deref(),
+            Some("int-20260923")
+        );
+        let command = suggested_command(4, &assessment, &[]).unwrap();
+        assert!(command.starts_with("snomed-ecl-engine download international --release "));
+        assert!(command.ends_with(" --name int-20260923"));
     }
 
     fn indexed(release: &Release, source: bool) -> Indexed {

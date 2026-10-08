@@ -3,7 +3,7 @@ use crate::store::{
     Source, FORMAT,
 };
 use anyhow::{bail, ensure, Context, Result};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
@@ -24,6 +24,21 @@ const FSN: u64 = 900000000000003001;
 const PREFERRED: u64 = 900000000000548007;
 pub const UK_DISPLAY_REFSETS: &[u64] =
     &[999001261000000100, 999000691000001104, 900000000000508004];
+pub const INTERNATIONAL_DISPLAY_REFSETS: &[u64] = &[900000000000509007, 900000000000508004];
+
+/// Ordered language refsets for display labels. International uses US English,
+/// then GB English; other editions use the UK defaults. FSNs are the fallback.
+pub fn default_display_refsets(edition: &str) -> &'static [u64] {
+    if edition
+        .strip_prefix("http://snomed.info/sct/")
+        .and_then(|rest| rest.split_once("/version/"))
+        .is_some_and(|(module, _)| module == "900000000000207008")
+    {
+        INTERNATIONAL_DISPLAY_REFSETS
+    } else {
+        UK_DISPLAY_REFSETS
+    }
+}
 
 pub struct ImportOptions {
     pub edition: String,
@@ -33,12 +48,14 @@ pub struct ImportOptions {
 }
 
 impl ImportOptions {
-    /// Uses the UK display refsets, with no recorded distributor source.
+    /// Uses the edition's display refsets, with no recorded distributor source.
     pub fn new(edition: impl Into<String>, expected_sha256: impl Into<String>) -> Self {
+        let edition = edition.into();
+        let display_refsets = default_display_refsets(&edition).to_vec();
         Self {
-            edition: edition.into(),
+            edition,
             expected_sha256: expected_sha256.into(),
-            display_refsets: UK_DISPLAY_REFSETS.to_vec(),
+            display_refsets,
             source: None,
         }
     }
@@ -181,15 +198,12 @@ pub fn import_snapshot_with_progress(
             .copied()
             .context("Referenced concept is missing from package")
     };
-    let mut store = NumericStore::default();
-    for (sctid, module, effective, flags) in concepts {
-        store.ids.push(sctid);
-        store.modules.push(resolve(module)?);
-        store.effective_times.push(effective);
-        store.flags.push(flags);
-    }
     let mut dependencies = Vec::new();
-    resolve(edition_module)?;
+    let mut missing_modules: BTreeSet<_> = concepts
+        .iter()
+        .map(|r| r.1)
+        .filter(|module| !lookup.contains_key(module))
+        .collect();
     rows(
         &mut archive,
         &dependencies_file,
@@ -209,8 +223,11 @@ pub fn import_snapshot_with_progress(
             }
             let source = id(r[3])?;
             let target = id(r[5])?;
-            resolve(source)?;
-            resolve(target)?;
+            for module in [source, target] {
+                if !lookup.contains_key(&module) {
+                    missing_modules.insert(module);
+                }
+            }
             ensure!(
                 date(r[6])? <= edition_date && date(r[7])? <= edition_date,
                 "Module dependency is newer than edition"
@@ -220,12 +237,30 @@ pub fn import_snapshot_with_progress(
         },
     )?;
     ensure!(
+        missing_modules.is_empty(),
+        "Missing dependency module concepts: {}. The package is not self-contained; \
+         an extension-only package such as the UK Drug Extension needs the editions it depends on",
+        missing_modules
+            .iter()
+            .map(u64::to_string)
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+    resolve(edition_module)?;
+    ensure!(
         dependencies
             .iter()
             .any(|d| d["moduleId"].as_str() == Some(edition_parts[4])
                 && d["sourceEffectiveTime"] == edition_parts[6]),
         "Edition composition dependency is absent"
     );
+    let mut store = NumericStore::default();
+    for (sctid, module, effective, flags) in concepts {
+        store.ids.push(sctid);
+        store.modules.push(resolve(module)?);
+        store.effective_times.push(effective);
+        store.flags.push(flags);
+    }
 
     progress("Reading inferred relationships");
     let mut parents = Vec::new();
@@ -535,7 +570,16 @@ pub fn import_snapshot_with_progress(
 }
 
 fn snapshot_file(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Result<String> {
-    let names: Vec<_> = archive
+    let names = snapshot_files(archive, prefix);
+    ensure!(
+        names.len() == 1,
+        "Expected one Snapshot file for {prefix}; merged packages are not supported"
+    );
+    Ok(names.into_iter().next().unwrap())
+}
+
+fn snapshot_files(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Vec<String> {
+    let mut names: Vec<_> = archive
         .file_names()
         .filter(|name| {
             name.contains("/Snapshot/")
@@ -545,12 +589,10 @@ fn snapshot_file(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Result<
                     .next()
                     .is_some_and(|file| file.starts_with(prefix))
         })
+        .map(str::to_owned)
         .collect();
-    ensure!(
-        names.len() == 1,
-        "Expected one Snapshot file for {prefix}; merged packages are not supported"
-    );
-    Ok(names[0].to_owned())
+    names.sort();
+    names
 }
 
 fn rows(
@@ -632,13 +674,43 @@ pub struct ArchiveSummary {
     pub bytes: u64,
     pub effective_time: String,
     /// Edition URIs the archive's own module dependencies support, the roots
-    /// first. A module that another module depends on is not the edition.
+    /// first. A root may be an edition or a dependent module that nothing else
+    /// in this package depends on.
     pub edition_uris: Vec<String>,
-    /// How many of those are roots. Exactly one means the edition is unambiguous.
+    /// Number of roots. A single root is the default when no edition module is known.
     pub root_editions: usize,
     /// Snapshot files the importer requires, and whether each was found.
     pub required_files: Vec<(String, Option<String>)>,
+    /// File kinds with multiple matches, and every matching archive path.
+    pub duplicate_files: Vec<(String, Vec<String>)>,
     pub importable: bool,
+}
+
+impl ArchiveSummary {
+    /// Chooses the expected edition module among all candidates, or the single
+    /// root when no module is known. An explicit URI can bypass this choice.
+    pub fn choose_edition(&self, expected_module: Option<u64>) -> Result<&str> {
+        if let Some(module) = expected_module {
+            let expected = format!(
+                "http://snomed.info/sct/{module}/version/{}",
+                self.effective_time
+            );
+            if let Some(uri) = self.edition_uris.iter().find(|uri| **uri == expected) {
+                return Ok(uri);
+            }
+            bail!(
+                "The archive has no edition URI for expected module {module}. Candidates: {}. Choose one with --edition URI",
+                self.edition_uris.join(", ")
+            );
+        }
+        if self.root_editions == 1 {
+            return Ok(&self.edition_uris[0]);
+        }
+        bail!(
+            "The archive does not name one edition. Candidates: {}. Choose one with --edition URI",
+            self.edition_uris.join(", ")
+        )
+    }
 }
 
 /// Reads an archive's declared release metadata so the caller can check it
@@ -656,32 +728,51 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
         ("language refset", "der2_cRefset_Language"),
         ("module dependencies", "der2_ssRefset_ModuleDependency"),
     ];
+    let mut duplicate_files = Vec::new();
     let required_files: Vec<_> = required
         .iter()
-        .map(|(label, prefix)| ((*label).to_owned(), snapshot_file(&archive, prefix).ok()))
+        .map(|(label, prefix)| {
+            let names = snapshot_files(&archive, prefix);
+            let found = if names.len() == 1 {
+                names.into_iter().next()
+            } else {
+                if names.len() > 1 {
+                    duplicate_files.push(((*label).to_owned(), names));
+                }
+                None
+            };
+            ((*label).to_owned(), found)
+        })
         .collect();
-    let importable = required_files.iter().all(|(_, found)| found.is_some());
 
-    let metadata_files: Vec<_> = archive
+    let mut metadata_files: Vec<_> = archive
         .file_names()
         .filter(|n| n.ends_with("/release_package_information.json"))
         .map(str::to_owned)
         .collect();
     ensure!(
-        metadata_files.len() == 1,
+        !metadata_files.is_empty(),
         "One package metadata file is required; this archive has {}",
         metadata_files.len()
     );
-    let mut metadata_text = String::new();
-    archive
-        .by_name(&metadata_files[0])?
-        .take(1024 * 1024)
-        .read_to_string(&mut metadata_text)?;
-    let package: serde_json::Value = serde_json::from_str(&metadata_text)?;
-    let effective_time = package["effectiveTime"]
-        .as_str()
-        .context("Package metadata has no effectiveTime")?
-        .to_owned();
+    let effective_time = if metadata_files.len() == 1 {
+        let mut metadata_text = String::new();
+        archive
+            .by_name(&metadata_files[0])?
+            .take(1024 * 1024)
+            .read_to_string(&mut metadata_text)?;
+        let package: serde_json::Value = serde_json::from_str(&metadata_text)?;
+        package["effectiveTime"]
+            .as_str()
+            .context("Package metadata has no effectiveTime")?
+            .to_owned()
+    } else {
+        metadata_files.sort();
+        duplicate_files.push(("package metadata".into(), metadata_files));
+        String::new()
+    };
+    let importable =
+        required_files.iter().all(|(_, found)| found.is_some()) && duplicate_files.is_empty();
 
     // The importer requires a module whose own dependency row carries the
     // package date, so those modules are the edition URIs it would accept.
@@ -691,6 +782,7 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
         .iter()
         .find(|(label, _)| label == "module dependencies")
         .map(|(_, found)| found.clone())
+        .filter(|_| !effective_time.is_empty())
     {
         rows(
             &mut archive,
@@ -720,8 +812,8 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
         )?;
     }
     modules.sort();
-    // The edition module is the root of the package's dependency graph: every
-    // other module is depended on by something inside the package.
+    // Roots are candidates, not proof of an edition: a map module can also be
+    // a root when nothing inside the package depends on it.
     let (roots, rest): (Vec<_>, Vec<_>) = modules
         .into_iter()
         .partition(|module| !depended_on.contains(module));
@@ -737,6 +829,77 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
         bytes,
         effective_time,
         required_files,
+        duplicate_files,
         importable,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display_defaults_follow_the_edition_module() {
+        let international = "http://snomed.info/sct/900000000000207008/version/20260801";
+        assert_eq!(
+            default_display_refsets(international),
+            INTERNATIONAL_DISPLAY_REFSETS
+        );
+        for edition in [
+            "http://snomed.info/sct/83821000000107/version/20260826",
+            "http://snomed.info/sct/1000001/version/20260801",
+            "http://snomed.info/sct/9000000000002070080/version/20260801",
+        ] {
+            assert_eq!(default_display_refsets(edition), UK_DISPLAY_REFSETS);
+        }
+        assert_eq!(
+            ImportOptions::new(international, "a".repeat(64)).display_refsets,
+            INTERNATIONAL_DISPLAY_REFSETS
+        );
+        assert_eq!(
+            ImportOptions::new(international, "a".repeat(64))
+                .with_display_refsets(vec![1])
+                .display_refsets,
+            [1]
+        );
+    }
+
+    #[test]
+    fn expected_module_selects_among_all_candidates_and_never_guesses() {
+        let international = "http://snomed.info/sct/900000000000207008/version/20260801";
+        let map = "http://snomed.info/sct/2000002/version/20260801";
+        let mut summary = ArchiveSummary {
+            sha256: String::new(),
+            bytes: 0,
+            effective_time: "20260801".into(),
+            edition_uris: vec![map.into(), international.into()],
+            root_editions: 2,
+            required_files: vec![],
+            duplicate_files: vec![],
+            importable: true,
+        };
+        assert_eq!(
+            summary.choose_edition(Some(900000000000207008)).unwrap(),
+            international
+        );
+        assert!(summary.choose_edition(None).is_err());
+        // Expected modules may also be non-roots.
+        summary.root_editions = 1;
+        assert_eq!(
+            summary.choose_edition(Some(900000000000207008)).unwrap(),
+            international
+        );
+        assert_eq!(summary.choose_edition(None).unwrap(), map);
+        let error = summary
+            .choose_edition(Some(83821000000107))
+            .unwrap_err()
+            .to_string();
+        for text in ["83821000000107", international, map, "--edition URI"] {
+            assert!(error.contains(text), "{error}");
+        }
+        summary.edition_uris.clear();
+        summary.root_editions = 0;
+        assert!(summary.choose_edition(None).is_err());
+        assert!(summary.choose_edition(Some(900000000000207008)).is_err());
+    }
 }
