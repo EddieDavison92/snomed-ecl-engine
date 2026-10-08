@@ -1,6 +1,6 @@
 use crate::store::{
     sha256, Adjacency, Attribute, Attributes, ConcreteValue, DisplayStore, Manifest, NumericStore,
-    FORMAT,
+    Source, FORMAT,
 };
 use anyhow::{bail, ensure, Context, Result};
 use std::collections::{HashMap, HashSet};
@@ -29,6 +29,29 @@ pub struct ImportOptions {
     pub edition: String,
     pub expected_sha256: String,
     pub display_refsets: Vec<u64>,
+    pub source: Option<Source>,
+}
+
+impl ImportOptions {
+    /// Uses the UK display refsets, with no recorded distributor source.
+    pub fn new(edition: impl Into<String>, expected_sha256: impl Into<String>) -> Self {
+        Self {
+            edition: edition.into(),
+            expected_sha256: expected_sha256.into(),
+            display_refsets: UK_DISPLAY_REFSETS.to_vec(),
+            source: None,
+        }
+    }
+
+    pub fn with_display_refsets(mut self, display_refsets: Vec<u64>) -> Self {
+        self.display_refsets = display_refsets;
+        self
+    }
+
+    pub fn with_source(mut self, source: Source) -> Self {
+        self.source = Some(source);
+        self
+    }
 }
 
 /// Imports one self-contained Snapshot package. Full, Delta and package merging are not supported.
@@ -464,6 +487,7 @@ pub fn import_snapshot_with_progress(
         format: FORMAT,
         edition: options.edition.clone(),
         archive_sha256: archive_hash,
+        source: options.source.clone(),
         concept_count: n,
         active_concept_count: store.flags.iter().filter(|&&f| f & 1 != 0).count(),
         hierarchy_edges: store.parents.values.len(),

@@ -42,6 +42,8 @@ pub struct Manifest {
     pub format: u32,
     pub edition: String,
     pub archive_sha256: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<Source>,
     pub concept_count: usize,
     pub active_concept_count: usize,
     pub hierarchy_edges: usize,
@@ -73,6 +75,17 @@ pub struct Manifest {
     pub history: Option<HistoryManifest>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplements: Vec<RefsetSupplement>,
+}
+
+/// The distributor and release from which the indexed archive was acquired.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Source {
+    pub distributor: String,
+    pub item: u32,
+    pub release_id: String,
+    pub release_name: String,
+    pub release_date: String,
+    pub archive_file_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -4,7 +4,7 @@
 //! small JSON file outside the repository. Nothing here changes query results.
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
-use snomed_ecl_engine::store::Manifest;
+use snomed_ecl_engine::store::{Manifest, Source as ArchiveSource};
 use std::path::{Path, PathBuf};
 
 pub const ENV_STORE: &str = "SNOMED_ECL_STORE";
@@ -102,6 +102,8 @@ pub struct Found {
     pub name: Option<String>,
     pub path: PathBuf,
     pub edition: String,
+    pub archive_sha256: String,
+    pub source: Option<ArchiveSource>,
     pub active_concepts: usize,
     pub concepts: usize,
     pub bytes: u64,
@@ -193,6 +195,8 @@ pub fn inspect(path: &Path, selected: Option<&Path>) -> Option<Found> {
             .flatten(),
         bytes: size_of_index(path, packed),
         edition: manifest.edition,
+        archive_sha256: manifest.archive_sha256,
+        source: manifest.source,
         active_concepts: manifest.active_concept_count,
         concepts: manifest.concept_count,
         path: path.to_path_buf(),

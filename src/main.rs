@@ -129,6 +129,7 @@ fn add_release(
     sha256: Option<String>,
     name: Option<String>,
     edition: Option<String>,
+    source: Option<snomed_ecl_engine::store::Source>,
     human: bool,
 ) -> Result<()> {
     let summary = snomed_ecl_engine::import::inspect_archive(archive)?;
@@ -185,22 +186,15 @@ fn add_release(
     let stages = snomed_ecl_engine::import::IMPORT_STAGES + 1;
     let start = Instant::now();
     let mut stage = 0;
-    let built = import_snapshot_with_progress(
-        archive,
-        &staging,
-        &ImportOptions {
-            edition: edition.clone(),
-            expected_sha256: summary.sha256.clone(),
-            display_refsets: UK_DISPLAY_REFSETS.to_vec(),
-        },
-        |message| {
-            stage += 1;
-            eprintln!(
-                "  [{stage}/{stages}] {message}  ({:.1}s elapsed)",
-                start.elapsed().as_secs_f64()
-            );
-        },
-    )
+    let mut options = ImportOptions::new(edition.clone(), summary.sha256.clone());
+    options.source = source;
+    let built = import_snapshot_with_progress(archive, &staging, &options, |message| {
+        stage += 1;
+        eprintln!(
+            "  [{stage}/{stages}] {message}  ({:.1}s elapsed)",
+            start.elapsed().as_secs_f64()
+        );
+    })
     .and_then(|_| {
         eprintln!(
             "  [{stages}/{stages}] Packing into one file  ({:.1}s elapsed)",
@@ -358,19 +352,21 @@ fn run() -> Result<()> {
                 presentation::stores(&found);
             } else {
                 for entry in &found {
-                    println!(
-                        "{}",
-                        serde_json::json!({
-                            "name": entry.name,
-                            "store": entry.path,
-                            "edition": entry.edition,
-                            "active_concepts": entry.active_concepts,
-                            "concepts": entry.concepts,
-                            "bytes": entry.bytes,
-                            "packed": entry.packed,
-                            "selected": entry.selected,
-                        })
-                    );
+                    let mut value = serde_json::json!({
+                        "name": entry.name,
+                        "store": entry.path,
+                        "edition": entry.edition,
+                        "archive_sha256": entry.archive_sha256,
+                        "active_concepts": entry.active_concepts,
+                        "concepts": entry.concepts,
+                        "bytes": entry.bytes,
+                        "packed": entry.packed,
+                        "selected": entry.selected,
+                    });
+                    if let Some(source) = &entry.source {
+                        value["source"] = serde_json::to_value(source)?;
+                    }
+                    println!("{value}");
                 }
             }
         }
@@ -714,7 +710,7 @@ fn run() -> Result<()> {
                 args.len() == 2,
                 "Usage: add ARCHIVE [--sha256 HEX] [--name NAME] [--edition URI]"
             );
-            add_release(Path::new(&args[1]), sha256, name, edition, human)?;
+            add_release(Path::new(&args[1]), sha256, name, edition, None, human)?;
         }
         #[cfg(not(feature = "download"))]
         "download" => bail!("Downloading needs the `download` feature; use the default build"),
@@ -787,6 +783,14 @@ fn run() -> Result<()> {
                 Some(release.archive_file_sha256.clone()),
                 name,
                 None,
+                Some(snomed_ecl_engine::store::Source {
+                    distributor: "trud".into(),
+                    item,
+                    release_id: release.id,
+                    release_name: release.name,
+                    release_date: release.release_date,
+                    archive_file_name: release.archive_file_name,
+                }),
                 human,
             );
             // The archive is removed whether or not the build worked, so failed
@@ -849,11 +853,7 @@ fn run() -> Result<()> {
             let manifest = import_snapshot_with_progress(
                 Path::new(&args[1]),
                 Path::new(&args[2]),
-                &ImportOptions {
-                    edition: args[3].clone(),
-                    expected_sha256: args[4].clone(),
-                    display_refsets: refsets,
-                },
+                &ImportOptions::new(args[3].clone(), args[4].clone()).with_display_refsets(refsets),
                 |message| {
                     stage += 1;
                     eprintln!(
@@ -1135,6 +1135,9 @@ struct BatchRequest {
     /// requests at once can match answers that arrive out of order.
     #[serde(default)]
     id: Option<serde_json::Value>,
+    /// Report the identity of the index held by this process.
+    #[serde(default)]
+    manifest: bool,
     /// An expression to evaluate. Omitted when `concept` asks for a lookup.
     #[serde(default)]
     ecl: Option<String>,
@@ -1242,6 +1245,7 @@ impl serde::Serialize for Codes<'_> {
 #[derive(serde::Serialize)]
 struct BatchResponse<'a> {
     edition: &'a str,
+    archive_sha256: &'a str,
     query_config_sha256: &'a str,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     supplements: Vec<&'a str>,
@@ -1573,6 +1577,51 @@ fn batch_response(
     labels: &Labels,
     out: &mut impl Write,
 ) -> Result<()> {
+    if request.manifest {
+        if request.ecl.is_some()
+            || request.concept.is_some()
+            || request.search.is_some()
+            || request.history.is_some()
+            || request.within.is_some()
+        {
+            writeln!(
+                out,
+                "{}",
+                serde_json::json!({"error":"InvalidRequest","message":"Give manifest without a query"})
+            )?;
+            return Ok(());
+        }
+        let features: Vec<_> = [
+            ("import", cfg!(feature = "import")),
+            ("download", cfg!(feature = "download")),
+            ("unicode", cfg!(feature = "unicode")),
+        ]
+        .into_iter()
+        .filter_map(|(name, enabled)| enabled.then_some(name))
+        .collect();
+        let supplements: Vec<_> = manifest
+            .supplements
+            .iter()
+            .map(|s| {
+                serde_json::json!({"archive_sha256":s.archive_sha256,"release_date":s.release_date})
+            })
+            .collect();
+        let mut value = serde_json::json!({
+            "engine": {"version": env!("CARGO_PKG_VERSION"), "features": features},
+            "format": manifest.format,
+            "edition": manifest.edition,
+            "archive_sha256": manifest.archive_sha256,
+            "core_sha256": manifest.core_sha256,
+            "supplements": supplements,
+            "capabilities": manifest.capabilities,
+            "query_config_sha256": config_sha256,
+        });
+        if let Some(source) = &manifest.source {
+            value["source"] = serde_json::to_value(source)?;
+        }
+        writeln!(out, "{value}")?;
+        return Ok(());
+    }
     if let Some(sctid) = &request.concept {
         return concept_response(store, labels, sctid, out);
     }
@@ -1638,6 +1687,7 @@ fn batch_response(
         &mut *out,
         &BatchResponse {
             edition: &manifest.edition,
+            archive_sha256: &manifest.archive_sha256,
             query_config_sha256: config_sha256,
             supplements: manifest
                 .supplements
