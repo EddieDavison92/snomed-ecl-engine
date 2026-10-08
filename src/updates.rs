@@ -437,9 +437,10 @@ pub fn run(args: &[String], human: bool) -> Result<i32> {
                 render_json(item, &assessment, command.as_deref(), &key)
             )?;
         }
+        // A later item's TRUD error exits early; earlier results stay printed.
+        out.flush()?;
         statuses.push(assessment.status);
     }
-    out.flush()?;
     Ok(if options.exit_code {
         exit_code(&statuses)
     } else {
