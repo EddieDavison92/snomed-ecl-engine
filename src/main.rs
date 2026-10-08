@@ -10,6 +10,8 @@ use std::time::Instant;
 mod download;
 mod library;
 mod presentation;
+#[cfg(feature = "download")]
+mod updates;
 mod workspace;
 
 /// Parses ECL, reporting the offending text under the expression rather than a
@@ -32,10 +34,13 @@ fn main() {
         {
             return;
         }
-        eprintln!(
-            "Error: {}",
-            presentation::clean_message(&format!("{error:#}"))
+        let message = format!("{error:#}");
+        #[cfg(feature = "download")]
+        let message = download::redact(
+            message,
+            std::env::var(download::ENV_KEY).unwrap_or_default().trim(),
         );
+        eprintln!("Error: {}", presentation::clean_message(&message));
         std::process::exit(1);
     }
 }
@@ -713,6 +718,15 @@ fn run() -> Result<()> {
             add_release(Path::new(&args[1]), sha256, name, edition, None, human)?;
         }
         #[cfg(not(feature = "download"))]
+        "updates" => bail!("Update checks need the `download` feature; use the default build"),
+        #[cfg(feature = "download")]
+        "updates" => {
+            let code = updates::run(&args[1..], human)?;
+            if code != 0 {
+                std::process::exit(code);
+            }
+        }
+        #[cfg(not(feature = "download"))]
         "download" => bail!("Downloading needs the `download` feature; use the default build"),
         #[cfg(feature = "download")]
         "download" => {
@@ -757,15 +771,9 @@ fn run() -> Result<()> {
                 }
                 return Ok(());
             }
-            let releases = download::releases(item, wanted.is_none())?;
             let release = match &wanted {
-                Some(id) => releases
-                    .into_iter()
-                    .find(|release| &release.id == id)
-                    .with_context(|| {
-                        format!("TRUD has no release {id}; `download --list` shows them")
-                    })?,
-                None => releases
+                Some(id) => download::selected_release(item, id)?,
+                None => download::releases(item, true)?
                     .into_iter()
                     .next()
                     .context("TRUD lists no releases for this item")?,

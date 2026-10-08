@@ -1,0 +1,31 @@
+{
+  "releases": [
+    {
+      "id": "synthetic_sct_3.0.0_20260923000001Z.zip",
+      "name": "Release 3.0.0",
+      "releaseDate": "2026-10-06",
+      "archiveFileUrl": "https://isd.digital.nhs.uk/download/api/v1/keys/SENTINEL-KEY-123/content/items/1799/synthetic_sct_3.0.0_20260923000001Z.zip",
+      "archiveFileName": "synthetic_sct_3.0.0_20260923000001Z.zip",
+      "archiveFileSizeBytes": 1234,
+      "archiveFileSha256": "9F8E7D6CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "id": "synthetic_sct_2.0.0_20260801000001Z.zip",
+      "name": "Release 2.0.0",
+      "releaseDate": "2026-08-02",
+      "archiveFileUrl": "https://isd.digital.nhs.uk/download/api/v1/keys/SENTINEL-KEY-123/content/items/1799/synthetic_sct_2.0.0_20260801000001Z.zip",
+      "archiveFileName": "synthetic_sct_2.0.0_20260801000001Z.zip",
+      "archiveFileSizeBytes": 1234,
+      "archiveFileSha256": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+    },
+    {
+      "id": "synthetic_sct_1.0.0_20260701000001Z.zip",
+      "name": "Release 1.0.0",
+      "releaseDate": "2026-07-02",
+      "archiveFileUrl": "https://isd.digital.nhs.uk/download/api/v1/keys/SENTINEL-KEY-123/content/items/1799/synthetic_sct_1.0.0_20260701000001Z.zip",
+      "archiveFileName": "synthetic_sct_1.0.0_20260701000001Z.zip",
+      "archiveFileSizeBytes": 1234,
+      "archiveFileSha256": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+    }
+  ]
+}

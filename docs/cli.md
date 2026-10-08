@@ -18,9 +18,14 @@ snomed-ecl-engine expand '<< 404684003' --count
 [TRUD](https://isd.digital.nhs.uk/trud/), checks it against the SHA-256 TRUD
 publishes, and adds it as below. Set `TRUD_API_KEY` to the API key on your TRUD
 account page first; the account must be subscribed to the item. `--list` shows
-the releases TRUD holds and `--release ID` fetches an older one. The archive is
-deleted once the index is built, unless you give `--keep-archive`. The key is
-never printed, and is removed from any error.
+the releases TRUD holds and `--release ID` fetches a specific one. With
+`--release`, only that release's metadata is validated; invalid metadata for
+other releases does not block it. Without `--release`, the newest release
+must pass validation. `--list` rejects invalid metadata anywhere in the list.
+The archive is deleted once the index is built, unless you give
+`--keep-archive`. The key is
+never printed, and is removed from any error. Use the TRUD API on weekdays
+08:00–18:00 or 00:00–06:00 UK time to avoid maintenance windows.
 
 `add ARCHIVE` builds an index from an RF2 Snapshot ZIP, packs it into one file
 in the library folder and selects it. It checks the archive against the
@@ -38,7 +43,10 @@ question in scripts.
 Anywhere an index is expected, give a path, a library name such as
 `uk-20260826`, a release such as `uk@2026-08` or `uk@2026-08-26`, or an edition
 alone, such as `uk`, for its latest release. A partial date picks the latest
-release that matches it.
+release that matches it. When indexes have the same edition date, the later
+source release date wins, then the later file modification time, then the
+lexicographically smaller name. This lets `uk`, `uk@latest` and `uk@2026-09`
+select a re-issued archive even when its edition date has not changed.
 
 `stats`, `verify`, `expand`, `query`, `batch` and `hierarchy` take no index when
 one is selected. Each resolves the index from its own argument first, then
@@ -48,6 +56,74 @@ explicitly in scripts and CI, where a developer's selection should not apply.
 The library folder is `SNOMED_ECL_HOME` if set, else `snomed-ecl-engine/indexes`
 in the platform's data folder: `%LOCALAPPDATA%` on Windows, `~/Library/Application
 Support` on macOS and `$XDG_DATA_HOME` or `~/.local/share` on Linux.
+
+## Check for updates
+
+`updates [ITEM ...]` compares TRUD's newest archive SHA-256 with indexed
+archives. Set `TRUD_API_KEY` as for `download`. With no item, it checks the
+distinct item numbers recorded in the manifests of the indexes being compared,
+or `uk-monolith` when none are recorded. Items may be known names or TRUD item
+numbers.
+
+By default it compares every index in the library, across all editions.
+`--index PATH` compares only the specified indexes. Each flag takes one path;
+repeat `--index` to add paths. An item may follow the path, as in
+`updates --index data/base.ecl uk-monolith`.
+It reads manifests and makes one release-list request per item. It skips older
+releases with invalid metadata, including null or missing fields, and warns on
+stderr; invalid newest metadata fails the check. `download --release ID`
+validates only the chosen release, so a suggested command still works when
+older metadata has been skipped.
+
+```sh
+snomed-ecl-engine updates
+snomed-ecl-engine updates uk-monolith --index data/base.ecl --json --exit-code
+```
+
+Each item reports the indexed name, release and SHA-256 prefix, the newest
+TRUD release and one of four statuses:
+
+- `up_to_date`: an indexed archive matches the newest SHA-256, ignoring case.
+- `reissued`: the newest release has the same release name, or the same source
+  release ID, as an indexed archive, but a different SHA-256.
+- `behind`: an indexed archive matches an older release. The count is its
+  position behind the newest release in the validated TRUD list.
+- `unknown`: no indexed archive matches the listed releases. An empty library
+  also has this status.
+
+When several archives are indexed, the most recent matching release decides
+the status. A re-issue can keep the same release name and edition URI: the
+archive checksum detects it. For `unknown`, a known item shows only an index
+from its edition family, choosing the newest edition date, then the latest
+source release date and the lexicographically smaller name.
+
+For `behind`, `reissued`, or `unknown` with a newest release, the output includes
+an exact command to download that release. The suggested index name uses the
+known item's edition family (or the indexed family for an unnamed item) and
+the archive date. If the name already exists in the library,
+it adds the first eight lowercase SHA-256 digits, such as
+`uk-20260923-9f8e7d6c`, then `-2`, `-3` and so on if that is taken too. Names
+have no `.ecl` extension. If the family or archive
+date cannot be derived, the command omits `--name`. If the newest release ID
+is not a safe ZIP file name, the command is omitted with a warning on stderr;
+the assessment still succeeds.
+
+Redirected output, `--json` or `--plain` gives one JSON line per item with `item`,
+`item_name` (null for unnamed items), `status`, `indexed`, `latest`, and a
+`command` when suggested. `behind` also includes `releases_behind`. `indexed`
+is null when none is available; otherwise it has `name`, `path`,
+`archive_sha256`, and `release_id` and `release_name` when known. `latest` has
+`id`, `name`, `release_date`, `bytes` and `sha256`, or is null when TRUD lists no
+releases. For `updates`, `--plain` uses the same JSON lines as `--json`.
+Credential-bearing TRUD URLs are redacted. The configured key is also
+redacted wherever it appears when it has at least eight characters; shorter
+keys are redacted only inside TRUD URLs, preserving ordinary paths and hashes.
+
+Without `--exit-code`, a successful check exits 0. With it, the exit code is 0
+when all items are up to date, 3 when any item is behind or reissued, or 4 when
+any item is unknown and none needs an update. Errors exit 1. Update checks need
+a build with the `download` feature. Use the TRUD API on weekdays 08:00–18:00
+or 00:00–06:00 UK time to avoid maintenance windows.
 
 ## Query interactively
 
@@ -146,6 +222,7 @@ gives plain lines for scripts. `--json` gives JSON:
 | `use` | Index and edition JSON | Same |
 | `add` · `download` | Name, path, edition and size JSON | Same |
 | `download --list` | One release object per line | Same |
+| `updates` | One update assessment per line | Same |
 | `inspect` | Archive summary JSON | Same |
 | `diff` | Comparison JSON | Same |
 | `stats` | Manifest JSON | Same |
