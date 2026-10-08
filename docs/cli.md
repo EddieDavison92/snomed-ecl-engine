@@ -118,7 +118,8 @@ an exact command to download that release. The suggested index name uses the
 known item's edition family (or the indexed family for an unnamed item) and
 the archive date. If the name already exists in the library,
 it adds the first eight lowercase SHA-256 digits, such as
-`uk-20260923-9f8e7d6c`. Names have no `.ecl` extension. If the family or archive
+`uk-20260923-9f8e7d6c`, then `-2`, `-3` and so on if that is taken too. Names
+have no `.ecl` extension. If the family or archive
 date cannot be derived, the command omits `--name`. If the newest release ID
 is not a safe ZIP file name, the command is omitted with a warning on stderr;
 the assessment still succeeds.
