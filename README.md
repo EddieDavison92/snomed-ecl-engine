@@ -109,6 +109,20 @@ snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 SHA256_FROM_
 `list`, `use` and `remove` manage the indexes you build, by name
 (`uk-20260826`) or release (`uk@2026-08`, or `uk` for the latest).
 
+## Keeping up to date
+
+With `TRUD_API_KEY` set, run `snomed-ecl-engine updates` to compare library
+archives with TRUD's newest releases. It reports whether each item is current,
+behind, reissued or unknown, and prints an exact download command when needed.
+Re-issues are detected by SHA-256 even when the edition date stays the same.
+
+Use `--index PATH` to check an index outside the library, and `--json` for one
+JSON line per item. `--exit-code` exits 3 for behind or reissued, 4 for unknown
+when none needs an update, 0 when all are current, and 1 on error. The key and
+download URLs are never printed. Use the API on weekdays 08:00–18:00 or
+00:00–06:00 UK time to avoid TRUD maintenance windows. See
+[the CLI guide](docs/cli.md#check-for-updates) for item selection and output.
+
 ## What you can do with it
 
 ### Expand any ECL 2.3 expression
