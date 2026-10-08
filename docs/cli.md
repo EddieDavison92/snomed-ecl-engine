@@ -180,7 +180,23 @@ request returns an error object and the batch continues. Requests are limited
 to 512 KiB a line; an expression to 65,536 bytes, depth 64 and 4,096 parser
 nodes.
 
-Each request names one of four operations.
+Each request names one of five operations.
+
+**`manifest`** reports the identity of the index held by this process:
+
+```json
+{"id":1,"manifest":true}
+```
+
+The response carries `engine` (`version` and `features`, the enabled Cargo
+features among `import`, `download` and `unicode`), `format`, `edition`,
+`archive_sha256`, `core_sha256`, `capabilities` and `query_config_sha256`.
+`source`, when recorded, identifies the distributor and release; see the
+[manifest fields](index-format.md#manifest). `supplements` is always an array
+of objects with `archive_sha256` and `release_date`, empty for a base index.
+The query configuration fingerprint includes any `--config` override.
+Combining `manifest: true` with `ecl`, `search`, `concept`, `history` or `within`
+returns `InvalidRequest`.
 
 **`ecl`** evaluates an expression:
 
@@ -190,7 +206,8 @@ Each request names one of four operations.
 | `display` | Return `concepts`, objects with `code`, `display` and `active`, in place of `codes` |
 | `offset`, `limit` | Return a window of the result; `total` still counts all of it |
 
-A success carries `edition`, `supplements` (their archive checksums),
+A success carries `edition`, `archive_sha256` (the base archive checksum),
+`supplements` (their archive checksums),
 `query_config_sha256`, `total`, `parse_ms` and `eval_ms`, then `codes` or
 `concepts`. A member projection returns `result_type` of `values` or `rows`
 with a `values` or `rows` array instead. `eval_ms` excludes loading the index,

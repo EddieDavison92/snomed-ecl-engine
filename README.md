@@ -225,6 +225,12 @@ can be typed values or rows rather than concepts, and the `_with_limits`
 variants bound the work a query may do. Build with `default-features = false`
 to leave out the RF2 importer.
 
+To embed the importer, use `ImportOptions::new(edition, expected_sha256)`.
+It selects the UK display refsets and leaves `source` absent. Override these
+with `.with_display_refsets(refsets)` and `.with_source(source)`. The new public
+`source: Option<store::Source>` field means existing `ImportOptions` struct
+literals must add `source: None` or switch to the constructor.
+
 ## Performance
 
 Against the UK Monolith release of 26 August 2026: 1.15 million concepts.

@@ -1,8 +1,8 @@
 #![cfg(feature = "import")]
 
-use snomed_ecl_engine::import::{import_snapshot, ImportOptions, UK_DISPLAY_REFSETS};
+use snomed_ecl_engine::import::{import_snapshot, ImportOptions};
 use snomed_ecl_engine::store::{
-    sha256, Adjacency, Attributes, ConcreteValue, DisplayStore, Manifest, NumericStore,
+    sha256, Adjacency, Attributes, ConcreteValue, DisplayStore, Manifest, NumericStore, Source,
 };
 use std::collections::{BTreeSet, VecDeque};
 use std::fs::{self, File};
@@ -380,6 +380,10 @@ fn legacy_identifier_columns_resolve_the_same_codes() {
 }
 
 fn fixture(path: &Path, cycle: bool, duplicate: bool) {
+    fixture_with_label(path, cycle, duplicate, "Synthetic realm label");
+}
+
+fn fixture_with_label(path: &Path, cycle: bool, duplicate: bool, label: &str) {
     let mut archive = zip::ZipWriter::new(File::create(path).unwrap());
     let mut add = |name: &str, body: String| {
         archive
@@ -450,17 +454,257 @@ fn fixture(path: &Path, cycle: bool, duplicate: bool) {
     add("Snapshot/Terminology/sct2_RelationshipConcreteValues_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tsourceId\tvalue\trelationshipGroup\ttypeId\tcharacteristicTypeId\tmodifierId\n4000001\t20260826\t1\t{ROOT}\t{LEAF}\t#0.100000000000000001\t2\t{KIND}\t900000000000011006\t900000000000451002\n4000002\t20260826\t1\t{ROOT}\t{LEAF}\t\"synthetic value\"\t3\t{KIND}\t900000000000011006\t900000000000451002\n"));
     add("Snapshot/Refset/der2_ssRefset_ModuleDependencySnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime\n00000000-0000-4000-8000-000000000001\t20260826\t1\t{ROOT}\t900000000000534007\t{LEFT}\t20260826\t20260826\n"));
     add("Snapshot/Refset/der2_cRefset_LanguageSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tacceptabilityId\nsynthetic-gb\t20260826\t1\t1000001\t900000000000508004\t6000012\t900000000000548007\nsynthetic-realm\t20260826\t1\t1000001\t999001261000000100\t6000013\t900000000000548007\nsynthetic-retired\t20260826\t0\t1000001\t{INACTIVE_DESCRIPTION_REFSET}\t6000015\t900000000000548007\n"));
-    add("Snapshot/Terminology/sct2_Description_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000011\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic synonym\t900000000000448009\n6000012\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic GB label\t900000000000448009\n6000013\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic realm label\t900000000000448009\n6000014\t20260826\t1\t{ROOT}\t{ROOT}\ten\t900000000000003001\tSynthetic root (test)\t900000000000448009\n6000015\t20260826\t0\t{ROOT}\t{LEAF}\ten\t900000000000013009\tInactive label\t900000000000448009\n"));
+    add("Snapshot/Terminology/sct2_Description_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000011\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic synonym\t900000000000448009\n6000012\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\tSynthetic GB label\t900000000000448009\n6000013\t20260826\t1\t{ROOT}\t{LEAF}\ten\t900000000000013009\t{label}\t900000000000448009\n6000014\t20260826\t1\t{ROOT}\t{ROOT}\ten\t900000000000003001\tSynthetic root (test)\t900000000000448009\n6000015\t20260826\t0\t{ROOT}\t{LEAF}\ten\t900000000000013009\tInactive label\t900000000000448009\n"));
     add("Snapshot/Refset/der2_Refset_SimpleSnapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\n00000000-0000-4000-8000-000000000002\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000003\t20260826\t1\t{ROOT}\t{ROOT}\t{LEFT}\n00000000-0000-4000-8000-000000000004\t20260826\t1\t{ROOT}\t{ROOT}\t{LEAF}\n00000000-0000-4000-8000-000000000005\t20260826\t1\t{ROOT}\t{ROOT}\t{INACTIVE}\n00000000-0000-4000-8000-000000000006\t20260826\t0\t{ROOT}\t{ROOT}\t{RIGHT}\n00000000-0000-4000-8000-000000000007\t20260826\t0\t{ROOT}\t{INACTIVE_CONCEPT_REFSET}\t{RIGHT}\n"));
     add("Snapshot/Terminology/sct2_TextDefinition_Snapshot.txt", format!("id\teffectiveTime\tactive\tmoduleId\tconceptId\tlanguageCode\ttypeId\tterm\tcaseSignificanceId\n6000016\t20260826\t1\t{ROOT}\t{RIGHT}\ten\t900000000000550004\tSynthetic definition\t900000000000448009\n"));
     archive.finish().unwrap();
 }
 
 fn options(path: &Path) -> ImportOptions {
-    ImportOptions {
-        edition: format!("http://snomed.info/sct/{ROOT}/version/20260826"),
-        expected_sha256: sha256(path).unwrap(),
-        display_refsets: UK_DISPLAY_REFSETS.to_vec(),
+    ImportOptions::new(
+        format!("http://snomed.info/sct/{ROOT}/version/20260826"),
+        sha256(path).unwrap(),
+    )
+}
+
+fn batch_requests(
+    path: &Path,
+    requests: &[serde_json::Value],
+    extra: &[&str],
+) -> Vec<serde_json::Value> {
+    use std::process::{Command, Stdio};
+    let mut process = Command::new(env!("CARGO_BIN_EXE_snomed-ecl-engine"))
+        .arg("batch")
+        .arg(path)
+        .args(extra)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    {
+        let mut input = process.stdin.take().unwrap();
+        for request in requests {
+            writeln!(input, "{request}").unwrap();
+        }
+    }
+    let output = process.wait_with_output().unwrap();
+    assert!(output.status.success());
+    let answers: Vec<_> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(answers.len(), requests.len());
+    answers
+}
+
+#[test]
+fn manifest_accepts_older_json_and_unknown_fields() {
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let directory = temp.path().join("store");
+    fixture(&archive, false, false);
+    let manifest = import_snapshot(&archive, &directory, &options(&archive)).unwrap();
+    let mut value = serde_json::to_value(&manifest).unwrap();
+    assert!(value.get("source").is_none());
+    let older: Manifest = serde_json::from_value(value.clone()).unwrap();
+    assert!(older.source.is_none());
+    value["future_field"] = serde_json::json!({"value": 42});
+    let future: Manifest = serde_json::from_value(value).unwrap();
+    assert!(future.source.is_none());
+    assert_eq!(future.archive_sha256, manifest.archive_sha256);
+
+    let answer = batch_requests(&directory, &[serde_json::json!({"manifest":true})], &[]);
+    assert!(answer[0].get("source").is_none());
+    assert_eq!(answer[0]["supplements"], serde_json::json!([]));
+}
+
+#[test]
+fn source_survives_import_pack_and_identity_responses() {
+    use snomed_ecl_engine::{config::QueryConfig, import::add_refsets_snapshot, store::pack};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    let directory = temp.path().join("store");
+    fixture(&archive, false, false);
+    let source = Source {
+        distributor: "trud".into(),
+        item: 42,
+        release_id: "synthetic-release".into(),
+        release_name: "Synthetic release".into(),
+        release_date: "2026-08-26".into(),
+        archive_file_name: "fixture.zip".into(),
+    };
+    let expected_source = serde_json::to_value(&source).unwrap();
+    let original =
+        import_snapshot(&archive, &directory, &options(&archive).with_source(source)).unwrap();
+    assert_eq!(
+        serde_json::to_value(&original.source).unwrap(),
+        expected_source
+    );
+    let extra = temp.path().join("extra.zip");
+    let combined = temp.path().join("combined");
+    supplement_fixture(&extra, LEAF, false);
+    let extra_hash = sha256(&extra).unwrap();
+    let manifest =
+        add_refsets_snapshot(&directory, &extra, &combined, "20260820", &extra_hash).unwrap();
+    let packed = temp.path().join("store.ecl");
+    pack(&combined, &packed).unwrap();
+    let config = QueryConfig {
+        member_language: "de".into(),
+        ..QueryConfig::default()
+    };
+    let config_path = temp.path().join("query-config.json");
+    fs::write(&config_path, serde_json::to_vec(&config).unwrap()).unwrap();
+    let config_hash = config.fingerprint().unwrap();
+    let requests = [
+        serde_json::json!({"id":0,"manifest":true}),
+        serde_json::json!({"id":1,"ecl":LEAF.to_string()}),
+        serde_json::json!({"id":2,"manifest":true,"ecl":LEAF.to_string()}),
+        serde_json::json!({"id":3,"manifest":true,"search":"synthetic"}),
+        serde_json::json!({"id":4,"manifest":true,"concept":LEAF.to_string()}),
+        serde_json::json!({"id":5,"manifest":true,"history":LEAF.to_string()}),
+        serde_json::json!({"id":6,"manifest":true,"within":LEAF.to_string()}),
+    ];
+    let features: Vec<_> = [
+        ("import", cfg!(feature = "import")),
+        ("download", cfg!(feature = "download")),
+        ("unicode", cfg!(feature = "unicode")),
+    ]
+    .into_iter()
+    .filter_map(|(name, enabled)| enabled.then_some(name))
+    .collect();
+    for path in [&combined, &packed] {
+        NumericStore::open(path).unwrap();
+        let opened = Manifest::read(path).unwrap();
+        assert_eq!(
+            serde_json::to_value(opened.source).unwrap(),
+            expected_source
+        );
+        for workers in ["1", "4"] {
+            let mut answers = batch_requests(
+                path,
+                &requests,
+                &[
+                    "--workers",
+                    workers,
+                    "--config",
+                    config_path.to_str().unwrap(),
+                ],
+            );
+            answers.sort_by_key(|answer| answer["id"].as_u64().unwrap());
+            assert_eq!(
+                answers[0],
+                serde_json::json!({
+                    "id":0,
+                    "engine":{"version":env!("CARGO_PKG_VERSION"),"features":features},
+                    "format":manifest.format,
+                    "edition":manifest.edition,
+                    "archive_sha256":original.archive_sha256,
+                    "core_sha256":manifest.core_sha256,
+                    "source":expected_source,
+                    "supplements":[{"archive_sha256":extra_hash,"release_date":20260820}],
+                    "capabilities":manifest.capabilities,
+                    "query_config_sha256":config_hash,
+                })
+            );
+            assert_eq!(answers[1]["edition"], original.edition);
+            assert_eq!(answers[1]["archive_sha256"], original.archive_sha256);
+            assert_eq!(answers[1]["query_config_sha256"], config_hash);
+            assert_eq!(answers[1]["supplements"], serde_json::json!([extra_hash]));
+            assert_eq!(answers[1]["codes"], serde_json::json!([LEAF.to_string()]));
+            for (id, answer) in answers.iter().enumerate().skip(2) {
+                assert_eq!(answer["id"], id);
+                assert_eq!(answer["error"], "InvalidRequest");
+                assert!(answer["message"].is_string());
+            }
+        }
+        for command in ["stats", "list"] {
+            let output = cli(
+                &temp.path().join("config"),
+                &[command, path.to_str().unwrap(), "--json"],
+            );
+            assert!(output.status.success());
+            let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+            assert_eq!(value["archive_sha256"], original.archive_sha256);
+            assert_eq!(value["source"], expected_source);
+        }
+    }
+}
+
+#[test]
+fn imported_long_descriptions_remain_complete_in_search_lookup_and_displays() {
+    use snomed_ecl_engine::store::pack;
+    let temp = TempDir::new().unwrap();
+    for length in [256, 4096] {
+        for alphabet in ["a", "é🦀"] {
+            let prefix = "Synthetic longlabel ";
+            let term: String = prefix
+                .chars()
+                .chain(
+                    alphabet
+                        .chars()
+                        .cycle()
+                        .take(length - prefix.chars().count()),
+                )
+                .collect();
+            assert_eq!(term.chars().count(), length);
+            let case = format!("{length}-{}", alphabet.len());
+            let archive = temp.path().join(format!("{case}.zip"));
+            let directory = temp.path().join(&case);
+            fixture_with_label(&archive, false, false, &term);
+            import_snapshot(&archive, &directory, &options(&archive)).unwrap();
+            let packed = temp.path().join(format!("{case}.ecl"));
+            pack(&directory, &packed).unwrap();
+            for path in [&directory, &packed] {
+                let store = NumericStore::open(path).unwrap();
+                let leaf = store.ordinal(LEAF).unwrap();
+                assert_eq!(
+                    DisplayStore::open(path).unwrap().get(leaf).unwrap(),
+                    Some(term.clone())
+                );
+                let descriptions = store.descriptions.get().unwrap().unwrap();
+                let row = descriptions
+                    .for_concept(leaf)
+                    .find(|&row| descriptions.id(row) == 6000013)
+                    .unwrap();
+                assert_eq!(descriptions.term(row).unwrap(), term);
+                let config = temp.path().join("config");
+                let leaf_code = LEAF.to_string();
+                for command in ["search", "lookup", "expand"] {
+                    let query = if command == "search" {
+                        "longlabel"
+                    } else {
+                        &leaf_code
+                    };
+                    let mut args = vec![command, path.to_str().unwrap(), query, "--json"];
+                    if command == "expand" {
+                        args.push("--display");
+                    }
+                    let output = cli(&config, &args);
+                    assert!(
+                        output.status.success(),
+                        "{}",
+                        String::from_utf8_lossy(&output.stderr)
+                    );
+                    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+                    if command == "search" {
+                        assert_eq!(value["total"], 1);
+                        assert_eq!(value["concepts"][0]["display"], term);
+                    } else {
+                        assert_eq!(value["display"], term);
+                        if command == "lookup" {
+                            let description = value["descriptions"]
+                                .as_array()
+                                .unwrap()
+                                .iter()
+                                .find(|d| d["id"] == "6000013")
+                                .unwrap();
+                            assert_eq!(description["term"], term);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

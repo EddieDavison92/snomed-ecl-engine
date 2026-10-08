@@ -88,6 +88,18 @@ pub fn manifest(m: &Manifest, location: Option<&str>) {
         println!("  Index       {}", clean(location));
     }
     println!("  Edition     {}", clean(&m.edition));
+    println!("  Archive SHA-256  {}", clean(&m.archive_sha256));
+    if let Some(source) = &m.source {
+        println!(
+            "  Source      {} item {}, release {}",
+            clean(&source.distributor),
+            source.item,
+            clean(&source.release_id)
+        );
+        println!("  Release     {}", clean(&source.release_name));
+        println!("  Date        {}", clean(&source.release_date));
+        println!("  Archive     {}", clean(&source.archive_file_name));
+    }
     println!("  Format      {}", m.format);
     println!(
         "  Concepts    {} active / {} total",

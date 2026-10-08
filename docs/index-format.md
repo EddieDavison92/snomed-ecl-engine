@@ -30,6 +30,29 @@ row is three `u32` values rather than three 18-digit codes. The directory is
 published by rename once every checksum is written. `pack` then turns it into a
 single file.
 
+## Manifest
+
+The manifest records the edition URI, the imported archive's `archive_sha256`,
+section checksums and capabilities. `stats STORE --json` returns the whole
+manifest. `list --json` and the human manifest display also show the archive
+checksum and `source` when present.
+
+`source` is optional. `download` records the chosen TRUD release as:
+
+| Field | Value |
+|---|---|
+| `distributor` | `trud` |
+| `item` | TRUD item number |
+| `release_id` | Distributor's release identifier |
+| `release_name` | Distributor's release name |
+| `release_date` | Distributor's release date string |
+| `archive_file_name` | Archive filename |
+
+Manual `add` and `import` leave `source` absent; an embedded importer can supply
+it through `ImportOptions`. No download URL or API key is stored. Packing
+preserves these values. Older manifests without `source` remain readable, and
+manifest readers accept unknown fields. The format number remains 1.
+
 ## What each section holds
 
 UK Monolith, 26 August 2026:
@@ -77,6 +100,10 @@ level 12 against a 112 KiB dictionary trained on every nth label. A label is too
 short to compress alone, and one frame per label keeps reads random-access. The
 uncompressed lengths stay in memory, so search can rank candidates by label
 length without reading them. Labels fell from 65.8 MiB to 42.6 MiB.
+
+Description terms and display labels retain their complete UTF-8 text.
+Synthetic import tests cover 256 and 4,096 characters, including multibyte
+characters, through search, concept lookup and display output in both layouts.
 
 **Exact values stay text.** Concrete decimals keep their RF2 spelling in a value
 dictionary, and relationship groups are stored as numbers on each attribute row.
