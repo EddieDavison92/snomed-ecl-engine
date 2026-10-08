@@ -45,10 +45,11 @@ checksum your distributor published: give it with `--sha256`, or confirm the one
 it shows when asked. The index is named by edition and release date, such as
 `uk-20260826`; `--name` chooses another, and `--edition` names the edition when
 the archive does not. Without `--edition` or a recorded download source, `add`
-uses a single candidate URI. With several candidates, it prefers exactly one
-known edition module: UK (83821000000107) or International (900000000000207008),
-even when it is not a dependency root. If no known edition or both known editions
-are candidates, it lists the candidates and requires `--edition URI`.
+uses a single candidate URI. With several candidates, it uses the one known
+edition module, UK (83821000000107) or International (900000000000207008), when
+that module is a dependency root, or when it is International and every root is
+an International module such as a map. A national package that carries
+International content must name its edition. Otherwise it lists the candidates and requires `--edition URI`.
 
 `list` shows the library's indexes by name and release, then any other index
 directly inside the working directory or `data/`, or inside the folders given.

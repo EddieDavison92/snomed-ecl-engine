@@ -20,18 +20,33 @@ pub fn edition_family(module: &str) -> Option<&'static str> {
         .map(|(_, name)| *name)
 }
 
-/// Prefer a known edition only when exactly one candidate names one.
+/// Prefers the one known edition among the candidates when it is a dependency
+/// root, or when it is International and every root is an International module
+/// such as a map. A national package that carries International content must
+/// name its edition.
 #[cfg(feature = "import")]
 pub fn choose_local_edition(summary: &snomed_ecl_engine::import::ArchiveSummary) -> Result<&str> {
-    let mut modules = summary.edition_uris.iter().filter_map(|uri| {
+    let module = |uri: &str| -> Option<String> {
         let rest = uri.strip_prefix("http://snomed.info/sct/")?;
-        let (module, _) = rest.split_once("/version/")?;
-        edition_family(module)?;
-        module.parse().ok()
-    });
-    if let Some(module) = modules.next() {
-        if modules.next().is_none() {
-            return summary.choose_edition(Some(module));
+        Some(rest.split_once("/version/")?.0.to_owned())
+    };
+    let known: Vec<_> = summary
+        .edition_uris
+        .iter()
+        .enumerate()
+        .filter_map(|(position, uri)| {
+            let module = module(uri)?;
+            edition_family(&module).map(|_| (position, module))
+        })
+        .collect();
+    if let [(position, known)] = known.as_slice() {
+        let roots = &summary.edition_uris[..summary.root_editions.min(summary.edition_uris.len())];
+        let international_maps = international_module(known)
+            && roots
+                .iter()
+                .all(|root| module(root).is_some_and(|m| international_module(&m)));
+        if *position < summary.root_editions || international_maps {
+            return summary.choose_edition(known.parse().ok());
         }
     }
     if summary.edition_uris.len() == 1 {
@@ -41,6 +56,15 @@ pub fn choose_local_edition(summary: &snomed_ecl_engine::import::ArchiveSummary)
         "The archive does not name one edition. Candidates: {}. Choose one with --edition URI",
         summary.edition_uris.join(", ")
     )
+}
+
+/// Short-format SCTIDs, partition `00`, belong to the International release
+/// rather than to a national namespace.
+#[cfg(feature = "import")]
+fn international_module(sctid: &str) -> bool {
+    sctid.len() >= 6
+        && sctid.bytes().all(|b| b.is_ascii_digit())
+        && &sctid[sctid.len() - 3..sctid.len() - 1] == "00"
 }
 
 /// Where library indexes live: `SNOMED_ECL_HOME`, else the platform's data
@@ -246,12 +270,22 @@ mod tests {
             duplicate_files: vec![],
             importable: true,
         };
-        for known in [uk, international] {
-            summary.edition_uris = vec![map.into(), known.into()];
-            // The known edition need not be a dependency root.
-            assert_eq!(choose_local_edition(&summary).unwrap(), known);
-        }
-        for candidates in [vec![map, other], vec![map, uk, international], vec![]] {
+        // International maps are roots that depend on the edition module.
+        summary.edition_uris = vec![map.into(), international.into()];
+        assert_eq!(choose_local_edition(&summary).unwrap(), international);
+        // A known root is chosen whatever else the package holds.
+        summary.edition_uris = vec![uk.into(), map.into()];
+        assert_eq!(choose_local_edition(&summary).unwrap(), uk);
+        // A national root over International content, or UK as a non-root,
+        // needs an explicit edition.
+        let national = "http://snomed.info/sct/731000124108/version/20260801";
+        for candidates in [
+            vec![map, other],
+            vec![map, uk, international],
+            vec![],
+            vec![national, international],
+            vec![map, uk],
+        ] {
             summary.edition_uris = candidates.iter().map(|uri| (*uri).into()).collect();
             let error = choose_local_edition(&summary).unwrap_err().to_string();
             assert!(error.contains("--edition URI"), "{error}");

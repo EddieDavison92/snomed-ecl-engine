@@ -113,9 +113,10 @@ distributor published. It checks the archive before reading anything; without
 `--sha256`, it shows the checksum and asks you to confirm it. A checksum of your
 own download shows it is intact, not where it came from.
 Without `--edition`, `add` uses a single candidate URI. With several candidates,
-it prefers exactly one known edition module: UK (83821000000107) or International
-(900000000000207008), even when it is not a dependency root. Otherwise it lists
-the candidates and requires `--edition URI`.
+it uses the one known edition module, UK (83821000000107) or International
+(900000000000207008), when that module is a dependency root, or when it is
+International and every root is an International module such as a map.
+Otherwise it lists the candidates and requires `--edition URI`.
 
 ```sh
 snomed-ecl-engine add uk_sct2mo_42.5.0_20260826000001Z.zip --sha256 SHA256_FROM_TRUD

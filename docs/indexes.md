@@ -31,9 +31,10 @@ Downloads select the known item's expected edition module, even when the archive
 has several candidate roots. `download --edition URI` overrides this choice;
 unknown numeric items need a single root or an explicit URI. International
 indexes are named `int-YYYYMMDD` and resolve as `int`.
-Local `add` without `--edition` uses a single candidate URI, or exactly one known
-UK or International edition module among several candidates, including non-root
-modules. Otherwise it lists the candidates and requires `--edition URI`.
+Local `add` without `--edition` uses a single candidate URI, or the one known UK
+or International edition module among several candidates when it is a root, or
+when it is International and every root is an International module such as a
+map. Otherwise it lists the candidates and requires `--edition URI`.
 `inspect` reports duplicate Snapshot files with `importable: false` and lists
 their paths in `duplicate_files`; import rejects merged packages.
 
