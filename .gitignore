@@ -8,3 +8,6 @@
 *.log
 __pycache__/
 .playwright-mcp/
+
+# Temporary tapes holding a TRUD key while scripts/record.sh runs.
+docs/recordings/.key-*
