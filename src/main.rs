@@ -865,7 +865,9 @@ fn run() -> Result<()> {
                 if let Some(old) = action.replaced {
                     let question = format!("Remove {old}, whose archive TRUD replaced?");
                     if report.yes || !human || !interactive() || !confirm(&question, "")? {
-                        eprintln!("  `remove {old}` deletes the index whose archive TRUD replaced.");
+                        eprintln!(
+                            "  `remove {old}` deletes the index whose archive TRUD replaced."
+                        );
                     } else {
                         remove_index(&old, true)?;
                     }
