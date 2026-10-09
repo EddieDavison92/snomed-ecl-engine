@@ -415,6 +415,13 @@ impl Options {
     }
 }
 
+fn same_file(a: &Path, b: &Path) -> bool {
+    match (std::fs::canonicalize(a), std::fs::canonicalize(b)) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => false,
+    }
+}
+
 fn default_items(indexed: &[Indexed]) -> Vec<u32> {
     let mut items: Vec<_> = indexed
         .iter()
@@ -473,12 +480,17 @@ pub fn run(args: &[String], human: bool) -> Result<Option<Report>> {
                 item,
                 release: latest.clone(),
                 name: suggested_name(item, latest, assessment.indexed, &names),
-                // Only a library index can be removed by name.
+                // Only a library index can be removed by name, so the compared
+                // index must be that library file, not one sharing its name.
                 replaced: assessment
                     .indexed
                     .filter(|_| assessment.status == Status::Reissued)
-                    .map(|index| index.name.clone())
-                    .filter(|name| names.contains(name)),
+                    .filter(|index| {
+                        library_entries.iter().any(|entry| {
+                            entry.name == index.name && same_file(&entry.path, &index.path)
+                        })
+                    })
+                    .map(|index| index.name.clone()),
             });
         }
         statuses.push(assessment.status);
@@ -501,6 +513,22 @@ mod tests {
 
     fn releases() -> Vec<Release> {
         download::parse_releases(RECORDED, true, KEY).unwrap().0
+    }
+
+    #[test]
+    fn only_the_same_file_counts_as_the_library_index() {
+        let library = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        let inside = library.path().join("uk-20260923.ecl");
+        let elsewhere = outside.path().join("uk-20260923.ecl");
+        std::fs::write(&inside, b"a").unwrap();
+        std::fs::write(&elsewhere, b"a").unwrap();
+        assert!(same_file(
+            &inside,
+            &library.path().join(".").join("uk-20260923.ecl")
+        ));
+        assert!(!same_file(&inside, &elsewhere));
+        assert!(!same_file(&inside, &outside.path().join("missing.ecl")));
     }
 
     #[test]

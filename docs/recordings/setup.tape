@@ -13,8 +13,9 @@ Show
 Type "snomed-ecl-engine login"
 Sleep 400ms
 Enter
-# Never type the key unless the hidden prompt is showing.
-Wait+Screen@15s /TRUD API key/
+# Never type the key unless the hidden prompt itself is showing; on timeout
+# VHS stops before typing anything.
+Wait+Screen@15s /TRUD API key ›/
 Sleep 1s
 Type@5ms "@TRUD_KEY@"
 Sleep 600ms

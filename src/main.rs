@@ -5,7 +5,7 @@ use snomed_ecl_engine::import::{
 };
 use snomed_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
 use snomed_ecl_engine::{ecl, eval};
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, BufRead, IsTerminal, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 #[cfg(feature = "prompts")]
@@ -116,7 +116,6 @@ fn show(answer: Vec<u8>, human: bool, render: impl FnOnce(&serde_json::Value)) -
 
 /// A person can answer prompts: stdin and stderr are both terminals.
 fn interactive() -> bool {
-    use std::io::IsTerminal;
     io::stdin().is_terminal() && io::stderr().is_terminal()
 }
 
@@ -885,7 +884,12 @@ fn run() -> Result<()> {
         #[cfg(feature = "download")]
         "login" => {
             ensure!(args.len() == 1, "Usage: login");
-            let key = if interactive() {
+            // A terminal on stdin must never echo the key, whatever stderr is.
+            let key = if io::stdin().is_terminal() {
+                ensure!(
+                    interactive(),
+                    "login reads the key without echoing it, which needs stderr on the                      terminal too. Run it without redirecting stderr, or pipe the key in"
+                );
                 eprintln!("  Your TRUD API key is on your account page at https://isd.digital.nhs.uk/trud/");
                 picker::secret("TRUD API key")?
             } else {
