@@ -860,11 +860,12 @@ fn run() -> Result<()> {
                 }
                 download_and_add(action.item, action.release, action.name, None, false, human)?;
                 statuses[action.position] = updates::Status::UpToDate;
-                // Deleting is never implied by --yes.
+                // Deleting is never implied by --yes, and JSON output stays
+                // free of prose, so the hint goes to stderr.
                 if let Some(old) = action.replaced {
                     let question = format!("Remove {old}, whose archive TRUD replaced?");
-                    if report.yes || !interactive() || !confirm(&question, "")? {
-                        println!("  `remove {old}` deletes the index whose archive TRUD replaced.");
+                    if report.yes || !human || !interactive() || !confirm(&question, "")? {
+                        eprintln!("  `remove {old}` deletes the index whose archive TRUD replaced.");
                     } else {
                         remove_index(&old, true)?;
                     }
