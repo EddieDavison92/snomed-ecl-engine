@@ -486,6 +486,11 @@ pub fn add_refsets_snapshot(
         previous.active_non_concept_rows,
         previous.snapshot_files + simple_files.len(),
     )?);
+    for repair in super::header_repairs(&mut archive)? {
+        if !manifest.header_repairs.contains(&repair) {
+            manifest.header_repairs.push(repair);
+        }
+    }
     manifest.supplements.push(RefsetSupplement {
         archive_sha256: archive_hash,
         release_date,
