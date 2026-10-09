@@ -44,9 +44,10 @@ Sleep 800ms
 Enter
 Sleep 6s
 
-# Building takes minutes; the clip resumes when the index is selected.
+# Building takes minutes; the clip resumes when the index is selected, or
+# when an error appears.
 Hide
-Wait+Screen@30m /It is now selected/
+Wait+Screen@30m /It is now selected|Error:/
 Show
 Sleep 3s
 
