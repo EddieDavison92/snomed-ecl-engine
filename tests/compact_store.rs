@@ -507,6 +507,90 @@ fn misnamed_refset_columns_are_read_by_position_and_reported() {
     assert!(manifest.header_repairs.is_empty());
 }
 
+/// Copies an archive, replacing the first `old` with `new` in the file whose
+/// name ends with `suffix`.
+fn rewrite_archive(from: &Path, to: &Path, suffix: &str, old: &str, new: &str) {
+    use std::io::Read;
+    let mut source = zip::ZipArchive::new(File::open(from).unwrap()).unwrap();
+    let mut target = zip::ZipWriter::new(File::create(to).unwrap());
+    let mut rewritten = false;
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).unwrap();
+        let mut body = String::new();
+        entry.read_to_string(&mut body).unwrap();
+        if entry.name().ends_with(suffix) {
+            assert!(body.contains(old), "{suffix} has no {old:?}");
+            body = body.replacen(old, new, 1);
+            rewritten = true;
+        }
+        target
+            .start_file(entry.name(), SimpleFileOptions::default())
+            .unwrap();
+        target.write_all(body.as_bytes()).unwrap();
+    }
+    assert!(rewritten, "no file ends with {suffix}");
+    target.finish().unwrap();
+}
+
+#[test]
+fn every_refset_reader_accepts_and_records_a_misnamed_refset_id() {
+    use snomed_ecl_engine::import::add_refsets_snapshot;
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    // Language, module dependency and descriptor files each have their own reader.
+    for file in [
+        "der2_cRefset_LanguageSnapshot.txt",
+        "der2_ssRefset_ModuleDependencySnapshot.txt",
+        "der2_cciRefset_RefsetDescriptorSnapshot.txt",
+    ] {
+        let variant = temp.path().join(format!("{file}.zip"));
+        rewrite_archive(&archive, &variant, file, "\trefsetId\t", "\trefsetid\t");
+        let destination = temp.path().join(file);
+        let manifest = import_snapshot(&variant, &destination, &options(&variant))
+            .unwrap_or_else(|error| panic!("{file}: {error:#}"));
+        assert_eq!(
+            manifest.header_repairs,
+            [format!("{file}: read refsetid as refsetId")]
+        );
+    }
+    // A supplement records its own repairs alongside the base's.
+    let base = temp.path().join("base");
+    import_snapshot(&archive, &base, &options(&archive)).unwrap();
+    let standard = temp.path().join("extra.zip");
+    supplement_fixture(&standard, LEAF, false);
+    let extra = temp.path().join("extra-misnamed.zip");
+    rewrite_archive(
+        &standard,
+        &extra,
+        "der2_Refset_SimpleSnapshot.txt",
+        "\trefsetId\t",
+        "\trefsetid\t",
+    );
+    let hash = sha256(&extra).unwrap();
+    let combined = add_refsets_snapshot(
+        &base,
+        &extra,
+        &temp.path().join("combined"),
+        "20260820",
+        &hash,
+    )
+    .unwrap();
+    assert_eq!(
+        combined.header_repairs,
+        ["der2_Refset_SimpleSnapshot.txt: read refsetid as refsetId"]
+    );
+    let store = NumericStore::open(&temp.path().join("combined")).unwrap();
+    let members = snomed_ecl_engine::eval::evaluate(
+        &store,
+        &snomed_ecl_engine::ecl::parse("^ 2000001").unwrap(),
+    )
+    .unwrap();
+    let members: Vec<_> = members.iter().map(|&i| store.ids[i as usize]).collect();
+    // The fixture's active members, including one inactive concept.
+    assert_eq!(members, [LEAF, INACTIVE]);
+}
+
 fn options(path: &Path) -> ImportOptions {
     ImportOptions::new(
         format!("http://snomed.info/sct/{ROOT}/version/20260826"),

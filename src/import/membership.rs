@@ -22,31 +22,17 @@ pub(super) fn read(
     concepts: &HashMap<u64, u32>,
     store: &NumericStore,
     edition_date: u32,
-) -> Result<(MembershipIndex, u64, usize, Vec<String>)> {
+) -> Result<(MembershipIndex, u64, usize)> {
     let schemas = super::member_schema::Schemas::read(archive, None, edition_date)?;
-    let mut names: Vec<_> = archive
-        .file_names()
-        .filter(|name| {
-            name.contains("/Snapshot/")
-                && name.ends_with(".txt")
-                && name
-                    .rsplit('/')
-                    .next()
-                    .is_some_and(|file| file.contains("Refset"))
-        })
-        .map(str::to_owned)
-        .collect();
-    names.sort();
+    let names = super::refset_files(archive);
     ensure!(!names.is_empty(), "No Snapshot refset files found");
     let mut pairs = Vec::new();
     let mut non_concept_rows = 0;
     let mut kinds: BTreeMap<u64, Kinds> = BTreeMap::new();
-    let mut repairs = Vec::new();
     for name in &names {
         let header = super::refset_header(archive, name)?;
-        repairs.extend(header.repair);
-        let written: Vec<_> = header.written.iter().map(String::as_str).collect();
-        rows(archive, name, &written, |row| {
+        let columns: Vec<_> = header.columns.iter().map(String::as_str).collect();
+        rows(archive, name, &columns, |row| {
             ensure!(
                 date(row[1])? <= edition_date,
                 "Refset member is newer than edition"
@@ -85,7 +71,7 @@ pub(super) fn read(
     let (concept_refsets, non_concept_refsets) = classify(&kinds, &schemas, store)?;
     index.concept_refsets = Some(concept_refsets);
     index.non_concept_refsets = Some(non_concept_refsets);
-    Ok((index, non_concept_rows, names.len(), repairs))
+    Ok((index, non_concept_rows, names.len()))
 }
 
 /// Section 6.1 confines memberOf to reference sets whose referenced components are concepts.

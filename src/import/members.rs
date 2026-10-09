@@ -20,23 +20,14 @@ pub(super) fn build(
     prior: Option<&crate::store::MemberStore>,
 ) -> Result<Vec<MemberManifest>> {
     let schemas = super::member_schema::Schemas::read(archive, prior, edition_date)?;
-    let mut names: Vec<_> = archive
-        .file_names()
-        .filter(|n| {
-            n.contains("/Snapshot/")
-                && n.ends_with(".txt")
-                && n.rsplit('/').next().is_some_and(|n| n.contains("Refset"))
-        })
-        .map(str::to_owned)
-        .collect();
-    names.sort();
+    let names = super::refset_files(archive);
     let mut manifests = Vec::new();
     let mut seen_refsets = HashSet::new();
     let mut seen_ids = HashSet::new();
     for name in names {
-        // Membership has already reported any misnamed fixed columns.
+        // The importer records any misnamed fixed columns once, up front.
         let header = super::refset_header(archive, &name)?;
-        let fields: Vec<_> = header.written.iter().map(String::as_str).collect();
+        let fields: Vec<_> = header.columns.iter().map(String::as_str).collect();
         let file = name.rsplit('/').next().unwrap();
         let pattern = file
             .split_once('_')

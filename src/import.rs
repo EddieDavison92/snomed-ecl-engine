@@ -392,7 +392,7 @@ pub fn import_snapshot_with_progress(
     store.validate()?;
 
     progress("Indexing concept reference set membership");
-    let (membership, non_concept_rows, refset_files, header_repairs) =
+    let (membership, non_concept_rows, refset_files) =
         membership::read(&mut archive, &lookup, &store, edition_date)?;
     store.membership = Some(membership);
 
@@ -554,7 +554,7 @@ pub fn import_snapshot_with_progress(
         search: Some(search_manifest),
         history: None,
         supplements: Vec::new(),
-        header_repairs,
+        header_repairs: header_repairs(&mut archive)?,
     };
     let mut manifest_file = BufWriter::new(File::create_new(staging.join("manifest.json"))?);
     serde_json::to_writer_pretty(&mut manifest_file, &manifest)?;
@@ -610,12 +610,10 @@ const REFSET_COLUMNS: [&str; 6] = [
 /// names a map refset's referenced component `mapSource`.
 const REFSET_ALIASES: [(&str, &str); 1] = [("referencedComponentId", "mapSource")];
 
-/// A refset file's header as written, and its column names with the first six
-/// set to the RF2 names. RF2 fixes those columns by position, so a header that
+/// A refset file's column names, with the first six set to the RF2 names. RF2 fixes those columns by position, so a header that
 /// differs only by case or a known alias is read by position, and the returned
 /// note says what was read as what. Any other header is rejected.
 struct RefsetHeader {
-    written: Vec<String>,
     columns: Vec<String>,
     repair: Option<String>,
 }
@@ -624,6 +622,34 @@ fn refset_header(archive: &mut ZipArchive<BufReader<File>>, name: &str) -> Resul
     let mut line = String::new();
     BufReader::new(archive.by_name(name)?).read_line(&mut line)?;
     refset_header_from(name, &line)
+}
+
+/// Snapshot refset files, by the name test every refset reader uses.
+fn refset_files(archive: &ZipArchive<BufReader<File>>) -> Vec<String> {
+    let mut names: Vec<_> = archive
+        .file_names()
+        .filter(|name| {
+            name.contains("/Snapshot/")
+                && name.ends_with(".txt")
+                && name
+                    .rsplit('/')
+                    .next()
+                    .is_some_and(|file| file.contains("Refset"))
+        })
+        .map(str::to_owned)
+        .collect();
+    names.sort();
+    names
+}
+
+/// The repair note for every refset file in the package with misnamed fixed
+/// columns, so each is recorded once whichever readers open it.
+fn header_repairs(archive: &mut ZipArchive<BufReader<File>>) -> Result<Vec<String>> {
+    let mut repairs = Vec::new();
+    for name in refset_files(archive) {
+        repairs.extend(refset_header(archive, &name)?.repair);
+    }
+    Ok(repairs)
 }
 
 fn refset_header_from(name: &str, line: &str) -> Result<RefsetHeader> {
@@ -651,11 +677,7 @@ fn refset_header_from(name: &str, line: &str) -> Result<RefsetHeader> {
     }
     let file = name.rsplit('/').next().unwrap_or(name);
     let repair = (!renamed.is_empty()).then(|| format!("{file}: read {}", renamed.join(", ")));
-    Ok(RefsetHeader {
-        written,
-        columns,
-        repair,
-    })
+    Ok(RefsetHeader { columns, repair })
 }
 
 fn rows(
@@ -667,12 +689,19 @@ fn rows(
     let mut reader = BufReader::new(archive.by_name(name)?);
     let mut line = String::new();
     ensure!(reader.read_line(&mut line)? > 0, "Missing RF2 header");
-    let header: Vec<_> = line
-        .trim_start_matches('\u{feff}')
-        .trim_end_matches(['\r', '\n'])
-        .split('\t')
-        .collect();
-    ensure!(header == expected, "Unexpected RF2 header for {name}");
+    // A refset file's fixed columns may be misnamed in the ways refset_header
+    // allows; every other column, and every other file, must match exactly.
+    let matches = if expected.starts_with(&REFSET_COLUMNS) {
+        refset_header_from(name, &line).is_ok_and(|header| header.columns == expected)
+    } else {
+        let header: Vec<_> = line
+            .trim_start_matches('\u{feff}')
+            .trim_end_matches(['\r', '\n'])
+            .split('\t')
+            .collect();
+        header == expected
+    };
+    ensure!(matches, "Unexpected RF2 header for {name}");
     let mut number = 1;
     loop {
         line.clear();
@@ -906,13 +935,11 @@ mod tests {
         let name = "Pkg/Snapshot/Refset/Map/der2_ccRefset_MapSnapshot.txt";
         let standard = "\u{feff}id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget\r\n";
         let header = refset_header_from(name, standard).unwrap();
-        assert_eq!(header.written, header.columns);
         assert!(header.repair.is_none());
         // UK Monolith 43.0.0 wrote this header for its SNOMED to SNOMED map.
         let uk =
             "id\teffectiveTime\tactive\tmoduleId\trefsetid\tmapSource\tmapTarget\tcorelationId\n";
         let header = refset_header_from(name, uk).unwrap();
-        assert_eq!(header.written[4..6], ["refsetid", "mapSource"]);
         assert_eq!(
             header.columns,
             [
