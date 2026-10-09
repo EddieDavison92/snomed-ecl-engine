@@ -460,6 +460,180 @@ fn fixture_with_label(path: &Path, cycle: bool, duplicate: bool, label: &str) {
     archive.finish().unwrap();
 }
 
+#[test]
+fn misnamed_refset_columns_are_read_by_position_and_reported() {
+    use snomed_ecl_engine::{ecl::parse, eval::evaluate};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    // UK Monolith 43.0.0 names a map refset's fixed columns this way.
+    let file = File::options()
+        .read(true)
+        .write(true)
+        .open(&archive)
+        .unwrap();
+    let mut writer = zip::ZipWriter::new_append(file).unwrap();
+    writer
+        .start_file(
+            "Synthetic/Snapshot/Refset/der2_ccRefset_SNOMEDtoSNOMEDSimpleMapSnapshot.txt",
+            SimpleFileOptions::default(),
+        )
+        .unwrap();
+    write!(
+        writer,
+        "id\teffectiveTime\tactive\tmoduleId\trefsetid\tmapSource\tmapTarget\tcorelationId\n\
+         00000000-0000-4000-8000-000000000201\t20260826\t1\t{ROOT}\t{TARGET}\t{LEFT}\t{RIGHT}\t{ROOT}\n"
+    )
+    .unwrap();
+    writer.finish().unwrap();
+    let destination = temp.path().join("store");
+    let manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    assert_eq!(
+        manifest.header_repairs,
+        ["der2_ccRefset_SNOMEDtoSNOMEDSimpleMapSnapshot.txt: read refsetid as refsetId, mapSource as referencedComponentId"]
+    );
+    let store = NumericStore::open(&destination).unwrap();
+    let members = evaluate(&store, &parse(&format!("^ {TARGET}")).unwrap()).unwrap();
+    let members: Vec<_> = members.iter().map(|&i| store.ids[i as usize]).collect();
+    assert_eq!(members, [LEFT]);
+    // The note survives in the stored manifest, and a standard package has none.
+    assert_eq!(
+        Manifest::read(&destination).unwrap().header_repairs,
+        manifest.header_repairs
+    );
+    let plain = temp.path().join("plain.zip");
+    fixture(&plain, false, false);
+    let manifest = import_snapshot(&plain, &temp.path().join("plain"), &options(&plain)).unwrap();
+    assert!(manifest.header_repairs.is_empty());
+}
+
+/// Copies an archive, replacing the first `old` with `new` in the file whose
+/// name ends with `suffix`.
+fn rewrite_archive(from: &Path, to: &Path, suffix: &str, old: &str, new: &str) {
+    use std::io::Read;
+    let mut source = zip::ZipArchive::new(File::open(from).unwrap()).unwrap();
+    let mut target = zip::ZipWriter::new(File::create(to).unwrap());
+    let mut rewritten = false;
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).unwrap();
+        let mut body = String::new();
+        entry.read_to_string(&mut body).unwrap();
+        if entry.name().ends_with(suffix) {
+            assert!(body.contains(old), "{suffix} has no {old:?}");
+            body = body.replacen(old, new, 1);
+            rewritten = true;
+        }
+        target
+            .start_file(entry.name(), SimpleFileOptions::default())
+            .unwrap();
+        target.write_all(body.as_bytes()).unwrap();
+    }
+    assert!(rewritten, "no file ends with {suffix}");
+    target.finish().unwrap();
+}
+
+/// Copies an archive, moving one entry to another path.
+fn rename_entry(from: &Path, to: &Path, old: &str, new: &str) {
+    use std::io::Read;
+    let mut source = zip::ZipArchive::new(File::open(from).unwrap()).unwrap();
+    let mut target = zip::ZipWriter::new(File::create(to).unwrap());
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).unwrap();
+        let mut body = Vec::new();
+        entry.read_to_end(&mut body).unwrap();
+        let name = if entry.name() == old {
+            new.to_owned()
+        } else {
+            entry.name().to_owned()
+        };
+        target
+            .start_file(name, SimpleFileOptions::default())
+            .unwrap();
+        target.write_all(&body).unwrap();
+    }
+    target.finish().unwrap();
+}
+
+#[test]
+fn every_refset_reader_accepts_and_records_a_misnamed_refset_id() {
+    use snomed_ecl_engine::import::add_refsets_snapshot;
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    // Language, module dependency and descriptor files each have their own reader.
+    for file in [
+        "der2_cRefset_LanguageSnapshot.txt",
+        "der2_ssRefset_ModuleDependencySnapshot.txt",
+        "der2_cciRefset_RefsetDescriptorSnapshot.txt",
+    ] {
+        let variant = temp.path().join(format!("{file}.zip"));
+        rewrite_archive(&archive, &variant, file, "\trefsetId\t", "\trefsetid\t");
+        let destination = temp.path().join(file);
+        let manifest = import_snapshot(&variant, &destination, &options(&variant))
+            .unwrap_or_else(|error| panic!("{file}: {error:#}"));
+        assert_eq!(
+            manifest.header_repairs,
+            [format!("{file}: read refsetid as refsetId")]
+        );
+    }
+    // A descriptor found by its folder is read, so its repair is recorded.
+    let descriptor_folder = temp.path().join("descriptor-folder.zip");
+    rewrite_archive(
+        &archive,
+        &descriptor_folder,
+        "der2_cciRefset_RefsetDescriptorSnapshot.txt",
+        "	refsetId	",
+        "	refsetid	",
+    );
+    let moved = temp.path().join("descriptor-moved.zip");
+    rename_entry(
+        &descriptor_folder,
+        &moved,
+        "Synthetic/Snapshot/Refset/der2_cciRefset_RefsetDescriptorSnapshot.txt",
+        "Synthetic/Snapshot/RefsetDescriptor/descriptor.txt",
+    );
+    let manifest = import_snapshot(&moved, &temp.path().join("moved"), &options(&moved)).unwrap();
+    assert_eq!(
+        manifest.header_repairs,
+        ["descriptor.txt: read refsetid as refsetId"]
+    );
+    // A supplement records its own repairs alongside the base's.
+    let base = temp.path().join("base");
+    import_snapshot(&archive, &base, &options(&archive)).unwrap();
+    let standard = temp.path().join("extra.zip");
+    supplement_fixture(&standard, LEAF, false);
+    let extra = temp.path().join("extra-misnamed.zip");
+    rewrite_archive(
+        &standard,
+        &extra,
+        "der2_Refset_SimpleSnapshot.txt",
+        "\trefsetId\t",
+        "\trefsetid\t",
+    );
+    let hash = sha256(&extra).unwrap();
+    let combined = add_refsets_snapshot(
+        &base,
+        &extra,
+        &temp.path().join("combined"),
+        "20260820",
+        &hash,
+    )
+    .unwrap();
+    assert_eq!(
+        combined.header_repairs,
+        ["der2_Refset_SimpleSnapshot.txt: read refsetid as refsetId"]
+    );
+    let store = NumericStore::open(&temp.path().join("combined")).unwrap();
+    let members = snomed_ecl_engine::eval::evaluate(
+        &store,
+        &snomed_ecl_engine::ecl::parse("^ 2000001").unwrap(),
+    )
+    .unwrap();
+    let members: Vec<_> = members.iter().map(|&i| store.ids[i as usize]).collect();
+    // The fixture's active members, including one inactive concept.
+    assert_eq!(members, [LEAF, INACTIVE]);
+}
+
 fn options(path: &Path) -> ImportOptions {
     ImportOptions::new(
         format!("http://snomed.info/sct/{ROOT}/version/20260826"),

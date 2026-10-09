@@ -3,7 +3,7 @@ use crate::store::{MembershipIndex, NumericStore};
 use anyhow::{ensure, Context, Result};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::BufReader;
 use zip::ZipArchive;
 
 const CONCEPT_TYPE: u64 = 900000000000461009;
@@ -24,42 +24,14 @@ pub(super) fn read(
     edition_date: u32,
 ) -> Result<(MembershipIndex, u64, usize)> {
     let schemas = super::member_schema::Schemas::read(archive, None, edition_date)?;
-    let mut names: Vec<_> = archive
-        .file_names()
-        .filter(|name| {
-            name.contains("/Snapshot/")
-                && name.ends_with(".txt")
-                && name
-                    .rsplit('/')
-                    .next()
-                    .is_some_and(|file| file.contains("Refset"))
-        })
-        .map(str::to_owned)
-        .collect();
-    names.sort();
+    let names = super::refset_files(archive);
     ensure!(!names.is_empty(), "No Snapshot refset files found");
     let mut pairs = Vec::new();
     let mut non_concept_rows = 0;
     let mut kinds: BTreeMap<u64, Kinds> = BTreeMap::new();
     for name in &names {
-        let mut header = String::new();
-        BufReader::new(archive.by_name(name)?).read_line(&mut header)?;
-        let columns: Vec<_> = header
-            .trim_start_matches('\u{feff}')
-            .trim_end_matches(['\r', '\n'])
-            .split('\t')
-            .collect();
-        ensure!(
-            columns.starts_with(&[
-                "id",
-                "effectiveTime",
-                "active",
-                "moduleId",
-                "refsetId",
-                "referencedComponentId"
-            ]),
-            "Unexpected refset Snapshot header for {name}"
-        );
+        let header = super::refset_header(archive, name)?;
+        let columns: Vec<_> = header.columns.iter().map(String::as_str).collect();
         rows(archive, name, &columns, |row| {
             ensure!(
                 date(row[1])? <= edition_date,
