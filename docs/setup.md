@@ -144,7 +144,7 @@ folder holding a UK index:
 scripts/record.sh ~/ecl/bin ~/ecl/library
 ```
 
-It writes `docs/images/expand.gif`, `search.gif` and `query.gif`. The setup clip
+It writes `docs/images/expand.gif`, `search.gif` and `query.gif`; `setup.gif` comes from the tape below. The setup clip
 logs in, downloads the newest UK Monolith and swaps indexes, so it runs only when
 named, and needs a TRUD key and a library holding one older UK index:
 

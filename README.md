@@ -101,6 +101,8 @@ snomed-ecl-engine search chronic kidney
 snomed-ecl-engine query
 ```
 
+![Saving a TRUD API key with login, choosing UK Monolith 43.0.0 from the release menu, downloading and building it, then switching back to the 42.5.0 index and counting asthma concepts](docs/images/setup.gif)
+
 `login` keeps the key in Windows Credential Manager, the macOS Keychain or the
 Secret Service, and checks it with TRUD before saving it. `TRUD_API_KEY`
 overrides it, for CI and containers without a credential store. At a terminal,
