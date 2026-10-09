@@ -532,6 +532,28 @@ fn rewrite_archive(from: &Path, to: &Path, suffix: &str, old: &str, new: &str) {
     target.finish().unwrap();
 }
 
+/// Copies an archive, moving one entry to another path.
+fn rename_entry(from: &Path, to: &Path, old: &str, new: &str) {
+    use std::io::Read;
+    let mut source = zip::ZipArchive::new(File::open(from).unwrap()).unwrap();
+    let mut target = zip::ZipWriter::new(File::create(to).unwrap());
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).unwrap();
+        let mut body = Vec::new();
+        entry.read_to_end(&mut body).unwrap();
+        let name = if entry.name() == old {
+            new.to_owned()
+        } else {
+            entry.name().to_owned()
+        };
+        target
+            .start_file(name, SimpleFileOptions::default())
+            .unwrap();
+        target.write_all(&body).unwrap();
+    }
+    target.finish().unwrap();
+}
+
 #[test]
 fn every_refset_reader_accepts_and_records_a_misnamed_refset_id() {
     use snomed_ecl_engine::import::add_refsets_snapshot;
@@ -554,6 +576,27 @@ fn every_refset_reader_accepts_and_records_a_misnamed_refset_id() {
             [format!("{file}: read refsetid as refsetId")]
         );
     }
+    // A descriptor found by its folder is read, so its repair is recorded.
+    let descriptor_folder = temp.path().join("descriptor-folder.zip");
+    rewrite_archive(
+        &archive,
+        &descriptor_folder,
+        "der2_cciRefset_RefsetDescriptorSnapshot.txt",
+        "	refsetId	",
+        "	refsetid	",
+    );
+    let moved = temp.path().join("descriptor-moved.zip");
+    rename_entry(
+        &descriptor_folder,
+        &moved,
+        "Synthetic/Snapshot/Refset/der2_cciRefset_RefsetDescriptorSnapshot.txt",
+        "Synthetic/Snapshot/RefsetDescriptor/descriptor.txt",
+    );
+    let manifest = import_snapshot(&moved, &temp.path().join("moved"), &options(&moved)).unwrap();
+    assert_eq!(
+        manifest.header_repairs,
+        ["descriptor.txt: read refsetid as refsetId"]
+    );
     // A supplement records its own repairs alongside the base's.
     let base = temp.path().join("base");
     import_snapshot(&archive, &base, &options(&archive)).unwrap();

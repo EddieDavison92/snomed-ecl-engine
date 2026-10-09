@@ -643,11 +643,29 @@ fn refset_files(archive: &ZipArchive<BufReader<File>>) -> Vec<String> {
 }
 
 /// The repair note for every refset file in the package with misnamed fixed
-/// columns, so each is recorded once whichever readers open it.
+/// columns, so each is recorded once whichever readers open it. It covers the
+/// files any refset reader opens, including descriptors found by their folder.
+/// A header that is not a refset's is skipped here: a reader that opens the
+/// file rejects it, and one that does not leaves it alone.
 fn header_repairs(archive: &mut ZipArchive<BufReader<File>>) -> Result<Vec<String>> {
+    let mut names = refset_files(archive);
+    names.extend(
+        archive
+            .file_names()
+            .filter(|name| {
+                name.contains("/Snapshot/")
+                    && name.contains("RefsetDescriptor")
+                    && name.ends_with(".txt")
+            })
+            .map(str::to_owned),
+    );
+    names.sort();
+    names.dedup();
     let mut repairs = Vec::new();
-    for name in refset_files(archive) {
-        repairs.extend(refset_header(archive, &name)?.repair);
+    for name in names {
+        if let Ok(header) = refset_header(archive, &name) {
+            repairs.extend(header.repair);
+        }
     }
     Ok(repairs)
 }
@@ -929,6 +947,45 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_repair_scan_skips_files_that_are_not_refsets() {
+        use std::io::Write;
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("package.zip");
+        let mut writer = zip::ZipWriter::new(File::create(&path).unwrap());
+        for (name, body) in [
+            (
+                "Pkg/Snapshot/Documentation/RefsetNotes.txt",
+                "Notes
+",
+            ),
+            (
+                "Pkg/Snapshot/Refset/der2_Refset_SimpleSnapshot.txt",
+                "id	effectiveTime	active	moduleId	refsetid	referencedComponentId
+",
+            ),
+            (
+                "Pkg/Snapshot/RefsetDescriptor/descriptor.txt",
+                "id	effectiveTime	active	moduleId	refsetId	mapSource
+",
+            ),
+        ] {
+            writer
+                .start_file(name, zip::write::SimpleFileOptions::default())
+                .unwrap();
+            writer.write_all(body.as_bytes()).unwrap();
+        }
+        writer.finish().unwrap();
+        let mut archive = ZipArchive::new(BufReader::new(File::open(&path).unwrap())).unwrap();
+        assert_eq!(
+            header_repairs(&mut archive).unwrap(),
+            [
+                "der2_Refset_SimpleSnapshot.txt: read refsetid as refsetId",
+                "descriptor.txt: read mapSource as referencedComponentId"
+            ]
+        );
+    }
 
     #[test]
     fn refset_headers_read_misnamed_fixed_columns_by_position() {
