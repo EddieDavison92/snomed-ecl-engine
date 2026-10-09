@@ -3,7 +3,7 @@ use crate::store::{MembershipIndex, NumericStore};
 use anyhow::{ensure, Context, Result};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::BufReader;
 use zip::ZipArchive;
 
 const CONCEPT_TYPE: u64 = 900000000000461009;
@@ -22,7 +22,7 @@ pub(super) fn read(
     concepts: &HashMap<u64, u32>,
     store: &NumericStore,
     edition_date: u32,
-) -> Result<(MembershipIndex, u64, usize)> {
+) -> Result<(MembershipIndex, u64, usize, Vec<String>)> {
     let schemas = super::member_schema::Schemas::read(archive, None, edition_date)?;
     let mut names: Vec<_> = archive
         .file_names()
@@ -41,26 +41,12 @@ pub(super) fn read(
     let mut pairs = Vec::new();
     let mut non_concept_rows = 0;
     let mut kinds: BTreeMap<u64, Kinds> = BTreeMap::new();
+    let mut repairs = Vec::new();
     for name in &names {
-        let mut header = String::new();
-        BufReader::new(archive.by_name(name)?).read_line(&mut header)?;
-        let columns: Vec<_> = header
-            .trim_start_matches('\u{feff}')
-            .trim_end_matches(['\r', '\n'])
-            .split('\t')
-            .collect();
-        ensure!(
-            columns.starts_with(&[
-                "id",
-                "effectiveTime",
-                "active",
-                "moduleId",
-                "refsetId",
-                "referencedComponentId"
-            ]),
-            "Unexpected refset Snapshot header for {name}"
-        );
-        rows(archive, name, &columns, |row| {
+        let header = super::refset_header(archive, name)?;
+        repairs.extend(header.repair);
+        let written: Vec<_> = header.written.iter().map(String::as_str).collect();
+        rows(archive, name, &written, |row| {
             ensure!(
                 date(row[1])? <= edition_date,
                 "Refset member is newer than edition"
@@ -99,7 +85,7 @@ pub(super) fn read(
     let (concept_refsets, non_concept_refsets) = classify(&kinds, &schemas, store)?;
     index.concept_refsets = Some(concept_refsets);
     index.non_concept_refsets = Some(non_concept_refsets);
-    Ok((index, non_concept_rows, names.len()))
+    Ok((index, non_concept_rows, names.len(), repairs))
 }
 
 /// Section 6.1 confines memberOf to reference sets whose referenced components are concepts.

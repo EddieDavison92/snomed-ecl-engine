@@ -460,6 +460,53 @@ fn fixture_with_label(path: &Path, cycle: bool, duplicate: bool, label: &str) {
     archive.finish().unwrap();
 }
 
+#[test]
+fn misnamed_refset_columns_are_read_by_position_and_reported() {
+    use snomed_ecl_engine::{ecl::parse, eval::evaluate};
+    let temp = TempDir::new().unwrap();
+    let archive = temp.path().join("fixture.zip");
+    fixture(&archive, false, false);
+    // UK Monolith 43.0.0 names a map refset's fixed columns this way.
+    let file = File::options()
+        .read(true)
+        .write(true)
+        .open(&archive)
+        .unwrap();
+    let mut writer = zip::ZipWriter::new_append(file).unwrap();
+    writer
+        .start_file(
+            "Synthetic/Snapshot/Refset/der2_ccRefset_SNOMEDtoSNOMEDSimpleMapSnapshot.txt",
+            SimpleFileOptions::default(),
+        )
+        .unwrap();
+    write!(
+        writer,
+        "id\teffectiveTime\tactive\tmoduleId\trefsetid\tmapSource\tmapTarget\tcorelationId\n\
+         00000000-0000-4000-8000-000000000201\t20260826\t1\t{ROOT}\t{TARGET}\t{LEFT}\t{RIGHT}\t{ROOT}\n"
+    )
+    .unwrap();
+    writer.finish().unwrap();
+    let destination = temp.path().join("store");
+    let manifest = import_snapshot(&archive, &destination, &options(&archive)).unwrap();
+    assert_eq!(
+        manifest.header_repairs,
+        ["der2_ccRefset_SNOMEDtoSNOMEDSimpleMapSnapshot.txt: read refsetid as refsetId, mapSource as referencedComponentId"]
+    );
+    let store = NumericStore::open(&destination).unwrap();
+    let members = evaluate(&store, &parse(&format!("^ {TARGET}")).unwrap()).unwrap();
+    let members: Vec<_> = members.iter().map(|&i| store.ids[i as usize]).collect();
+    assert_eq!(members, [LEFT]);
+    // The note survives in the stored manifest, and a standard package has none.
+    assert_eq!(
+        Manifest::read(&destination).unwrap().header_repairs,
+        manifest.header_repairs
+    );
+    let plain = temp.path().join("plain.zip");
+    fixture(&plain, false, false);
+    let manifest = import_snapshot(&plain, &temp.path().join("plain"), &options(&plain)).unwrap();
+    assert!(manifest.header_repairs.is_empty());
+}
+
 fn options(path: &Path) -> ImportOptions {
     ImportOptions::new(
         format!("http://snomed.info/sct/{ROOT}/version/20260826"),

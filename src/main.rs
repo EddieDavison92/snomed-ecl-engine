@@ -129,6 +129,17 @@ fn confirm(question: &str, otherwise: &str) -> Result<bool> {
     ))
 }
 
+/// Says which refset files had misnamed fixed columns read by position.
+#[cfg(feature = "import")]
+fn warn_header_repairs(manifest: &Manifest) {
+    for repair in &manifest.header_repairs {
+        eprintln!(
+            "  Warning: nonstandard refset header, read by RF2 column position: {}",
+            presentation::clean(repair)
+        );
+    }
+}
+
 /// Checks, imports and packs an RF2 archive into the library, then selects it.
 #[cfg(feature = "import")]
 fn add_release(
@@ -205,16 +216,17 @@ fn add_release(
             start.elapsed().as_secs_f64()
         );
     })
-    .and_then(|_| {
+    .and_then(|manifest| {
         eprintln!(
             "  [{stages}/{stages}] Packing into one file  ({:.1}s elapsed)",
             start.elapsed().as_secs_f64()
         );
-        snomed_ecl_engine::store::pack(&staging, &destination)
+        snomed_ecl_engine::store::pack(&staging, &destination)?;
+        Ok(manifest)
     });
     // The unpacked directory is only a step towards the file.
     let _ = std::fs::remove_dir_all(&staging);
-    built?;
+    warn_header_repairs(&built?);
     let path = std::fs::canonicalize(&destination)?;
     workspace::save(&workspace::State {
         store: Some(path.clone()),
@@ -888,6 +900,7 @@ fn run() -> Result<()> {
                     );
                 },
             )?;
+            warn_header_repairs(&manifest);
             if human {
                 presentation::manifest(&manifest, Some(&args[2]));
                 eprintln!(

@@ -392,7 +392,7 @@ pub fn import_snapshot_with_progress(
     store.validate()?;
 
     progress("Indexing concept reference set membership");
-    let (membership, non_concept_rows, refset_files) =
+    let (membership, non_concept_rows, refset_files, header_repairs) =
         membership::read(&mut archive, &lookup, &store, edition_date)?;
     store.membership = Some(membership);
 
@@ -554,6 +554,7 @@ pub fn import_snapshot_with_progress(
         search: Some(search_manifest),
         history: None,
         supplements: Vec::new(),
+        header_repairs,
     };
     let mut manifest_file = BufWriter::new(File::create_new(staging.join("manifest.json"))?);
     serde_json::to_writer_pretty(&mut manifest_file, &manifest)?;
@@ -593,6 +594,68 @@ fn snapshot_files(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Vec<St
         .collect();
     names.sort();
     names
+}
+
+/// The six columns RF2 fixes at the start of every refset file.
+const REFSET_COLUMNS: [&str; 6] = [
+    "id",
+    "effectiveTime",
+    "active",
+    "moduleId",
+    "refsetId",
+    "referencedComponentId",
+];
+
+/// Other names a distributor has used for a fixed column. UK Monolith 43.0.0
+/// names a map refset's referenced component `mapSource`.
+const REFSET_ALIASES: [(&str, &str); 1] = [("referencedComponentId", "mapSource")];
+
+/// A refset file's header as written, and its column names with the first six
+/// set to the RF2 names. RF2 fixes those columns by position, so a header that
+/// differs only by case or a known alias is read by position, and the returned
+/// note says what was read as what. Any other header is rejected.
+struct RefsetHeader {
+    written: Vec<String>,
+    columns: Vec<String>,
+    repair: Option<String>,
+}
+
+fn refset_header(archive: &mut ZipArchive<BufReader<File>>, name: &str) -> Result<RefsetHeader> {
+    let mut line = String::new();
+    BufReader::new(archive.by_name(name)?).read_line(&mut line)?;
+    refset_header_from(name, &line)
+}
+
+fn refset_header_from(name: &str, line: &str) -> Result<RefsetHeader> {
+    let written: Vec<String> = line
+        .trim_start_matches('\u{feff}')
+        .trim_end_matches(['\r', '\n'])
+        .split('\t')
+        .map(str::to_owned)
+        .collect();
+    ensure!(
+        written.len() >= REFSET_COLUMNS.len(),
+        "Unexpected refset Snapshot header for {name}"
+    );
+    let mut columns = written.clone();
+    let mut renamed = Vec::new();
+    for (column, standard) in columns.iter_mut().zip(REFSET_COLUMNS) {
+        if column == standard {
+            continue;
+        }
+        let known = column.eq_ignore_ascii_case(standard)
+            || REFSET_ALIASES.contains(&(standard, column.as_str()));
+        ensure!(known, "Unexpected refset Snapshot header for {name}");
+        renamed.push(format!("{column} as {standard}"));
+        *column = standard.to_owned();
+    }
+    let file = name.rsplit('/').next().unwrap_or(name);
+    let repair = (!renamed.is_empty()).then(|| format!("{file}: read {}", renamed.join(", ")));
+    Ok(RefsetHeader {
+        written,
+        columns,
+        repair,
+    })
 }
 
 fn rows(
@@ -837,6 +900,46 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn refset_headers_read_misnamed_fixed_columns_by_position() {
+        let name = "Pkg/Snapshot/Refset/Map/der2_ccRefset_MapSnapshot.txt";
+        let standard = "\u{feff}id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget\r\n";
+        let header = refset_header_from(name, standard).unwrap();
+        assert_eq!(header.written, header.columns);
+        assert!(header.repair.is_none());
+        // UK Monolith 43.0.0 wrote this header for its SNOMED to SNOMED map.
+        let uk =
+            "id\teffectiveTime\tactive\tmoduleId\trefsetid\tmapSource\tmapTarget\tcorelationId\n";
+        let header = refset_header_from(name, uk).unwrap();
+        assert_eq!(header.written[4..6], ["refsetid", "mapSource"]);
+        assert_eq!(
+            header.columns,
+            [
+                "id",
+                "effectiveTime",
+                "active",
+                "moduleId",
+                "refsetId",
+                "referencedComponentId",
+                "mapTarget",
+                "corelationId"
+            ]
+        );
+        assert_eq!(
+            header.repair.as_deref(),
+            Some("der2_ccRefset_MapSnapshot.txt: read refsetid as refsetId, mapSource as referencedComponentId")
+        );
+        // Anything else in the fixed columns is still rejected.
+        for bad in [
+            "id\teffectiveTime\tactive\tmoduleId\trefsetId\tmapTarget\n",
+            "id\teffectiveTime\tactive\tmoduleId\trefsetId\n",
+            "uuid\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\n",
+            "id\teffectiveTime\tactive\tmoduleId\tmapSource\treferencedComponentId\n",
+        ] {
+            assert!(refset_header_from(name, bad).is_err(), "{bad:?}");
+        }
+    }
 
     #[test]
     fn display_defaults_follow_the_edition_module() {

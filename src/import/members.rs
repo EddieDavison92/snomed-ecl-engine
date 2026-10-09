@@ -6,7 +6,7 @@ use crate::store::{
 use anyhow::{ensure, Context, Result};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::BufReader;
 use std::path::Path;
 use zip::ZipArchive;
 
@@ -34,24 +34,9 @@ pub(super) fn build(
     let mut seen_refsets = HashSet::new();
     let mut seen_ids = HashSet::new();
     for name in names {
-        let mut header = String::new();
-        BufReader::new(archive.by_name(&name)?).read_line(&mut header)?;
-        let fields: Vec<_> = header
-            .trim_start_matches('\u{feff}')
-            .trim_end_matches(['\r', '\n'])
-            .split('\t')
-            .collect();
-        ensure!(
-            fields.starts_with(&[
-                "id",
-                "effectiveTime",
-                "active",
-                "moduleId",
-                "refsetId",
-                "referencedComponentId"
-            ]),
-            "Invalid refset header"
-        );
+        // Membership has already reported any misnamed fixed columns.
+        let header = super::refset_header(archive, &name)?;
+        let fields: Vec<_> = header.written.iter().map(String::as_str).collect();
         let file = name.rsplit('/').next().unwrap();
         let pattern = file
             .split_once('_')
@@ -65,7 +50,8 @@ pub(super) fn build(
             "Refset filename and field count differ"
         );
         let types: Vec<_> = pattern.bytes().collect();
-        let column_names: Vec<String> = fields
+        let column_names: Vec<String> = header
+            .columns
             .iter()
             .map(|name| name.chars().filter(|c| !c.is_whitespace()).collect())
             .collect();

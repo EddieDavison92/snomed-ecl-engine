@@ -53,6 +53,16 @@ it through `ImportOptions`. No download URL or API key is stored. Packing
 preserves these values. Older manifests without `source` remain readable, and
 manifest readers accept unknown fields. The format number remains 1.
 
+RF2 fixes a refset file's first six columns by position: `id`, `effectiveTime`,
+`active`, `moduleId`, `refsetId`, `referencedComponentId`. A header that names
+them differently only by case, or by a known alias (`mapSource` for
+`referencedComponentId`), is read by position; any other header is rejected.
+`header_repairs` lists each such file and what was read as what, and `add`,
+`download` and `import` print it as a warning. UK Monolith 43.0.0 needs this
+for `der2_ccRefset_SNOMEDtoSNOMEDSimpleMapMONOSnapshot_GB_20260408.txt`, whose
+header has `refsetid` and `mapSource`. The field is absent when every header
+was standard.
+
 ## What each section holds
 
 UK Monolith, 26 August 2026:

@@ -75,6 +75,10 @@ pub struct Manifest {
     pub history: Option<HistoryManifest>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplements: Vec<RefsetSupplement>,
+    /// Refset files whose first six columns were misnamed and read by their
+    /// RF2 positions instead. Absent when every header was standard.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub header_repairs: Vec<String>,
 }
 
 /// The distributor and release from which the indexed archive was acquired.
