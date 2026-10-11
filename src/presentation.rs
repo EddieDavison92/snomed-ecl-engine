@@ -235,6 +235,7 @@ fn root() {
     println!("  hierarchy   List a concept's parents, children, ancestors or descendants");
     println!("  diff        Compare one expression across two indexes");
     println!("  batch       Answer JSONL requests on stdin, for scripts and agents\n");
+    println!("  self-update Check or update the CLI executable\n");
     println!("Run COMMAND --help for arguments and examples.\n");
     match crate::workspace::load().store {
         Some(store) => {
@@ -264,6 +265,7 @@ fn root() {
 pub fn help(command: Option<&str>) -> anyhow::Result<()> {
     println!("{}  {}\n", heading("SNOMED ECL"), env!("CARGO_PKG_VERSION"));
     match command {
+        Some("self-update") => println!("Usage: self-update [--check] [--version X] [--yes]\n\nCheck GitHub for a CLI release or update a standalone executable.\n--check reports the version and upgrade command without downloading.\n--version X selects a release (with or without v); downgrades are refused.\n--yes skips confirmation; required without an interactive terminal.\nThe archive must match the release's SHA256SUMS before replacement.\nnpm, Cargo, Homebrew and containers must use their printed upgrade command.\nNeeds the update-check feature. `updates` checks terminology releases instead."),
         Some("pack") => println!("Usage: pack STORE DESTINATION_FILE [--uncompressed|--block-kib 16|64]\n\nPack a directory index or repack an existing container into one file.\nAll sections and semantic data are preserved. Default: zstd level 15, 64 KiB blocks.\n--uncompressed provides a comparison baseline. No RF2 reimport is needed.\nDESTINATION_FILE must not exist. Packing uses temporary disk space beside it.\nPublication requires hard-link support on that filesystem.\nUse the resulting file with stats, verify, expand, batch or add-refsets.\nCompression reduces file size; decoded query indexes still occupy memory."),
         Some("verify") => println!("Usage: verify [STORE]\n\nCheck every component checksum and its structure, including cold sections.\nSTORE may be a directory or a packed index file.\nDescription and member sections are checked individually.\nOrdinary queries continue to verify each section when it is first loaded."),
         None | Some("help") => root(),

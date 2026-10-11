@@ -12,6 +12,84 @@ snomed-ecl-engine expand '404684003' --display
 snomed-ecl-engine expand '<< 404684003' --count
 ```
 
+## Update the CLI
+
+Default builds include the `update-check` feature. On an interactive stderr,
+startup shows at most one notice if a cached GitHub release is newer than the
+running CLI. It includes the exact upgrade command for the installation:
+
+| Installation | Upgrade command |
+|---|---|
+| npm | `npm i -g snomed-ecl-engine` |
+| Cargo, including `cargo binstall` | `cargo install snomed-ecl-engine` |
+| Homebrew (`eddiedavison92/tap`) | `brew upgrade snomed-ecl-engine` |
+| Official container | `docker pull ghcr.io/eddiedavison92/snomed-ecl-engine:VERSION` |
+| Standalone release executable | `snomed-ecl-engine self-update` |
+
+A silent background process checks
+`EddieDavison92/snomed-ecl-engine`'s latest GitHub release with a two-second
+HTTP timeout. It can finish after a fast command exits; the next run reads its
+result. There is at most one automatic network attempt per 24 hours, including
+failed attempts and simultaneous CLI invocations. Network, parse and cache
+errors are silent and never fail or hold up the command. A previously cached
+notice can still appear if a later check fails.
+
+The cache is `snomed-ecl-engine/cli-update.json` beneath:
+
+- Linux: `$XDG_CACHE_HOME`, or `~/.cache`.
+- macOS: `~/Library/Caches`.
+- Windows: `%LOCALAPPDATA%`.
+
+`SNOMED_ECL_NO_UPDATE_CHECK=1`, `--json`, `--plain`, non-terminal stderr or a
+CI environment such as `CI`, `GITHUB_ACTIONS`, `GITLAB_CI` or `TF_BUILD`
+suppresses both the notice and automatic network checks. `self-update` also
+suppresses the startup check. Agents should surface any printed upgrade
+command to the user and wait for an explicit request before running it.
+
+```sh
+snomed-ecl-engine self-update --check
+snomed-ecl-engine self-update
+snomed-ecl-engine self-update --version 0.2.2 --yes
+```
+
+`self-update [--check] [--version X] [--yes]` explicitly fetches the latest
+release, or the specified version with an optional `v` prefix. This manual
+check bypasses the daily cache and startup suppression settings. `--check`
+reports the installed and release versions plus any upgrade command without
+downloading an archive or changing the executable. It works for managed
+installations too.
+
+Updating a standalone executable asks for confirmation; without an interactive
+terminal, pass `--yes`. It selects the matching platform and `default`, `query`
+or `unicode` archive, verifies its SHA-256 against the release's `SHA256SUMS`,
+and extracts only the executable into a temporary file beside the running
+binary. Missing checksums, missing entries, malformed manifests and mismatches
+fail before replacement. Downgrades and unsupported platform/build combinations
+are refused. On Unix, rename replaces the executable atomically. On Windows,
+the current binary is renamed to `.exe.old`, the new binary is moved into place,
+and the next run removes `.old`; a failed move restores the previous binary.
+The installation directory must be writable.
+
+npm, Cargo, Homebrew and container installations refuse self-replacement and
+print the appropriate upgrade command. Container refusal uses `:latest` unless
+`--version` is supplied. Normalised executable paths identify npm, Cargo and
+Homebrew layouts; the npm launcher and official container also mark their
+installation method explicitly.
+
+Release archives have provenance attestations. You may additionally run
+`gh attestation verify ARCHIVE --repo EddieDavison92/snomed-ecl-engine`;
+self-update does not require `gh` or perform attestation verification.
+
+`--no-default-features` builds have no update network code and report that
+self-update needs `update-check`. The published `query` build has this
+restriction. To compile a query-only CLI with update support, use
+`--no-default-features --features update-check`; updating it to the published
+`query` archive removes that optional support. `update-check` can be enabled
+without the TRUD `download` feature and does not change the library API.
+
+`updates` below checks terminology releases from TRUD; it does not update the
+CLI executable.
+
 ## Manage indexes
 
 `login` saves your TRUD API key in the system's credential store: Windows

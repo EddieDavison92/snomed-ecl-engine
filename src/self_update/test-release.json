@@ -1,0 +1,9 @@
+{
+  "tag_name": "v99.1.0",
+  "draft": false,
+  "prerelease": false,
+  "assets": [
+    {"name": "SHA256SUMS", "browser_download_url": "BASE/SHA256SUMS"},
+    {"name": "ASSET", "browser_download_url": "BASE/archive"}
+  ]
+}

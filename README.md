@@ -77,6 +77,29 @@ gh attestation verify oci://ghcr.io/eddiedavison92/snomed-ecl-engine:0.2.1   --r
 npm packages carry the equivalent provenance, which `npm audit signatures`
 checks.
 
+At startup, the default and Unicode builds can print one short CLI update notice
+on stderr, including the upgrade command for your installation. A silent
+background check of GitHub runs at most once a day; cached results are shown
+on later runs, so fast commands never wait for the network. Disable it with
+`SNOMED_ECL_NO_UPDATE_CHECK=1`, `--json` or `--plain`. It is also disabled in
+CI, when stderr is redirected, and for `self-update`.
+
+For standalone release executables:
+
+```sh
+snomed-ecl-engine self-update --check
+snomed-ecl-engine self-update                 # asks before replacing the executable
+snomed-ecl-engine self-update --version 0.2.2 --yes
+```
+
+Self-update preserves the platform and build variant, verifies the archive
+against the release's `SHA256SUMS`, then replaces the executable. npm, Cargo,
+Homebrew and container installations print their own upgrade command and
+refuse replacement. `gh attestation verify` can additionally verify the
+provenance as shown above; `gh` is not required by self-update. See the
+[CLI guide](docs/cli.md#update-the-cli) for cache locations and build options.
+`updates` checks SNOMED CT terminology archives, separately from CLI updates.
+
 The index format may change between releases without a migration: rebuild the
 index from your RF2 archive when you upgrade.
 

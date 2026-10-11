@@ -27,7 +27,7 @@ try {
   process.exit(1);
 }
 
-const result = spawnSync(executable, process.argv.slice(2), { stdio: "inherit" });
+const result = spawnSync(executable, process.argv.slice(2), { stdio: "inherit", env: { ...process.env, SNOMED_ECL_INSTALL_METHOD: "npm" } });
 if (result.error) {
   console.error(result.error.message);
   process.exit(1);
