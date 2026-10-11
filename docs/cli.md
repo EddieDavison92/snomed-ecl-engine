@@ -87,7 +87,7 @@ restriction. To compile a query-only CLI with update support, use
 `query` archive removes that optional support. `update-check` can be enabled
 without the TRUD `download` feature and does not change the library API.
 
-`updates` below checks terminology releases from TRUD; it does not update the
+`releases` below checks terminology releases from TRUD; it does not update the
 CLI executable.
 
 ## Manage indexes
@@ -102,7 +102,7 @@ containers without a credential store use the variable.
 At a terminal, `download` with no item shows a menu of editions, then that
 edition's releases with their dates and sizes, marking the newest and any
 already indexed. Picking an indexed release selects that index; picking another
-downloads it under the name `updates` would suggest. Escape cancels.
+downloads it under the name `releases` would suggest. Escape cancels.
 
 `download ITEM` fetches the newest UK Monolith Snapshot from NHS England's
 [TRUD](https://isd.digital.nhs.uk/trud/), checks it against the SHA-256 TRUD
@@ -166,9 +166,9 @@ The library folder is `SNOMED_ECL_HOME` if set, else `snomed-ecl-engine/indexes`
 in the platform's data folder: `%LOCALAPPDATA%` on Windows, `~/Library/Application
 Support` on macOS and `$XDG_DATA_HOME` or `~/.local/share` on Linux.
 
-## Check for updates
+## Check terminology releases
 
-`updates [ITEM ...]` compares TRUD's newest archive SHA-256 with indexed
+`releases [ITEM ...]` compares TRUD's newest archive SHA-256 with indexed
 archives. It uses the TRUD key, as `download` does. With no item, it checks the
 distinct item numbers recorded in the manifests of the indexes being compared,
 or `uk-monolith` when none are recorded. Items may be known names or TRUD item
@@ -177,7 +177,7 @@ numbers.
 By default it compares every index in the library, across all editions.
 `--index PATH` compares only the specified indexes. Each flag takes one path;
 repeat `--index` to add paths. An item may follow the path, as in
-`updates --index data/base.ecl uk-monolith`.
+`releases --index data/base.ecl uk-monolith`.
 It reads manifests and makes one release-list request per item. It skips older
 releases with invalid metadata, including null or missing fields, and warns on
 stderr; invalid newest metadata fails the check. `download --release ID`
@@ -185,8 +185,8 @@ validates only the chosen release, so a suggested command still works when
 older metadata has been skipped.
 
 ```sh
-snomed-ecl-engine updates
-snomed-ecl-engine updates uk-monolith --index data/base.ecl --json --exit-code
+snomed-ecl-engine releases
+snomed-ecl-engine releases uk-monolith --index data/base.ecl --json --exit-code
 ```
 
 Each item reports the indexed name, release and SHA-256 prefix, the newest
@@ -223,7 +223,7 @@ Redirected output, `--json` or `--plain` gives one JSON line per item with `item
 is null when none is available; otherwise it has `name`, `path`,
 `archive_sha256`, and `release_id` and `release_name` when known. `latest` has
 `id`, `name`, `release_date`, `bytes` and `sha256`, or is null when TRUD lists no
-releases. For `updates`, `--plain` uses the same JSON lines as `--json`.
+releases. For `releases`, `--plain` uses the same JSON lines as `--json`.
 Credential-bearing TRUD URLs are redacted. The configured key is also
 redacted wherever it appears when it has at least eight characters; shorter
 keys are redacted only inside TRUD URLs, preserving ordinary paths and hashes.
@@ -346,7 +346,7 @@ gives plain lines for scripts. `--json` gives JSON:
 | `use` | Index and edition JSON | Same |
 | `add` · `download` | Name, path, edition and size JSON | Same |
 | `download --list` | One release object per line | Same |
-| `updates` | One update assessment per line | Same |
+| `releases` | One release assessment per line | Same |
 | `inspect` | Archive summary JSON | Same |
 | `diff` | Comparison JSON | Same |
 | `stats` | Manifest JSON | Same |

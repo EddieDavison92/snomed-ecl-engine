@@ -874,9 +874,11 @@ fn run() -> Result<()> {
             add_release(Path::new(&args[1]), sha256, name, edition, None, human)?;
         }
         #[cfg(not(feature = "download"))]
-        "updates" => bail!("Update checks need the `download` feature; use the default build"),
+        "releases" | "updates" => {
+            bail!("Terminology release checks need the `download` feature; use the default build")
+        }
         #[cfg(feature = "download")]
-        "updates" => {
+        "releases" | "updates" => {
             let Some(report) = updates::run(&args[1..], human)? else {
                 return Ok(());
             };

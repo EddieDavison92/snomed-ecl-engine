@@ -98,7 +98,7 @@ Homebrew and container installations print their own upgrade command and
 refuse replacement. `gh attestation verify` can additionally verify the
 provenance as shown above; `gh` is not required by self-update. See the
 [CLI guide](docs/cli.md#update-the-cli) for cache locations and build options.
-`updates` checks SNOMED CT terminology archives, separately from CLI updates.
+`releases` checks SNOMED CT terminology archives, separately from CLI updates.
 
 The index format may change between releases without a migration: rebuild the
 index from your RF2 archive when you upgrade.
@@ -160,10 +160,10 @@ at a terminal, picks from a menu.
 
 ## Keeping up to date
 
-Run `snomed-ecl-engine updates` to compare library archives with TRUD's newest
+Run `snomed-ecl-engine releases` to compare library archives with TRUD's newest
 releases. It reports whether each item is current, behind, reissued or unknown,
 and prints an exact download command when needed. Re-issues are detected by
-SHA-256 even when the edition date stays the same. `updates --apply` downloads
+SHA-256 even when the edition date stays the same. `releases --apply` downloads
 each item that is behind or reissued after asking, then offers to remove an
 index whose archive TRUD replaced; `--yes` skips the download question but never
 removes anything.
@@ -173,7 +173,7 @@ JSON line per item. `--exit-code` exits 3 for behind or reissued, 4 for unknown
 when none needs an update, 0 when all are current, and 1 on error. The key and
 download URLs are never printed. Use the API on weekdays 08:00–18:00 or
 00:00–06:00 UK time to avoid TRUD maintenance windows. See
-[the CLI guide](docs/cli.md#check-for-updates) for item selection and output.
+[the CLI guide](docs/cli.md#check-terminology-releases) for item selection and output.
 
 ## What you can do with it
 
