@@ -29,15 +29,21 @@ sha2 = "0.10"
 zstd = { version = "0.13.3", default-features = false }
 zip = { version = "8.6", optional = true, default-features = false, features = ["deflate"] }
 ureq = { version = "3.4", optional = true, default-features = false, features = ["rustls"] }
+semver = { version = "1", optional = true }
+tar = { version = "0.4", optional = true }
+flate2 = { version = "1", optional = true }
+tempfile = { version = "3", optional = true }
 # Keeps the TRUD API key in the operating system's credential store.
 keyring = { version = "4.2", optional = true }
 dialoguer = { version = "0.12", optional = true, default-features = false, features = ["password"] }
 
 [features]
-default = ["import", "download"]
+default = ["import", "download", "update-check"]
 import = ["dep:zip", "zstd/zdict_builder"]
 # Fetch releases from NHS England TRUD; needs the importer to build them.
 download = ["import", "dep:ureq", "dep:keyring", "prompts"]
+# CLI release notices and verified standalone binary updates; independent of TRUD.
+update-check = ["dep:ureq", "dep:semver", "dep:tar", "dep:flate2", "dep:zip", "dep:tempfile"]
 # Arrow-key menus at a terminal; scripts never see them.
 prompts = ["dep:dialoguer"]
 unicode = ["dep:cc", "dep:pkg-config"]

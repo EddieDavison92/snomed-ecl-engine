@@ -1,4 +1,8 @@
 fn main() {
+    println!(
+        "cargo:rustc-env=SNOMED_ECL_TARGET={}",
+        std::env::var("TARGET").unwrap()
+    );
     #[cfg(feature = "unicode")]
     {
         let icu = pkg_config::Config::new()

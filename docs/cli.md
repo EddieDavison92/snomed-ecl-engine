@@ -12,6 +12,84 @@ snomed-ecl-engine expand '404684003' --display
 snomed-ecl-engine expand '<< 404684003' --count
 ```
 
+## Update the CLI
+
+Default builds include the `update-check` feature. On an interactive stderr,
+startup shows at most one notice if a cached GitHub release is newer than the
+running CLI. It includes the exact upgrade command for the installation:
+
+| Installation | Upgrade command |
+|---|---|
+| npm | `npm i -g snomed-ecl-engine` |
+| Cargo, including `cargo binstall` | `cargo install snomed-ecl-engine` |
+| Homebrew (`eddiedavison92/tap`) | `brew upgrade snomed-ecl-engine` |
+| Official container | `docker pull ghcr.io/eddiedavison92/snomed-ecl-engine:VERSION` |
+| Standalone release executable | `snomed-ecl-engine self-update` |
+
+A silent background process checks
+`EddieDavison92/snomed-ecl-engine`'s latest GitHub release with a two-second
+HTTP timeout. It can finish after a fast command exits; the next run reads its
+result. There is at most one automatic network attempt per 24 hours, including
+failed attempts and simultaneous CLI invocations. Network, parse and cache
+errors are silent and never fail or hold up the command. A previously cached
+notice can still appear if a later check fails.
+
+The cache is `snomed-ecl-engine/cli-update.json` beneath:
+
+- Linux: `$XDG_CACHE_HOME`, or `~/.cache`.
+- macOS: `~/Library/Caches`.
+- Windows: `%LOCALAPPDATA%`.
+
+`SNOMED_ECL_NO_UPDATE_CHECK=1`, `--json`, `--plain`, non-terminal stderr or a
+CI environment such as `CI`, `GITHUB_ACTIONS`, `GITLAB_CI` or `TF_BUILD`
+suppresses both the notice and automatic network checks. `self-update` also
+suppresses the startup check. Agents should surface any printed upgrade
+command to the user and wait for an explicit request before running it.
+
+```sh
+snomed-ecl-engine self-update --check
+snomed-ecl-engine self-update
+snomed-ecl-engine self-update --version 0.2.2 --yes
+```
+
+`self-update [--check] [--version X] [--yes]` explicitly fetches the latest
+release, or the specified version with an optional `v` prefix. This manual
+check bypasses the daily cache and startup suppression settings. `--check`
+reports the installed and release versions plus any upgrade command without
+downloading an archive or changing the executable. It works for managed
+installations too.
+
+Updating a standalone executable asks for confirmation; without an interactive
+terminal, pass `--yes`. It selects the matching platform and `default`, `query`
+or `unicode` archive, verifies its SHA-256 against the release's `SHA256SUMS`,
+and extracts only the executable into a temporary file beside the running
+binary. Missing checksums, missing entries, malformed manifests and mismatches
+fail before replacement. Downgrades and unsupported platform/build combinations
+are refused. On Unix, rename replaces the executable atomically. On Windows,
+the current binary is renamed to `.exe.old`, the new binary is moved into place,
+and the next run removes `.old`; a failed move restores the previous binary.
+The installation directory must be writable.
+
+npm, Cargo, Homebrew and container installations refuse self-replacement and
+print the appropriate upgrade command. Container refusal uses `:latest` unless
+`--version` is supplied. Normalised executable paths identify npm, Cargo and
+Homebrew layouts; the npm launcher and official container also mark their
+installation method explicitly.
+
+Release archives have provenance attestations. You may additionally run
+`gh attestation verify ARCHIVE --repo EddieDavison92/snomed-ecl-engine`;
+self-update does not require `gh` or perform attestation verification.
+
+`--no-default-features` builds have no update network code and report that
+self-update needs `update-check`. The published `query` build has this
+restriction. To compile a query-only CLI with update support, use
+`--no-default-features --features update-check`; updating it to the published
+`query` archive removes that optional support. `update-check` can be enabled
+without the TRUD `download` feature and does not change the library API.
+
+`releases` below checks terminology releases from TRUD; it does not update the
+CLI executable.
+
 ## Manage indexes
 
 `login` saves your TRUD API key in the system's credential store: Windows
@@ -24,7 +102,7 @@ containers without a credential store use the variable.
 At a terminal, `download` with no item shows a menu of editions, then that
 edition's releases with their dates and sizes, marking the newest and any
 already indexed. Picking an indexed release selects that index; picking another
-downloads it under the name `updates` would suggest. Escape cancels.
+downloads it under the name `releases` would suggest. Escape cancels.
 
 `download ITEM` fetches the newest UK Monolith Snapshot from NHS England's
 [TRUD](https://isd.digital.nhs.uk/trud/), checks it against the SHA-256 TRUD
@@ -88,9 +166,9 @@ The library folder is `SNOMED_ECL_HOME` if set, else `snomed-ecl-engine/indexes`
 in the platform's data folder: `%LOCALAPPDATA%` on Windows, `~/Library/Application
 Support` on macOS and `$XDG_DATA_HOME` or `~/.local/share` on Linux.
 
-## Check for updates
+## Check terminology releases
 
-`updates [ITEM ...]` compares TRUD's newest archive SHA-256 with indexed
+`releases [ITEM ...]` compares TRUD's newest archive SHA-256 with indexed
 archives. It uses the TRUD key, as `download` does. With no item, it checks the
 distinct item numbers recorded in the manifests of the indexes being compared,
 or `uk-monolith` when none are recorded. Items may be known names or TRUD item
@@ -99,7 +177,7 @@ numbers.
 By default it compares every index in the library, across all editions.
 `--index PATH` compares only the specified indexes. Each flag takes one path;
 repeat `--index` to add paths. An item may follow the path, as in
-`updates --index data/base.ecl uk-monolith`.
+`releases --index data/base.ecl uk-monolith`.
 It reads manifests and makes one release-list request per item. It skips older
 releases with invalid metadata, including null or missing fields, and warns on
 stderr; invalid newest metadata fails the check. `download --release ID`
@@ -107,8 +185,8 @@ validates only the chosen release, so a suggested command still works when
 older metadata has been skipped.
 
 ```sh
-snomed-ecl-engine updates
-snomed-ecl-engine updates uk-monolith --index data/base.ecl --json --exit-code
+snomed-ecl-engine releases
+snomed-ecl-engine releases uk-monolith --index data/base.ecl --json --exit-code
 ```
 
 Each item reports the indexed name, release and SHA-256 prefix, the newest
@@ -145,7 +223,7 @@ Redirected output, `--json` or `--plain` gives one JSON line per item with `item
 is null when none is available; otherwise it has `name`, `path`,
 `archive_sha256`, and `release_id` and `release_name` when known. `latest` has
 `id`, `name`, `release_date`, `bytes` and `sha256`, or is null when TRUD lists no
-releases. For `updates`, `--plain` uses the same JSON lines as `--json`.
+releases. For `releases`, `--plain` uses the same JSON lines as `--json`.
 Credential-bearing TRUD URLs are redacted. The configured key is also
 redacted wherever it appears when it has at least eight characters; shorter
 keys are redacted only inside TRUD URLs, preserving ordinary paths and hashes.
@@ -268,7 +346,7 @@ gives plain lines for scripts. `--json` gives JSON:
 | `use` | Index and edition JSON | Same |
 | `add` · `download` | Name, path, edition and size JSON | Same |
 | `download --list` | One release object per line | Same |
-| `updates` | One update assessment per line | Same |
+| `releases` | One release assessment per line | Same |
 | `inspect` | Archive summary JSON | Same |
 | `diff` | Comparison JSON | Same |
 | `stats` | Manifest JSON | Same |

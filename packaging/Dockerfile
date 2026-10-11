@@ -4,5 +4,6 @@
 FROM debian:bookworm-slim
 ARG TARGETARCH
 COPY dist/docker/${TARGETARCH}/snomed-ecl-engine /usr/local/bin/snomed-ecl-engine
+ENV SNOMED_ECL_INSTALL_METHOD=container
 WORKDIR /data
 ENTRYPOINT ["snomed-ecl-engine"]

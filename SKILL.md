@@ -25,6 +25,35 @@ The commands below write `snomed-ecl-engine`; from a build, use
 rejects term predicates explicitly. Run `--help` or `COMMAND --help` for
 arguments.
 
+## CLI updates and terminology releases
+
+The default CLI can print a short startup update notice to stderr, with the
+upgrade command for npm, Cargo, Homebrew, a container or a standalone release
+executable. It uses a daily cache and a silent background GitHub check, so
+commands never wait for the network. Agents can mention the notice or run
+`self-update` when appropriate for the installation and task.
+
+Suppress the notice and automatic check with `SNOMED_ECL_NO_UPDATE_CHECK=1`
+or `--json` (`--plain` also works). It is already suppressed for non-terminal
+stderr, CI and `self-update` itself.
+
+```sh
+snomed-ecl-engine self-update --check
+snomed-ecl-engine releases --json
+```
+
+`self-update --check` checks the CLI release explicitly without downloading an
+archive or replacing the executable. `self-update` replaces standalone release
+executables only, after verifying the release's SHA256SUMS; managed installations
+print their package manager's command instead. The published `query` build has
+no network update support.
+
+`releases` is the separate terminology-release command: it compares indexed
+archive SHA-256 values with TRUD's newest releases and reports behind or
+reissued archives. It requires the user's TRUD key. `releases --apply` downloads
+and indexes terminology releases, asking for confirmation; `--yes` skips the
+prompt. See [the CLI guide](docs/cli.md#check-terminology-releases).
+
 ## Get the RF2 release
 
 The user must supply an RF2 Snapshot they are licensed to use. UK Monolith is

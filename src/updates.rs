@@ -382,7 +382,7 @@ impl Options {
                         .context("--index needs a path")?;
                     options.indexes.push(PathBuf::from(path));
                 }
-                flag if flag.starts_with('-') => bail!("Unknown updates option {flag}"),
+                flag if flag.starts_with('-') => bail!("Unknown releases option {flag}"),
                 name => {
                     let item = download::item(name)?;
                     if !options.items.contains(&item) {
@@ -441,7 +441,7 @@ pub fn run(args: &[String], human: bool) -> Result<Option<Report>> {
     use std::io::Write;
     let mut options = Options::parse(args)?;
     if options.help {
-        presentation::help(Some("updates"))?;
+        presentation::help(Some("releases"))?;
         return Ok(None);
     }
     let key = download::key()?;

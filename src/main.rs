@@ -18,6 +18,8 @@ mod library;
 #[cfg(feature = "prompts")]
 mod picker;
 mod presentation;
+#[cfg(feature = "update-check")]
+mod self_update;
 #[cfg(feature = "download")]
 mod updates;
 mod workspace;
@@ -35,6 +37,20 @@ fn parse(expression: &str) -> Result<ecl::Expr> {
 }
 
 fn main() {
+    // A query-only release may have been installed by a build with update
+    // support, so Windows backup cleanup must also work without network code.
+    #[cfg(windows)]
+    if let Ok(exe) = std::env::current_exe() {
+        let _ = std::fs::remove_file(exe.with_extension("exe.old"));
+    }
+    #[cfg(feature = "update-check")]
+    {
+        let args = std::env::args().skip(1).collect::<Vec<_>>();
+        if self_update::worker(&args) {
+            return;
+        }
+        self_update::startup(&args);
+    }
     if let Err(error) = run() {
         if error
             .downcast_ref::<io::Error>()
@@ -432,6 +448,12 @@ fn run() -> Result<()> {
     }
     let command = args.first().cloned().unwrap_or_default();
     match command.as_str() {
+        #[cfg(feature = "update-check")]
+        "self-update" => self_update::run(&args[1..])?,
+        #[cfg(not(feature = "update-check"))]
+        "self-update" => {
+            bail!("Self-update needs the `update-check` feature; use the default build")
+        }
         "use" => {
             ensure!(args.len() <= 2, "Usage: use [NAME | PATH | --clear]");
             let Some(reference) = args.get(1) else {
@@ -852,9 +874,11 @@ fn run() -> Result<()> {
             add_release(Path::new(&args[1]), sha256, name, edition, None, human)?;
         }
         #[cfg(not(feature = "download"))]
-        "updates" => bail!("Update checks need the `download` feature; use the default build"),
+        "releases" | "updates" => {
+            bail!("Terminology release checks need the `download` feature; use the default build")
+        }
         #[cfg(feature = "download")]
-        "updates" => {
+        "releases" | "updates" => {
             let Some(report) = updates::run(&args[1..], human)? else {
                 return Ok(());
             };
