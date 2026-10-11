@@ -144,7 +144,18 @@ folder holding a UK index:
 scripts/record.sh ~/ecl/bin ~/ecl/library
 ```
 
-It writes `docs/images/expand.gif`, `search.gif` and `query.gif`. The image is
+It writes `docs/images/expand.gif`, `search.gif` and `query.gif`; `setup.gif` comes from the tape below. The setup clip
+logs in, downloads the newest UK Monolith and swaps indexes, so it runs only when
+named, and needs a TRUD key and a library holding one older UK index:
+
+```sh
+TRUD_API_KEY=... scripts/record.sh ~/ecl/bin ~/ecl/library docs/recordings/setup.tape
+```
+
+The key is typed into the hidden login prompt from a temporary, ignored copy of
+the tape, which the script deletes. The script builds the image from
+[docs/recordings/Dockerfile](recordings/Dockerfile): VHS with a throwaway
+Secret Service, so `login` can save the key inside the container. The image is
 pinned to VHS 0.10.0: 0.12.0 captured no frames under Docker Desktop. Run it
 from a Linux filesystem, since Docker Desktop did not write the output through a
 WSL `/mnt/c` mount.

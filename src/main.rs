@@ -5,12 +5,18 @@ use snomed_ecl_engine::import::{
 };
 use snomed_ecl_engine::store::{DisplayStore, Manifest, NumericStore};
 use snomed_ecl_engine::{ecl, eval};
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, BufRead, IsTerminal, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+#[cfg(feature = "prompts")]
+mod browse;
+#[cfg(feature = "download")]
+mod credentials;
 #[cfg(feature = "download")]
 mod download;
 mod library;
+#[cfg(feature = "prompts")]
+mod picker;
 mod presentation;
 #[cfg(feature = "download")]
 mod updates;
@@ -38,10 +44,7 @@ fn main() {
         }
         let message = format!("{error:#}");
         #[cfg(feature = "download")]
-        let message = download::redact(
-            message,
-            std::env::var(download::ENV_KEY).unwrap_or_default().trim(),
-        );
+        let message = download::redact(message, &download::key().unwrap_or_default());
         eprintln!("Error: {}", presentation::clean_message(&message));
         std::process::exit(1);
     }
@@ -111,14 +114,15 @@ fn show(answer: Vec<u8>, human: bool, render: impl FnOnce(&serde_json::Value)) -
     Ok(())
 }
 
+/// A person can answer prompts: stdin and stderr are both terminals.
+fn interactive() -> bool {
+    io::stdin().is_terminal() && io::stderr().is_terminal()
+}
+
 /// Asks a yes-or-no question on the terminal. Without one there is nobody to
 /// answer, so the caller must say what to pass instead.
 fn confirm(question: &str, otherwise: &str) -> Result<bool> {
-    use std::io::IsTerminal;
-    ensure!(
-        io::stdin().is_terminal() && io::stderr().is_terminal(),
-        "{otherwise}"
-    );
+    ensure!(interactive(), "{otherwise}");
     eprint!("{question} [y/N] ");
     io::stderr().flush()?;
     let mut answer = String::new();
@@ -127,6 +131,110 @@ fn confirm(question: &str, otherwise: &str) -> Result<bool> {
         answer.trim().to_ascii_lowercase().as_str(),
         "y" | "yes"
     ))
+}
+
+/// Selects an index for later commands and shows its manifest.
+fn select_index(path: &Path, human: bool) -> Result<()> {
+    // Store an absolute path so the selection survives a change of working
+    // directory, and reject anything that is not an index.
+    let path =
+        std::fs::canonicalize(path).with_context(|| format!("No such path: {}", path.display()))?;
+    let manifest = Manifest::read(&path).with_context(|| {
+        format!(
+            "{} is not an index. `list` shows the indexes available",
+            path.display()
+        )
+    })?;
+    workspace::save(&workspace::State {
+        store: Some(path.clone()),
+    })?;
+    if human {
+        let location = format!("{} (now selected)", path.display());
+        presentation::manifest(&manifest, Some(&location));
+    } else {
+        println!(
+            "{}",
+            serde_json::json!({"store": path, "edition": manifest.edition})
+        );
+    }
+    Ok(())
+}
+
+/// Downloads one TRUD release, then builds, packs and selects it.
+#[cfg(feature = "download")]
+fn download_and_add(
+    item: u32,
+    release: download::Release,
+    name: Option<String>,
+    edition: Option<String>,
+    keep: bool,
+    human: bool,
+) -> Result<()> {
+    eprintln!(
+        "  {} ({}), {}",
+        presentation::clean(&release.name),
+        presentation::clean(&release.release_date),
+        presentation::bytes(release.archive_file_size_bytes)
+    );
+    let archive = download::fetch(&release, &library::home()?.join("downloads"))?;
+    // TRUD's published checksum is the distributor's, so no question is needed.
+    let added = add_release(
+        &archive,
+        Some(release.archive_file_sha256.clone()),
+        name,
+        edition,
+        Some(snomed_ecl_engine::store::Source {
+            distributor: "trud".into(),
+            item,
+            release_id: release.id,
+            release_name: release.name,
+            release_date: release.release_date,
+            archive_file_name: release.archive_file_name,
+        }),
+        human,
+    );
+    // The archive is removed whether or not the build worked, so failed
+    // attempts do not pile up; --keep-archive keeps it for a retry.
+    if !keep {
+        let _ = std::fs::remove_file(&archive);
+    }
+    added
+}
+
+/// Browses TRUD at a terminal: choose an edition, then a release. Choosing a
+/// release the library already has selects that index instead, so `None`
+/// means there is nothing to download.
+#[cfg(feature = "download")]
+fn browse_releases(human: bool) -> Result<Option<(u32, download::Release, Option<String>)>> {
+    let rows = browse::item_rows();
+    let Some(choice) = picker::choose("Edition", &rows, 0)? else {
+        return Ok(None);
+    };
+    let item = download::ITEMS[choice].number;
+    let key = download::key()?;
+    eprintln!("  Fetching releases from TRUD...");
+    let releases = download::releases_for_updates(item, &key)?;
+    ensure!(!releases.is_empty(), "TRUD lists no releases for this item");
+    let library = workspace::discover(&[library::home()?], None);
+    let rows = browse::release_rows(&releases, &library);
+    let Some(choice) = picker::choose("Release", &rows, 0)? else {
+        return Ok(None);
+    };
+    let release = releases
+        .into_iter()
+        .nth(choice)
+        .context("No such release")?;
+    if let Some(found) = browse::indexed(&release, &library) {
+        eprintln!("  Already indexed; selecting it.");
+        select_index(&found.path, human)?;
+        return Ok(None);
+    }
+    let names: Vec<_> = library
+        .iter()
+        .filter_map(|found| found.name.clone())
+        .collect();
+    let name = updates::suggested_name(item, &release, None, &names);
+    Ok(Some((item, release, name)))
 }
 
 /// Says which refset files had misnamed fixed columns read by position.
@@ -327,6 +435,23 @@ fn run() -> Result<()> {
         "use" => {
             ensure!(args.len() <= 2, "Usage: use [NAME | PATH | --clear]");
             let Some(reference) = args.get(1) else {
+                // At a terminal, choose from the indexes found.
+                #[cfg(feature = "prompts")]
+                if human && interactive() {
+                    let selected = workspace::load().store;
+                    let found =
+                        workspace::discover(&workspace::default_roots(), selected.as_deref());
+                    if !found.is_empty() {
+                        let current = found.iter().position(|entry| entry.selected);
+                        let rows = browse::index_rows(&found);
+                        if let Some(choice) =
+                            picker::choose("Select an index", &rows, current.unwrap_or(0))?
+                        {
+                            select_index(&found[choice].path, human)?;
+                        }
+                        return Ok(());
+                    }
+                }
                 // With nothing to select, say what is selected.
                 match workspace::load().store {
                     Some(path) => println!("Selected: {}", path.display()),
@@ -339,28 +464,9 @@ fn run() -> Result<()> {
                 println!("Cleared the selected index.");
                 return Ok(());
             }
-            // Store an absolute path so the selection survives a change of
-            // working directory, and reject anything that is not an index.
-            let path = std::fs::canonicalize(library::resolve(reference)?)
-                .with_context(|| format!("No such path: {reference}"))?;
-            let manifest = Manifest::read(&path).with_context(|| {
-                format!(
-                    "{} is not an index. `list` shows the indexes available",
-                    path.display()
-                )
-            })?;
-            workspace::save(&workspace::State {
-                store: Some(path.clone()),
-            })?;
-            if human {
-                let location = format!("{} (now selected)", path.display());
-                presentation::manifest(&manifest, Some(&location));
-            } else {
-                println!(
-                    "{}",
-                    serde_json::json!({"store": path, "edition": manifest.edition})
-                );
-            }
+            let path = library::resolve(reference)?;
+            ensure!(path.exists(), "No such path: {reference}");
+            select_index(&path, human)?;
         }
         "list" | "stores" => {
             let roots: Vec<_> = if args.len() > 1 {
@@ -749,9 +855,97 @@ fn run() -> Result<()> {
         "updates" => bail!("Update checks need the `download` feature; use the default build"),
         #[cfg(feature = "download")]
         "updates" => {
-            let code = updates::run(&args[1..], human)?;
-            if code != 0 {
-                std::process::exit(code);
+            let Some(report) = updates::run(&args[1..], human)? else {
+                return Ok(());
+            };
+            let mut statuses = report.statuses;
+            for action in report.actions {
+                let release = &action.release;
+                let question = format!(
+                    "Download {} ({}, {}) now?",
+                    presentation::clean(&release.name),
+                    presentation::clean(&release.release_date),
+                    presentation::bytes(release.archive_file_size_bytes)
+                );
+                if !report.yes && !confirm(&question, "Add --yes to download without a prompt")? {
+                    continue;
+                }
+                download_and_add(action.item, action.release, action.name, None, false, human)?;
+                statuses[action.position] = updates::Status::UpToDate;
+                // Deleting is never implied by --yes, and JSON output stays
+                // free of prose, so the hint goes to stderr.
+                if let Some(old) = action.replaced {
+                    let question = format!("Remove {old}, whose archive TRUD replaced?");
+                    if report.yes || !human || !interactive() || !confirm(&question, "")? {
+                        eprintln!(
+                            "  `remove {old}` deletes the index whose archive TRUD replaced."
+                        );
+                    } else {
+                        remove_index(&old, true)?;
+                    }
+                }
+            }
+            if report.exit_code {
+                let code = updates::exit_code(&statuses);
+                if code != 0 {
+                    std::process::exit(code);
+                }
+            }
+        }
+        #[cfg(not(feature = "download"))]
+        "login" | "logout" => {
+            bail!("Saving a TRUD API key needs the `download` feature; use the default build")
+        }
+        #[cfg(feature = "download")]
+        "login" => {
+            ensure!(args.len() == 1, "Usage: login");
+            // A terminal on stdin must never echo the key, whatever stderr is.
+            let key = if io::stdin().is_terminal() {
+                ensure!(
+                    interactive(),
+                    "login reads the key without echoing it, which needs stderr on the                      terminal too. Run it without redirecting stderr, or pipe the key in"
+                );
+                eprintln!("  Your TRUD API key is on your account page at https://isd.digital.nhs.uk/trud/");
+                picker::secret("TRUD API key")?
+            } else {
+                // A script can pipe the key in, so it never appears in arguments.
+                let mut line = String::new();
+                io::stdin().lock().read_line(&mut line)?;
+                line
+            };
+            let key = key.trim().to_owned();
+            ensure!(
+                !key.is_empty() && !key.contains(char::is_whitespace),
+                "That is not a TRUD API key"
+            );
+            eprintln!("  Checking the key with TRUD...");
+            if let Err(error) = download::check_key(1799, &key) {
+                let question = format!("  {error:#}.\n  Save it anyway?");
+                let saved = confirm(
+                    &question,
+                    &format!("TRUD did not accept the key. {error:#}"),
+                )?;
+                ensure!(saved, "Not saved");
+            }
+            credentials::save(&key)?;
+            println!("Saved your TRUD API key in {}.", credentials::store_name());
+            if download::environment_key().is_some() {
+                println!(
+                    "{} is set in this shell and takes precedence over the saved key.",
+                    download::ENV_KEY
+                );
+            }
+        }
+        #[cfg(feature = "download")]
+        "logout" => {
+            ensure!(args.len() == 1, "Usage: logout");
+            if credentials::forget()? {
+                println!(
+                    "Removed the TRUD API key from {}.",
+                    credentials::store_name()
+                );
+            } else {
+                println!("No TRUD API key was saved.");
             }
         }
         #[cfg(not(feature = "download"))]
@@ -767,6 +961,13 @@ fn run() -> Result<()> {
                 args.len() <= 2,
                 "Usage: download [ITEM] [--list | --release ID] [--name NAME] [--edition URI] [--keep-archive]"
             );
+            // At a terminal, `download` alone browses TRUD's editions and releases.
+            if args.len() == 1 && !list && wanted.is_none() && human && interactive() {
+                let Some((item, release, suggested)) = browse_releases(human)? else {
+                    return Ok(());
+                };
+                return download_and_add(item, release, name.or(suggested), edition, keep, human);
+            }
             let item = download::item(args.get(1).map_or("uk-monolith", String::as_str))?;
             if list {
                 let releases = download::releases(item, false)?;
@@ -807,35 +1008,7 @@ fn run() -> Result<()> {
                     .next()
                     .context("TRUD lists no releases for this item")?,
             };
-            eprintln!(
-                "  {} ({}), {}",
-                presentation::clean(&release.name),
-                presentation::clean(&release.release_date),
-                presentation::bytes(release.archive_file_size_bytes)
-            );
-            let archive = download::fetch(&release, &library::home()?.join("downloads"))?;
-            // TRUD's published checksum is the distributor's, so no question is needed.
-            let added = add_release(
-                &archive,
-                Some(release.archive_file_sha256.clone()),
-                name,
-                edition,
-                Some(snomed_ecl_engine::store::Source {
-                    distributor: "trud".into(),
-                    item,
-                    release_id: release.id,
-                    release_name: release.name,
-                    release_date: release.release_date,
-                    archive_file_name: release.archive_file_name,
-                }),
-                human,
-            );
-            // The archive is removed whether or not the build worked, so failed
-            // attempts do not pile up; --keep-archive keeps it for a retry.
-            if !keep {
-                let _ = std::fs::remove_file(&archive);
-            }
-            added?;
+            download_and_add(item, release, name, edition, keep, human)?;
         }
         "remove" => {
             let yes = take_flag(&mut args, "--yes");

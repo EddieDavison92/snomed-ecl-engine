@@ -335,7 +335,27 @@ struct Options {
     items: Vec<u32>,
     indexes: Vec<PathBuf>,
     exit_code: bool,
+    apply: bool,
+    yes: bool,
     help: bool,
+}
+
+/// A download `--apply` makes: the newest release of an item that is behind or
+/// reissued, and the library index a re-issue replaces.
+pub struct Action {
+    /// Position of the item's status in `Report::statuses`.
+    pub position: usize,
+    pub item: u32,
+    pub release: Release,
+    pub name: Option<String>,
+    pub replaced: Option<String>,
+}
+
+pub struct Report {
+    pub statuses: Vec<Status>,
+    pub actions: Vec<Action>,
+    pub exit_code: bool,
+    pub yes: bool,
 }
 
 impl Options {
@@ -344,6 +364,8 @@ impl Options {
             items: Vec::new(),
             indexes: Vec::new(),
             exit_code: false,
+            apply: false,
+            yes: false,
             help: false,
         };
         let mut args = args.iter();
@@ -351,6 +373,8 @@ impl Options {
             match arg.as_str() {
                 "--help" | "-h" => options.help = true,
                 "--exit-code" => options.exit_code = true,
+                "--apply" => options.apply = true,
+                "--yes" => options.yes = true,
                 "--index" => {
                     let path = args
                         .next()
@@ -391,6 +415,13 @@ impl Options {
     }
 }
 
+fn same_file(a: &Path, b: &Path) -> bool {
+    match (std::fs::canonicalize(a), std::fs::canonicalize(b)) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => false,
+    }
+}
+
 fn default_items(indexed: &[Indexed]) -> Vec<u32> {
     let mut items: Vec<_> = indexed
         .iter()
@@ -404,12 +435,14 @@ fn default_items(indexed: &[Indexed]) -> Vec<u32> {
     items
 }
 
-pub fn run(args: &[String], human: bool) -> Result<i32> {
+/// Prints each item's status. With `--apply`, also returns the downloads to
+/// make; the caller makes them, since downloading belongs to the CLI.
+pub fn run(args: &[String], human: bool) -> Result<Option<Report>> {
     use std::io::Write;
     let mut options = Options::parse(args)?;
     if options.help {
         presentation::help(Some("updates"))?;
-        return Ok(0);
+        return Ok(None);
     }
     let key = download::key()?;
     let library_entries = library::entries();
@@ -419,6 +452,7 @@ pub fn run(args: &[String], human: bool) -> Result<i32> {
         .collect();
     let indexes = options.load_indexes(library_entries.iter().map(|entry| entry.path.as_path()))?;
     let mut statuses = Vec::new();
+    let mut actions = Vec::new();
     let mut out = std::io::stdout().lock();
     for item in options.items {
         let releases = download::releases_for_updates(item, &key)?;
@@ -439,13 +473,34 @@ pub fn run(args: &[String], human: bool) -> Result<i32> {
         }
         // A later item's TRUD error exits early; earlier results stay printed.
         out.flush()?;
+        let stale = matches!(assessment.status, Status::Behind { .. } | Status::Reissued);
+        if let (true, true, Some(latest)) = (options.apply, stale, assessment.latest) {
+            actions.push(Action {
+                position: statuses.len(),
+                item,
+                release: latest.clone(),
+                name: suggested_name(item, latest, assessment.indexed, &names),
+                // Only a library index can be removed by name, so the compared
+                // index must be that library file, not one sharing its name.
+                replaced: assessment
+                    .indexed
+                    .filter(|_| assessment.status == Status::Reissued)
+                    .filter(|index| {
+                        library_entries.iter().any(|entry| {
+                            entry.name == index.name && same_file(&entry.path, &index.path)
+                        })
+                    })
+                    .map(|index| index.name.clone()),
+            });
+        }
         statuses.push(assessment.status);
     }
-    Ok(if options.exit_code {
-        exit_code(&statuses)
-    } else {
-        0
-    })
+    Ok(Some(Report {
+        statuses,
+        actions,
+        exit_code: options.exit_code,
+        yes: options.yes,
+    }))
 }
 
 #[cfg(test)]
@@ -458,6 +513,22 @@ mod tests {
 
     fn releases() -> Vec<Release> {
         download::parse_releases(RECORDED, true, KEY).unwrap().0
+    }
+
+    #[test]
+    fn only_the_same_file_counts_as_the_library_index() {
+        let library = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        let inside = library.path().join("uk-20260923.ecl");
+        let elsewhere = outside.path().join("uk-20260923.ecl");
+        std::fs::write(&inside, b"a").unwrap();
+        std::fs::write(&elsewhere, b"a").unwrap();
+        assert!(same_file(
+            &inside,
+            &library.path().join(".").join("uk-20260923.ecl")
+        ));
+        assert!(!same_file(&inside, &elsewhere));
+        assert!(!same_file(&inside, &outside.path().join("missing.ecl")));
     }
 
     #[test]

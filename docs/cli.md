@@ -14,7 +14,19 @@ snomed-ecl-engine expand '<< 404684003' --count
 
 ## Manage indexes
 
-`download` fetches the newest UK Monolith Snapshot from NHS England's
+`login` saves your TRUD API key in the system's credential store: Windows
+Credential Manager, the macOS Keychain or the Secret Service. It reads the key
+without echoing it, or from stdin when piped, checks it by listing the newest
+`uk-monolith` release, and asks before saving a key TRUD did not accept.
+`logout` removes it. `TRUD_API_KEY`, when set, takes precedence, so CI and
+containers without a credential store use the variable.
+
+At a terminal, `download` with no item shows a menu of editions, then that
+edition's releases with their dates and sizes, marking the newest and any
+already indexed. Picking an indexed release selects that index; picking another
+downloads it under the name `updates` would suggest. Escape cancels.
+
+`download ITEM` fetches the newest UK Monolith Snapshot from NHS England's
 [TRUD](https://isd.digital.nhs.uk/trud/), checks it against the SHA-256 TRUD
 publishes, and adds it as below. `download international` selects International
 (TRUD item 4); UK users must subscribe to that item. Other countries obtain
@@ -28,8 +40,9 @@ are not yet importable as standalone packages.
 Known items select their expected edition module among the archive's candidate
 URIs. `--edition URI` overrides it; if the expected module is absent, the command
 lists the candidates and asks for an explicit URI. Numeric items are also
-accepted. Set `TRUD_API_KEY` to the API key on your TRUD account page first;
-the account must be subscribed to the item. `--list` shows
+accepted. Run `login` with the API key from your TRUD account page first, or set
+`TRUD_API_KEY`; the account must be subscribed to the item. Without a terminal,
+`download` alone fetches the newest `uk-monolith` release. `--list` shows
 the releases TRUD holds and `--release ID` fetches a specific one. With
 `--release`, only that release's metadata is validated; invalid metadata for
 other releases does not block it. Without `--release`, the newest release
@@ -54,7 +67,8 @@ International content must name its edition. Otherwise it lists the candidates a
 `list` shows the library's indexes by name and release, then any other index
 directly inside the working directory or `data/`, or inside the folders given.
 `use` selects one, recorded outside the repository, and `use --clear` forgets
-it. `remove NAME` deletes one from the library after asking; `--yes` skips the
+it. `use` alone, at a terminal, shows a menu of the indexes `list` finds, with
+the current selection highlighted; elsewhere it prints the selection. `remove NAME` deletes one from the library after asking; `--yes` skips the
 question in scripts.
 
 Anywhere an index is expected, give a path, a library name such as
@@ -77,7 +91,7 @@ Support` on macOS and `$XDG_DATA_HOME` or `~/.local/share` on Linux.
 ## Check for updates
 
 `updates [ITEM ...]` compares TRUD's newest archive SHA-256 with indexed
-archives. Set `TRUD_API_KEY` as for `download`. With no item, it checks the
+archives. It uses the TRUD key, as `download` does. With no item, it checks the
 distinct item numbers recorded in the manifests of the indexes being compared,
 or `uk-monolith` when none are recorded. Items may be known names or TRUD item
 numbers.
@@ -136,9 +150,16 @@ Credential-bearing TRUD URLs are redacted. The configured key is also
 redacted wherever it appears when it has at least eight characters; shorter
 keys are redacted only inside TRUD URLs, preserving ordinary paths and hashes.
 
+`--apply` downloads the newest release of each item that is behind or reissued,
+as `download` would, under the suggested name. It asks first at a terminal;
+without one it needs `--yes`. After a re-issue is downloaded it offers, at a
+terminal, to remove the index whose archive TRUD replaced. `--yes` never removes
+an index; the output names the `remove` command instead.
+
 Without `--exit-code`, a successful check exits 0. With it, the exit code is 0
 when all items are up to date, 3 when any item is behind or reissued, or 4 when
-any item is unknown and none needs an update. Errors exit 1. Update checks need
+any item is unknown and none needs an update. With `--apply`, an item downloaded
+counts as up to date. Errors exit 1. Update checks need
 a build with the `download` feature. Use the TRUD API on weekdays 08:00–18:00
 or 00:00–06:00 UK time to avoid maintenance windows.
 
