@@ -1,7 +1,7 @@
 # The release's Linux executables, with term matching, in a small image.
 # The release workflow places each architecture's executable at
 # dist/docker/<arch>/snomed-ecl-engine before building for both.
-FROM debian:bookworm-slim
+FROM debian:bookworm-20261020-slim
 ARG TARGETARCH
 COPY dist/docker/${TARGETARCH}/snomed-ecl-engine /usr/local/bin/snomed-ecl-engine
 ENV SNOMED_ECL_INSTALL_METHOD=container

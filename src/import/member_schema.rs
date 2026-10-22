@@ -41,10 +41,12 @@ impl Schemas {
         }
         let names: Vec<_> = archive
             .file_names()
+            .collect::<zip::result::ZipResult<Vec<_>>>()?
+            .into_iter()
             .filter(|n| {
                 n.contains("/Snapshot/") && n.contains("RefsetDescriptor") && n.ends_with(".txt")
             })
-            .map(str::to_owned)
+            .map(|name| name.into_owned())
             .collect();
         for name in names {
             rows(

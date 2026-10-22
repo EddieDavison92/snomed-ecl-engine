@@ -38,8 +38,10 @@ pub fn add_refsets_snapshot(
     let mut archive = ZipArchive::new(BufReader::new(File::open(archive_path)?))?;
     let mut names: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|n| n.contains("/Snapshot/") && n.ends_with(".txt"))
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     names.sort();
     ensure!(!names.is_empty(), "No RF2 Snapshot files found");

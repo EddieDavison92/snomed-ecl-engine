@@ -9,13 +9,15 @@ pub(super) fn read(
 ) -> Result<Vec<Identifier>> {
     let names: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|n| {
             n.contains("/Snapshot/")
                 && n.rsplit('/')
                     .next()
                     .is_some_and(|n| n.starts_with("sct2_Identifier_") && n.ends_with(".txt"))
         })
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     let mut identifiers = Vec::new();
     for name in names {

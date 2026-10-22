@@ -24,7 +24,7 @@ pub(super) fn read(
     edition_date: u32,
 ) -> Result<(MembershipIndex, u64, usize)> {
     let schemas = super::member_schema::Schemas::read(archive, None, edition_date)?;
-    let names = super::refset_files(archive);
+    let names = super::refset_files(archive)?;
     ensure!(!names.is_empty(), "No Snapshot refset files found");
     let mut pairs = Vec::new();
     let mut non_concept_rows = 0;

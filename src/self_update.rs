@@ -467,7 +467,7 @@ fn extract(bytes: &[u8], name: &str, output: &mut File) -> Result<()> {
         let mut found = false;
         for i in 0..archive.len() {
             let mut entry = archive.by_index(i)?;
-            if entry.name() == expected {
+            if entry.name()? == expected {
                 ensure!(!found, "Duplicate executable in archive");
                 ensure!(
                     !entry.is_dir()
