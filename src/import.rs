@@ -122,8 +122,10 @@ pub fn import_snapshot_with_progress(
     let dependencies_file = snapshot_file(&archive, "der2_ssRefset_ModuleDependency")?;
     let metadata_files: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|n| n.ends_with("/release_package_information.json"))
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     ensure!(
         metadata_files.len() == 1,
@@ -571,7 +573,7 @@ pub fn import_snapshot_with_progress(
 }
 
 fn snapshot_file(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Result<String> {
-    let names = snapshot_files(archive, prefix);
+    let names = snapshot_files(archive, prefix)?;
     ensure!(
         names.len() == 1,
         "Expected one Snapshot file for {prefix}; merged packages are not supported"
@@ -579,9 +581,11 @@ fn snapshot_file(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Result<
     Ok(names.into_iter().next().unwrap())
 }
 
-fn snapshot_files(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Vec<String> {
+fn snapshot_files(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Result<Vec<String>> {
     let mut names: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|name| {
             name.contains("/Snapshot/")
                 && name.ends_with(".txt")
@@ -590,10 +594,10 @@ fn snapshot_files(archive: &ZipArchive<BufReader<File>>, prefix: &str) -> Vec<St
                     .next()
                     .is_some_and(|file| file.starts_with(prefix))
         })
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     names.sort();
-    names
+    Ok(names)
 }
 
 /// The six columns RF2 fixes at the start of every refset file.
@@ -625,9 +629,11 @@ fn refset_header(archive: &mut ZipArchive<BufReader<File>>, name: &str) -> Resul
 }
 
 /// Snapshot refset files, by the name test every refset reader uses.
-fn refset_files(archive: &ZipArchive<BufReader<File>>) -> Vec<String> {
+fn refset_files(archive: &ZipArchive<BufReader<File>>) -> Result<Vec<String>> {
     let mut names: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|name| {
             name.contains("/Snapshot/")
                 && name.ends_with(".txt")
@@ -636,10 +642,10 @@ fn refset_files(archive: &ZipArchive<BufReader<File>>) -> Vec<String> {
                     .next()
                     .is_some_and(|file| file.contains("Refset"))
         })
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     names.sort();
-    names
+    Ok(names)
 }
 
 /// The repair note for every refset file in the package with misnamed fixed
@@ -648,16 +654,18 @@ fn refset_files(archive: &ZipArchive<BufReader<File>>) -> Vec<String> {
 /// A header that is not a refset's is skipped here: a reader that opens the
 /// file rejects it, and one that does not leaves it alone.
 fn header_repairs(archive: &mut ZipArchive<BufReader<File>>) -> Result<Vec<String>> {
-    let mut names = refset_files(archive);
+    let mut names = refset_files(archive)?;
     names.extend(
         archive
             .file_names()
+            .collect::<zip::result::ZipResult<Vec<_>>>()?
+            .into_iter()
             .filter(|name| {
                 name.contains("/Snapshot/")
                     && name.contains("RefsetDescriptor")
                     && name.ends_with(".txt")
             })
-            .map(str::to_owned),
+            .map(|name| name.into_owned()),
     );
     names.sort();
     names.dedup();
@@ -842,7 +850,7 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
     let required_files: Vec<_> = required
         .iter()
         .map(|(label, prefix)| {
-            let names = snapshot_files(&archive, prefix);
+            let names = snapshot_files(&archive, prefix)?;
             let found = if names.len() == 1 {
                 names.into_iter().next()
             } else {
@@ -851,14 +859,16 @@ pub fn inspect_archive(archive_path: &Path) -> Result<ArchiveSummary> {
                 }
                 None
             };
-            ((*label).to_owned(), found)
+            Ok(((*label).to_owned(), found))
         })
-        .collect();
+        .collect::<Result<Vec<_>>>()?;
 
     let mut metadata_files: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|n| n.ends_with("/release_package_information.json"))
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     ensure!(
         !metadata_files.is_empty(),

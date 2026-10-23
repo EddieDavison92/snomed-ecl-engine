@@ -1,8 +1,8 @@
 # VHS with a Secret Service, so the setup clip's `login` can save a TRUD key.
 # scripts/record.sh builds it; the keyring lives only as long as the container.
-FROM ghcr.io/charmbracelet/vhs:v0.10.0
-# The image's sources name `stable`, which has moved past its bookworm base.
-RUN sed -i 's/\bstable\b/bookworm/g' /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null; \
+FROM ghcr.io/charmbracelet/vhs:v0.12.1
+# Keep the image's `stable` sources on its trixie base.
+RUN sed -i 's/\bstable\b/trixie/g' /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null; \
     apt-get update -qq \
  && apt-get install -y -qq --no-install-recommends dbus-daemon gnome-keyring >/dev/null \
  && rm -rf /var/lib/apt/lists/*

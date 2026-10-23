@@ -14,6 +14,8 @@ pub(super) fn read(
     };
     let files: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|n| {
             n.contains("/Snapshot/")
                 && n.ends_with(".txt")
@@ -21,7 +23,7 @@ pub(super) fn read(
                     f.starts_with("sct2_Description_") || f.starts_with("sct2_TextDefinition_")
                 })
         })
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     let mut descriptions = Vec::new();
     let mut positions = HashMap::new();
@@ -78,6 +80,8 @@ pub(super) fn read(
     }
     let language_files: Vec<_> = archive
         .file_names()
+        .collect::<zip::result::ZipResult<Vec<_>>>()?
+        .into_iter()
         .filter(|n| {
             n.contains("/Snapshot/")
                 && n.ends_with(".txt")
@@ -85,7 +89,7 @@ pub(super) fn read(
                     .next()
                     .is_some_and(|f| f.starts_with("der2_cRefset_Language"))
         })
-        .map(str::to_owned)
+        .map(|name| name.into_owned())
         .collect();
     let mut seen = HashSet::new();
     for file in language_files {

@@ -354,7 +354,7 @@ fn legacy_identifier_columns_resolve_the_same_codes() {
         let mut file = source.by_index(i).unwrap();
         let mut body = String::new();
         file.read_to_string(&mut body).unwrap();
-        if file.name().contains("sct2_Identifier_") {
+        if file.name().unwrap().contains("sct2_Identifier_") {
             body = body
                 .lines()
                 .map(|line| {
@@ -364,7 +364,7 @@ fn legacy_identifier_columns_resolve_the_same_codes() {
                 .collect();
         }
         output
-            .start_file(file.name(), SimpleFileOptions::default())
+            .start_file(file.name().unwrap(), SimpleFileOptions::default())
             .unwrap();
         output.write_all(body.as_bytes()).unwrap();
     }
@@ -518,13 +518,13 @@ fn rewrite_archive(from: &Path, to: &Path, suffix: &str, old: &str, new: &str) {
         let mut entry = source.by_index(index).unwrap();
         let mut body = String::new();
         entry.read_to_string(&mut body).unwrap();
-        if entry.name().ends_with(suffix) {
+        if entry.name().unwrap().ends_with(suffix) {
             assert!(body.contains(old), "{suffix} has no {old:?}");
             body = body.replacen(old, new, 1);
             rewritten = true;
         }
         target
-            .start_file(entry.name(), SimpleFileOptions::default())
+            .start_file(entry.name().unwrap(), SimpleFileOptions::default())
             .unwrap();
         target.write_all(body.as_bytes()).unwrap();
     }
@@ -541,10 +541,10 @@ fn rename_entry(from: &Path, to: &Path, old: &str, new: &str) {
         let mut entry = source.by_index(index).unwrap();
         let mut body = Vec::new();
         entry.read_to_end(&mut body).unwrap();
-        let name = if entry.name() == old {
+        let name = if entry.name().unwrap() == old {
             new.to_owned()
         } else {
-            entry.name().to_owned()
+            entry.name().unwrap().into_owned()
         };
         target
             .start_file(name, SimpleFileOptions::default())
@@ -899,7 +899,7 @@ fn descriptor_fixture_with(path: &Path, invalid_decimal: bool, integers: &[&str]
         let mut file = original.by_index(index).unwrap();
         let mut body = String::new();
         file.read_to_string(&mut body).unwrap();
-        let name = file.name().to_owned();
+        let name = file.name().unwrap().into_owned();
         if name.contains("sct2_Concept_") {
             for id in [
                 800001u64,

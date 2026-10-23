@@ -20,7 +20,7 @@ pub(super) fn build(
     prior: Option<&crate::store::MemberStore>,
 ) -> Result<Vec<MemberManifest>> {
     let schemas = super::member_schema::Schemas::read(archive, prior, edition_date)?;
-    let names = super::refset_files(archive);
+    let names = super::refset_files(archive)?;
     let mut manifests = Vec::new();
     let mut seen_refsets = HashSet::new();
     let mut seen_ids = HashSet::new();
